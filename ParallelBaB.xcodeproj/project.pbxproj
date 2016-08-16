@@ -7,7 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2112822B1D63988E0038DBEE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2112822A1D63988E0038DBEE /* main.cpp */; };
+		211282411D6398B70038DBEE /* BranchAndBound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 211282311D6398B70038DBEE /* BranchAndBound.cpp */; };
+		211282421D6398B70038DBEE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 211282331D6398B70038DBEE /* main.cpp */; };
+		211282431D6398B70038DBEE /* Makefile in Sources */ = {isa = PBXBuildFile; fileRef = 211282341D6398B70038DBEE /* Makefile */; };
+		211282441D6398B70038DBEE /* myutils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 211282351D6398B70038DBEE /* myutils.cpp */; };
+		211282451D6398B70038DBEE /* Problem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 211282371D6398B70038DBEE /* Problem.cpp */; };
+		211282461D6398B70038DBEE /* ProblemHCSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 211282391D6398B70038DBEE /* ProblemHCSP.cpp */; };
+		211282471D6398B70038DBEE /* ProblemTSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2112823B1D6398B70038DBEE /* ProblemTSP.cpp */; };
+		211282481D6398B70038DBEE /* ProblemVRP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2112823D1D6398B70038DBEE /* ProblemVRP.cpp */; };
+		211282491D6398B70038DBEE /* Solution.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2112823F1D6398B70038DBEE /* Solution.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,7 +32,22 @@
 
 /* Begin PBXFileReference section */
 		211282271D63988E0038DBEE /* ParallelBaB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ParallelBaB; sourceTree = BUILT_PRODUCTS_DIR; };
-		2112822A1D63988E0038DBEE /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		211282311D6398B70038DBEE /* BranchAndBound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BranchAndBound.cpp; path = ../BranchAndBound.cpp; sourceTree = "<group>"; };
+		211282321D6398B70038DBEE /* BranchAndBound.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = BranchAndBound.hpp; path = ../BranchAndBound.hpp; sourceTree = "<group>"; };
+		211282331D6398B70038DBEE /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../main.cpp; sourceTree = "<group>"; };
+		211282341D6398B70038DBEE /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; name = Makefile; path = ../Makefile; sourceTree = "<group>"; };
+		211282351D6398B70038DBEE /* myutils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = myutils.cpp; path = ../myutils.cpp; sourceTree = "<group>"; };
+		211282361D6398B70038DBEE /* myutils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = myutils.hpp; path = ../myutils.hpp; sourceTree = "<group>"; };
+		211282371D6398B70038DBEE /* Problem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Problem.cpp; path = ../Problem.cpp; sourceTree = "<group>"; };
+		211282381D6398B70038DBEE /* Problem.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Problem.hpp; path = ../Problem.hpp; sourceTree = "<group>"; };
+		211282391D6398B70038DBEE /* ProblemHCSP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ProblemHCSP.cpp; path = ../ProblemHCSP.cpp; sourceTree = "<group>"; };
+		2112823A1D6398B70038DBEE /* ProblemHCSP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ProblemHCSP.hpp; path = ../ProblemHCSP.hpp; sourceTree = "<group>"; };
+		2112823B1D6398B70038DBEE /* ProblemTSP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ProblemTSP.cpp; path = ../ProblemTSP.cpp; sourceTree = "<group>"; };
+		2112823C1D6398B70038DBEE /* ProblemTSP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ProblemTSP.hpp; path = ../ProblemTSP.hpp; sourceTree = "<group>"; };
+		2112823D1D6398B70038DBEE /* ProblemVRP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ProblemVRP.cpp; path = ../ProblemVRP.cpp; sourceTree = "<group>"; };
+		2112823E1D6398B70038DBEE /* ProblemVRP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ProblemVRP.hpp; path = ../ProblemVRP.hpp; sourceTree = "<group>"; };
+		2112823F1D6398B70038DBEE /* Solution.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Solution.cpp; path = ../Solution.cpp; sourceTree = "<group>"; };
+		211282401D6398B70038DBEE /* Solution.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Solution.hpp; path = ../Solution.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,7 +80,22 @@
 		211282291D63988E0038DBEE /* ParallelBaB */ = {
 			isa = PBXGroup;
 			children = (
-				2112822A1D63988E0038DBEE /* main.cpp */,
+				211282311D6398B70038DBEE /* BranchAndBound.cpp */,
+				211282321D6398B70038DBEE /* BranchAndBound.hpp */,
+				211282331D6398B70038DBEE /* main.cpp */,
+				211282341D6398B70038DBEE /* Makefile */,
+				211282351D6398B70038DBEE /* myutils.cpp */,
+				211282361D6398B70038DBEE /* myutils.hpp */,
+				211282371D6398B70038DBEE /* Problem.cpp */,
+				211282381D6398B70038DBEE /* Problem.hpp */,
+				211282391D6398B70038DBEE /* ProblemHCSP.cpp */,
+				2112823A1D6398B70038DBEE /* ProblemHCSP.hpp */,
+				2112823B1D6398B70038DBEE /* ProblemTSP.cpp */,
+				2112823C1D6398B70038DBEE /* ProblemTSP.hpp */,
+				2112823D1D6398B70038DBEE /* ProblemVRP.cpp */,
+				2112823E1D6398B70038DBEE /* ProblemVRP.hpp */,
+				2112823F1D6398B70038DBEE /* Solution.cpp */,
+				211282401D6398B70038DBEE /* Solution.hpp */,
 			);
 			path = ParallelBaB;
 			sourceTree = "<group>";
@@ -118,7 +156,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2112822B1D63988E0038DBEE /* main.cpp in Sources */,
+				211282491D6398B70038DBEE /* Solution.cpp in Sources */,
+				211282481D6398B70038DBEE /* ProblemVRP.cpp in Sources */,
+				211282471D6398B70038DBEE /* ProblemTSP.cpp in Sources */,
+				211282431D6398B70038DBEE /* Makefile in Sources */,
+				211282421D6398B70038DBEE /* main.cpp in Sources */,
+				211282451D6398B70038DBEE /* Problem.cpp in Sources */,
+				211282411D6398B70038DBEE /* BranchAndBound.cpp in Sources */,
+				211282441D6398B70038DBEE /* myutils.cpp in Sources */,
+				211282461D6398B70038DBEE /* ProblemHCSP.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
