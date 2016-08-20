@@ -249,6 +249,9 @@ int BranchAndBound::theTreeHasMoreBranches(){
     return 1;
 }
 
+/**
+ * Adds the new solution to the Pareto front and removes the dominated solutions.
+ */
 int BranchAndBound::updateLowerBound(Solution * solution){
     
     int saveMemory = 0;
@@ -313,16 +316,15 @@ int BranchAndBound::updateLowerBound(Solution * solution){
     return  0;
 }
 
+/**
+ * The solution improves the lowe bound if:
+ *  1- The solution is no-dominated by the lower bound or the solution dominates one of the solutions in the lower bound then it is said that the solution improves the lower bound.
+ *  2- The solution dominates one solution in the front.
+ *  3- The solution is non-dominated by all the solutions in the front.
+ *  4- Any solution in the front dominates dominates the solution.
+ *  5- It is not repeated.
+ */
 int BranchAndBound::improvesTheLowerBound(Solution * solution){
-    
-    /**
-     * The solution improves the lowe bound if:
-     *  1- The solution is no-dominated by the lower bound or the solution dominates one of the solutions in the lower bound then it is said that the solution improves the lower bound.
-     *  2- The solution dominates one solution in the front.
-     *  3- The solution is non-dominated by all the solutions in the front.
-     *  4- Any solution in the front dominates dominates the solution.
-     *  5- It is not repeated.
-     */
     
     unsigned int * status = getDominationStatus(solution);
     
@@ -337,11 +339,11 @@ int BranchAndBound::improvesTheLowerBound(Solution * solution){
 }
 
 /**
- *  Status represents three values:
+ * Retunrs the domination Status with respect to Pareto front found. Status have four values:
  *  [0] -> The total of solutions which are dominated by the current solution.
  *  [1] -> The total of solutions which are no-dominated.
  *  [2] -> The total of solutions which dominated the current solutiom.
- *  [3] -> 1 if the objectives values are repeated.
+ *  [3] -> 1 if the objective values from solution are in the pareto front.
  **/
 unsigned int * BranchAndBound::getDominationStatus(Solution * solution){
     unsigned int * status = new unsigned int[4];
@@ -399,6 +401,16 @@ unsigned int * BranchAndBound::getDominationStatus(Solution * solution){
     return status;
 }
 
+/**
+ * Dominance test computes the domination relationship between two solutions.
+ * returns
+ * -1: solution A dominates solution B.
+ *  0: non-dominated solutions.
+ *  1: solution B dominates solution A.
+ * 11: solution A and solution B are equals in all objectives.
+ *
+ *
+ **/
 int BranchAndBound::dominanceTest(Solution * solutionA, Solution * solutionB){
     
     int objective = 0;
@@ -424,12 +436,6 @@ int BranchAndBound::dominanceTest(Solution * solutionA, Solution * solutionB){
         }
     }
     
-    /**
-     * -1: solution A dominates solution B.
-     *  0: non-dominated solutions.
-     *  1: solution B dominates solution A.
-     * 11: solution A and solution B have the same objective values.
-     */
     if(equals == 1)
         return 11;
     else if (solAIsBetterIn > 0 && solBIsBetterIn == 0)
@@ -463,7 +469,11 @@ unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
     }
     return totalNodes;
 }
-
+/**
+ * This function prints the pareto front found.
+ * If receives value of 0 or no parameters then the variables of the solution won't be printed.
+ * If receives value of 1 the variables of the solutioj will be printed.
+ **/
 void BranchAndBound::printParetoFront(int withVariables){
     
     int numberOfVariables = this->problem->getNumberOfVariables();
