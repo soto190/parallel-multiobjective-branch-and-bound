@@ -67,8 +67,16 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Zhao_3_10_143.txt "
+            argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/SahB_3_6_76.txt"
             isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Ahmad_3_9_28.txt "
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Zhao_3_10_143.txt "
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Machines/Machines_3_7_.conf"

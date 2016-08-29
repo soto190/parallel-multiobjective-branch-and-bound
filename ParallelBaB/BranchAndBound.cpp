@@ -121,12 +121,12 @@ void BranchAndBound::start(){
             updated = this->updateLowerBound(this->currentSolution);
             this->totalUpdatesInLowerBound += updated;
     
-            if (updated == 1) {
+         /*   if (updated == 1) {
                 printf("[%6lu] ", this->paretoFront.size());
                 printCurrentSolution(1);
                 printf("+\n");
             }
-    
+    */
             int nextLevel = this->levelOfTree.back();
             this->problem->removeLastLevelEvaluation(this->currentSolution, nextLevel);
         }
@@ -326,23 +326,31 @@ int BranchAndBound::updateLowerBound(Solution * solution){
  */
 int BranchAndBound::improvesTheLowerBound(Solution * solution){
     
-    unsigned int * status = getDominationStatus(solution);
-    
-    if((status[3] == 0) && (status[0] > 0 || status[1] == this->paretoFront.size() || status[2] == 0)){
-        delete [] status;
-        return 1;
+    unsigned long paretoFrontSize = this->paretoFront.size();
+    int domination = 0;
+    unsigned long index = 0;
+    int improves = 1;
+    if (paretoFrontSize > 0) {
+        
+        #pragma omp parallel for if (paretoFrontSize >= 50) shared(solution) private(domination, index)
+        for (index = 0; index < paretoFrontSize; index++) {
+            
+            domination = dominanceTest(solution, this->paretoFront.at(index));
+            if(domination == -1 || domination == 11 ){
+                improves = 0;
+                index = paretoFrontSize;
+            }
+        }
     }
-    else{
-        delete [] status;
-        return 0;
-    }
+
+    return improves;
 }
 
 /**
  * Retunrs the domination Status with respect to Pareto front found. Status have four values:
- *  [0] -> The total of solutions which are dominated by the current solution.
- *  [1] -> The total of solutions which are no-dominated.
- *  [2] -> The total of solutions which dominated the current solutiom.
+ *  [0] -> The total solutions which are dominated by the current solution.
+ *  [1] -> The total solutions which are no-dominated.
+ *  [2] -> The total solutions which dominated the current solution.
  *  [3] -> 1 if the objective values from solution are in the pareto front.
  **/
 unsigned int * BranchAndBound::getDominationStatus(Solution * solution){
@@ -352,37 +360,16 @@ unsigned int * BranchAndBound::getDominationStatus(Solution * solution){
     status[2] = 0;
     status[3] = 0;
     
-    
-    std::vector<Solution* >::iterator it;
     unsigned long paretoFrontSize = this->paretoFront.size();
     int domination = 0;
     int index = 0;
     if (paretoFrontSize > 0) {
-        int val = 0;
-        if (paretoFrontSize > 10)
-            val = 1;
-        else
-            val = 0;
-        #pragma omp parallel if (val)
-        if(paretoFrontSize > 10){
-            #pragma omp parallel for shared(status, solution) private(domination, index)
-            for (index = 0; index < paretoFrontSize; index++) {
-            
-                domination = dominanceTest(solution, this->paretoFront.at(index));
-            
-                if(domination == 1)
-                    status[0]++;
-                else if(domination == 0)
-                    status[1]++;
-                else if(domination == -1)
-                    status[2]++;
-                else if(domination == 11)
-                    status[3] = 1;
-            }
-        }
-        else
         
-            for (index = 0; index < paretoFrontSize; index++) {
+        /**
+         * Note: With small size fronts B&B takes more time.
+         **/
+        #pragma omp parallel for if (paretoFrontSize >= 50) shared(status, solution) private(domination, index)
+        for (index = 0; index < paretoFrontSize; index++) {
             
                 domination = dominanceTest(solution, this->paretoFront.at(index));
             
@@ -404,9 +391,9 @@ unsigned int * BranchAndBound::getDominationStatus(Solution * solution){
 /**
  * Dominance test computes the domination relationship between two solutions.
  * returns
- * -1: solution A dominates solution B.
+ *  1: solution A dominates solution B.
  *  0: non-dominated solutions.
- *  1: solution B dominates solution A.
+ * -1: solution B dominates solution A.
  * 11: solution A and solution B are equals in all objectives.
  *
  *
@@ -469,6 +456,7 @@ unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
     }
     return totalNodes;
 }
+
 /**
  * This function prints the pareto front found.
  * If receives value of 0 or no parameters then the variables of the solution won't be printed.
