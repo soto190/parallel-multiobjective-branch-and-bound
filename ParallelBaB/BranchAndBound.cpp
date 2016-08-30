@@ -121,12 +121,12 @@ void BranchAndBound::start(){
             updated = this->updateLowerBound(this->currentSolution);
             this->totalUpdatesInLowerBound += updated;
     
-         /*   if (updated == 1) {
+            if (updated == 1) {
                 printf("[%6lu] ", this->paretoFront.size());
                 printCurrentSolution(1);
                 printf("+\n");
             }
-    */
+    
             int nextLevel = this->levelOfTree.back();
             this->problem->removeLastLevelEvaluation(this->currentSolution, nextLevel);
         }
@@ -279,12 +279,13 @@ int BranchAndBound::updateLowerBound(Solution * solution){
             }
             else if(domination == 0)
                 status[1]++;
-            else if(domination == -1)
+            else if(domination == -1){
                 status[2]++;
+                nSol = (int) this->paretoFront.size();
+            }
             else if(domination == 11)
                 status[3] = 1;
         }
-    
     
     /**
      * status[3] is to avoid to add solutions with the same objective values in the front, remove it if repeated objective values are requiered.
@@ -323,6 +324,7 @@ int BranchAndBound::updateLowerBound(Solution * solution){
  *  3- The solution is non-dominated by all the solutions in the front.
  *  4- Any solution in the front dominates dominates the solution.
  *  5- It is not repeated.
+ *  6- It is non-dominated.
  */
 int BranchAndBound::improvesTheLowerBound(Solution * solution){
     
@@ -368,7 +370,7 @@ unsigned int * BranchAndBound::getDominationStatus(Solution * solution){
         /**
          * Note: With small size fronts B&B takes more time.
          **/
-        #pragma omp parallel for if (paretoFrontSize >= 50) shared(status, solution) private(domination, index)
+        #pragma omp parallel for if (paretoFrontSize >= 100) shared(status, solution) private(domination, index)
         for (index = 0; index < paretoFrontSize; index++) {
             
                 domination = dominanceTest(solution, this->paretoFront.at(index));
@@ -389,13 +391,13 @@ unsigned int * BranchAndBound::getDominationStatus(Solution * solution){
 }
 
 /**
+ *
  * Dominance test computes the domination relationship between two solutions.
  * returns
  *  1: solution A dominates solution B.
  *  0: non-dominated solutions.
  * -1: solution B dominates solution A.
  * 11: solution A and solution B are equals in all objectives.
- *
  *
  **/
 int BranchAndBound::dominanceTest(Solution * solutionA, Solution * solutionB){
