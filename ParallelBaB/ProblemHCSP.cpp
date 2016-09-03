@@ -58,6 +58,15 @@ int ProblemHCSP::getUpperBound(int indexVar){
     return this->totalMappings - 1;
 }
 
+
+double ProblemHCSP::computeProcessingTime(int task, int machine, int config){
+   return this->processingTime[task][machine] / this->speed[config][machine];
+}
+
+double ProblemHCSP::computeEnergy(int task, int machine, int config, double proc_time){
+    return proc_time * this->voltage[config][machine] * this->voltage[config][machine];
+}
+
 double ProblemHCSP::evaluate(Solution * solution){
     
     int mapping = 0;
@@ -103,10 +112,10 @@ double ProblemHCSP::evaluatePartial(Solution * solution, int levelEvaluation){
     int machine = this->mappingConfig[mapping][0];
     int config = this->mappingConfig[mapping][1];
     
-    double proc_prime = this->processingTime[levelEvaluation][machine] / this->speed[config][machine];
+    double proc_prime = this->computeProcessingTime(levelEvaluation, machine, config);
     solution->execTime[machine] += proc_prime;
     
-    double energy = solution->getObjective(1) +  proc_prime * this->voltage[config][machine] * this->voltage[config][machine];
+    double energy = solution->getObjective(1) + this->computeEnergy(levelEvaluation, machine, config, proc_prime);
     
     for (machine = 0; machine < this->totalMachines; machine++)
         if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){
@@ -152,9 +161,9 @@ double ProblemHCSP::removeLastEvaluation(Solution * solution, int lastLevel, int
         machine = this->mappingConfig[mapping][0];
         config = this->mappingConfig[mapping][1];
         
-        proc_prime = this->processingTime[level][machine] / this->speed[config][machine];
+        proc_prime = this->computeProcessingTime(level, machine, config);
         solution->execTime[machine] -= proc_prime;
-        solution->objective[1] -= proc_prime * this->voltage[config][machine] * this->voltage[config][machine];
+        solution->objective[1] -= this->computeEnergy(level, machine, config, proc_prime);
         
         solution->setVariable(level, -1);
     }
@@ -183,10 +192,9 @@ double ProblemHCSP::removeLastLevelEvaluation(Solution * solution, int newLevel)
             machine = this->mappingConfig[mapping][0];
             config = this->mappingConfig[mapping][1];
             
-            proc_prime = this->processingTime[level][machine] / this->speed[config][machine];
+            proc_prime = this->computeProcessingTime(level, machine, config);
             solution->execTime[machine] -= proc_prime;
-            solution->objective[1] -= proc_prime * this->voltage[config][machine] * this->voltage[config][machine];
-            
+            solution->objective[1] -= this->computeEnergy(level, machine, config, proc_prime);
             solution->setVariable(level, -1);
         }
         

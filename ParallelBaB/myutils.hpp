@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <sstream>
 #include <vector>
+#include <cmath>
 
 
 using namespace std;
@@ -39,5 +40,10 @@ using namespace std;
 
 vector<string> &split(const string &s, char delim, vector<string> &elems);
 vector<string> split(const string &s, char delim);
+
+double roundToNearest(double value);
+double round_double(double value);
+
+
 
 #endif /* myutils_hpp */

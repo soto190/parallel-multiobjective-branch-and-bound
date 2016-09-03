@@ -61,6 +61,9 @@ public:
     void loadInstance(char* path[]);
     void readMachinesConfigurations(char* path);
     
+    double computeProcessingTime(int task, int machine, int config);
+    double computeEnergy(int task, int machine, int config, double proc_time);
+    
     void printInstance();
     void printProblemInfo();
     

@@ -16,6 +16,7 @@
 #include <chrono>
 #include "Problem.hpp"
 #include "Solution.hpp"
+#include "myutils.hpp"
 
 
 class BranchAndBound{

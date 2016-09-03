@@ -26,6 +26,14 @@ vector<string> split(const string &s, char delim) {
     
     return elems;
 }
+
+double roundToNearest(double num) {
+    return (num > 0.0) ? floor(num + 0.5) : ceil(num - 0.5);
+}
+
+double round_double(double value){
+    return round(value * 1000000) / 1000000;
+}
 //
 //  myutils.cpp
 //  PhDProject

@@ -213,27 +213,6 @@ void BranchAndBound::prune(Solution * solution, int currentLevel){
     this->problem->removeLastEvaluation(solution, currentLevel, nextExploration);
 }
 
-void BranchAndBound::printCurrentSolution(int withVariables){
-    
-    int indexVar = 0;
-    
-    for (indexVar = 0; indexVar < this->problem->getNumberOfObjectives(); indexVar++)
-        printf("%10.3f ", this->currentSolution->getObjective(indexVar));
-    
-    if (withVariables == 1) {
-        
-        printf(" | ");
-        
-        for (indexVar = 0; indexVar <= this->currentLevel; indexVar++)
-            printf("%3d ", this->currentSolution->getVariable(indexVar));
-        
-        for (indexVar = currentLevel + 1; indexVar < this->problem->getNumberOfVariables(); indexVar++)
-            printf("  - ");
-        
-        printf("|");
-    }
-}
-
 int BranchAndBound::aLeafHasBeenReached(){
     if (this->currentLevel == totalLevels)
         return 1;
@@ -459,6 +438,27 @@ unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
     return totalNodes;
 }
 
+void BranchAndBound::printCurrentSolution(int withVariables){
+    
+    int indexVar = 0;
+    
+    for (indexVar = 0; indexVar < this->problem->getNumberOfObjectives(); indexVar++)
+        printf("%20.16f ", this->currentSolution->getObjective(indexVar));
+    
+    if (withVariables == 1) {
+        
+        printf(" | ");
+        
+        for (indexVar = 0; indexVar <= this->currentLevel; indexVar++)
+            printf("%3d ", this->currentSolution->getVariable(indexVar));
+        
+        for (indexVar = currentLevel + 1; indexVar < this->problem->getNumberOfVariables(); indexVar++)
+            printf("  - ");
+        
+        printf("|");
+    }
+}
+
 /**
  * This function prints the pareto front found.
  * If receives value of 0 or no parameters then the variables of the solution won't be printed.
@@ -478,7 +478,7 @@ void BranchAndBound::printParetoFront(int withVariables){
     for (it = this->paretoFront.begin(); it != this->paretoFront.end(); it++) {
         printf("%6d", ++counterSolutions);
         for (indexVar = 0; indexVar < numberOfObjectives; indexVar++)
-            printf("%12.3f ", (*it)->getObjective(indexVar));
+            printf("%20.16f ", (*it)->getObjective(indexVar));
         
         if(printVariables == 1){
             printf("| ");
