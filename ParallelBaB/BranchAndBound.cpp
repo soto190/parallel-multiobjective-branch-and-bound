@@ -103,7 +103,7 @@ void BranchAndBound::start(){
         
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
-        
+
         if (aLeafHasBeenReached() == 0)
             if(improvesTheLowerBound(this->currentSolution) == 1)
                 this->branch(this->currentSolution, this->currentLevel);
@@ -412,8 +412,8 @@ int BranchAndBound::dominanceTest(Solution * solutionA, Solution * solutionB){
      * if (solAIsBetterIn > 0 and solBIsBetterIn > 0) break the FOR because the solutions are non-dominated.
      **/
     for (objective = 0; objective < this->problem->getNumberOfObjectives(); objective++) {
-        int objA = solutionA->getObjective(objective);
-        int objB = solutionB->getObjective(objective);
+        double objA = solutionA->getObjective(objective);
+        double objB = solutionB->getObjective(objective);
         
         if(objA < objB){
             solAIsBetterIn++;
