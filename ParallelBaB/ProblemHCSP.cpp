@@ -64,7 +64,7 @@ double ProblemHCSP::computeProcessingTime(int task, int machine, int config){
 }
 
 double ProblemHCSP::computeEnergy(int task, int machine, int config, double proc_time){
-    return proc_time * this->voltage[config][machine] * this->voltage[config][machine];
+    return proc_time * pow(this->voltage[config][machine], 2);
 }
 
 double ProblemHCSP::evaluate(Solution * solution){
@@ -128,6 +128,8 @@ double ProblemHCSP::evaluatePartial(Solution * solution, int levelEvaluation){
     return 0;
 }
 */
+
+
 double ProblemHCSP::evaluatePartial(Solution * solution, int levelEvaluation){
     
     int mapping = 0;
@@ -144,14 +146,13 @@ double ProblemHCSP::evaluatePartial(Solution * solution, int levelEvaluation){
         solution->execTime[i_machine] = 0;
     
     for (i_task = 0; i_task <= levelEvaluation; i_task++) {
-        mapping = solution->getVariable(0);
+        mapping = solution->getVariable(i_task);
         machine = this->mappingConfig[mapping][0];
         config = this->mappingConfig[mapping][1];
         
-        proc_prime = this->processingTime[i_task][machine] / this->speed[config][machine];
+        proc_prime = this->computeProcessingTime(i_task, machine, config);// this->processingTime[i_task][machine] / this->speed[config][machine];
         solution->execTime[machine] += proc_prime;
-        energy += proc_prime * this->voltage[config][machine] * this->voltage[config][machine];
-        
+        energy += this->computeEnergy(i_task, machine, config, proc_prime);
         if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){
             solution->machineWithMakespan = machine;
             makespan = solution->execTime[machine];
@@ -168,7 +169,6 @@ double ProblemHCSP::evaluateLastLevel(Solution * solution){
     /**
      * For this problem there is no special evaluation on the last level.
      **/
-    
     int machine = 0;
     for (machine = 0; machine < this->totalMachines; machine++)
         if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){
@@ -379,8 +379,9 @@ void ProblemHCSP::readMachinesConfigurations(char *filePath){
             if(voltageS.compare("----") != 0){
                 this->maxConfigIn[machine]++;
                 this->totalMappings++;
-                this->voltage[config][machine] = std::stof(voltageS);
-                this->speed[config][machine] = std::stof(speedS);;
+        
+                this->voltage[config][machine] = std::stod(voltageS);
+                this->speed[config][machine] = std::stod(speedS);
             }
         }
     }

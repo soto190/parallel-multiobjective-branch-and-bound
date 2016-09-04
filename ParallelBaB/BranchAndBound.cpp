@@ -105,7 +105,7 @@ void BranchAndBound::start(){
         
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
-       
+
         if (aLeafHasBeenReached() == 0)
             if(improvesTheLowerBound(this->currentSolution) == 1)
                 this->branch(this->currentSolution, this->currentLevel);
@@ -113,11 +113,12 @@ void BranchAndBound::start(){
                 /**
                  * The branch is pruned, no nodes are added to the stack, and the partial evaluation is reduced.
                  **/
-                //   this->prune(this->currentSolution, this->currentLevel);
+                this->prunedBranches++;
+                //this->prune(this->currentSolution, this->currentLevel);
             }
         else{
             
-            this->problem->evaluate(this->currentSolution);
+            this->problem->evaluatePartial(this->currentSolution, this->totalLevels);
             //this->problem->evaluateLastLevel(this->currentSolution);
             this->leaves++;
             
@@ -130,7 +131,7 @@ void BranchAndBound::start(){
                 printf("+\n");
             }
     
-            // int nextLevel = this->levelOfTree.back();
+            //int nextLevel = this->levelOfTree.back();
             //this->problem->removeLastLevelEvaluation(this->currentSolution, nextLevel);
         }
         
