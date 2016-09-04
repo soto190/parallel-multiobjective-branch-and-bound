@@ -169,6 +169,7 @@ double ProblemHCSP::evaluateLastLevel(Solution * solution){
     /**
      * For this problem there is no special evaluation on the last level.
      **/
+
     int machine = 0;
     for (machine = 0; machine < this->totalMachines; machine++)
         if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){

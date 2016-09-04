@@ -162,7 +162,7 @@ int BranchAndBound::explore(Solution * solution){
     this->exploredNodes++;
     
     int element = this->treeOnAStack.back();
-    this->currentLevel = this->levelOfTree.back();º
+    this->currentLevel = this->levelOfTree.back();
     
     this->treeOnAStack.pop_back();
     this->levelOfTree.pop_back();
