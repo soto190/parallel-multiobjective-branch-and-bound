@@ -548,7 +548,7 @@ int BranchAndBound::saveSummarize(){
            
             myfile << std::fixed << std::setw(6) << std::setfill(' ') << ++counterSolutions << " ";
  
-            for (nObj = 0; nObj < numberOfObjectives - 1; nObj++)
+            for (nObj = 0; nObj < numberOfObjectives; nObj++)
                 myfile << std::fixed << std::setw(26) << std::setprecision(16) << std::setfill(' ') << (*it)->getObjective(nObj) << " ";
             
             myfile << " | ";
