@@ -72,7 +72,11 @@ int main(int argc, const char * argv[]) {
     BranchAndBound BaB(problem);
     
     std::string outputFile = argv[4] + splited[0] + ".csv";
+    std::string summarizeFile = argv[4] + splited[0] + ".txt";
+    
     BaB.setParetoFrontFile(outputFile.c_str());
+    BaB.setSummarizeFile(summarizeFile.c_str());
+    
     BaB.start();
     
     return 0;

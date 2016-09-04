@@ -29,14 +29,14 @@ public:
      * The constructor should receives the parameters to start at some point of the tree.
      **/
     BranchAndBound();
-    BranchAndBound(Problem* problem);
+    BranchAndBound(Problem * problem);
     ~BranchAndBound();
     
     Problem* problem;
     /**
      * paretofFront needs to be a vector because omp works better with it.
      */
-    std::vector<Solution *> paretoFront;
+    std::vector<Solution * > paretoFront;
     Solution* currentSolution;
     
     std::vector<int> treeOnAStack;
@@ -58,6 +58,9 @@ public:
     unsigned long totalUpdatesInLowerBound;
     
     char * outputFile;
+    char * summarizeFile;
+    
+    double totalTime;
     
     void start();
     void initialize();
@@ -68,6 +71,8 @@ public:
     
     int setParetoFrontFile(const char * outputFile);
     int saveParetoFront();
+    int setSummarizeFile(const char * outputFile);
+    int saveSummarize();
     
 private:
     void printCurrentSolution(int withVariables = 0);

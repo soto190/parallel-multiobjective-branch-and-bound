@@ -26,11 +26,13 @@ BranchAndBound::BranchAndBound(Problem * problem){
     this->prunedBranches = 0;
     this->callsToBranch = 0;
     this->totalUpdatesInLowerBound = 0;
+    this->totalTime = 0;
 }
 
 BranchAndBound::~BranchAndBound(){
     
     delete [] this->outputFile;
+    delete [] this->summarizeFile;
     delete this->problem;
     
     Solution * pd;
@@ -124,13 +126,13 @@ void BranchAndBound::start(){
             
             updated = this->updateLowerBound(this->currentSolution);
             this->totalUpdatesInLowerBound += updated;
-    
+    /*
             if (updated == 1) {
                 printf("[%6lu] ", this->paretoFront.size());
                 printCurrentSolution(1);
                 printf("+\n");
             }
-    
+    */
             //int nextLevel = this->levelOfTree.back();
             //this->problem->removeLastLevelEvaluation(this->currentSolution, nextLevel);
         }
@@ -144,21 +146,12 @@ void BranchAndBound::start(){
     
     t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-    
+    this->totalTime = time_span.count();
+
     printf("The pareto front found is: \n");
     this->printParetoFront(1);
     this->saveParetoFront();
-    printf("---Summarize---\n");
-    printf("Pareto front size:   %ld\n", this->paretoFront.size());
-    printf("Total nodes:         %ld\n", this->totalNodes);
-    printf("Explored nodes:      %ld\n", this->exploredNodes);
-    printf("Eliminated nodes:    %ld\n", this->totalNodes - this->exploredNodes);
-    printf("Calls to branching:  %ld\n", this->callsToBranch);
-    printf("Created branches:    %ld\n", this->branches);
-    printf("Pruned branches:     %ld\n", this->prunedBranches);
-    printf("Leaves reached:      %ld\n", this->leaves);
-    printf("Leaves updated in PF:%ld\n", this->totalUpdatesInLowerBound);
-    printf("Total time:          %f\n", time_span.count());
+    this->saveSummarize();
 }
 
 /**
@@ -169,7 +162,7 @@ int BranchAndBound::explore(Solution * solution){
     this->exploredNodes++;
     
     int element = this->treeOnAStack.back();
-    this->currentLevel = this->levelOfTree.back();
+    this->currentLevel = this->levelOfTree.back();º
     
     this->treeOnAStack.pop_back();
     this->levelOfTree.pop_back();
@@ -500,6 +493,76 @@ int BranchAndBound::setParetoFrontFile(const char * outputFile){
   
     this->outputFile = new char[255];
     std::strcpy(this->outputFile, outputFile);
+    return 0;
+}
+
+int BranchAndBound::setSummarizeFile(const char * outputFile){
+    this->summarizeFile = new char[255];
+    std::strcpy(this->summarizeFile, outputFile);
+    return 0;
+}
+
+int BranchAndBound::saveSummarize(){
+    
+    printf("---Summarize---\n");
+    printf("Pareto front size:   %ld\n", this->paretoFront.size());
+    printf("Total nodes:         %ld\n", this->totalNodes);
+    printf("Explored nodes:      %ld\n", this->exploredNodes);
+    printf("Eliminated nodes:    %ld\n", this->totalNodes - this->exploredNodes);
+    printf("Calls to branching:  %ld\n", this->callsToBranch);
+    printf("Created branches:    %ld\n", this->branches);
+    printf("Pruned branches:     %ld\n", this->prunedBranches);
+    printf("Leaves reached:      %ld\n", this->leaves);
+    printf("Leaves updated in PF:%ld\n", this->totalUpdatesInLowerBound);
+    printf("Total time:          %f\n" , this->totalTime);
+    
+    std::ofstream myfile(this->summarizeFile);
+    if (myfile.is_open()){
+        printf("Saving in summarize in file...\n");
+        
+        myfile << "---Summarize---\n";
+        myfile << "Pareto front size:   " << this->paretoFront.size() << "\n";
+        myfile << "Total nodes:         " << this->totalNodes << "\n";
+        myfile << "Explored nodes:      " << this->exploredNodes << "\n";
+        myfile << "Eliminated nodes:    " << this->totalNodes - this->exploredNodes << "\n";
+        myfile << "Calls to branching:  " << this->callsToBranch << "\n";
+        myfile << "Created branches:    " << this->branches << "\n";
+        myfile << "Pruned branches:     " << this->prunedBranches << "\n";
+        myfile << "Leaves reached:      " << this->leaves << "\n";
+        myfile << "Leaves updated in PF:" << this->totalUpdatesInLowerBound << "\n";
+        myfile << "Total time:          " << this->totalTime << "\n";
+
+        myfile << "The pareto front found is: \n";
+        
+        int numberOfObjectives = this->problem->getNumberOfObjectives();
+        int numberOfVariables = this->problem->getNumberOfVariables();
+
+        int nObj = 0;
+        int nVar = 0;
+        
+        int counterSolutions = 0;
+
+        std::vector<Solution* >::iterator it;
+        
+        for (it = this->paretoFront.begin(); it != this->paretoFront.end(); it++) {
+           
+            myfile << std::fixed << std::setw(6) << std::setfill(' ') << ++counterSolutions << " ";
+ 
+            for (nObj = 0; nObj < numberOfObjectives - 1; nObj++)
+                myfile << std::fixed << std::setw(26) << std::setprecision(16) << std::setfill(' ') << (*it)->getObjective(nObj) << " ";
+            
+            myfile << " | ";
+            
+            for (nVar = 0; nVar < numberOfVariables; nVar++)
+                myfile << std::fixed << std::setw(4) << std::setfill(' ') << (*it)->getVariable(nVar) << " "; //printf("%3d ", (*it)->getVariable(nVar));
+            
+            myfile << " |\n";
+        }
+        
+        myfile.close();
+    }
+    else printf("Unable to open file...\n");
+    
     return 0;
 }
 
