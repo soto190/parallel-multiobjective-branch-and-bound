@@ -19,7 +19,9 @@
 
 /**
  * argv[1] = problem: TSP, HCSP, and VRP.
- * argv[2] = instances files.
+ * argv[2] = First input file of instance.
+ * argv[3] = Second input file of instance.
+ * argv[4] = output folder for Pareto front, the file name is given by the instance name.
  */
 
 int main(int argc, const char * argv[]) {
@@ -50,11 +52,27 @@ int main(int argc, const char * argv[]) {
     std::strcpy(files[1], argv[3]);
     
     
+    /**Experimental section**/
+    
+    std::vector<std::string> elemens;
+    std::vector<std::string> splited;
+    elemens = split(argv[2], '/');
+    
+    unsigned long int sizeOfElems = elemens.size();
+    splited = split(elemens[sizeOfElems - 1], '.' );
+    printf("Name: %s\n", splited[0].c_str());
+    
+    /**Ends experimental section***/
+    
     printf("Files:\n\t%s\n\t%s\n", files[0],  files[1]);
+    problem->setName(splited[0].c_str());
     problem->loadInstance(files);
     problem->printProblemInfo();
     
     BranchAndBound BaB(problem);
+    
+    std::string outputFile = argv[4] + splited[0] + ".csv";
+    BaB.setParetoFrontFile(outputFile.c_str());
     BaB.start();
     
     return 0;

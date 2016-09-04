@@ -10,6 +10,8 @@
 #define Problem_hpp
 
 #include <stdio.h>
+#include <iostream>
+#include <cstring>
 #include "Solution.hpp"
 
 //template <class TypeSolution>
@@ -41,7 +43,8 @@ public:
     
     virtual Solution* createSolution() = 0;
     
-    void setName(char* name);
+    void setName(const char* name);
+    char * getName();
     
     int getNumberOfVariables();
     int getNumberOfObjectives();

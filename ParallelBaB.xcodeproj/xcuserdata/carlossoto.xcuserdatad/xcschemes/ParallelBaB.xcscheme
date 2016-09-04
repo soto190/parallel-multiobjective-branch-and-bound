@@ -71,6 +71,10 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Liu_2_8_364.txt"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/SahB_3_6_76.txt"
             isEnabled = "NO">
          </CommandLineArgument>
@@ -84,6 +88,10 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Machines/Machines_3_7_.conf"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/carlossoto/Documents/workspace/Results/"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

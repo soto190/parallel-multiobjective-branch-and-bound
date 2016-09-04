@@ -14,6 +14,8 @@
 #include <vector>
 #include <math.h>
 #include <chrono>
+#include <fstream>
+#include <iomanip>
 #include "Problem.hpp"
 #include "Solution.hpp"
 #include "myutils.hpp"
@@ -55,12 +57,17 @@ public:
     
     unsigned long totalUpdatesInLowerBound;
     
+    char * outputFile;
+    
     void start();
     void initialize();
     int explore(Solution * solution);
     void branch(Solution * solution, int currentLevel);
     void prune(Solution * solution, int currentLevel);
     void printParetoFront(int withVariables = 0);
+    
+    int setParetoFrontFile(const char * outputFile);
+    int saveParetoFront();
     
 private:
     void printCurrentSolution(int withVariables = 0);

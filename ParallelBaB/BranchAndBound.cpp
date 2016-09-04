@@ -30,7 +30,8 @@ BranchAndBound::BranchAndBound(Problem * problem){
 
 BranchAndBound::~BranchAndBound(){
     
-    delete problem;
+    delete [] this->outputFile;
+    delete this->problem;
     
     Solution * pd;
     for(std::vector<Solution *>::iterator it = paretoFront.begin(); it != paretoFront.end(); ++it) {
@@ -38,7 +39,7 @@ BranchAndBound::~BranchAndBound(){
         delete pd;
     }
     
-    delete currentSolution;
+    delete this->currentSolution;
     
     this->paretoFront.clear();
     this->treeOnAStack.clear();
@@ -90,8 +91,9 @@ void BranchAndBound::start(){
     this->initialize();
     
     double timeUp = 0;
+    //double saveTime = 3600;
+    // double maxTime = 0;
     int updated = 0;
-    
     
     printf("Starting Branch and Bound...\n");
     printf("Total levels %d...\n", totalLevels);
@@ -103,19 +105,20 @@ void BranchAndBound::start(){
         
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
-
+       
         if (aLeafHasBeenReached() == 0)
             if(improvesTheLowerBound(this->currentSolution) == 1)
                 this->branch(this->currentSolution, this->currentLevel);
-            else
+            else{
                 /**
                  * The branch is pruned, no nodes are added to the stack, and the partial evaluation is reduced.
                  **/
-                this->prune(this->currentSolution, this->currentLevel);
-                
+                //   this->prune(this->currentSolution, this->currentLevel);
+            }
         else{
             
-            this->problem->evaluateLastLevel(this->currentSolution);
+            this->problem->evaluate(this->currentSolution);
+            //this->problem->evaluateLastLevel(this->currentSolution);
             this->leaves++;
             
             updated = this->updateLowerBound(this->currentSolution);
@@ -127,23 +130,25 @@ void BranchAndBound::start(){
                 printf("+\n");
             }
     
-            int nextLevel = this->levelOfTree.back();
-            this->problem->removeLastLevelEvaluation(this->currentSolution, nextLevel);
+            // int nextLevel = this->levelOfTree.back();
+            //this->problem->removeLastLevelEvaluation(this->currentSolution, nextLevel);
         }
         
-        //        std::chrono::seconds sec(maxTime);
-        //        if (time_span.count() > sec.count()) {
-        //            timeUp = 1;
-        //        }
+        /*std::chrono::seconds sec(maxTime);
+        if (time_span.count() > sec.count()) {
+         //timeUp = 1;
+        }
+         */
     }
     
     t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
     
-    
     printf("The pareto front found is: \n");
     this->printParetoFront(1);
+    this->saveParetoFront();
     printf("---Summarize---\n");
+    printf("Pareto front size:   %ld\n", this->paretoFront.size());
     printf("Total nodes:         %ld\n", this->totalNodes);
     printf("Explored nodes:      %ld\n", this->exploredNodes);
     printf("Eliminated nodes:    %ld\n", this->totalNodes - this->exploredNodes);
@@ -313,7 +318,7 @@ int BranchAndBound::improvesTheLowerBound(Solution * solution){
     int improves = 1;
     if (paretoFrontSize > 0) {
         
-        #pragma omp parallel for if (paretoFrontSize >= 50) shared(solution) private(domination, index)
+        //#pragma omp parallel for if (paretoFrontSize >= 50) shared(solution) private(domination, index)
         for (index = 0; index < paretoFrontSize; index++) {
             
             domination = dominanceTest(solution, this->paretoFront.at(index));
@@ -349,7 +354,7 @@ unsigned int * BranchAndBound::getDominationStatus(Solution * solution){
         /**
          * Note: With small size fronts B&B takes more time.
          **/
-        #pragma omp parallel for if (paretoFrontSize >= 100) shared(status, solution) private(domination, index)
+        //#pragma omp parallel for if (paretoFrontSize >= 100) shared(status, solution) private(domination, index)
         for (index = 0; index < paretoFrontSize; index++) {
             
                 domination = dominanceTest(solution, this->paretoFront.at(index));
@@ -443,7 +448,7 @@ void BranchAndBound::printCurrentSolution(int withVariables){
     int indexVar = 0;
     
     for (indexVar = 0; indexVar < this->problem->getNumberOfObjectives(); indexVar++)
-        printf("%20.16f ", this->currentSolution->getObjective(indexVar));
+        printf("%26.16f ", this->currentSolution->getObjective(indexVar));
     
     if (withVariables == 1) {
         
@@ -476,9 +481,9 @@ void BranchAndBound::printParetoFront(int withVariables){
     std::vector<Solution* >::iterator it;
     
     for (it = this->paretoFront.begin(); it != this->paretoFront.end(); it++) {
-        printf("%6d", ++counterSolutions);
+        printf("%6d ", ++counterSolutions);
         for (indexVar = 0; indexVar < numberOfObjectives; indexVar++)
-            printf("%20.16f ", (*it)->getObjective(indexVar));
+            printf("%26.16f ", (*it)->getObjective(indexVar));
         
         if(printVariables == 1){
             printf("| ");
@@ -488,4 +493,31 @@ void BranchAndBound::printParetoFront(int withVariables){
         }
         printf("|\n");
     }
+}
+
+int BranchAndBound::setParetoFrontFile(const char * outputFile){
+  
+    this->outputFile = new char[255];
+    std::strcpy(this->outputFile, outputFile);
+    return 0;
+}
+
+int BranchAndBound::saveParetoFront(){
+    std::ofstream myfile(this->outputFile);
+    if (myfile.is_open()){
+        printf("Saving in file...\n");
+        int numberOfObjectives = this->problem->getNumberOfObjectives();
+        int nObj = 0;
+        
+        std::vector<Solution* >::iterator it;
+        
+        for (it = this->paretoFront.begin(); it != this->paretoFront.end(); it++) {
+            for (nObj = 0; nObj < numberOfObjectives - 1; nObj++)
+                myfile << std::fixed << std::setw(26) << std::setprecision(16) << std::setfill(' ') << (*it)->getObjective(nObj) << ", ";
+            myfile << std::fixed << std::setw(26) << std::setprecision(16) << std::setfill(' ') << (*it)->getObjective(numberOfObjectives - 1) << "\n";
+        }
+        myfile.close();
+    }
+    else printf("Unable to open file...\n");
+    return 0;
 }

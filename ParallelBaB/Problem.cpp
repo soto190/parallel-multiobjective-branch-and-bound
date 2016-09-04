@@ -18,10 +18,16 @@ Problem::Problem(int totalObjectives, int totalVariables){
 Problem::~Problem(){
     delete [] this->lowerBound;
     delete [] this->upperBound;
+    delete [] this->name;
 }
 
-void Problem::setName(char* name){
-    this->name = name;
+void Problem::setName(const char* name){
+    this->name = new char[255];
+    std::strcpy(this->name, name);
+}
+
+char * Problem::getName(){
+    return this->name;
 }
 
 int Problem::getNumberOfObjectives(){
