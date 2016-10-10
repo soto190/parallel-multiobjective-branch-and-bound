@@ -15,6 +15,7 @@
 		211282601D639AB30038DBEE /* ProblemTSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 211282541D639AB30038DBEE /* ProblemTSP.cpp */; };
 		211282611D639AB30038DBEE /* ProblemVRP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 211282561D639AB30038DBEE /* ProblemVRP.cpp */; };
 		211282621D639AB30038DBEE /* Solution.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 211282581D639AB30038DBEE /* Solution.cpp */; };
+		217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -47,6 +48,8 @@
 		211282571D639AB30038DBEE /* ProblemVRP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ProblemVRP.hpp; sourceTree = "<group>"; };
 		211282581D639AB30038DBEE /* Solution.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Solution.cpp; sourceTree = "<group>"; };
 		211282591D639AB30038DBEE /* Solution.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Solution.hpp; sourceTree = "<group>"; };
+		217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GridContainer.cpp; sourceTree = "<group>"; };
+		217A2E8F1D944DBB00A4E9EA /* GridContainer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = GridContainer.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,7 +85,8 @@
 				2112824D1D639AB30038DBEE /* Makefile */,
 				2112824A1D639AB30038DBEE /* BranchAndBound.cpp */,
 				2112824B1D639AB30038DBEE /* BranchAndBound.hpp */,
-				2112824C1D639AB30038DBEE /* main.cpp */,
+				217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */,
+				217A2E8F1D944DBB00A4E9EA /* GridContainer.hpp */,
 				2112824E1D639AB30038DBEE /* myutils.cpp */,
 				2112824F1D639AB30038DBEE /* myutils.hpp */,
 				211282501D639AB30038DBEE /* Problem.cpp */,
@@ -95,6 +99,7 @@
 				211282571D639AB30038DBEE /* ProblemVRP.hpp */,
 				211282581D639AB30038DBEE /* Solution.cpp */,
 				211282591D639AB30038DBEE /* Solution.hpp */,
+				2112824C1D639AB30038DBEE /* main.cpp */,
 			);
 			path = ParallelBaB;
 			sourceTree = "<group>";
@@ -125,7 +130,7 @@
 		2112821F1D63988D0038DBEE /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "Carlos Soto";
 				TargetAttributes = {
 					211282261D63988E0038DBEE = {
@@ -155,6 +160,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */,
 				211282621D639AB30038DBEE /* Solution.cpp in Sources */,
 				211282611D639AB30038DBEE /* ProblemVRP.cpp in Sources */,
 				211282601D639AB30038DBEE /* ProblemTSP.cpp in Sources */,
@@ -183,8 +189,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";
@@ -227,8 +235,10 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_IDENTITY = "-";

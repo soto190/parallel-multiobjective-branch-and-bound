@@ -38,6 +38,12 @@ public:
     double * execTime;
     int machineWithMakespan;
     
+    /*overloading operators*/
+    void operator=(const Solution &solution);
+    void print();
+    void printObjectives();
+    void printVariables();
+    
 };
 
 #endif /* Solution_hpp */

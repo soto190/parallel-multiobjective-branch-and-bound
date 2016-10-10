@@ -79,3 +79,53 @@ int Solution::getVariable(int index){
 double Solution::getObjective(int index){
     return this->objective[index];
 }
+
+void Solution::operator=(const Solution &solution){
+    this->totalObjectives = solution.totalObjectives;
+    this->totalVariables = solution.totalVariables;
+    
+    this->objective = new double[solution.totalObjectives];
+    this->variable = new int[solution.totalVariables];
+    
+    int index = 0;
+    
+    for (index = 0; index < this->totalObjectives; index++)
+        this->objective[index] = solution.objective[index];
+    
+    for (index = 0; index < this->totalVariables; index++)
+        this->variable[index] = solution.variable[index];
+    
+    /**Section for the HCSP problem**/
+    this->execTime = new double[16];
+    for (index = 0; index < 16; index++)
+        this->execTime[index] = solution.execTime[index];
+}
+
+void Solution::print(){
+    int nObj, nVar;
+    for (nObj = 0; nObj < this->totalObjectives; nObj++)
+        printf("%f ", this->getObjective(nObj));
+    
+    printf("| ");
+        
+    for (nVar = 0; nVar < this->totalVariables; nVar++)
+            printf("%d ", this->getVariable(nVar));
+    
+    printf("|\n");
+}
+
+void Solution::printObjectives(){
+    int nObj;
+    for (nObj = 0; nObj < this->totalObjectives; nObj++)
+        printf("%f ", this->getObjective(nObj));
+    
+    printf("\n");
+}
+
+void Solution::printVariables(){
+    int nVar;
+    for (nVar = 0; nVar < this->totalVariables; nVar++)
+        printf("%d ", this->getVariable(nVar));
+    
+    printf("\n");
+}
