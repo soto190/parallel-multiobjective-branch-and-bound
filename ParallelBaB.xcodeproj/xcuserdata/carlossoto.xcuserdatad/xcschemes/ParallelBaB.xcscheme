@@ -80,6 +80,10 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Ahmad_3_9_28.txt "
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Demiroz_3_7_47.txt "
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

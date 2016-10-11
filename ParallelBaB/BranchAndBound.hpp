@@ -19,6 +19,7 @@
 #include "Problem.hpp"
 #include "Solution.hpp"
 #include "myutils.hpp"
+#include "GridContainer.hpp"
 
 
 class BranchAndBound{
@@ -34,8 +35,11 @@ public:
     
     Problem* problem;
     /**
-     * paretofFront needs to be a vector because omp works better with it.
+     * paretofFront needs to be a vector because omp works better with it or use the intel vector version.
      */
+    
+    HandlerContainer * paretoContainer;
+    
     std::vector<Solution * > paretoFront;
     Solution* currentSolution;
     
@@ -84,6 +88,10 @@ private:
     int updateLowerBound(Solution * solution);
     unsigned long computeTotalNodes(int totalVariables);
     long permut(int n, int i);
+    
+    /**Grid functions**/
+    int improvesTheGrid(Solution * solution);
+    int updateParetoGrid(Solution * solution);
     
 };
 

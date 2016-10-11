@@ -11,9 +11,13 @@
 template <class T> GridContainer<T>::GridContainer(){
 }
 
+HandlerContainer::HandlerContainer(){
+}
+
 HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double maxValY){
     totalElements = 0;
     grid = GridContainer<Solution * >(rows, cols);
+    gridState = new int[rows * cols];
     
     rangeinx = new double [rows];
     rangeiny = new double [cols];
@@ -32,13 +36,17 @@ HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double ma
     for (divs = 1; divs < rows; divs++)
         rangeiny[divs] = rangeiny[divs - 1] + ry;
     
+    int r = 0;
+    for (r = 0; r < rows * cols; r++){
+        gridState[r] = 0;
+    }
+    
 }
-/**
- NOTES TODO: Improve it by using a binary tree to search the bucket which will contain the new solution.
- **/
-int * HandlerContainer::add(Solution *solution){
-    int y = 0;
-    int x = 0;
+
+int * HandlerContainer::checkCoordinate(Solution *solution){
+
+    int x = grid.getCols() - 1;
+    int y = grid.getRows() - 1;
     
     int col = 0;
     int row = 0;
@@ -57,28 +65,74 @@ int * HandlerContainer::add(Solution *solution){
             row = grid.getRows();
         }
     
-    grid.set(solution, x, y);
-    this->totalElements++;
     
-    /**
-     Empty the dominated containers.
-     **/
-    
-    int nCol = 0;
-    int nRow = 0;
-    for (nRow = y + 1; nRow < this->grid.getRows(); nRow++)
-        for (nCol = x + 1; nCol < this->grid.getCols(); nCol++)
-            this->clearContainer(nRow, nCol);
-    
-
     coordinate[0] = x;
     coordinate[1] = y;
+
+    return coordinate;
+
+}
+
+void HandlerContainer::set(int x, int y, Solution *solution){
+
+    /**If the bucket is dominated then the element is not added**/
+    if(this->getStateOf(x, y) < 2){
+        grid.set(solution, x, y);
+        this->setStateOf(x, y, 1);
+        this->totalElements++;
+        
+        /**
+         Empty the dominated containers.
+         **/
+        
+        int nCol = 0;
+        int nRow = 0;
+        for (nRow = y + 1; nRow < this->grid.getRows(); nRow++)
+            for (nCol = x + 1; nCol < this->grid.getCols(); nCol++)
+                if(this->getStateOf(nCol, nRow) == 2) /** If a bucket is dominated the exploration continue to the next row**/
+                    nCol = this->grid.getCols();
+                else
+                    this->clearContainer(nCol, nRow);
+    }
+}
+
+/**
+ NOTES TODO: Improve it by using a binary tree to search the bucket which will contain the new solution.
+ **/
+int * HandlerContainer::add(Solution *solution){
+    int x = grid.getCols() - 1;
+    int y = grid.getRows() - 1;
+    
+    int col = 0;
+    int row = 0;
+    
+    int *coordinate = new int[2];
+    
+    for (col = 0; col < grid.getCols(); col++)
+        if(solution->getObjective(0) <= rangeinx[col]){
+            x = col;
+            col = grid.getCols();
+        }
+    
+    for (row = 0; row < grid.getRows(); row++)
+        if(solution->getObjective(1) <= rangeiny[row]){
+            y = row;
+            row = grid.getRows();
+        }
+    
+    coordinate[0] = x;
+    coordinate[1] = y;
+    
+    this->set(x, y, solution);
+    
+   
     
     return coordinate;
 }
 
 void HandlerContainer::clearContainer(int x, int y){
-    
+    this->setStateOf(x, y, 2);
+
     if (this->grid.getSizeOf(x, y) > 0){
         this->totalElements -= this->grid.getSizeOf(x, y);
         this->grid.get(x, y).clear();
@@ -108,11 +162,37 @@ unsigned long HandlerContainer::getSizeOf(int x, int y){
 void HandlerContainer::printGridSize(){
     int nCol = 0;
     int nRow = 0;
-    for (nRow = 0; nRow < this->grid.getRows(); nRow++){
+    for (nRow = this->grid.getRows() - 1; nRow >= 0 ; nRow--){
         printf("[%3d] ", nRow);
         for (nCol = 0; nCol < this->grid.getCols(); nCol++)
             printf("%3ld ", this->grid.getSizeOf(nRow, nCol));
         printf("\n");
     }
 }
+
+void HandlerContainer::printStates(){
+    int nCol = 0;
+    int nRow = 0;
+    for (nRow = this->grid.getRows() - 1; nRow >= 0 ; nRow--){
+        printf("[%3d] ", nRow);
+        for (nCol = 0; nCol < this->grid.getCols(); nCol++)
+            printf("%3d", this->getStateOf(nRow, nCol));
+        printf("\n");
+    }
+}
+
+/**
+ * There are three states in gridState:
+ * 0: No explored.
+ * 1: non-Dominated (Pareto front).
+ * 2: Dominated.
+ */
+int HandlerContainer::getStateOf(int x, int y){
+    return this->gridState[x * this->getCols() + y];
+}
+
+void HandlerContainer::setStateOf(int x, int y, int state){
+    this->gridState[x * this->getCols() + y] = state;
+}
+
 

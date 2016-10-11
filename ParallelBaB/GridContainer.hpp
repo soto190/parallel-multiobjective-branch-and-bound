@@ -30,12 +30,6 @@ public:
         cols = width;
         rows = height;
         m_Data.resize(cols * rows);
-      /*
-        int container = 0;
-        for (container = 0; container < cols * rows; container++) {
-            m_Data[container]->resize(255);
-        }
-        */
     }
     
     std::vector<T>& operator()(size_t x, size_t y){
@@ -74,11 +68,16 @@ class HandlerContainer{
     unsigned long totalElements;
     
     GridContainer<Solution *> grid;
+    int * gridState;
+    
 
 public:
-    
+    HandlerContainer();
     HandlerContainer(int width, int height, double maxValX, double maxValY);
     int * add(Solution * solution);
+    int * checkCoordinate(Solution * solution); /**NOTE TODO: Choose an appropiate name method.**/
+    void set(int x, int y, Solution * solution);
+    
     
     std::vector<Solution *>& get(int x, int y);
     void clearContainer(int x, int y);
@@ -86,8 +85,11 @@ public:
     unsigned int getCols();
     unsigned long getSize();
     unsigned long getSizeOf(int x, int y);
-    
+
+    int getStateOf(int x, int y);
+    void setStateOf(int x, int y, int state);
     void printGridSize();
+    void printStates();
 };
 
 #endif /* Grid_hpp */
