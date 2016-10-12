@@ -13,6 +13,7 @@
 #include <vector>
 #include <array>
 #include "Solution.hpp"
+#include "Dominance.hpp"
 
 
 
@@ -91,7 +92,6 @@ public:
     void printGridSize();
     void printStates();
     
-    int dominanceTest(Solution * solutionA, Solution * solutionB);
     int updateBucket(Solution * solution, int x, int y);
 };
 
