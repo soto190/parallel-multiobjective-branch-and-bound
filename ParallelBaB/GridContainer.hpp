@@ -76,7 +76,7 @@ public:
     HandlerContainer(int width, int height, double maxValX, double maxValY);
     int * add(Solution * solution);
     int * checkCoordinate(Solution * solution); /**NOTE TODO: Choose an appropiate name method.**/
-    void set(int x, int y, Solution * solution);
+    void set(Solution * solution, int x, int y);
     
     
     std::vector<Solution *>& get(int x, int y);
@@ -87,9 +87,12 @@ public:
     unsigned long getSizeOf(int x, int y);
 
     int getStateOf(int x, int y);
-    void setStateOf(int x, int y, int state);
+    void setStateOf(int state, int x, int y);
     void printGridSize();
     void printStates();
+    
+    int dominanceTest(Solution * solutionA, Solution * solutionB);
+    int updateBucket(Solution * solution, int x, int y);
 };
 
 #endif /* Grid_hpp */

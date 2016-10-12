@@ -92,6 +92,7 @@ private:
     /**Grid functions**/
     int improvesTheGrid(Solution * solution);
     int updateParetoGrid(Solution * solution);
+    int improvesTheBucket(Solution * solution, vector<Solution *> bucketFront);
     
 };
 

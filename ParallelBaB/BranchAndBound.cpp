@@ -161,6 +161,8 @@ void BranchAndBound::start(){
     this->printParetoFront(1);
     this->saveParetoFront();
     this->saveSummarize();
+    
+    printf("Total elements in grid: %ld\n", this->paretoContainer->getSize());
 }
 
 /**
@@ -241,9 +243,9 @@ int BranchAndBound::updateParetoGrid(Solution * solution){
     Solution toBucket = *solution;
     
     int * bucketCoord = paretoContainer->checkCoordinate(solution);
-    paretoContainer->set(bucketCoord[0], bucketCoord[1], &toBucket);
+    this->paretoContainer->set(&toBucket, bucketCoord[0], bucketCoord[1]);
     
-    if(paretoContainer->getStateOf(bucketCoord[0], bucketCoord[1]) == 1)
+    if(this->paretoContainer->getStateOf(bucketCoord[0], bucketCoord[1]) == 1)
         return 1;
     else
         return 0;
@@ -294,20 +296,13 @@ int BranchAndBound::updateLowerBound(Solution * solution){
     //if(status[0] > 0 || status[1] == this->paretoFront.size() || status[2] == 0){
     if((status[3] == 0) && (this->paretoFront.size() == 0 || status[0] > 0 || status[1] == this->paretoFront.size() || status[2] == 0)){
        
-        int index = 0;
         Solution * copyOfSolution;
         if (saveMemory == 1)
             copyOfSolution = new Solution(this->problem->getNumberOfObjectives(), 1);
         else
             copyOfSolution = new Solution(this->problem->getNumberOfObjectives(), this->problem->getNumberOfVariables());
         
-        for (index = 0; index < this->problem->getNumberOfObjectives(); index++)
-            copyOfSolution->setObjective(index, solution->getObjective(index));
-        
-        if (saveMemory == 0)
-            for (index = 0; index < this->problem->getNumberOfVariables(); index++)
-                copyOfSolution->setVariable(index, solution->getVariable(index));
-        
+
         this->paretoFront.push_back(copyOfSolution);
         
         delete[] status;
@@ -352,14 +347,41 @@ int BranchAndBound::improvesTheLowerBound(Solution * solution){
 int BranchAndBound::improvesTheGrid(Solution * solution){
     int * bucketCoordinate = paretoContainer->checkCoordinate(solution);
     
-    if(paretoContainer->getStateOf(bucketCoordinate[0], bucketCoordinate[1]) < 2)
-        return 1;
-    else
+    int stateOfBucket = this->paretoContainer->getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
+    
+    if(stateOfBucket == 2)
         return 0;
+    else if(stateOfBucket == 0)
+        return 1;
+    else{
+        vector<Solution *> bucketFront = this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]);
+        return this->improvesTheBucket(solution, bucketFront);
+    }
+}
+
+int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *> bucketFront){
+    
+    unsigned long paretoFrontSize = bucketFront.size();
+    int domination = 0;
+    unsigned long index = 0;
+    int improves = 1;
+    if (paretoFrontSize > 0) {
+        
+        for (index = 0; index < paretoFrontSize; index++) {
+            
+            domination = this->dominanceTest(solution, bucketFront.at(index));
+            if(domination == -1 || domination == 11 ){
+                improves = 0;
+                index = paretoFrontSize;
+            }
+        }
+    }
+    
+    return improves;
 }
 
 /**
- * Retunrs the domination Status with respect to Pareto front found. Status have four values:
+ * Return the domination Status with respect to Pareto front found. Status have four values:
  *  [0] -> The total solutions which are dominated by the current solution.
  *  [1] -> The total solutions which are no-dominated.
  *  [2] -> The total solutions which dominated the current solution.
