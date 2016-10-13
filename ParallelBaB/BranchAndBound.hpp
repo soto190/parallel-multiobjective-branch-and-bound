@@ -20,6 +20,7 @@
 #include "Solution.hpp"
 #include "myutils.hpp"
 #include "GridContainer.hpp"
+#include "Dominance.hpp"
 
 
 class BranchAndBound{
@@ -83,8 +84,6 @@ private:
     int aLeafHasBeenReached();
     int theTreeHasMoreBranches();
     int improvesTheLowerBound(Solution * solution);
-    unsigned int* getDominationStatus(Solution * solution);
-    int dominanceTest(Solution * solutionA, Solution * solutionB);
     int updateLowerBound(Solution * solution);
     unsigned long computeTotalNodes(int totalVariables);
     long permut(int n, int i);

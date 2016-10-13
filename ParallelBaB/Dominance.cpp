@@ -132,3 +132,9 @@ int updateFront(Solution * solution, std::vector<Solution *> paretoFront){
     delete [] status;
     return  0;
 }
+
+void extractParetoFront(std::vector<Solution *> front){
+    
+    
+    
+}

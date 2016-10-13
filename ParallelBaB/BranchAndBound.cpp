@@ -256,61 +256,7 @@ int BranchAndBound::updateParetoGrid(Solution * solution){
  * Adds the new solution to the Pareto front and removes the dominated solutions.
  */
 int BranchAndBound::updateLowerBound(Solution * solution){
-    
-    int saveMemory = 0;
-    
-    unsigned int * status = new unsigned int[4];
-    status[0] = 0;
-    status[1] = 0;
-    status[2] = 0;
-    status[3] = 0;
-    
-    std::vector<Solution *>::iterator begin = this->paretoFront.begin();
-    
-    unsigned int nSol = 0;
-    int domination = 0;
-    
-    if(this->paretoFront.size() > 0)
-        for(nSol = 0; nSol < this->paretoFront.size(); nSol++){
-            
-            domination = dominanceTest(solution, this->paretoFront.at(nSol));
-            
-            if(domination == 1){
-                this->paretoFront.erase(begin + nSol);
-                status[0]++;
-                nSol--;
-            }
-            else if(domination == 0)
-                status[1]++;
-            else if(domination == -1){
-                status[2]++;
-                nSol = (int) this->paretoFront.size();
-            }
-            else if(domination == 11)
-                status[3] = 1;
-        }
-    
-    /**
-     * status[3] is to avoid to add solutions with the same objective values in the front, remove it if repeated objective values are requiered.
-     */
-    //if(status[0] > 0 || status[1] == this->paretoFront.size() || status[2] == 0){
-    if((status[3] == 0) && (this->paretoFront.size() == 0 || status[0] > 0 || status[1] == this->paretoFront.size() || status[2] == 0)){
-       
-        Solution * copyOfSolution;
-        if (saveMemory == 1)
-            copyOfSolution = new Solution(this->problem->getNumberOfObjectives(), 1);
-        else
-            copyOfSolution = new Solution(this->problem->getNumberOfObjectives(), this->problem->getNumberOfVariables());
-        
-
-        this->paretoFront.push_back(copyOfSolution);
-        
-        delete[] status;
-        return 1;
-    }
-    
-    delete [] status;
-    return  0;
+    return updateFront(solution, this->paretoFront);
 }
 
 /**
@@ -333,7 +279,7 @@ int BranchAndBound::improvesTheLowerBound(Solution * solution){
         //#pragma omp parallel for if (paretoFrontSize >= 50) shared(solution) private(domination, index)
         for (index = 0; index < paretoFrontSize; index++) {
             
-            domination = dominanceTest(solution, this->paretoFront.at(index));
+            domination = dominanceOperator(solution, this->paretoFront.at(index));
             if(domination == -1 || domination == 11 ){
                 improves = 0;
                 index = paretoFrontSize;
@@ -369,7 +315,7 @@ int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *> buc
         
         for (index = 0; index < paretoFrontSize; index++) {
             
-            domination = this->dominanceTest(solution, bucketFront.at(index));
+            domination = dominanceOperator(solution, bucketFront.at(index));
             if(domination == -1 || domination == 11 ){
                 improves = 0;
                 index = paretoFrontSize;
@@ -378,95 +324,6 @@ int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *> buc
     }
     
     return improves;
-}
-
-/**
- * Return the domination Status with respect to Pareto front found. Status have four values:
- *  [0] -> The total solutions which are dominated by the current solution.
- *  [1] -> The total solutions which are no-dominated.
- *  [2] -> The total solutions which dominated the current solution.
- *  [3] -> 1 if the objective values from solution are in the pareto front.
- **/
-unsigned int * BranchAndBound::getDominationStatus(Solution * solution){
-    unsigned int * status = new unsigned int[4];
-    status[0] = 0;
-    status[1] = 0;
-    status[2] = 0;
-    status[3] = 0;
-    
-    unsigned long paretoFrontSize = this->paretoFront.size();
-    int domination = 0;
-    int index = 0;
-    if (paretoFrontSize > 0) {
-        
-        /**
-         * Note: With small size fronts B&B takes more time.
-         **/
-        //#pragma omp parallel for if (paretoFrontSize >= 100) shared(status, solution) private(domination, index)
-        for (index = 0; index < paretoFrontSize; index++) {
-            
-                domination = dominanceTest(solution, this->paretoFront.at(index));
-            
-                if(domination == 1)
-                    status[0]++;
-                else if(domination == 0)
-                    status[1]++;
-                else if(domination == -1)
-                    status[2]++;
-                else if(domination == 11)
-                    status[3] = 1;
-            }
-    }
-    else
-        status[0] = 1;
-    return status;
-}
-
-/**
- *
- * Dominance test computes the domination relationship between two solutions.
- * returns
- *  1: solution A dominates solution B.
- *  0: non-dominated solutions.
- * -1: solution B dominates solution A.
- * 11: solution A and solution B are equals in all objectives.
- *
- **/
-int BranchAndBound::dominanceTest(Solution * solutionA, Solution * solutionB){
-    
-    int objective = 0;
-    int solAIsBetterIn = 0;
-    int solBIsBetterIn = 0;
-    int equals = 1;
-    
-    /**
-     * For more objectives consider
-     * if (solAIsBetterIn > 0 and solBIsBetterIn > 0) break the FOR because the solutions are non-dominated.
-     **/
-    for (objective = 0; objective < this->problem->getNumberOfObjectives(); objective++) {
-        double objA = solutionA->getObjective(objective);
-        double objB = solutionB->getObjective(objective);
-        
-        if(objA < objB){
-            solAIsBetterIn++;
-            equals = 0;
-        }
-        else if(objB < objA){
-            solBIsBetterIn++;
-            equals = 0;
-        }
-    }
-    
-    if(equals == 1)
-        return 11;
-    else if (solAIsBetterIn > 0 && solBIsBetterIn == 0)
-        return 1;
-    else if (solBIsBetterIn > 0 && solAIsBetterIn == 0)
-        return -1;
-    else
-        return 0;
-    
-    return 190;
 }
 
 long BranchAndBound::permut(int n, int i) {

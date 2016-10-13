@@ -207,12 +207,15 @@ int HandlerContainer::updateBucket(Solution * solution, int x, int y){
     
     int updated = updateFront(solution, paretoFront);
     if(updated == 1){
+        /**Some solutions were removed **/
         if(paretoFront.size() < sizeBeforeUpdate){
             this->totalElements -= sizeBeforeUpdate - paretoFront.size() - 1;
             this->totalElements++;
         }
+        /** No solutions were removed and the new solution was added**/
         else if(paretoFront.size() == sizeBeforeUpdate + 1)
             this->totalElements++;
+        /**else the size doesnt change**/
     }
     return updated;
 }
