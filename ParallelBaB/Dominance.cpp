@@ -50,7 +50,7 @@ int dominanceOperator(Solution * solutionA, Solution * solutionB){
  *  [2] -> The total solutions which dominated the current solution.
  *  [3] -> 1 if the front contains a solution with the same objective values.
  **/
-unsigned int * dominationStatus(Solution * solution, std::vector<Solution *> front){
+unsigned int * dominationStatus(Solution * solution, std::vector<Solution *>& front){
     unsigned int * status = new unsigned int[4];
     status[0] = 0;
     status[1] = 0;
@@ -85,7 +85,7 @@ unsigned int * dominationStatus(Solution * solution, std::vector<Solution *> fro
     return status;
 }
 
-int updateFront(Solution * solution, std::vector<Solution *> paretoFront){
+int updateFront(Solution * solution, std::vector<Solution *>& paretoFront){
     unsigned int * status = new unsigned int[4];
     status[0] = 0;
     status[1] = 0;
@@ -94,7 +94,7 @@ int updateFront(Solution * solution, std::vector<Solution *> paretoFront){
     
     std::vector<Solution *>::iterator begin = paretoFront.begin();
     
-    unsigned int nSol = 0;
+    unsigned long nSol = 0;
     int domination = 0;
     
     for(nSol = 0; nSol < paretoFront.size(); nSol++){
@@ -110,7 +110,7 @@ int updateFront(Solution * solution, std::vector<Solution *> paretoFront){
             status[1]++;
         else if(domination == -1){
             status[2]++;
-            nSol = (int) paretoFront.size();
+            nSol = paretoFront.size();
         }
         else if(domination == 11)
             status[3] = 1;
@@ -122,7 +122,7 @@ int updateFront(Solution * solution, std::vector<Solution *> paretoFront){
     //if(status[0] > 0 || status[1] == this->paretoFront.size() || status[2] == 0){
     if((status[3] == 0) && (paretoFront.size() == 0 || status[0] > 0 || status[1] == paretoFront.size() || status[2] == 0)){
         
-        Solution * copyOfSolution = new Solution(solution->totalObjectives, solution->totalVariables);
+        Solution * copyOfSolution = new Solution(*solution);
         
         paretoFront.push_back(copyOfSolution);
         delete[] status;
@@ -135,6 +135,26 @@ int updateFront(Solution * solution, std::vector<Solution *> paretoFront){
 
 void extractParetoFront(std::vector<Solution *> front){
     
+    std::vector<Solution *>::iterator begin = front.begin();
     
+    unsigned long nextSol = 0;
+    unsigned long currentSol = 0;
+    int domination = 0;
     
+    for (currentSol = 0; currentSol < front.size() - 1; currentSol++) {
+        Solution * solution = front.at(currentSol);
+        for(nextSol = currentSol + 1; nextSol < front.size(); nextSol++){
+            
+            domination = dominanceOperator(solution, front.at(nextSol));
+            
+            if(domination == 1){
+                front.erase(begin + nextSol);
+                nextSol--;
+            }
+            else if(domination == -1 || domination == 11){
+                front.erase(begin + currentSol);
+                nextSol--;
+            }
+        }
+    }
 }

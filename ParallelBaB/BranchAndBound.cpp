@@ -113,7 +113,8 @@ void BranchAndBound::start(){
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
 
         if (aLeafHasBeenReached() == 0)
-            if(improvesTheGrid(this->currentSolution) == 1)//if(improvesTheLowerBound(this->currentSolution) == 1)
+            if(improvesTheGrid(this->currentSolution) == 1)
+            //if(improvesTheLowerBound(this->currentSolution) == 1)
                 this->branch(this->currentSolution, this->currentLevel);
             else{
                 /**
@@ -128,18 +129,16 @@ void BranchAndBound::start(){
             //this->problem->evaluateLastLevel(this->currentSolution);
             this->leaves++;
             
-            updated = this->updateParetoGrid(this->currentSolution);//this->updateLowerBound(this->currentSolution);
+            updated = this->updateParetoGrid(this->currentSolution);
+            //updated = this->updateLowerBound(this->currentSolution);
             this->totalUpdatesInLowerBound += updated;
-    
-            /*
+    /*
             if (updated == 1) {
                 printf("[%6lu] ", this->paretoFront.size());
                 printCurrentSolution(1);
                 printf("+\n");
-                paretoContainer->printStates();
-                paretoContainer->printGridSize();
-            }*/
-    
+            }
+    */
             //int nextLevel = this->levelOfTree.back();
             //this->problem->removeLastLevelEvaluation(this->currentSolution, nextLevel);
         }
@@ -150,9 +149,9 @@ void BranchAndBound::start(){
         }
          */
     }
+    
     paretoContainer->printStates();
     paretoContainer->printGridSize();
-    
     t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
     this->totalTime = time_span.count();
@@ -305,7 +304,7 @@ int BranchAndBound::improvesTheGrid(Solution * solution){
     }
 }
 
-int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *> bucketFront){
+int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *>& bucketFront){
     
     unsigned long paretoFrontSize = bucketFront.size();
     int domination = 0;
