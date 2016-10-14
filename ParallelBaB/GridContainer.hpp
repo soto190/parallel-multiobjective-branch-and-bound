@@ -80,6 +80,8 @@ class HandlerContainer{
     double maxinx;
     double maxiny;
     
+    
+    
     unsigned long totalElements;
     
     GridContainer<Solution *> grid;
@@ -87,6 +89,10 @@ class HandlerContainer{
     
 
 public:
+    unsigned long activeBuckets;
+    unsigned long unexploredBuckets;
+    unsigned long disabledBuckets;
+    
     HandlerContainer();
     ~HandlerContainer();
     HandlerContainer(int width, int height, double maxValX, double maxValY);

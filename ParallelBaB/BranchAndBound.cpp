@@ -18,7 +18,7 @@ BranchAndBound::BranchAndBound(Problem * problem){
     
     this->problem = problem;
     
-    this->paretoContainer = new HandlerContainer(50, 50, 100, 200);
+    this->paretoContainer = new HandlerContainer(30, 30, 100, 200);
 
     this->currentLevel = 0;
     this->totalLevels = 0;
@@ -162,7 +162,6 @@ void BranchAndBound::start(){
     this->saveParetoFront();
     this->saveSummarize();
     
-    printf("Total elements in grid: %ld\n", this->paretoContainer->getSize());
 }
 
 /**
@@ -425,6 +424,11 @@ int BranchAndBound::saveSummarize(){
     printf("Leaves reached:      %ld\n", this->leaves);
     printf("Leaves updated in PF:%ld\n", this->totalUpdatesInLowerBound);
     printf("Total time:          %f\n" , this->totalTime);
+    printf("Grid data:\n");
+    printf("\tactive buckets:    %ld\n", this->paretoContainer->activeBuckets);
+    printf("\tdisabled buckets:  %ld\n", this->paretoContainer->disabledBuckets);
+    printf("\tunexplored buckets:%ld\n", this->paretoContainer->unexploredBuckets);
+    printf("\ttotal elements in: %ld\n", this->paretoContainer->getSize());
     
     std::ofstream myfile(this->summarizeFile);
     if (myfile.is_open()){
@@ -441,6 +445,13 @@ int BranchAndBound::saveSummarize(){
         myfile << "Leaves reached:      " << this->leaves << "\n";
         myfile << "Leaves updated in PF:" << this->totalUpdatesInLowerBound << "\n";
         myfile << "Total time:          " << this->totalTime << "\n";
+        
+        myfile <<"Grid data:\n";
+        myfile <<"\tactive buckets:     " << this->paretoContainer->activeBuckets << "\n";
+        myfile <<"\tdisabled buckets:   " << this->paretoContainer->disabledBuckets << "\n";
+        myfile <<"\tunexplored buckets: " << this->paretoContainer->unexploredBuckets << "\n";
+        myfile <<"\ttotal elements in:  " << this->paretoContainer->getSize() << "\n";
+
 
         myfile << "The pareto front found is: \n";
         

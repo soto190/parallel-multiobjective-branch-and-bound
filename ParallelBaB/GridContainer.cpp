@@ -22,6 +22,10 @@ HandlerContainer::~HandlerContainer(){
 
 HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double maxValY){
     totalElements = 0;
+    unexploredBuckets = rows * cols;
+    activeBuckets = 0;
+    disabledBuckets = 0;
+    
     grid = GridContainer<Solution * >(rows, cols);
     gridState = new int[rows * cols];
     
@@ -100,6 +104,8 @@ int HandlerContainer::set(Solution * solution, int x, int y){
         this->grid.set(copyOfSolution, x, y);
         this->setStateOf(1, x, y);
         this->totalElements++;
+        this->activeBuckets++;
+        this->unexploredBuckets--;
         
         return 1;
 
@@ -148,6 +154,8 @@ void HandlerContainer::clearContainer(int x, int y){
 
     if (this->grid.getSizeOf(x, y) > 0){
         this->totalElements -= this->grid.getSizeOf(x, y);
+        this->disabledBuckets++;
+        this->activeBuckets--;
         this->grid.clear(x, y);
     }
 }
