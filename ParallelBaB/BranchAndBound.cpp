@@ -242,7 +242,9 @@ int BranchAndBound::updateParetoGrid(Solution * solution){
     
     
     int * bucketCoord = paretoContainer->checkCoordinate(solution);
-    return this->paretoContainer->set(solution, bucketCoord[0], bucketCoord[1]);
+    int updated =  this->paretoContainer->set(solution, bucketCoord[0], bucketCoord[1]);
+    delete [] bucketCoord;
+    return updated;
 }
 
 
@@ -288,15 +290,18 @@ int BranchAndBound::improvesTheGrid(Solution * solution){
     int * bucketCoordinate = paretoContainer->checkCoordinate(solution);
     
     int stateOfBucket = this->paretoContainer->getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
-    
+
+    int improveIt = 0;
     if(stateOfBucket == 2)
-        return 0;
+        improveIt = 0;
     else if(stateOfBucket == 0)
-        return 1;
+        improveIt = 1;
     else{
         vector<Solution *> bucketFront = this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]);
-        return this->improvesTheBucket(solution, bucketFront);
+         improveIt = this->improvesTheBucket(solution, bucketFront);
     }
+    delete bucketCoordinate;
+    return improveIt;
 }
 
 int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *>& bucketFront){
