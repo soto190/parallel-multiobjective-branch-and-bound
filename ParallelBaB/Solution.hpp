@@ -41,7 +41,7 @@ public:
     int dominates(const Solution &solution);
     
     /*overloading operators*/
-    void operator=(const Solution &solution);
+    Solution& operator=(const Solution &solution);
     void print();
     void printObjectives();
     void printVariables();

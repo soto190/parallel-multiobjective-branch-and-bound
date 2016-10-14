@@ -58,6 +58,14 @@ public:
     }
     
     void clear(size_t x, size_t y){
+        
+        Solution * pd;
+        for(std::vector<Solution *>::iterator it = m_Data[x * cols + y].begin(); it != m_Data[x * cols + y].end(); ++it) {
+            pd = * it;
+            delete pd;
+        }
+
+        
         m_Data[x * cols + y].clear();
         m_Data[x * cols + y].resize(1);
     }

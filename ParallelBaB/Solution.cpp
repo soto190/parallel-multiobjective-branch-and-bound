@@ -115,7 +115,7 @@ int Solution::dominates(const Solution & solution){
         return 0;
 }
 
-void Solution::operator=(const Solution &solution){
+Solution& Solution::operator=(const Solution &solution){
     this->totalObjectives = solution.totalObjectives;
     this->totalVariables = solution.totalVariables;
     
@@ -134,6 +134,8 @@ void Solution::operator=(const Solution &solution){
     this->execTime = new double[16];
     for (index = 0; index < 16; index++)
         this->execTime[index] = solution.execTime[index];
+    
+    return *this;
 }
 
 void Solution::print(){

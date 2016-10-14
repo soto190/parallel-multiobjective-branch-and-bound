@@ -113,8 +113,8 @@ void BranchAndBound::start(){
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
 
         if (aLeafHasBeenReached() == 0)
-//            if(improvesTheGrid(this->currentSolution) == 1)
-            if(improvesTheLowerBound(this->currentSolution) == 1)
+            if(improvesTheGrid(this->currentSolution) == 1)
+//            if(improvesTheLowerBound(this->currentSolution) == 1)
                 this->branch(this->currentSolution, this->currentLevel);
             else{
                 /**
@@ -129,8 +129,8 @@ void BranchAndBound::start(){
             //this->problem->evaluateLastLevel(this->currentSolution);
             this->leaves++;
             
-//            updated = this->updateParetoGrid(this->currentSolution);
-            updated = this->updateLowerBound(this->currentSolution);
+            updated = this->updateParetoGrid(this->currentSolution);
+//            updated = this->updateLowerBound(this->currentSolution);
             this->totalUpdatesInLowerBound += updated;
     /*
             if (updated == 1) {
@@ -150,7 +150,7 @@ void BranchAndBound::start(){
          */
     }
     
-//    this->paretoFront = paretoContainer->getParetoFront();
+    this->paretoFront = paretoContainer->getParetoFront();
     
     
     t2 = std::chrono::high_resolution_clock::now();
