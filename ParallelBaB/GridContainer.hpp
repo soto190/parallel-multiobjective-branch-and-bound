@@ -27,6 +27,7 @@ class GridContainer{
     
 public:
     GridContainer();
+
     GridContainer(int width, int height){
         cols = width;
         rows = height;
@@ -87,6 +88,7 @@ class HandlerContainer{
 
 public:
     HandlerContainer();
+    ~HandlerContainer();
     HandlerContainer(int width, int height, double maxValX, double maxValY);
     int * add(Solution * solution);
     int * checkCoordinate(Solution * solution); /**NOTE TODO: Choose an appropiate name method.**/

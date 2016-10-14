@@ -14,6 +14,12 @@ template <class T> GridContainer<T>::GridContainer(){
 HandlerContainer::HandlerContainer(){
 }
 
+HandlerContainer::~HandlerContainer(){
+    delete [] rangeinx;
+    delete [] rangeiny;
+    delete [] gridState;
+}
+
 HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double maxValY){
     totalElements = 0;
     grid = GridContainer<Solution * >(rows, cols);
@@ -51,7 +57,7 @@ int * HandlerContainer::checkCoordinate(Solution *solution){
     int col = 0;
     int row = 0;
     
-    int *coordinate = new int[2];
+    int * coordinate = new int[2];
     
     for (col = 0; col < grid.getCols(); col++)
         if(solution->getObjective(0) <= rangeinx[col]){
@@ -90,7 +96,8 @@ int HandlerContainer::set(Solution * solution, int x, int y){
                 else
                     this->clearContainer(nCol, nRow);
         
-        this->grid.set(new Solution(*solution), x, y);
+        Solution * copyOfSolution = new Solution(* solution);
+        this->grid.set(copyOfSolution, x, y);
         this->setStateOf(1, x, y);
         this->totalElements++;
         
@@ -114,7 +121,7 @@ int * HandlerContainer::add(Solution * solution){
     int col = 0;
     int row = 0;
     
-    int *coordinate = new int[2];
+    int * coordinate = new int[2];
     
     for (col = 0; col < grid.getCols(); col++)
         if(solution->getObjective(0) <= rangeinx[col]){

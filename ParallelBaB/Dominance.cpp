@@ -120,17 +120,17 @@ int updateFront(Solution * solution, std::vector<Solution *>& paretoFront){
      * status[3] is to avoid to add solutions with the same objective values in the front, remove it if repeated objective values are requiered.
      */
     //if(status[0] > 0 || status[1] == this->paretoFront.size() || status[2] == 0){
+    int wasAdded = 0;
     if((status[3] == 0) && (paretoFront.size() == 0 || status[0] > 0 || status[1] == paretoFront.size() || status[2] == 0)){
         
         Solution * copyOfSolution = new Solution(*solution);
         
         paretoFront.push_back(copyOfSolution);
-        delete[] status;
-        return 1;
+        wasAdded = 1;
     }
     
     delete [] status;
-    return  0;
+    return  wasAdded;
 }
 
 void extractParetoFront(std::vector<Solution *>& front){
