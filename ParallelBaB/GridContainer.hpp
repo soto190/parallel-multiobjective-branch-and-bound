@@ -80,8 +80,6 @@ class HandlerContainer{
     double maxinx;
     double maxiny;
     
-    
-    
     unsigned long totalElements;
     
     GridContainer<Solution *> grid;
