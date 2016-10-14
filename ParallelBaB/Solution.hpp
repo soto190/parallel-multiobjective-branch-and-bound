@@ -38,6 +38,8 @@ public:
     double * execTime;
     int machineWithMakespan;
     
+    int dominates(const Solution &solution);
+    
     /*overloading operators*/
     void operator=(const Solution &solution);
     void print();

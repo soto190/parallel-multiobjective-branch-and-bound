@@ -80,6 +80,41 @@ double Solution::getObjective(int index){
     return this->objective[index];
 }
 
+
+int Solution::dominates(const Solution & solution){
+    int nObj = 0;
+    int localSolIsBetterIn = 0;
+    int exterSolIsBetterIn = 0;
+    int equals = 1;
+    
+    /**
+     * For more objectives consider
+     * if (solAIsBetterIn > 0 and solBIsBetterIn > 0) break the FOR because the solutions are non-dominated.
+     **/
+    for (nObj = 0; nObj < this->totalObjectives; nObj++) {
+        double objA = this->getObjective(nObj);
+        double objB = solution.objective[nObj];
+        
+        if(objA < objB){
+            localSolIsBetterIn++;
+            equals = 0;
+        }
+        else if(objB < objA){
+            exterSolIsBetterIn++;
+            equals = 0;
+        }
+    }
+    
+    if(equals == 1)
+        return 11;
+    else if (localSolIsBetterIn > 0 && exterSolIsBetterIn == 0)
+        return 1;
+    else if (exterSolIsBetterIn > 0 && localSolIsBetterIn == 0)
+        return -1;
+    else
+        return 0;
+}
+
 void Solution::operator=(const Solution &solution){
     this->totalObjectives = solution.totalObjectives;
     this->totalVariables = solution.totalVariables;

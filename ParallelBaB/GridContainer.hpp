@@ -56,6 +56,11 @@ public:
     unsigned long getSizeOf(size_t x, size_t y){
         return m_Data[x * cols + y].size();
     }
+    
+    void clear(size_t x, size_t y){
+        m_Data[x * cols + y].clear();
+        m_Data[x * cols + y].resize(1);
+    }
 
 };
 
@@ -77,7 +82,7 @@ public:
     HandlerContainer(int width, int height, double maxValX, double maxValY);
     int * add(Solution * solution);
     int * checkCoordinate(Solution * solution); /**NOTE TODO: Choose an appropiate name method.**/
-    void set(Solution * solution, int x, int y);
+    int set(Solution * solution, int x, int y);
     
     
     std::vector<Solution *>& get(int x, int y);
@@ -93,6 +98,8 @@ public:
     void printStates();
     
     int updateBucket(Solution * solution, int x, int y);
+    
+    std::vector<Solution *> getParetoFront();
 };
 
 #endif /* Grid_hpp */

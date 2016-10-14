@@ -14,6 +14,7 @@
 #include "Solution.hpp"
 
 
+
 int dominanceOperator(Solution * solutionA, Solution * solutionB);
 unsigned int * dominationStatus(Solution * solution, std::vector<Solution *>& front);
 int updateFront(Solution * solution, std::vector<Solution * >& front);

@@ -133,7 +133,7 @@ int updateFront(Solution * solution, std::vector<Solution *>& paretoFront){
     return  0;
 }
 
-void extractParetoFront(std::vector<Solution *> front){
+void extractParetoFront(std::vector<Solution *>& front){
     
     std::vector<Solution *>::iterator begin = front.begin();
     
@@ -153,7 +153,8 @@ void extractParetoFront(std::vector<Solution *> front){
             }
             else if(domination == -1 || domination == 11){
                 front.erase(begin + currentSol);
-                nextSol--;
+                currentSol--;
+                nextSol = front.size();
             }
         }
     }

@@ -73,7 +73,7 @@ int * HandlerContainer::checkCoordinate(Solution *solution){
 
 }
 
-void HandlerContainer::set(Solution * solution, int x, int y){
+int HandlerContainer::set(Solution * solution, int x, int y){
 
     if(this->getStateOf(x, y) == 0){
         
@@ -90,17 +90,18 @@ void HandlerContainer::set(Solution * solution, int x, int y){
                 else
                     this->clearContainer(nCol, nRow);
         
-        this->grid.set(solution, x, y);
-        this->totalElements++;
+        this->grid.set(new Solution(*solution), x, y);
         this->setStateOf(1, x, y);
+        this->totalElements++;
+        
+        return 1;
 
     }
     else if(this->getStateOf(x, y) == 1)
-        this->updateBucket(solution, x, y);
+       return this->updateBucket(solution, x, y);
     
     /**If the bucket is dominated (State = 2) the element is not added.**/
-
-    
+    return 0;
 }
 
 /**
@@ -140,7 +141,7 @@ void HandlerContainer::clearContainer(int x, int y){
 
     if (this->grid.getSizeOf(x, y) > 0){
         this->totalElements -= this->grid.getSizeOf(x, y);
-        this->grid.get(x, y).clear();
+        this->grid.clear(x, y);
     }
 }
 
@@ -202,21 +203,47 @@ void HandlerContainer::setStateOf(int state, int x, int y){
 
 int HandlerContainer::updateBucket(Solution * solution, int x, int y){
     
-    std::vector<Solution *> paretoFront = grid.get(x, y);
-    unsigned long sizeBeforeUpdate = paretoFront.size();
+    std::vector<Solution *> * paretoFront = &grid.get(x, y);
+    unsigned long sizeBeforeUpdate = paretoFront->size();
     
-    int updated = updateFront(solution, paretoFront);
+    int updated = updateFront(solution, *paretoFront);
     if(updated == 1){
         /**Some solutions were removed **/
-        if(paretoFront.size() < sizeBeforeUpdate){
-            this->totalElements -= sizeBeforeUpdate - paretoFront.size() - 1;
+        if(paretoFront->size() < sizeBeforeUpdate){
+            unsigned long int removedElements = sizeBeforeUpdate - (paretoFront->size() - 1);
+            this->totalElements -= removedElements;
             this->totalElements++;
         }
         /** No solutions were removed and the new solution was added**/
-        else if(paretoFront.size() == sizeBeforeUpdate + 1)
+        else if(paretoFront->size() == sizeBeforeUpdate + 1)
             this->totalElements++;
         /**else the size doesnt change**/
     }
     return updated;
+}
+
+std::vector<Solution *> HandlerContainer::getParetoFront(){
+    
+    std::vector<Solution *> paretoFront;
+    paretoFront.reserve(this->totalElements);
+    
+    int bucketX = 0;
+    int bucketY = 0;
+    
+    for (bucketY = 0; bucketY < this->getRows(); bucketY++) {
+        for (bucketX = 0; bucketX < this->getCols(); bucketX++) {
+            int state = this->getStateOf(bucketX, bucketY);
+            if (state == 1) {
+                std::vector<Solution * > bucket = this->get(bucketX, bucketY);
+                paretoFront.insert(paretoFront.begin(), bucket.begin() , bucket.end());
+            }
+            else if (state == 2){
+                bucketX = this->getCols();
+            }
+        }
+    }
+    
+    extractParetoFront(paretoFront);
+    return paretoFront;
 }
 

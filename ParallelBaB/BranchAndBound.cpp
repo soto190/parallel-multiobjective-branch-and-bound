@@ -113,8 +113,8 @@ void BranchAndBound::start(){
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
 
         if (aLeafHasBeenReached() == 0)
-            if(improvesTheGrid(this->currentSolution) == 1)
-            //if(improvesTheLowerBound(this->currentSolution) == 1)
+//            if(improvesTheGrid(this->currentSolution) == 1)
+            if(improvesTheLowerBound(this->currentSolution) == 1)
                 this->branch(this->currentSolution, this->currentLevel);
             else{
                 /**
@@ -129,8 +129,8 @@ void BranchAndBound::start(){
             //this->problem->evaluateLastLevel(this->currentSolution);
             this->leaves++;
             
-            updated = this->updateParetoGrid(this->currentSolution);
-            //updated = this->updateLowerBound(this->currentSolution);
+//            updated = this->updateParetoGrid(this->currentSolution);
+            updated = this->updateLowerBound(this->currentSolution);
             this->totalUpdatesInLowerBound += updated;
     /*
             if (updated == 1) {
@@ -150,8 +150,9 @@ void BranchAndBound::start(){
          */
     }
     
-    paretoContainer->printStates();
-    paretoContainer->printGridSize();
+//    this->paretoFront = paretoContainer->getParetoFront();
+    
+    
     t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
     this->totalTime = time_span.count();
@@ -239,15 +240,9 @@ int BranchAndBound::theTreeHasMoreBranches(){
 
 int BranchAndBound::updateParetoGrid(Solution * solution){
     
-    Solution toBucket = *solution;
     
     int * bucketCoord = paretoContainer->checkCoordinate(solution);
-    this->paretoContainer->set(&toBucket, bucketCoord[0], bucketCoord[1]);
-    
-    if(this->paretoContainer->getStateOf(bucketCoord[0], bucketCoord[1]) == 1)
-        return 1;
-    else
-        return 0;
+    return this->paretoContainer->set(solution, bucketCoord[0], bucketCoord[1]);
 }
 
 
