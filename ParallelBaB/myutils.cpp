@@ -34,12 +34,28 @@ double roundToNearest(double num) {
 double round_double(double value){
     return round(value * 1000000) / 1000000;
 }
-//
-//  myutils.cpp
-//  PhDProject
-//
-//  Created by Carlos Soto on 28/06/16.
-//  Copyright © 2016 Carlos Soto. All rights reserved.
-//
 
-//#include "myutils.hpp"
+int binarySearch(double value, double * array, int size){
+    int low, high, mid;
+    
+    low = 0;
+    high = size - 1;
+    
+    if(value >= array[high])
+        return high;
+    
+    while (low <= high) {
+        mid = (low + high) / 2;
+        
+        if(array[mid] <= value && value < array[mid + 1]){
+            return mid;
+        }
+        else if(array[mid] > value){
+            high = mid - 1;
+        }else if(array[mid] < value){
+            low = mid + 1;
+        }
+    }
+    
+    return high;
+}

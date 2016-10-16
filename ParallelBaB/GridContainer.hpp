@@ -14,6 +14,7 @@
 #include <array>
 #include "Solution.hpp"
 #include "Dominance.hpp"
+#include "myutils.hpp"
 
 
 
@@ -23,7 +24,6 @@ class GridContainer{
     std::vector<std::vector<T>> m_Data;
     unsigned int cols;
     unsigned int rows;
-    
     
 public:
     GridContainer();
@@ -85,6 +85,8 @@ class HandlerContainer{
     GridContainer<Solution *> grid;
     int * gridState;
     
+    unsigned long debug_counter = 0;
+
 
 public:
     unsigned long activeBuckets;

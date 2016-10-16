@@ -239,7 +239,6 @@ int BranchAndBound::theTreeHasMoreBranches(){
 
 int BranchAndBound::updateParetoGrid(Solution * solution){
     
-    
     int * bucketCoord = paretoContainer->checkCoordinate(solution);
     int updated =  this->paretoContainer->set(solution, bucketCoord[0], bucketCoord[1]);
     delete [] bucketCoord;
@@ -425,10 +424,11 @@ int BranchAndBound::saveSummarize(){
     printf("Leaves updated in PF:%ld\n", this->totalUpdatesInLowerBound);
     printf("Total time:          %f\n" , this->totalTime);
     printf("Grid data:\n");
-    printf("\tactive buckets:    %ld\n", this->paretoContainer->activeBuckets);
-    printf("\tdisabled buckets:  %ld\n", this->paretoContainer->disabledBuckets);
-    printf("\tunexplored buckets:%ld\n", this->paretoContainer->unexploredBuckets);
-    printf("\ttotal elements in: %ld\n", this->paretoContainer->getSize());
+    printf("\tGrid dimension:    %d x %d\n", this->paretoContainer->getCols(), this->paretoContainer->getRows());
+    printf("\tActive buckets:    %ld\n", this->paretoContainer->activeBuckets);
+    printf("\tDisabled buckets:  %ld\n", this->paretoContainer->disabledBuckets);
+    printf("\tUnexplored buckets:%ld\n", this->paretoContainer->unexploredBuckets);
+    printf("\tTotal elements in: %ld\n", this->paretoContainer->getSize());
     
     std::ofstream myfile(this->summarizeFile);
     if (myfile.is_open()){
@@ -447,6 +447,8 @@ int BranchAndBound::saveSummarize(){
         myfile << "Total time:          " << this->totalTime << "\n";
         
         myfile <<"Grid data:\n";
+        myfile <<"\tgrid dimension:" << this->paretoContainer->getCols() << " x " << this->paretoContainer->getRows() << "\n";
+
         myfile <<"\tactive buckets:     " << this->paretoContainer->activeBuckets << "\n";
         myfile <<"\tdisabled buckets:   " << this->paretoContainer->disabledBuckets << "\n";
         myfile <<"\tunexplored buckets: " << this->paretoContainer->unexploredBuckets << "\n";

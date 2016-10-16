@@ -37,8 +37,8 @@ HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double ma
     double rx = maxValX / cols;
     double ry = maxValY / rows;
         
-    rangeinx[divs] = rx;
-    rangeiny[divs] = ry;
+    rangeinx[divs] = 0;
+    rangeiny[divs] = 0;
     
     for (divs = 1; divs < cols; divs++)
         rangeinx[divs] = rangeinx[divs - 1] + rx;
@@ -55,30 +55,11 @@ HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double ma
 
 int * HandlerContainer::checkCoordinate(Solution *solution){
 
-    int x = grid.getCols() - 1;
-    int y = grid.getRows() - 1;
-    
-    int col = 0;
-    int row = 0;
-    
     int * coordinate = new int[2];
     
-    for (col = 0; col < grid.getCols(); col++)
-        if(solution->getObjective(0) <= rangeinx[col]){
-            x = col;
-            col = grid.getCols();
-        }
+    coordinate[0] = binarySearch(solution->getObjective(0), this->rangeinx, this->getCols());
+    coordinate[1] = binarySearch(solution->getObjective(1), this->rangeiny, this->getRows());
     
-    for (row = 0; row < grid.getRows(); row++)
-        if(solution->getObjective(1) <= rangeiny[row]){
-            y = row;
-            row = grid.getRows();
-        }
-    
-    
-    coordinate[0] = x;
-    coordinate[1] = y;
-
     return coordinate;
 
 }
@@ -89,6 +70,7 @@ int HandlerContainer::set(Solution * solution, int x, int y){
         
         /**
          Empty the dominated containers.
+         Calls to this segment of code on worst case O((cols - 1) * (rows - 1))
          **/
         
         int nCol = 0;
@@ -121,31 +103,11 @@ int HandlerContainer::set(Solution * solution, int x, int y){
  NOTES TODO: Improve it by using a binary tree to search the bucket which will contain the new solution.
  **/
 int * HandlerContainer::add(Solution * solution){
-    int x = grid.getCols() - 1;
-    int y = grid.getRows() - 1;
+
+    int * coordinate = checkCoordinate(solution);
     
-    int col = 0;
-    int row = 0;
-    
-    int * coordinate = new int[2];
-    
-    for (col = 0; col < grid.getCols(); col++)
-        if(solution->getObjective(0) <= rangeinx[col]){
-            x = col;
-            col = grid.getCols();
-        }
-    
-    for (row = 0; row < grid.getRows(); row++)
-        if(solution->getObjective(1) <= rangeiny[row]){
-            y = row;
-            row = grid.getRows();
-        }
-    
-    coordinate[0] = x;
-    coordinate[1] = y;
-    
-    this->set(solution, x, y);
-    
+    this->set(solution, coordinate[0], coordinate[1]);
+
     return coordinate;
 }
 

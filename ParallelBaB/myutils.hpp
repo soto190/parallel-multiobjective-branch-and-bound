@@ -43,6 +43,8 @@ vector<string> split(const string &s, char delim);
 
 double roundToNearest(double value);
 double round_double(double value);
+int binarySearch(double value, double * vector, int size);
+
 
 
 
