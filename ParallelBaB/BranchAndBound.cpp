@@ -18,7 +18,7 @@ BranchAndBound::BranchAndBound(Problem * problem){
     
     this->problem = problem;
     
-    this->paretoContainer = new HandlerContainer(30, 30, 100, 200);
+    this->paretoContainer = new HandlerContainer();
 
     this->currentLevel = 0;
     this->totalLevels = 0;
@@ -66,6 +66,10 @@ void BranchAndBound::initialize(){
     int numberOfObjectives = this->problem->getNumberOfObjectives();
     int numberOfVariables = this->problem->getNumberOfVariables();
     this->currentSolution = new Solution(numberOfObjectives, numberOfVariables);
+    this->problem->evaluate(this->currentSolution);
+    
+    this->paretoContainer = new HandlerContainer(100, 100, this->currentSolution->getObjective(0), this->currentSolution->getObjective(1));
+
     
     this->currentLevel = this->problem->getStartingLevel();
     this->totalLevels = this->problem->getFinalLevel();
@@ -97,7 +101,7 @@ void BranchAndBound::start(){
     this->initialize();
     
     double timeUp = 0;
-    //double saveTime = 3600;
+    //double saveEvery = 3600;
     // double maxTime = 0;
     int updated = 0;
     
