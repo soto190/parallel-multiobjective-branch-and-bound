@@ -14,7 +14,12 @@ BranchAndBound::BranchAndBound(){
 }
 
 BranchAndBound::BranchAndBound(Problem * problem){
+    
+    
     this->problem = problem;
+    
+    this->paretoContainer = new HandlerContainer();
+
     this->currentLevel = 0;
     this->totalLevels = 0;
     this->totalNodes = 0;
@@ -50,7 +55,6 @@ BranchAndBound::~BranchAndBound(){
 
 void BranchAndBound::initialize(){
     
-    
     this->treeOnAStack.resize(1000);
     this->levelOfTree.resize(1000);
     this->paretoFront.resize(1000);
@@ -62,6 +66,10 @@ void BranchAndBound::initialize(){
     int numberOfObjectives = this->problem->getNumberOfObjectives();
     int numberOfVariables = this->problem->getNumberOfVariables();
     this->currentSolution = new Solution(numberOfObjectives, numberOfVariables);
+    this->problem->evaluate(this->currentSolution);
+    
+    this->paretoContainer = new HandlerContainer(100, 100, this->currentSolution->getObjective(0), this->currentSolution->getObjective(1));
+
     
     this->currentLevel = this->problem->getStartingLevel();
     this->totalLevels = this->problem->getFinalLevel();
@@ -93,7 +101,7 @@ void BranchAndBound::start(){
     this->initialize();
     
     double timeUp = 0;
-    //double saveTime = 3600;
+    //double saveEvery = 3600;
     // double maxTime = 0;
     int updated = 0;
     
@@ -109,7 +117,8 @@ void BranchAndBound::start(){
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
 
         if (aLeafHasBeenReached() == 0)
-            if(improvesTheLowerBound(this->currentSolution) == 1)
+            if(improvesTheGrid(this->currentSolution) == 1)
+//            if(improvesTheLowerBound(this->currentSolution) == 1)
                 this->branch(this->currentSolution, this->currentLevel);
             else{
                 /**
@@ -124,7 +133,8 @@ void BranchAndBound::start(){
             //this->problem->evaluateLastLevel(this->currentSolution);
             this->leaves++;
             
-            updated = this->updateLowerBound(this->currentSolution);
+            updated = this->updateParetoGrid(this->currentSolution);
+//            updated = this->updateLowerBound(this->currentSolution);
             this->totalUpdatesInLowerBound += updated;
     /*
             if (updated == 1) {
@@ -144,6 +154,9 @@ void BranchAndBound::start(){
          */
     }
     
+    this->paretoFront = paretoContainer->getParetoFront();
+    
+    
     t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
     this->totalTime = time_span.count();
@@ -152,6 +165,7 @@ void BranchAndBound::start(){
     this->printParetoFront(1);
     this->saveParetoFront();
     this->saveSummarize();
+    
 }
 
 /**
@@ -227,72 +241,20 @@ int BranchAndBound::theTreeHasMoreBranches(){
     return 1;
 }
 
+int BranchAndBound::updateParetoGrid(Solution * solution){
+    
+    int * bucketCoord = paretoContainer->checkCoordinate(solution);
+    int updated =  this->paretoContainer->set(solution, bucketCoord[0], bucketCoord[1]);
+    delete [] bucketCoord;
+    return updated;
+}
+
+
 /**
  * Adds the new solution to the Pareto front and removes the dominated solutions.
  */
 int BranchAndBound::updateLowerBound(Solution * solution){
-    
-    int saveMemory = 0;
-    
-    unsigned int * status = new unsigned int[4];
-    status[0] = 0;
-    status[1] = 0;
-    status[2] = 0;
-    status[3] = 0;
-    
-    std::vector<Solution *>::iterator begin = this->paretoFront.begin();
-    
-    unsigned int nSol = 0;
-    int domination = 0;
-    
-    if(this->paretoFront.size() > 0)
-        for(nSol = 0; nSol < this->paretoFront.size(); nSol++){
-            
-            domination = dominanceTest(solution, this->paretoFront.at(nSol));
-            
-            if(domination == 1){
-                this->paretoFront.erase(begin + nSol);
-                status[0]++;
-                nSol--;
-            }
-            else if(domination == 0)
-                status[1]++;
-            else if(domination == -1){
-                status[2]++;
-                nSol = (int) this->paretoFront.size();
-            }
-            else if(domination == 11)
-                status[3] = 1;
-        }
-    
-    /**
-     * status[3] is to avoid to add solutions with the same objective values in the front, remove it if repeated objective values are requiered.
-     */
-    //if(status[0] > 0 || status[1] == this->paretoFront.size() || status[2] == 0){
-    if((status[3] == 0) && (this->paretoFront.size() == 0 || status[0] > 0 || status[1] == this->paretoFront.size() || status[2] == 0)){
-       
-        int index = 0;
-        Solution * copyOfSolution;
-        if (saveMemory == 1)
-            copyOfSolution = new Solution(this->problem->getNumberOfObjectives(), 1);
-        else
-            copyOfSolution = new Solution(this->problem->getNumberOfObjectives(), this->problem->getNumberOfVariables());
-        
-        for (index = 0; index < this->problem->getNumberOfObjectives(); index++)
-            copyOfSolution->setObjective(index, solution->getObjective(index));
-        
-        if (saveMemory == 0)
-            for (index = 0; index < this->problem->getNumberOfVariables(); index++)
-                copyOfSolution->setVariable(index, solution->getVariable(index));
-        
-        this->paretoFront.push_back(copyOfSolution);
-        
-        delete[] status;
-        return 1;
-    }
-    
-    delete [] status;
-    return  0;
+    return updateFront(solution, this->paretoFront);
 }
 
 /**
@@ -315,7 +277,7 @@ int BranchAndBound::improvesTheLowerBound(Solution * solution){
         //#pragma omp parallel for if (paretoFrontSize >= 50) shared(solution) private(domination, index)
         for (index = 0; index < paretoFrontSize; index++) {
             
-            domination = dominanceTest(solution, this->paretoFront.at(index));
+            domination = dominanceOperator(solution, this->paretoFront.at(index));
             if(domination == -1 || domination == 11 ){
                 improves = 0;
                 index = paretoFrontSize;
@@ -326,93 +288,43 @@ int BranchAndBound::improvesTheLowerBound(Solution * solution){
     return improves;
 }
 
-/**
- * Retunrs the domination Status with respect to Pareto front found. Status have four values:
- *  [0] -> The total solutions which are dominated by the current solution.
- *  [1] -> The total solutions which are no-dominated.
- *  [2] -> The total solutions which dominated the current solution.
- *  [3] -> 1 if the objective values from solution are in the pareto front.
- **/
-unsigned int * BranchAndBound::getDominationStatus(Solution * solution){
-    unsigned int * status = new unsigned int[4];
-    status[0] = 0;
-    status[1] = 0;
-    status[2] = 0;
-    status[3] = 0;
+int BranchAndBound::improvesTheGrid(Solution * solution){
+    int * bucketCoordinate = paretoContainer->checkCoordinate(solution);
     
-    unsigned long paretoFrontSize = this->paretoFront.size();
-    int domination = 0;
-    int index = 0;
-    if (paretoFrontSize > 0) {
-        
-        /**
-         * Note: With small size fronts B&B takes more time.
-         **/
-        //#pragma omp parallel for if (paretoFrontSize >= 100) shared(status, solution) private(domination, index)
-        for (index = 0; index < paretoFrontSize; index++) {
-            
-                domination = dominanceTest(solution, this->paretoFront.at(index));
-            
-                if(domination == 1)
-                    status[0]++;
-                else if(domination == 0)
-                    status[1]++;
-                else if(domination == -1)
-                    status[2]++;
-                else if(domination == 11)
-                    status[3] = 1;
-            }
+    int stateOfBucket = this->paretoContainer->getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
+
+    int improveIt = 0;
+    if(stateOfBucket == 2)
+        improveIt = 0;
+    else if(stateOfBucket == 0)
+        improveIt = 1;
+    else{
+        vector<Solution *> bucketFront = this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]);
+         improveIt = this->improvesTheBucket(solution, bucketFront);
     }
-    else
-        status[0] = 1;
-    return status;
+    delete bucketCoordinate;
+    return improveIt;
 }
 
-/**
- *
- * Dominance test computes the domination relationship between two solutions.
- * returns
- *  1: solution A dominates solution B.
- *  0: non-dominated solutions.
- * -1: solution B dominates solution A.
- * 11: solution A and solution B are equals in all objectives.
- *
- **/
-int BranchAndBound::dominanceTest(Solution * solutionA, Solution * solutionB){
+int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *>& bucketFront){
     
-    int objective = 0;
-    int solAIsBetterIn = 0;
-    int solBIsBetterIn = 0;
-    int equals = 1;
-    
-    /**
-     * For more objectives consider
-     * if (solAIsBetterIn > 0 and solBIsBetterIn > 0) break the FOR because the solutions are non-dominated.
-     **/
-    for (objective = 0; objective < this->problem->getNumberOfObjectives(); objective++) {
-        double objA = solutionA->getObjective(objective);
-        double objB = solutionB->getObjective(objective);
+    unsigned long paretoFrontSize = bucketFront.size();
+    int domination = 0;
+    unsigned long index = 0;
+    int improves = 1;
+    if (paretoFrontSize > 0) {
         
-        if(objA < objB){
-            solAIsBetterIn++;
-            equals = 0;
-        }
-        else if(objB < objA){
-            solBIsBetterIn++;
-            equals = 0;
+        for (index = 0; index < paretoFrontSize; index++) {
+            
+            domination = dominanceOperator(solution, bucketFront.at(index));
+            if(domination == -1 || domination == 11 ){
+                improves = 0;
+                index = paretoFrontSize;
+            }
         }
     }
     
-    if(equals == 1)
-        return 11;
-    else if (solAIsBetterIn > 0 && solBIsBetterIn == 0)
-        return 1;
-    else if (solBIsBetterIn > 0 && solAIsBetterIn == 0)
-        return -1;
-    else
-        return 0;
-    
-    return 190;
+    return improves;
 }
 
 long BranchAndBound::permut(int n, int i) {
@@ -515,10 +427,16 @@ int BranchAndBound::saveSummarize(){
     printf("Leaves reached:      %ld\n", this->leaves);
     printf("Leaves updated in PF:%ld\n", this->totalUpdatesInLowerBound);
     printf("Total time:          %f\n" , this->totalTime);
+    printf("Grid data:\n");
+    printf("\tGrid dimension:    %d x %d\n", this->paretoContainer->getCols(), this->paretoContainer->getRows());
+    printf("\tActive buckets:    %ld\n", this->paretoContainer->activeBuckets);
+    printf("\tDisabled buckets:  %ld\n", this->paretoContainer->disabledBuckets);
+    printf("\tUnexplored buckets:%ld\n", this->paretoContainer->unexploredBuckets);
+    printf("\tTotal elements in: %ld\n", this->paretoContainer->getSize());
     
     std::ofstream myfile(this->summarizeFile);
     if (myfile.is_open()){
-        printf("Saving in summarize in file...\n");
+        printf("Saving summarize in file...\n");
         
         myfile << "---Summarize---\n";
         myfile << "Pareto front size:   " << this->paretoFront.size() << "\n";
@@ -531,6 +449,15 @@ int BranchAndBound::saveSummarize(){
         myfile << "Leaves reached:      " << this->leaves << "\n";
         myfile << "Leaves updated in PF:" << this->totalUpdatesInLowerBound << "\n";
         myfile << "Total time:          " << this->totalTime << "\n";
+        
+        myfile <<"Grid data:\n";
+        myfile <<"\tgrid dimension:" << this->paretoContainer->getCols() << " x " << this->paretoContainer->getRows() << "\n";
+
+        myfile <<"\tactive buckets:     " << this->paretoContainer->activeBuckets << "\n";
+        myfile <<"\tdisabled buckets:   " << this->paretoContainer->disabledBuckets << "\n";
+        myfile <<"\tunexplored buckets: " << this->paretoContainer->unexploredBuckets << "\n";
+        myfile <<"\ttotal elements in:  " << this->paretoContainer->getSize() << "\n";
+
 
         myfile << "The pareto front found is: \n";
         

@@ -15,6 +15,7 @@
 #include "ProblemVRP.hpp"
 #include "BranchAndBound.hpp"
 #include "myutils.hpp"
+#include "GridContainer.hpp"
 
 
 /**
