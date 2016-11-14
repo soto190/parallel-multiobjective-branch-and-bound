@@ -122,10 +122,7 @@ double ProblemTSP::evaluateLastLevel(Solution * solution){
     int first = solution->getVariable(0);
     
     double distance = solution->getObjective(0) + this->euclideanDistance[last][first];
-    double cost = solution->getObjective(1) + this->costs[last][first]  ;
-    
-    solution->setObjective(0, distance);
-    solution->setObjective(1, cost);
+    double cost = solution->getObjective(1) + this->costs[last][first];
     
     solution->setObjective(0, distance);
     solution->setObjective(1, cost);
@@ -197,6 +194,13 @@ Solution* ProblemTSP::createSolution(){
     return solution;
 }
 
+void ProblemTSP::createDefaultSolution(Solution *solution){
+    int city = 0;
+    for (city = 0; city < this->getUpperBound(0); city++)
+        solution->setVariable(city, city);
+    
+}
+
 void ProblemTSP::printInstance(){
     
     printf("Hello from Problem TSP!\n");
@@ -241,7 +245,7 @@ void ProblemTSP::loadInstance(char *filePath[]){
         
         /** The string "NODE_COORD_SECTION" is read with the carriage return "NODE_COORD_SECTION\r".
          The next line removes it.**/
-        //label = std::regex_replace(label, std::regex("(\r)"), "");
+        label = std::regex_replace(label, std::regex("(\r)"), "");
         //label.erase(label.size() - 1);
         
         /** Reads the total of cities. **/
@@ -259,7 +263,7 @@ void ProblemTSP::loadInstance(char *filePath[]){
         
         else if(label.compare("DIMENSION") == 0){
             printf("Dimension read...\n");
-            this->totalVariables = std::stoi(elemens.at(2).c_str());
+            this->setNumberOfVariables(std::stoi(elemens.at(2).c_str()));
         }
         
         else if(label.compare("EDGE_WEIGHT_TYPE") == 0){

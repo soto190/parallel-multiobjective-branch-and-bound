@@ -30,6 +30,10 @@ char * Problem::getName(){
     return this->name;
 }
 
+void Problem::setNumberOfVariables(int numberOfVariables){
+    this->totalVariables = numberOfVariables;
+}
+
 int Problem::getNumberOfObjectives(){
     return this->totalObjectives;
 }
@@ -61,6 +65,9 @@ double Problem::evaluate(Solution* solution){
 
 double Problem::evaluatePartial(Solution* solution, int levelEvaluation){
     return 0;
+}
+
+void Problem::createDefaultSolution(Solution *solution){
 }
 
 void Problem::printInstance(){

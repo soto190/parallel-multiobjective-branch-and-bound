@@ -64,6 +64,18 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "HCSP"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "TSP"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/carlossoto/Documents/workspace/Instances/TSP/ClusterA5.tsp"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/carlossoto/Documents/workspace/Instances/TSP/ClusterB5.tsp"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -84,7 +96,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Demiroz_3_7_47.txt "
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Demiroz_3_7_47.txt "
@@ -96,7 +108,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Machines/Machines_3_7_.conf"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/Documents/workspace/Results/"

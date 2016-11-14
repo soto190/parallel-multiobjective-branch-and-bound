@@ -66,6 +66,7 @@ void BranchAndBound::initialize(){
     int numberOfObjectives = this->problem->getNumberOfObjectives();
     int numberOfVariables = this->problem->getNumberOfVariables();
     this->currentSolution = new Solution(numberOfObjectives, numberOfVariables);
+    this->problem->createDefaultSolution(this->currentSolution);
     this->problem->evaluate(this->currentSolution);
     
     this->paretoContainer = new HandlerContainer(100, 100, this->currentSolution->getObjective(0), this->currentSolution->getObjective(1));
@@ -130,19 +131,20 @@ void BranchAndBound::start(){
         else{
             
             this->problem->evaluatePartial(this->currentSolution, this->totalLevels);
-            //this->problem->evaluateLastLevel(this->currentSolution);
+            this->problem->evaluateLastLevel(this->currentSolution);
             this->leaves++;
             
             updated = this->updateParetoGrid(this->currentSolution);
 //            updated = this->updateLowerBound(this->currentSolution);
             this->totalUpdatesInLowerBound += updated;
-    /*
+   
+            
             if (updated == 1) {
                 printf("[%6lu] ", this->paretoFront.size());
                 printCurrentSolution(1);
                 printf("+\n");
             }
-    */
+    
             //int nextLevel = this->levelOfTree.back();
             //this->problem->removeLastLevelEvaluation(this->currentSolution, nextLevel);
         }
@@ -153,9 +155,8 @@ void BranchAndBound::start(){
         }
          */
     }
-    
+
     this->paretoFront = paretoContainer->getParetoFront();
-    
     
     t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);

@@ -169,14 +169,14 @@ double ProblemHCSP::evaluateLastLevel(Solution * solution){
     /**
      * For this problem there is no special evaluation on the last level.
      **/
-
+/*
     int machine = 0;
     for (machine = 0; machine < this->totalMachines; machine++)
         if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){
             solution->machineWithMakespan = machine;
             solution->objective[0] = solution->execTime[machine];
         }
-
+*/
     return 0.0;
 }
 
@@ -248,6 +248,10 @@ double ProblemHCSP::removeLastLevelEvaluation(Solution * solution, int newLevel)
 Solution* ProblemHCSP::createSolution(){
     Solution* solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
     return solution;
+}
+
+void ProblemHCSP::createDefaultSolution(Solution *solution){
+
 }
 
 void ProblemHCSP::printInstance(){

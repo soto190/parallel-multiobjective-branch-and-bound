@@ -224,3 +224,11 @@ std::vector<Solution *> HandlerContainer::getParetoFront(){
     return paretoFront;
 }
 
+double HandlerContainer::getMaxIn(int dimension){
+    if(dimension == 0)
+        return this->maxinx;
+    else if(dimension == 1)
+        return this->maxiny;
+    else
+        return -1;
+}

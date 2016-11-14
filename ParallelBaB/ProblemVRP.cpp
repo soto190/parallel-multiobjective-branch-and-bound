@@ -34,6 +34,10 @@ Solution* ProblemVRP::createSolution(){
     return solution;
 }
 
+void ProblemVRP::createDefaultSolution(Solution *solution){
+
+}
+
 void ProblemVRP::printInstance(){
     printf("Hello from Problem VRP!\n");
 }

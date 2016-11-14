@@ -36,6 +36,7 @@ public:
     virtual double evaluateLastLevel(Solution * solution) = 0;
     virtual double removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel) = 0;
     virtual double removeLastLevelEvaluation(Solution * solution, int newLevel) = 0;
+    virtual void createDefaultSolution(Solution * solution);
     
     virtual int getType() = 0;
     virtual int getStartingLevel() = 0;
@@ -45,6 +46,8 @@ public:
     
     void setName(const char* name);
     char * getName();
+    
+    void setNumberOfVariables(int numberOfVariables);
     
     int getNumberOfVariables();
     int getNumberOfObjectives();

@@ -25,6 +25,8 @@ public:
     double removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel);
     double removeLastLevelEvaluation(Solution * solution, int newLevel);
     
+    void createDefaultSolution(Solution * solution);
+
     Solution* createSolution();
     
     int getLowerBound(int indexVar);

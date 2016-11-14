@@ -19,7 +19,7 @@
 
 
 /**
- * argv[1] = problem: TSP, HCSP, and VRP.
+ * argv[1] = problem: TSP, HCSP, VRP, and FJSSP.
  * argv[2] = First input file of instance.
  * argv[3] = Second input file of instance.
  * argv[4] = output folder for Pareto front, the file name is given by the instance name.

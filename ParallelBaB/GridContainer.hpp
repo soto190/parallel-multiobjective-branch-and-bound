@@ -16,8 +16,6 @@
 #include "Dominance.hpp"
 #include "myutils.hpp"
 
-
-
 template<class T>
 class GridContainer{
     
@@ -73,6 +71,63 @@ public:
 
 };
 
+template<class T>
+class GridContainer3D{
+    
+    std::vector<std::vector<T>> m_Data;
+    unsigned int cols;
+    unsigned int rows;
+    unsigned int deep;
+
+    
+public:
+    GridContainer3D();
+    
+    GridContainer3D(int width, int height, int depth){
+        cols = width;
+        rows = height;
+        deep = depth;
+        m_Data.resize(cols * rows * deep);
+    }
+    
+    std::vector<T>& operator()(size_t x, size_t y, size_t z){
+        return m_Data[(x * cols) + y + (cols * rows * z)];
+    }
+    
+    void set(T obj, size_t x, size_t y, size_t z){
+        m_Data[(x * cols) + y + (cols * rows * z)].push_back(obj);
+    }
+    
+    std::vector<T>& get(size_t x, size_t y, size_t z){
+        return m_Data[(x * cols) + y + (cols * rows * z)];
+    }
+    
+    int getCols(){
+        return this->cols;
+    }
+    
+    int getRows(){
+        return this->rows;
+    }
+    
+    unsigned long getSizeOf(size_t x, size_t y, size_t z){
+        return m_Data[(x * cols) + y + (cols * rows * z)].size();
+    }
+    
+    void clear(size_t x, size_t y, size_t z){
+        
+        Solution * pd;
+        for(std::vector<Solution *>::iterator it = m_Data[(x * cols) + y + (cols * rows * z)].begin(); it != m_Data[(x * cols) + y + (cols * rows * z)].end(); ++it) {
+            pd = * it;
+            delete pd;
+        }
+        
+        m_Data[(x * cols) + y + (cols * rows * z)].clear();
+        m_Data[(x * cols) + y + (cols * rows * z)].resize(1);
+    }
+    
+};
+
 class HandlerContainer{
 
     double * rangeinx;
@@ -114,6 +169,8 @@ public:
     void printStates();
     
     int updateBucket(Solution * solution, int x, int y);
+    
+    double getMaxIn(int dimension);
     
     std::vector<Solution *> getParetoFront();
 };
