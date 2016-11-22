@@ -45,7 +45,7 @@ public:
     
     int getLowerBound(int indexVar);
     int getUpperBound(int indexVar);
-    int getType();
+    ProblemType getType();
     int getStartingLevel();
     int getFinalLevel();
     

@@ -16,6 +16,8 @@
 #include "Dominance.hpp"
 #include "myutils.hpp"
 
+enum BucketState {unexplored = 0, nondominated = 1, dominated = 2};
+
 template<class T>
 class GridContainer{
     
@@ -130,7 +132,6 @@ public:
     }
 };
 
-enum BucketState {unexplored = 0, nondominated = 1, dominated = 2};
 
 class HandlerContainer{
 

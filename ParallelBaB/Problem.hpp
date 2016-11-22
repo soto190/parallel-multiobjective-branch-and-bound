@@ -16,6 +16,8 @@
 
 //template <class TypeSolution>
 
+enum ProblemType{combination = 0, permutation = 1, permutation_with_repetition_and_combination = 2, XD=190};
+
 class Problem{
 public:
     
@@ -38,7 +40,7 @@ public:
     virtual double removeLastLevelEvaluation(Solution * solution, int newLevel) = 0;
     virtual void createDefaultSolution(Solution * solution);
     
-    virtual int getType() = 0;
+    virtual ProblemType getType() = 0;
     virtual int getStartingLevel() = 0;
     virtual int getFinalLevel() = 0;
     

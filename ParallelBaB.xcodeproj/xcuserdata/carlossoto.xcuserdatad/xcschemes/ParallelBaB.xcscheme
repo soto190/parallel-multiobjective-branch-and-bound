@@ -79,6 +79,10 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "/Users/carlossoto/Documents/workspace/Instances/FJSSP/Kacem/Kacem-I1.txt"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "/Users/carlossoto/Documents/workspace/Instances/TSP/ClusterA15.tsp"
             isEnabled = "NO">
          </CommandLineArgument>

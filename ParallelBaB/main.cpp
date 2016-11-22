@@ -72,8 +72,8 @@ int main(int argc, const char * argv[]) {
     problem->loadInstance(files);
     problem->printProblemInfo();
     
-    
-    Solution * solution = new Solution(24, 2);
+    /* Eliminar despues
+    Solution * solution = new Solution(2, 24);
     
     solution->setVariable(0, 0);
     solution->setVariable(0 + 12, 3);
@@ -112,18 +112,22 @@ int main(int argc, const char * argv[]) {
     solution->setVariable(11 + 12, 1);
     
     
-    problem->evaluate(solution);
+    problem->evaluatePartial(solution, 5);
     
-    /*
-    BranchAndBound BaB(problem);
+    printf("%f %f\n", solution->getObjective(0), solution->getObjective(1));
+    */
     
+    /** Preparing output files: 
+     * - CSV: contains the Pareto front.
+     * - TXT: contains a log file.
+     **/
     std::string outputFile = argv[4] + splited[0] + ".csv";
     std::string summarizeFile = argv[4] + splited[0] + ".txt";
     
+    BranchAndBound BaB(problem);
     BaB.setParetoFrontFile(outputFile.c_str());
     BaB.setSummarizeFile(summarizeFile.c_str());
-    
     BaB.start();
-    */
+    
     return 0;
 }

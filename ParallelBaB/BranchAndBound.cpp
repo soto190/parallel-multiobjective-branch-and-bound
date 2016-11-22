@@ -195,7 +195,7 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
     int variable = 0;
     
     /**If permutation**/
-    if(problem->getType() == 0){
+    if(problem->getType() == ProblemType::permutation){
         int belongs = 0;
         int level = 0;
         int levelStarting = this->problem->getStartingLevel();
@@ -217,7 +217,7 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
     }
     
     /**If combination**/
-    if(problem->getType() == 1)
+    if(problem->getType() == ProblemType::combination)
         for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
             this->levelOfTree.push_back(currentLevel + 1);
             this->treeOnAStack.push_back(variable);
@@ -225,7 +225,7 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
         }
     
     /** If permutation and combination **/
-    if(problem->getType() == 2){
+    if(problem->getType() == ProblemType::permutation_with_repetition_and_combination){
         int belongs = 0;
         int level = 0;
         int levelStarting = this->problem->getStartingLevel();

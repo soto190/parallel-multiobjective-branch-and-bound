@@ -179,7 +179,7 @@ double ProblemFJSSP::evaluatePartial(Solution * solution, int levelEvaluation){
     
     solution->setObjective(0, makespan);
     solution->setObjective(1, maxWorkload);
-    
+
     return 0.0;
 }
 
@@ -209,8 +209,8 @@ int ProblemFJSSP::getUpperBound(int indexVar){
         return this->totalJobs;
 }
 
-int ProblemFJSSP::getType(){
-    return 2;
+ProblemType ProblemFJSSP::getType(){
+    return ProblemType::permutation_with_repetition_and_combination;
 }
 
 int ProblemFJSSP::getStartingLevel(){
@@ -379,11 +379,10 @@ double ProblemFJSSP::printSchedule(Solution * solution){
     solution->setObjective(0, makespan);
     solution->setObjective(1, maxWorkload);
     
-     for (operation = 0; operation < this->totalOperations; operation++) {
-     printf("%d: %d %d - %d \n", operation, solution->getVariable(operation + this->totalOperations), startingTime[operation], endingTime[operation]);
-     }
-     
-     printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
+    for (operation = 0; operation < this->totalOperations; operation++)
+        printf("%d: %d %d - %d \n", operation, solution->getVariable(operation + this->totalOperations), startingTime[operation], endingTime[operation]);
+    
+    printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
     
     return 0.0;
 }

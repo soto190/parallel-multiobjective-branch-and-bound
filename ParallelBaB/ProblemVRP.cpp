@@ -25,7 +25,7 @@ int ProblemVRP::getUpperBound(int indexVar){
     return 1;
 }
 
-int ProblemVRP::getType(){return 0;}
+ProblemType ProblemVRP::getType(){return ProblemType::combination;}
 int ProblemVRP::getStartingLevel(){return 0;}
 int ProblemVRP::getFinalLevel(){return 0;}
 

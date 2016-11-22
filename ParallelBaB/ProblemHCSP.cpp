@@ -38,8 +38,8 @@ ProblemHCSP::~ProblemHCSP(){
     delete[] maxConfigIn;
 }
 
-int ProblemHCSP::getType(){
-    return 1;
+ProblemType ProblemHCSP::getType(){
+    return ProblemType::combination;
 }
 
 int ProblemHCSP::getStartingLevel(){

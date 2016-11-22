@@ -27,8 +27,8 @@ ProblemTSP::~ProblemTSP(){
 }
 
 
-int ProblemTSP::getType(){
-    return 0;
+ProblemType ProblemTSP::getType(){
+    return ProblemType::permutation;
 }
 
 int ProblemTSP::getStartingLevel(){
