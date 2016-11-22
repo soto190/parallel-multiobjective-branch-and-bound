@@ -1,14 +1,15 @@
 //
-//  ProblemHCSP.hpp
-//  PhDProject
+//  ProblemFJSSP.hpp
+//  ParallelBaB
 //
-//  Created by Carlos Soto on 21/06/16.
+//  Created by Carlos Soto on 14/11/16.
 //  Copyright © 2016 Carlos Soto. All rights reserved.
 //
 
-#ifndef ProblemHCSP_hpp
-#define ProblemHCSP_hpp
+#ifndef ProblemFJSSP_hpp
+#define ProblemFJSSP_hpp
 
+#include <stdio.h>
 #include <stdio.h>
 #include <vector>
 #include <fstream>
@@ -20,16 +21,16 @@
 
 
 
-class ProblemHCSP: public Problem {
+class ProblemFJSSP: public Problem {
 public:
     
-    ProblemHCSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
-        this->totalTasks = 0;
+    ProblemFJSSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
+        this->totalJobs = 0;
+        this->totalOperations = 0;
         this->totalMachines = 0;
-        this->totalConfig = 0;
-        this->totalMappings = 0;
     };
-    ~ProblemHCSP();
+   
+    ~ProblemFJSSP();
     
     double evaluate(Solution * solution);
     double evaluatePartial(Solution * solution, int levelEvaluation);
@@ -44,31 +45,28 @@ public:
     int getType();
     int getStartingLevel();
     int getFinalLevel();
+    int * getElemensToRepeat();
     
     Solution* createSolution();
     
-    /**HCSP functions**/
+    /**FJSSP functions**/
     
-    int ** mappingConfig;
-    int * maxConfigIn;
-    double ** processingTime;
-    double ** voltage;
-    double ** speed;
     
-    int totalTasks;
+    int totalJobs;
+    int totalOperations;
     int totalMachines;
-    int totalConfig;
-    int totalMappings;
-    
+
+    int * operationsInJob;
+    int ** jobOperations;
+    int ** processingTime;
+
     void loadInstance(char* path[]);
-    void readMachinesConfigurations(char* path);
-    
-    double computeProcessingTime(int task, int machine, int config);
-    double computeEnergy(int task, int machine, int config, double proc_time);
-    
+
     void printInstance();
     void printProblemInfo();
+    double printSchedule(Solution * solution);
 
-    
+
 };
-#endif /* ProblemHCSP_hpp */
+
+#endif /* ProblemFJSSP_hpp */

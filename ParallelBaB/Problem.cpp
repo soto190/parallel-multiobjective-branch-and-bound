@@ -54,6 +54,10 @@ int Problem::getUpperBound(int index){
     return this->upperBound[index];
 }
 
+int * Problem::getElemensToRepeat(){
+    return nullptr;
+}
+
 Solution* Problem::createSolution(){
     Solution* solution = new Solution(this->totalObjectives, this->totalVariables);
     return solution;

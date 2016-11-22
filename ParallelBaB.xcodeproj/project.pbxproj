@@ -15,6 +15,7 @@
 		211282601D639AB30038DBEE /* ProblemTSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 211282541D639AB30038DBEE /* ProblemTSP.cpp */; };
 		211282611D639AB30038DBEE /* ProblemVRP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 211282561D639AB30038DBEE /* ProblemVRP.cpp */; };
 		211282621D639AB30038DBEE /* Solution.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 211282581D639AB30038DBEE /* Solution.cpp */; };
+		21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */; };
 		217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */; };
 		21F4CBA71DAE97CC004A308F /* Dominance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21F4CBA51DAE97CC004A308F /* Dominance.cpp */; };
 /* End PBXBuildFile section */
@@ -49,6 +50,8 @@
 		211282571D639AB30038DBEE /* ProblemVRP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ProblemVRP.hpp; sourceTree = "<group>"; };
 		211282581D639AB30038DBEE /* Solution.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Solution.cpp; sourceTree = "<group>"; };
 		211282591D639AB30038DBEE /* Solution.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Solution.hpp; sourceTree = "<group>"; };
+		21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProblemFJSSP.cpp; sourceTree = "<group>"; };
+		21780F1D1DD9B7D80032EECA /* ProblemFJSSP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ProblemFJSSP.hpp; sourceTree = "<group>"; };
 		217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GridContainer.cpp; sourceTree = "<group>"; };
 		217A2E8F1D944DBB00A4E9EA /* GridContainer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = GridContainer.hpp; sourceTree = "<group>"; };
 		21F4CBA51DAE97CC004A308F /* Dominance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Dominance.cpp; sourceTree = "<group>"; };
@@ -98,6 +101,8 @@
 				211282511D639AB30038DBEE /* Problem.hpp */,
 				211282521D639AB30038DBEE /* ProblemHCSP.cpp */,
 				211282531D639AB30038DBEE /* ProblemHCSP.hpp */,
+				21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */,
+				21780F1D1DD9B7D80032EECA /* ProblemFJSSP.hpp */,
 				211282541D639AB30038DBEE /* ProblemTSP.cpp */,
 				211282551D639AB30038DBEE /* ProblemTSP.hpp */,
 				211282561D639AB30038DBEE /* ProblemVRP.cpp */,
@@ -167,6 +172,7 @@
 			files = (
 				217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */,
 				211282621D639AB30038DBEE /* Solution.cpp in Sources */,
+				21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */,
 				211282611D639AB30038DBEE /* ProblemVRP.cpp in Sources */,
 				211282601D639AB30038DBEE /* ProblemTSP.cpp in Sources */,
 				2112825B1D639AB30038DBEE /* main.cpp in Sources */,

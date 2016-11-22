@@ -13,6 +13,7 @@
 #include "ProblemHCSP.hpp"
 #include "ProblemTSP.hpp"
 #include "ProblemVRP.hpp"
+#include "ProblemFJSSP.hpp"
 #include "BranchAndBound.hpp"
 #include "myutils.hpp"
 #include "GridContainer.hpp"
@@ -26,8 +27,6 @@
  */
 
 int main(int argc, const char * argv[]) {
-
-    std::cout << "Hello!\n";
     
     Problem * problem;
     
@@ -40,6 +39,9 @@ int main(int argc, const char * argv[]) {
     }else if(strcmp(argv[1], "VRP") == 0){
         printf("Problem: VRP\n");
         problem =  new ProblemVRP(2, 1);
+    }else if(strcmp(argv[1], "FJSSP") == 0){
+        printf("Problem: FJSSP\n");
+        problem =  new ProblemFJSSP(2, 1);
     }
     else{
         printf("Problem no found.\n");
@@ -70,6 +72,49 @@ int main(int argc, const char * argv[]) {
     problem->loadInstance(files);
     problem->printProblemInfo();
     
+    
+    Solution * solution = new Solution(24, 2);
+    
+    solution->setVariable(0, 0);
+    solution->setVariable(0 + 12, 3);
+    
+    solution->setVariable(1, 0);
+    solution->setVariable(1 + 12, 1);
+    
+    solution->setVariable(2, 0);
+    solution->setVariable(2 + 12, 3);
+    
+    solution->setVariable(3, 1);
+    solution->setVariable(3 + 12, 0);
+    
+    solution->setVariable(4, 1);
+    solution->setVariable(4 + 12, 4);
+    
+    solution->setVariable(5, 1);
+    solution->setVariable(5 + 12, 0);
+    
+    solution->setVariable(6, 2);
+    solution->setVariable(6 + 12, 2);
+    
+    solution->setVariable(7, 2);
+    solution->setVariable(7 + 12, 1);
+    
+    solution->setVariable(8, 2);
+    solution->setVariable(8 + 12, 3);
+    
+    solution->setVariable(9, 2);
+    solution->setVariable(9 + 12, 3);
+    
+    solution->setVariable(10, 3);
+    solution->setVariable(10 + 12, 0);
+    
+    solution->setVariable(11, 3);
+    solution->setVariable(11 + 12, 1);
+    
+    
+    problem->evaluate(solution);
+    
+    /*
     BranchAndBound BaB(problem);
     
     std::string outputFile = argv[4] + splited[0] + ".csv";
@@ -79,6 +124,6 @@ int main(int argc, const char * argv[]) {
     BaB.setSummarizeFile(summarizeFile.c_str());
     
     BaB.start();
-    
+    */
     return 0;
 }

@@ -67,6 +67,8 @@ public:
     
     double totalTime;
     
+    int * elemensToRepeat;
+    
     void start();
     void initialize();
     int explore(Solution * solution);

@@ -53,6 +53,8 @@ public:
     int getNumberOfObjectives();
     int getNumberOfConstraints();
     
+    int * getElemensToRepeat();
+    
     virtual int getLowerBound(int index) = 0;
     virtual int getUpperBound(int index) = 0;
     

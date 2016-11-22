@@ -67,16 +67,24 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "FJSSP"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "TSP"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/carlossoto/Documents/workspace/Instances/FJSSP/Kacem/Kacem-I1.txt"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/carlossoto/Documents/workspace/Instances/TSP/ClusterA5.tsp"
-            isEnabled = "YES">
+            argument = "/Users/carlossoto/Documents/workspace/Instances/TSP/ClusterA15.tsp"
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/carlossoto/Documents/workspace/Instances/TSP/ClusterB5.tsp"
-            isEnabled = "YES">
+            argument = "/Users/carlossoto/Documents/workspace/Instances/TSP/ClusterB15.tsp"
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Rahmani_3_7_0.txt"
@@ -116,6 +124,11 @@
          </CommandLineArgument>
       </CommandLineArguments>
       <AdditionalOptions>
+         <AdditionalOption
+            key = "NSZombieEnabled"
+            value = "YES"
+            isEnabled = "YES">
+         </AdditionalOption>
       </AdditionalOptions>
    </LaunchAction>
    <ProfileAction

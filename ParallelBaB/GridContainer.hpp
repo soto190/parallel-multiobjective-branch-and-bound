@@ -78,7 +78,6 @@ class GridContainer3D{
     unsigned int cols;
     unsigned int rows;
     unsigned int deep;
-
     
 public:
     GridContainer3D();
@@ -110,6 +109,10 @@ public:
         return this->rows;
     }
     
+    int getDepth(){
+        return this->deep;
+    }
+    
     unsigned long getSizeOf(size_t x, size_t y, size_t z){
         return m_Data[(x * cols) + y + (cols * rows * z)].size();
     }
@@ -125,8 +128,9 @@ public:
         m_Data[(x * cols) + y + (cols * rows * z)].clear();
         m_Data[(x * cols) + y + (cols * rows * z)].resize(1);
     }
-    
 };
+
+enum BucketState {unexplored = 0, nondominated = 1, dominated = 2};
 
 class HandlerContainer{
 
@@ -171,6 +175,63 @@ public:
     int updateBucket(Solution * solution, int x, int y);
     
     double getMaxIn(int dimension);
+    
+    std::vector<Solution *> getParetoFront();
+};
+
+class HandlerContainer3D{
+    
+    double * rangeinx;
+    double * rangeiny;
+    double * rangeinz;
+    double maxinx;
+    double maxiny;
+    double maxinz;
+
+    int * dimensionSize;
+    double * maxin;
+    
+    unsigned long totalElements;
+    
+    GridContainer3D<Solution *> grid;
+    BucketState * gridState;
+    
+    unsigned long debug_counter = 0;
+    
+    
+public:
+    unsigned long activeBuckets; /** It is equal to non-dominated buckets. **/
+    unsigned long unexploredBuckets;
+    unsigned long disabledBuckets; /** It is equal to domianted buckets. **/
+    
+    HandlerContainer3D();
+    ~HandlerContainer3D();
+    HandlerContainer3D(int width, int height, int depth, double maxValX, double maxValY, double maxValZ);
+    
+    int * add(Solution * solution);
+    int * checkCoordinate(Solution * solution); /**NOTE TODO: Choose an appropiate name method.**/
+    int set(Solution * solution, int x, int y, int z);
+    
+    
+    std::vector<Solution *>& get(int x, int y, int z);
+    void clearContainer(int x, int y, int z);
+    
+    unsigned int getRows();
+    unsigned int getCols();
+    unsigned int getDepth();
+    
+    unsigned long getSize();
+    unsigned long getSizeOf(int x, int y, int z);
+    
+    BucketState getStateOf(int x, int y, int z);
+    void setStateOf(BucketState state, int x, int y, int z);
+    void printGridSize();
+    void printStates();
+    
+    int updateBucket(Solution * solution, int x, int y, int z);
+    
+    double getMaxIn(int dimension);
+    unsigned int getDimensionSize(int dimension);
     
     std::vector<Solution *> getParetoFront();
 };

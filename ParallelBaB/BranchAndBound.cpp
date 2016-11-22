@@ -32,6 +32,8 @@ BranchAndBound::BranchAndBound(Problem * problem){
     this->callsToBranch = 0;
     this->totalUpdatesInLowerBound = 0;
     this->totalTime = 0;
+    
+    this->elemensToRepeat = problem->getElemensToRepeat();
 }
 
 BranchAndBound::~BranchAndBound(){
@@ -47,6 +49,7 @@ BranchAndBound::~BranchAndBound(){
     }
     
     delete this->currentSolution;
+    delete this->elemensToRepeat;
     
     this->paretoFront.clear();
     this->treeOnAStack.clear();
@@ -138,13 +141,13 @@ void BranchAndBound::start(){
 //            updated = this->updateLowerBound(this->currentSolution);
             this->totalUpdatesInLowerBound += updated;
    
-            
+       /*
             if (updated == 1) {
                 printf("[%6lu] ", this->paretoFront.size());
                 printCurrentSolution(1);
                 printf("+\n");
             }
-    
+    */
             //int nextLevel = this->levelOfTree.back();
             //this->problem->removeLastLevelEvaluation(this->currentSolution, nextLevel);
         }
@@ -212,6 +215,7 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
             }
         }
     }
+    
     /**If combination**/
     if(problem->getType() == 1)
         for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
@@ -219,6 +223,28 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
             this->treeOnAStack.push_back(variable);
             this->branches++;
         }
+    
+    /** If permutation and combination **/
+    if(problem->getType() == 2){
+        int belongs = 0;
+        int level = 0;
+        int levelStarting = this->problem->getStartingLevel();
+        
+        for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
+            belongs = 0;
+            for (level = levelStarting; level <= currentLevel && belongs == 0; level++)
+                if (solution->getVariable(level) == variable) {
+                    belongs = 1;
+                    level = currentLevel;
+                }
+            
+            if (belongs == 0) {
+                this->treeOnAStack.push_back(variable);
+                this->levelOfTree.push_back(currentLevel + 1);
+                this->branches++;
+            }
+        }
+    }
 }
 
 void BranchAndBound::prune(Solution * solution, int currentLevel){

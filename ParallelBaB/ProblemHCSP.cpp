@@ -258,6 +258,7 @@ void ProblemHCSP::printInstance(){
     
     printf("Hello from Problem Scheduling!\n");
 }
+
 void ProblemHCSP::printProblemInfo(){
     printf("Total tasks: %d\n", this->totalTasks);
     printf("Total machines: %d\n", this->totalMachines);
@@ -320,7 +321,8 @@ void ProblemHCSP::loadInstance(char *filePath[]){
         elemens = split(line, ':');
         splited = split(elemens.at(1), ',');
         for(machine = 0; machine < this->totalMachines; machine++)
-            this->processingTime[task][machine] = std::stof(splited.at(machine).c_str());
+            //this->processingTime[task][machine] = std::stof(splited.at(machine).c_str());
+            this->processingTime[task][machine] = std::stof(splited.at(machine));
     }
     
     elemens.clear();
