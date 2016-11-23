@@ -58,6 +58,13 @@ int ProblemHCSP::getUpperBound(int indexVar){
     return this->totalMappings - 1;
 }
 
+int ProblemHCSP::getTotalElements(){
+    return 0;
+}
+
+int * ProblemHCSP::getElemensToRepeat(){
+    return nullptr;
+}
 
 double ProblemHCSP::computeProcessingTime(int task, int machine, int config){
    return this->processingTime[task][machine] / this->speed[config][machine];

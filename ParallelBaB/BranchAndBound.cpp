@@ -33,7 +33,6 @@ BranchAndBound::BranchAndBound(Problem * problem){
     this->totalUpdatesInLowerBound = 0;
     this->totalTime = 0;
     
-    this->elemensToRepeat = problem->getElemensToRepeat();
 }
 
 BranchAndBound::~BranchAndBound(){
@@ -49,7 +48,6 @@ BranchAndBound::~BranchAndBound(){
     }
     
     delete this->currentSolution;
-    delete this->elemensToRepeat;
     
     this->paretoFront.clear();
     this->treeOnAStack.clear();
@@ -73,7 +71,10 @@ void BranchAndBound::initialize(){
     this->problem->evaluate(this->currentSolution);
     
     this->paretoContainer = new HandlerContainer(100, 100, this->currentSolution->getObjective(0), this->currentSolution->getObjective(1));
-
+    
+    printf("Ranges: %f %f \n", currentSolution->getObjective(0), currentSolution->getObjective(1));
+    
+    updateParetoGrid(this->currentSolution);
     
     this->currentLevel = this->problem->getStartingLevel();
     this->totalLevels = this->problem->getFinalLevel();
@@ -120,6 +121,9 @@ void BranchAndBound::start(){
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
 
+        printCurrentSolution(1);
+        printf("\n");
+        
         if (aLeafHasBeenReached() == 0)
             if(improvesTheGrid(this->currentSolution) == 1)
 //            if(improvesTheLowerBound(this->currentSolution) == 1)
@@ -141,13 +145,13 @@ void BranchAndBound::start(){
 //            updated = this->updateLowerBound(this->currentSolution);
             this->totalUpdatesInLowerBound += updated;
    
-       /*
+       
             if (updated == 1) {
                 printf("[%6lu] ", this->paretoFront.size());
                 printCurrentSolution(1);
                 printf("+\n");
             }
-    */
+    
             //int nextLevel = this->levelOfTree.back();
             //this->problem->removeLastLevelEvaluation(this->currentSolution, nextLevel);
         }
@@ -226,21 +230,31 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
     
     /** If permutation and combination **/
     if(problem->getType() == ProblemType::permutation_with_repetition_and_combination){
-        int belongs = 0;
-        int level = 0;
-        int levelStarting = this->problem->getStartingLevel();
+        if(currentLevel < this->problem->totalVariables / 2){
         
-        for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
-            belongs = 0;
-            for (level = levelStarting; level <= currentLevel && belongs == 0; level++)
-                if (solution->getVariable(level) == variable) {
-                    belongs = 1;
-                    level = currentLevel;
-                }
+            int belongs = 0;
+            int level = 0;
+            int levelStarting = this->problem->getStartingLevel();
             
-            if (belongs == 0) {
-                this->treeOnAStack.push_back(variable);
+            for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
+                belongs = 0;
+                for (level = levelStarting; level <= currentLevel && belongs == 0; level++)
+                    if (solution->getVariable(level) == variable) {
+                        belongs = 1;
+                        level = currentLevel;
+                    }
+                
+                if (belongs == 0) {
+                    this->treeOnAStack.push_back(variable);
+                    this->levelOfTree.push_back(currentLevel + 1);
+                    this->branches++;
+                }
+            }
+            
+        }else{ /**combination part**/
+            for (variable = this->problem->getUpperBound(variable); variable >= this->problem->getLowerBound(variable); variable--) {
                 this->levelOfTree.push_back(currentLevel + 1);
+                this->treeOnAStack.push_back(variable);
                 this->branches++;
             }
         }
@@ -271,7 +285,7 @@ int BranchAndBound::theTreeHasMoreBranches(){
 int BranchAndBound::updateParetoGrid(Solution * solution){
     
     int * bucketCoord = paretoContainer->checkCoordinate(solution);
-    int updated =  this->paretoContainer->set(solution, bucketCoord[0], bucketCoord[1]);
+    int updated = this->paretoContainer->set(solution, bucketCoord[0], bucketCoord[1]);
     delete [] bucketCoord;
     return updated;
 }

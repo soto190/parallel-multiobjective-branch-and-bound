@@ -35,10 +35,10 @@ int main(int argc, const char * argv[]) {
         problem = new ProblemTSP(2, 1);
     }else if(strcmp(argv[1], "HCSP") == 0){
         printf("Problem: HCSP\n");
-        problem =  new ProblemHCSP(2, 1);
+        problem = new ProblemHCSP(2, 1);
     }else if(strcmp(argv[1], "VRP") == 0){
         printf("Problem: VRP\n");
-        problem =  new ProblemVRP(2, 1);
+        problem = new ProblemVRP(2, 1);
     }else if(strcmp(argv[1], "FJSSP") == 0){
         printf("Problem: FJSSP\n");
         problem =  new ProblemFJSSP(2, 1);

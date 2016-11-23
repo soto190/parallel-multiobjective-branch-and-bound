@@ -35,6 +35,9 @@ public:
     int getStartingLevel();
     int getFinalLevel();
     
+    int * getElemensToRepeat();
+    int getTotalElements();
+    
     
     void printInstance();
     void printProblemInfo();

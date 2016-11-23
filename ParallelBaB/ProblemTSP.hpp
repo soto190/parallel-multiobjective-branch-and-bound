@@ -49,6 +49,9 @@ public:
     int getStartingLevel();
     int getFinalLevel();
     
+    int * getElemensToRepeat();
+    int getTotalElements();
+    
     
     /**TSP functions**/
     int** cityCoord;

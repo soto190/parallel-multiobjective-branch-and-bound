@@ -45,6 +45,9 @@ public:
     int getStartingLevel();
     int getFinalLevel();
     
+    int * getElemensToRepeat();
+    int getTotalElements();
+    
     Solution* createSolution();
     
     /**HCSP functions**/

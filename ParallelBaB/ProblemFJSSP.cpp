@@ -13,12 +13,13 @@ ProblemFJSSP::~ProblemFJSSP(){
     int job = 0;
     for(job = 0; job < this->totalJobs; job++){
         delete [] processingTime[job];
-        delete [] jobOperations[job];
+        delete [] operationInJobIsNumber[job];
     }
     
     delete [] processingTime;
-    delete [] operationsInJob;
-    delete [] jobOperations;
+    delete [] jobHasNoperations;
+    delete [] operationInJobIsNumber;
+    delete [] operationIsFromJob;
 
 }
 /**
@@ -31,13 +32,13 @@ double ProblemFJSSP::evaluate(Solution * solution){
     int maxWorkload = 0;
     int totalWorkload = 0;
     
-    int currentJob = 0;
+    int operationInPosition = 0;
+    int currentOperation = 0;
     int operation = 0;
     int job = 0;
     int machine = 0;
-    int numberOp = 0;
     
-    int operationOfJob [this->totalJobs];
+    int operationsOfJobDone [this->totalJobs];
     int startingTime [this->totalOperations];
     int endingTime [this->totalOperations];
     int timeInMachine [this->totalMachines];
@@ -49,44 +50,48 @@ double ProblemFJSSP::evaluate(Solution * solution){
     }
     
     for (job = 0; job < this->totalJobs; job++)
-        operationOfJob[job] = 0;
+        operationsOfJobDone[job] = 0;
     
     for (machine = 0; machine < this->totalMachines; machine++){
         timeInMachine[machine] = 0;
         workload[machine] = 0;
     }
     
-    for (currentJob = 0; currentJob < this->totalOperations; currentJob++) {
-        job = solution->getVariable(currentJob);
-        machine = solution->getVariable(currentJob + this->totalOperations);
-        numberOp = this->jobOperations[job][operationOfJob[job]];
+    for (operationInPosition = 0; operationInPosition < this->totalOperations; operationInPosition++) {
         
-        workload[machine] += this->processingTime[numberOp][machine];
-        totalWorkload += this->processingTime[numberOp][machine];
+        currentOperation = solution->getVariable(operationInPosition);
+        job = this->operationIsFromJob[currentOperation];
+        machine = solution->getVariable(operationInPosition + this->totalOperations);
         
-        if (operationOfJob[job] == 0) { /** If it is the first operation of the job.**/
+        operation = this->operationInJobIsNumber[job][operationsOfJobDone[job]];
+        
+        /** With the number of operation and the machine we can continue. **/
+        workload[machine] += this->processingTime[operation][machine];
+        totalWorkload += this->processingTime[operation][machine];
+        
+        if (operationsOfJobDone[job] == 0) { /** If it is the first operation of the job.**/
            
-            startingTime[numberOp] = timeInMachine[machine];
-            timeInMachine[machine] += this->processingTime[numberOp][machine];
-            endingTime[numberOp] = timeInMachine[machine];
+            startingTime[operation] = timeInMachine[machine];
+            timeInMachine[machine] += this->processingTime[operation][machine];
+            endingTime[operation] = timeInMachine[machine];
         
         }else{
-            if(endingTime[numberOp - 1] > timeInMachine[machine]){ /**The operation is waiting for their dependency operation.**/
+            if(endingTime[operation - 1] > timeInMachine[machine]){ /**The operation is waiting for their dependency operation.**/
                 
-                startingTime[numberOp] = endingTime[numberOp - 1];
-                timeInMachine[machine] = endingTime[numberOp - 1] + this->processingTime[numberOp][machine];
-                endingTime[numberOp] = timeInMachine[machine];
+                startingTime[operation] = endingTime[operation - 1];
+                timeInMachine[machine] = endingTime[operation - 1] + this->processingTime[operation][machine];
+                endingTime[operation] = timeInMachine[machine];
                 
             }else{ /**The operation starts when the machine is avaliable.**/
                 
-                startingTime[numberOp] = timeInMachine[machine];
-                timeInMachine[machine] += this->processingTime[numberOp][machine];
-                endingTime[numberOp] = timeInMachine[machine];
+                startingTime[operation] = timeInMachine[machine];
+                timeInMachine[machine] += this->processingTime[operation][machine];
+                endingTime[operation] = timeInMachine[machine];
             
             }
         }
         
-        operationOfJob[job]++;
+        operationsOfJobDone[job]++;
         
         if (timeInMachine[machine] > makespan)
             makespan = timeInMachine[machine];
@@ -98,22 +103,17 @@ double ProblemFJSSP::evaluate(Solution * solution){
     solution->setObjective(0, makespan);
     solution->setObjective(1, maxWorkload);
     
-   /**
-    for (operation = 0; operation < this->totalOperations; operation++) {
-        printf("%d: %d %d - %d \n", operation, solution->getVariable(operation + this->totalOperations), startingTime[operation], endingTime[operation]);
-    }
-    
-    printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
-    **/
     return 0.0;
 }
 
 double ProblemFJSSP::evaluatePartial(Solution * solution, int levelEvaluation){
+   
     int makespan = 0;
     int maxWorkload = 0;
     int totalWorkload = 0;
     
-    int currentJob = 0;
+    int operationInPosition = 0;
+    int currentOperation = 0;
     int operation = 0;
     int job = 0;
     int machine = 0;
@@ -138,11 +138,15 @@ double ProblemFJSSP::evaluatePartial(Solution * solution, int levelEvaluation){
         workload[machine] = 0;
     }
     
-    for (currentJob = 0; currentJob < levelEvaluation; currentJob++) {
-        job = solution->getVariable(currentJob);
-        machine = solution->getVariable(currentJob + this->totalOperations);
-        numberOp = this->jobOperations[job][operationOfJob[job]];
+    for (operationInPosition = 0; operationInPosition <= levelEvaluation; operationInPosition++) {
         
+        currentOperation = solution->getVariable(operationInPosition);
+        job = this->operationIsFromJob[currentOperation];
+        machine = solution->getVariable(operationInPosition + this->totalOperations);
+        
+        numberOp = this->operationInJobIsNumber[job][operationOfJob[job]];
+        
+        /** With the number of operation and the machine we can continue. **/
         workload[machine] += this->processingTime[numberOp][machine];
         totalWorkload += this->processingTime[numberOp][machine];
         
@@ -179,7 +183,7 @@ double ProblemFJSSP::evaluatePartial(Solution * solution, int levelEvaluation){
     
     solution->setObjective(0, makespan);
     solution->setObjective(1, maxWorkload);
-
+    
     return 0.0;
 }
 
@@ -196,17 +200,45 @@ double ProblemFJSSP::removeLastLevelEvaluation(Solution * solution, int newLevel
 }
 
 void ProblemFJSSP::createDefaultSolution(Solution * solution){
+    
+    //int job = 0;
+    int operation = 0;
+    int machine = 0;
+    
+    //int countOperations = 0;
+    
+    /**
+    for (job = 0; job < this->totalJobs; job++)
+        for (operation = 0; operation < this->jobHasNoperations[job]; operation++)
+            solution->setVariable(countOperations++, job);
+    **/
+    for (operation = 0; operation < this->totalOperations; operation++)
+        solution->setVariable(operation, operation);
+    
+    for (operation = 0; operation < this->totalOperations; operation++){
+        
+        solution->setVariable(operation + this->totalOperations, machine++);
+        if(machine == this->totalMachines)
+            machine = 0;
+    }
+    
 }
 
+/** For all the variables the lower bound is 0. **/
 int ProblemFJSSP::getLowerBound(int indexVar){
     return 0;
 }
 
+/** 
+    For the variables which are part of the permutation the upper bound is the number of Jobs.
+    
+    For the variables which are part of the machine allocations the upper bound is the number of Machines.
+ **/
 int ProblemFJSSP::getUpperBound(int indexVar){
-    if(indexVar > this->totalOperations)
-        return this->totalMachines;
+    if(indexVar < this->totalOperations)
+        return this->totalOperations - 1;
     else
-        return this->totalJobs;
+        return this->totalMachines - 1;
 }
 
 ProblemType ProblemFJSSP::getType(){
@@ -221,8 +253,12 @@ int ProblemFJSSP::getFinalLevel(){
     return this->totalVariables;
 }
 
+int ProblemFJSSP::getTotalElements(){
+    return this->totalJobs;
+}
+
 int * ProblemFJSSP::getElemensToRepeat(){
-    return this->operationsInJob;
+    return this->jobHasNoperations;
 }
 
 Solution* ProblemFJSSP::createSolution(){
@@ -241,7 +277,7 @@ void ProblemFJSSP::loadInstance(char* filePath[]){
     elemens = split(line, ' ');
     this->totalJobs = std::stoi(elemens.at(0));
     this->totalMachines = std::stoi(elemens.at(1));
-    this->operationsInJob = new int[this->totalJobs];
+    this->jobHasNoperations = new int[this->totalJobs];
     
     std::getline(infile, line);
     std::getline(infile, line);
@@ -249,9 +285,10 @@ void ProblemFJSSP::loadInstance(char* filePath[]){
     int job = 0;
     this->totalOperations = 0;
     for(job = 0; job < this->totalJobs; job++){
-        this->operationsInJob[job] = std::stoi(elemens.at(job));
-        this->totalOperations += this->operationsInJob[job];
+        this->jobHasNoperations[job] = std::stoi(elemens.at(job));
+        this->totalOperations += this->jobHasNoperations[job];
     }
+    this->operationIsFromJob = new int[this->totalOperations];
     
     std::getline(infile, line);
     this->processingTime = new int * [this->totalOperations];
@@ -266,15 +303,17 @@ void ProblemFJSSP::loadInstance(char* filePath[]){
             this->processingTime[operation][machine] = std::stoi(elemens.at(machine));
     }
     
-    this->totalVariables = this->totalOperations;
+    this->totalVariables = this->totalOperations * 2;
     this->totalObjectives = 2;
     
     int operationCounter = 0;
-    this->jobOperations = new int * [this->totalJobs];
+    this->operationInJobIsNumber = new int * [this->totalJobs];
     for (job = 0; job < this->totalJobs; job++) {
-        this->jobOperations[job] = new int[this->operationsInJob[job]];
-        for(operation = 0; operation < this->operationsInJob[job]; operation++)
-            this->jobOperations[job][operation] = operationCounter++;
+        this->operationInJobIsNumber[job] = new int[this->jobHasNoperations[job]];
+        for(operation = 0; operation < this->jobHasNoperations[job]; operation++){
+            this->operationInJobIsNumber[job][operation] = operationCounter;
+            this->operationIsFromJob[operationCounter++] = job;
+        }
     }
 }
 
@@ -289,7 +328,7 @@ void ProblemFJSSP::printProblemInfo(){
     
     int job = 0, machine = 0, operation = 0;
     for (job = 0; job < this->totalJobs; job++)
-        printf("%2d ", this->operationsInJob[job]);
+        printf("%2d ", this->jobHasNoperations[job]);
     printf("\n");
     
     printf("Processing times: \n");
@@ -340,7 +379,7 @@ double ProblemFJSSP::printSchedule(Solution * solution){
     for (currentJob = 0; currentJob < this->totalOperations; currentJob++) {
         job = solution->getVariable(currentJob);
         machine = solution->getVariable(currentJob + this->totalOperations);
-        numberOp = this->jobOperations[job][operationOfJob[job]];
+        numberOp = this->operationInJobIsNumber[job][operationOfJob[job]];
         
         workload[machine] += this->processingTime[numberOp][machine];
         totalWorkload += this->processingTime[numberOp][machine];

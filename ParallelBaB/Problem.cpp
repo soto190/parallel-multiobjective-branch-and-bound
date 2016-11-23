@@ -54,6 +54,10 @@ int Problem::getUpperBound(int index){
     return this->upperBound[index];
 }
 
+int Problem::getTotalElements(){
+    return 0;
+}
+
 int * Problem::getElemensToRepeat(){
     return nullptr;
 }

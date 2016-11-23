@@ -29,6 +29,14 @@ ProblemType ProblemVRP::getType(){return ProblemType::combination;}
 int ProblemVRP::getStartingLevel(){return 0;}
 int ProblemVRP::getFinalLevel(){return 0;}
 
+int ProblemVRP::getTotalElements(){
+    return 0;
+}
+
+int * ProblemVRP::getElemensToRepeat(){
+    return nullptr;
+}
+
 Solution* ProblemVRP::createSolution(){
     Solution* solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
     return solution;

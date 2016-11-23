@@ -24,14 +24,14 @@ public:
     Problem (int totalObjectives, int totalVariables);
     virtual ~Problem();
     
-    char* name;
+    char * name;
     int type;
     int startingLevel;
     int totalObjectives;
     int totalVariables;
     int totalConstraints;
-    int* lowerBound;
-    int* upperBound;
+    int * lowerBound;
+    int * upperBound;
     
     virtual double evaluate(Solution * solution) = 0;
     virtual double evaluatePartial(Solution * solution, int levelEvaluation) = 0;
@@ -55,7 +55,8 @@ public:
     int getNumberOfObjectives();
     int getNumberOfConstraints();
     
-    int * getElemensToRepeat();
+    virtual int getTotalElements() = 0;
+    virtual int * getElemensToRepeat() = 0;
     
     virtual int getLowerBound(int index) = 0;
     virtual int getUpperBound(int index) = 0;

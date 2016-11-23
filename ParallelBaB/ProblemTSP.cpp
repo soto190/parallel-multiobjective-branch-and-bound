@@ -26,7 +26,6 @@ ProblemTSP::~ProblemTSP(){
     
 }
 
-
 ProblemType ProblemTSP::getType(){
     return ProblemType::permutation;
 }
@@ -45,6 +44,14 @@ int ProblemTSP::getLowerBound(int indexVar){
 
 int ProblemTSP::getUpperBound(int indexVar){
     return this->getNumberOfVariables() - 1;
+}
+
+int ProblemTSP::getTotalElements(){
+    return 0;
+}
+
+int * ProblemTSP::getElemensToRepeat(){
+    return nullptr;
 }
 
 double ProblemTSP::evaluate(Solution* solution){
