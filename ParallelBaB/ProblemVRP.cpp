@@ -38,7 +38,7 @@ int * ProblemVRP::getElemensToRepeat(){
 }
 
 Solution* ProblemVRP::createSolution(){
-    Solution* solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
+    Solution * solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
     return solution;
 }
 
@@ -54,4 +54,12 @@ void ProblemVRP::printProblemInfo(){
 }
 
 void ProblemVRP::loadInstance(char *path[]){
+}
+
+void ProblemVRP::printSolution(Solution * solution){
+    printPartialSolution(solution, this->totalVariables);
+}
+
+void ProblemVRP::printPartialSolution(Solution * solution, int level){
+    
 }

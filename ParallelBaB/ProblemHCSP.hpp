@@ -38,7 +38,9 @@ public:
     double removeLastLevelEvaluation(Solution * solution, int newLevel);
     
     void createDefaultSolution(Solution * solution);
-    
+    void printSolution(Solution * solution);
+    void printPartialSolution(Solution * solution, int level);
+
     int getLowerBound(int indexVar);
     int getUpperBound(int indexVar);
     ProblemType getType();
@@ -71,7 +73,6 @@ public:
     
     void printInstance();
     void printProblemInfo();
-
     
 };
 #endif /* ProblemHCSP_hpp */

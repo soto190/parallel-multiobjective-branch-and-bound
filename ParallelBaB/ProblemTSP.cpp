@@ -402,3 +402,11 @@ void ProblemTSP::readCost(char *filePath){
     elemens.clear();
     infile.close();
 }
+
+void ProblemTSP::printSolution(Solution * solution){
+    printPartialSolution(solution, this->totalVariables);
+}
+
+void ProblemTSP::printPartialSolution(Solution * solution, int level){
+    
+}

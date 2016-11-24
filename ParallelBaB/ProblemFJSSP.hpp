@@ -39,6 +39,8 @@ public:
     double removeLastLevelEvaluation(Solution * solution, int newLevel);
     
     void createDefaultSolution(Solution * solution);
+    void printSolution(Solution * solution);
+    void printPartialSolution(Solution * solution, int level);
     
     int getLowerBound(int indexVar);
     int getUpperBound(int indexVar);
@@ -103,6 +105,10 @@ public:
     void printInstance();
     void printProblemInfo();
     double printSchedule(Solution * solution);
+    
+    double evaluatePartialTest1(Solution * solution, int currentLevel);
+    double evaluatePartialTest2(Solution * solution, int currentLevel);
+
 
 };
 

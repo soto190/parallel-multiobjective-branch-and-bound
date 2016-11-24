@@ -67,16 +67,24 @@ Solution* Problem::createSolution(){
     return solution;
 }
 
-double Problem::evaluate(Solution* solution){
+double Problem::evaluate(Solution * solution){
     return 0;
 }
 
-double Problem::evaluatePartial(Solution* solution, int levelEvaluation){
+double Problem::evaluatePartial(Solution * solution, int levelEvaluation){
     return 0;
 }
 
-void Problem::createDefaultSolution(Solution *solution){
+void Problem::createDefaultSolution(Solution * solution){
 }
+
+void Problem::printSolution(Solution * solution){
+
+}
+
+void Problem::printPartialSolution(Solution * solution, int level){
+}
+
 
 void Problem::printInstance(){
 }
@@ -84,5 +92,5 @@ void Problem::printInstance(){
 void Problem::printProblemInfo(){
 }
 
-void Problem::loadInstance(char *filePath[]){
+void Problem::loadInstance(char * filePath[]){
 }

@@ -428,3 +428,11 @@ void ProblemHCSP::readMachinesConfigurations(char *filePath){
     elemens.clear();
     infile.close();
 }
+
+void ProblemHCSP::printSolution(Solution * solution){
+    printPartialSolution(solution, this->totalVariables);
+}
+
+void ProblemHCSP::printPartialSolution(Solution * solution, int level){
+
+}
