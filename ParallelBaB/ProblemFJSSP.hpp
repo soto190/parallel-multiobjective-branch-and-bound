@@ -108,7 +108,9 @@ public:
     
     double evaluatePartialTest1(Solution * solution, int currentLevel);
     double evaluatePartialTest2(Solution * solution, int currentLevel);
+    double evaluatePartialTest3(Solution * solution, int currentLevel);
 
+    
 
 };
 

@@ -8,7 +8,8 @@
 
 #include "Dominance.hpp"
 
-int dominanceOperator(Solution * solutionA, Solution * solutionB){
+
+DominanceRelation dominanceOperator(Solution * solutionA, Solution * solutionB){
     int objective = 0;
     int solAIsBetterIn = 0;
     int solBIsBetterIn = 0;
@@ -33,13 +34,13 @@ int dominanceOperator(Solution * solutionA, Solution * solutionB){
     }
     
     if(equals == 1)
-        return 11;
+        return DominanceRelation::Equals;
     else if (solAIsBetterIn > 0 && solBIsBetterIn == 0)
-        return 1;
+        return DominanceRelation::Dominates;
     else if (solBIsBetterIn > 0 && solAIsBetterIn == 0)
-        return -1;
+        return DominanceRelation::Dominated;
     else
-        return 0;
+        return DominanceRelation::Nondominated;
 }
 
 
@@ -101,19 +102,21 @@ int updateFront(Solution * solution, std::vector<Solution *>& paretoFront){
         
         domination = dominanceOperator(solution, paretoFront.at(nSol));
         
-        if(domination == 1){
+        if(domination == DominanceRelation::Dominates){
             paretoFront.erase(begin + nSol);
             status[0]++;
             nSol--;
         }
-        else if(domination == 0)
+        else if(domination == DominanceRelation::Nondominated)
             status[1]++;
-        else if(domination == -1){
+        else if(domination == DominanceRelation::Dominated){
             status[2]++;
             nSol = paretoFront.size();
         }
-        else if(domination == 11)
+        else if(domination == DominanceRelation::Equals){
             status[3] = 1;
+            nSol = paretoFront.size();
+        }
     }
     
     /**
@@ -147,11 +150,11 @@ void extractParetoFront(std::vector<Solution *>& front){
             
             domination = dominanceOperator(solution, front.at(nextSol));
             
-            if(domination == 1){
+            if(domination == DominanceRelation::Dominates){
                 front.erase(begin + nextSol);
                 nextSol--;
             }
-            else if(domination == -1 || domination == 11){
+            else if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
                 front.erase(begin + currentSol);
                 currentSol--;
                 nextSol = front.size();

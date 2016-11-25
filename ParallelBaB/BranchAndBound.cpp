@@ -51,7 +51,7 @@ BranchAndBound::~BranchAndBound(){
     
     this->paretoFront.clear();
     this->treeOnAStack.clear();
-    this->levelOfTree .clear();
+    this->levelOfTree.clear();
 }
 
 void BranchAndBound::initialize(){
@@ -90,6 +90,7 @@ void BranchAndBound::initialize(){
     
     int variable = 0;
     
+    /*
     for (variable = this->problem->getUpperBound(this->problem->getFinalLevel()/2); variable >= this->problem->getLowerBound(this->problem->totalVariables / 2); variable--) {
         this->treeOnAStack.push_back(variable);
         this->levelOfTree.push_back(this->problem->totalVariables / 2);
@@ -101,7 +102,24 @@ void BranchAndBound::initialize(){
         this->levelOfTree.push_back(this->problem->getStartingLevel());
         this->branches++;
     }
+     */
     
+    /****/
+    
+    if (this->problem->getType() == ProblemType::permutation_with_repetition_and_combination) {
+        for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
+            this->treeOnAStack.push_back(variable);
+            this->levelOfTree.push_back(this->problem->getStartingLevel());
+            this->branches++;
+        }
+        
+        for (variable = this->problem->getUpperBound(1); variable >= this->problem->getLowerBound(1); variable--) {
+            this->treeOnAStack.push_back(variable);
+            this->levelOfTree.push_back(this->problem->getStartingLevel() + 1);
+            this->branches++;
+        }
+        this->currentLevel++;
+    }
  
 }
 
@@ -129,8 +147,8 @@ void BranchAndBound::start(){
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
 
-        //printCurrentSolution(1);
-        this->problem->printPartialSolution(this->currentSolution, this->currentLevel);
+        printCurrentSolution(1);
+        // this->problem->printPartialSolution(this->currentSolution, this->currentLevel);
         printf("\n");
         
         if (aLeafHasBeenReached() == 0)
@@ -156,8 +174,8 @@ void BranchAndBound::start(){
    
        
             if (updated == 1) {
-                printf("[%6lu] ", this->paretoFront.size());
-                printCurrentSolution(1);
+                printf("[%6lu]\n", this->paretoFront.size());
+                printCurrentSolution();
                 printf("+\n");
             }
     
@@ -269,9 +287,8 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
         }
     }**/
     /**If permutation and combination test2.**/
-    if(problem->getType() == ProblemType::permutation_with_repetition_and_combination){
+   /** if(problem->getType() == ProblemType::permutation_with_repetition_and_combination){
         if(currentLevel < this->problem->totalVariables / 2){
-            
             int belongs = 0;
             int level = 0;
             int levelStarting = this->problem->getStartingLevel();
@@ -303,7 +320,7 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
                 }
             }
             
-        }else{ /**combination part**/
+        }else{
             for (variable = this->problem->getUpperBound(variable); variable >= this->problem->getLowerBound(variable); variable--) {
                 this->levelOfTree.push_back(currentLevel + 1);
                 this->treeOnAStack.push_back(variable);
@@ -311,7 +328,51 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
             }
         }
     }
-    
+    **/
+
+    if(problem->getType() == ProblemType::permutation_with_repetition_and_combination){
+        if(currentLevel == 0 || currentLevel % 2 == 0){
+            
+            for (variable = this->problem->getUpperBound(variable); variable >= this->problem->getLowerBound(variable); variable--) {
+                this->levelOfTree.push_back(currentLevel + 1);
+                this->treeOnAStack.push_back(variable);
+                this->branches++;
+            }
+            
+        }else{
+            
+            int belongs = 0;
+            int level = 0;
+            int levelStarting = this->problem->getStartingLevel();
+            
+            int numberOfElements = problem->getTotalElements();
+            int * numberOfRepetitions = problem->getElemensToRepeat();
+            int timesRepeated [numberOfElements];
+            int currentVariable = 0;
+            
+            for (variable = numberOfElements - 1; variable >= 0; variable--) {
+                belongs = 0;
+                timesRepeated[variable] = 0;
+                for (level = levelStarting; level <= currentLevel && belongs == 0; level += 2){
+                    currentVariable = solution->getVariable(level);
+                    timesRepeated[currentVariable]++;
+                    if (currentVariable == variable) {
+                        if(timesRepeated[currentVariable] == numberOfRepetitions[currentVariable]){
+                            belongs = 1;
+                            level = currentLevel;
+                        }
+                    }
+                }
+                
+                if (belongs == 0) {
+                    this->treeOnAStack.push_back(variable);
+                    this->levelOfTree.push_back(currentLevel + 1);
+                    this->branches++;
+                }
+            }
+        }
+    }
+
 }
 
 void BranchAndBound::prune(Solution * solution, int currentLevel){
@@ -321,7 +382,10 @@ void BranchAndBound::prune(Solution * solution, int currentLevel){
 }
 
 int BranchAndBound::aLeafHasBeenReached(){
-    //if (this->currentLevel == totalLevels) /**For other problems.*/
+    if (this->problem->getType() != ProblemType::permutation_with_repetition_and_combination) /** For other prolems. **/
+        if (this->currentLevel == totalLevels)
+            return 1; 
+    
     if(this->currentLevel + 1 == this->problem->totalVariables / 2) /**For FJSSP**/
         return 1;
     return 0;
@@ -446,6 +510,8 @@ unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
 
 void BranchAndBound::printCurrentSolution(int withVariables){
     
+    this->problem->printPartialSolution(this->currentSolution, this->currentLevel);
+/*
     int indexVar = 0;
     
     for (indexVar = 0; indexVar < this->problem->getNumberOfObjectives(); indexVar++)
@@ -463,6 +529,7 @@ void BranchAndBound::printCurrentSolution(int withVariables){
         
         printf("|");
     }
+ */
 }
 
 /**
