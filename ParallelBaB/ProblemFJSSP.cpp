@@ -236,13 +236,10 @@ double ProblemFJSSP::evaluatePartialTest3(Solution * solution, int levelEvaluati
         workload[machine] = 0;
     }
     
-    int orginalLevelEvaluation = levelEvaluation;
-    orginalLevelEvaluation *= 1;
-    
-    for (operationInPosition = 0; operationInPosition <= levelEvaluation; operationInPosition+=2) {
+    for (operationInPosition = 0; operationInPosition <= levelEvaluation; operationInPosition++) {
         
-        job = solution->getVariable(operationInPosition);
-        machine = solution->getVariable(operationInPosition + 1);
+        job = solution->getVariable(operationInPosition * 2);
+        machine = solution->getVariable((operationInPosition * 2) + 1);
         
         numberOp = this->operationInJobIsNumber[job][operationOfJob[job]];
         
@@ -353,15 +350,7 @@ int ProblemFJSSP::getLowerBound(int indexVar){
     For the variables which are part of the machine allocations the upper bound is the number of Machines.
  **/
 int ProblemFJSSP::getUpperBound(int indexVar){
-   /*
-    if(indexVar < this->totalOperations)
-        return this->totalJobs - 1;
-    else
-        return this->totalMachines - 1;
-    */
-    if (indexVar == 0)
-        return this->totalJobs - 1;
-    else if(indexVar % 2 == 0)
+    if (indexVar == 0 || indexVar % 2 == 0)
         return this->totalJobs - 1;
     else
         return this->totalMachines - 1;
@@ -376,7 +365,7 @@ int ProblemFJSSP::getStartingLevel(){
 }
 
 int ProblemFJSSP::getFinalLevel(){
-    return this->totalVariables - 1;
+    return this->totalOperations - 1;
 }
 
 int ProblemFJSSP::getTotalElements(){
@@ -458,12 +447,13 @@ void ProblemFJSSP::printProblemInfo(){
     printf("\n");
     
     printf("Processing times: \n");
-    printf("    ");
+    printf("\t\t  ");
     for (machine = 0; machine < this->totalMachines; machine++)
         printf("M%-2d ", machine);
     printf("\n");
     for (operation = 0; operation < this->totalOperations; operation++) {
-        printf("%2d:", operation);
+        
+        printf("[J%-2d] %2d:", this->operationIsFromJob[operation], operation);
         for (machine = 0; machine < this->totalMachines; machine++)
             printf("%3d ", this->processingTime[operation][machine]);
         printf("\n");
@@ -553,13 +543,14 @@ double ProblemFJSSP::printSchedule(Solution * solution){
 }
 
 void ProblemFJSSP::printSolution(Solution * solution){
-    printPartialSolution(solution, this->totalVariables);
+    printPartialSolution(solution, this->totalOperations - 1);
 }
 
 void ProblemFJSSP::printPartialSolution(Solution * solution, int level){
     
     int indexVar = 0;
     int withVariables = 1;
+    int counter = 0;
     
     for (indexVar = 0; indexVar < this->getNumberOfObjectives(); indexVar++)
         printf("%7.0f ", solution->getObjective(indexVar));
@@ -568,18 +559,21 @@ void ProblemFJSSP::printPartialSolution(Solution * solution, int level){
         
         printf(" | ");
         
-        for (indexVar = 0; indexVar <= level * 2; indexVar += 2)
-            printf("%3d ", solution->getVariable(indexVar));
-        
-        for (indexVar = level + 1; indexVar < this->totalOperations; indexVar += 1)
-                printf(" -  ");
+        for (indexVar = 0; indexVar <= level; indexVar++){
+            printf("%3d ", solution->getVariable(counter));
+            counter += 2;
+        }
+        for (indexVar = level + 1; indexVar < this->totalOperations; indexVar ++)
+                printf("  - ");
         
         printf("|\n\t\t\t\t | ");
-        for (indexVar = 0; indexVar <= level * 2; indexVar += 2)
-            printf("%3d ", solution->getVariable(indexVar + 1));
-        
-        for (indexVar = level + 1; indexVar < this->totalOperations; indexVar += 1)
-            printf(" -  ");
+        counter = 0;
+        for (indexVar = 0; indexVar <= level; indexVar++){
+            printf("%3d ", solution->getVariable(counter + 1));
+            counter += 2;
+        }
+        for (indexVar = level + 1; indexVar < this->totalOperations; indexVar ++)
+            printf("  - ");
         
         /*
         printf(" | ");

@@ -72,10 +72,11 @@ void BranchAndBound::initialize(){
     
     this->paretoContainer = new HandlerContainer(100, 100, this->currentSolution->getObjective(0), this->currentSolution->getObjective(1));
     
-    printf("Ranges: %f %f \n", currentSolution->getObjective(0), currentSolution->getObjective(1));
+    printf("Ranges: %f %f \n Initial solution:\n", currentSolution->getObjective(0), currentSolution->getObjective(1));
+    this->problem->printSolution(this->currentSolution);
+    printf("\n");
     
     updateParetoGrid(this->currentSolution);
-    
     this->currentLevel = this->problem->getStartingLevel();
     this->totalLevels = this->problem->getFinalLevel();
     this->branches = 0;
@@ -86,41 +87,34 @@ void BranchAndBound::initialize(){
     this->callsToBranch = 0;
     this->totalUpdatesInLowerBound = 0;
     this->totalNodes = this->computeTotalNodes(totalLevels);
-    
-    
+
     int variable = 0;
-    
-    /*
-    for (variable = this->problem->getUpperBound(this->problem->getFinalLevel()/2); variable >= this->problem->getLowerBound(this->problem->totalVariables / 2); variable--) {
-        this->treeOnAStack.push_back(variable);
-        this->levelOfTree.push_back(this->problem->totalVariables / 2);
-        this->branches++;
-    }
-    
-    for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
-        this->treeOnAStack.push_back(variable);
-        this->levelOfTree.push_back(this->problem->getStartingLevel());
-        this->branches++;
-    }
-     */
-    
-    /****/
-    
+        
     if (this->problem->getType() == ProblemType::permutation_with_repetition_and_combination) {
+        for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
+            
+            int interVar = 0;
+            for (interVar = this->problem->getUpperBound(1); interVar >= this->problem->getLowerBound(1); interVar--) {
+                
+                this->treeOnAStack.push_back(variable);
+                this->levelOfTree.push_back(this->problem->getStartingLevel());
+                this->branches++;
+                
+                this->treeOnAStack.push_back(interVar);
+                this->levelOfTree.push_back(this->problem->getStartingLevel());
+                this->branches++;
+            }
+            
+            
+        }
+    }
+    else
         for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
             this->treeOnAStack.push_back(variable);
             this->levelOfTree.push_back(this->problem->getStartingLevel());
             this->branches++;
         }
-        
-        for (variable = this->problem->getUpperBound(1); variable >= this->problem->getLowerBound(1); variable--) {
-            this->treeOnAStack.push_back(variable);
-            this->levelOfTree.push_back(this->problem->getStartingLevel() + 1);
-            this->branches++;
-        }
-        this->currentLevel++;
-    }
- 
+
 }
 
 void BranchAndBound::start(){
@@ -146,11 +140,9 @@ void BranchAndBound::start(){
         
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
-
-        printCurrentSolution(1);
-        // this->problem->printPartialSolution(this->currentSolution, this->currentLevel);
-        printf("\n");
         
+        //printCurrentSolution();
+        //printf("\n");
         if (aLeafHasBeenReached() == 0)
             if(improvesTheGrid(this->currentSolution) == 1)
 //            if(improvesTheLowerBound(this->currentSolution) == 1)
@@ -164,7 +156,7 @@ void BranchAndBound::start(){
             }
         else{
             
-            this->problem->evaluatePartial(this->currentSolution, this->totalLevels);
+            //this->problem->evaluatePartial(this->currentSolution, this->totalLevels);
             this->problem->evaluateLastLevel(this->currentSolution);
             this->leaves++;
             
@@ -174,8 +166,8 @@ void BranchAndBound::start(){
    
        
             if (updated == 1) {
-                printf("[%6lu]\n", this->paretoFront.size());
-                printCurrentSolution();
+                printf("[%6lu]\n", this->paretoContainer->getSize());
+                printCurrentSolution(1);
                 printf("+\n");
             }
     
@@ -208,16 +200,36 @@ void BranchAndBound::start(){
  *  Gets an element form the stack and removes the level corresponding to the element.
  **/
 int BranchAndBound::explore(Solution * solution){
-    this->exploredNodes++;
+
+    if(this->problem->getType() == ProblemType::permutation_with_repetition_and_combination){
+        /** If permutation with combination. **/
+        this->exploredNodes++;
+        int subLevel = this->levelOfTree.back();
+        int element = this->treeOnAStack.back();
+        this->treeOnAStack.pop_back();
+        this->levelOfTree.pop_back();
+        
+        solution->setVariable((subLevel * 2) + 1, element);
+        
+        /****/
+        element = this->treeOnAStack.back();
+        this->currentLevel = this->levelOfTree.back();
+        this->treeOnAStack.pop_back();
+        this->levelOfTree.pop_back();
+        
+        solution->setVariable(this->currentLevel * 2, element);
+    }
+    else{
+        int element = this->treeOnAStack.back();
+        this->currentLevel = this->levelOfTree.back();
+        this->treeOnAStack.pop_back();
+        this->levelOfTree.pop_back();
+        
+        solution->setVariable(this->currentLevel, element);
+        
+    }
     
-    int element = this->treeOnAStack.back();
-    this->currentLevel = this->levelOfTree.back();
-    
-    this->treeOnAStack.pop_back();
-    this->levelOfTree.pop_back();
-    
-    solution->setVariable(this->currentLevel, element);
-    return element;
+    return 0;
 }
 
 void BranchAndBound::branch(Solution* solution, int currentLevel){
@@ -256,123 +268,45 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
         }
     
     /** If permutation and combination **/
-    /*if(problem->getType() == ProblemType::permutation_with_repetition_and_combination){
-        if(currentLevel < this->problem->totalVariables / 2){
-        
-            int belongs = 0;
-            int level = 0;
-            int levelStarting = this->problem->getStartingLevel();
-            
-            for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
-                belongs = 0;
-                for (level = levelStarting; level <= currentLevel && belongs == 0; level++)
-                    if (solution->getVariable(level) == variable) {
-                        belongs = 1;
-                        level = currentLevel;
-                    }
-                
-                if (belongs == 0) {
-                    this->treeOnAStack.push_back(variable);
-                    this->levelOfTree.push_back(currentLevel + 1);
-                    this->branches++;
-                }
-            }
-            
-        }else{ 
-            for (variable = this->problem->getUpperBound(variable); variable >= this->problem->getLowerBound(variable); variable--) {
-                this->levelOfTree.push_back(currentLevel + 1);
-                this->treeOnAStack.push_back(variable);
-                this->branches++;
-            }
-        }
-    }**/
-    /**If permutation and combination test2.**/
-   /** if(problem->getType() == ProblemType::permutation_with_repetition_and_combination){
-        if(currentLevel < this->problem->totalVariables / 2){
-            int belongs = 0;
-            int level = 0;
-            int levelStarting = this->problem->getStartingLevel();
-            
-            int numberOfElements = problem->getTotalElements();
-            int * numberOfRepetitions = problem->getElemensToRepeat();
-            int timesRepeated [numberOfElements];
-            int currentVariable = 0;
-            
-            for (variable = numberOfElements - 1; variable >= 0; variable--) {
-                belongs = 0;
-                timesRepeated[variable] = 0;
-                for (level = levelStarting; level <= currentLevel && belongs == 0; level++){
-                    currentVariable = solution->getVariable(level);
-                    timesRepeated[currentVariable]++;
-                    if (currentVariable == variable) {
-                        if(timesRepeated[currentVariable] == numberOfRepetitions[currentVariable]){
-                            belongs = 1;
-                            level = currentLevel;
-                        }
-                        
-                    }
-                }
-                
-                if (belongs == 0) {
-                    this->treeOnAStack.push_back(variable);
-                    this->levelOfTree.push_back(currentLevel + 1);
-                    this->branches++;
-                }
-            }
-            
-        }else{
-            for (variable = this->problem->getUpperBound(variable); variable >= this->problem->getLowerBound(variable); variable--) {
-                this->levelOfTree.push_back(currentLevel + 1);
-                this->treeOnAStack.push_back(variable);
-                this->branches++;
-            }
-        }
-    }
-    **/
 
     if(problem->getType() == ProblemType::permutation_with_repetition_and_combination){
-        if(currentLevel == 0 || currentLevel % 2 == 0){
-            
-            for (variable = this->problem->getUpperBound(variable); variable >= this->problem->getLowerBound(variable); variable--) {
-                this->levelOfTree.push_back(currentLevel + 1);
-                this->treeOnAStack.push_back(variable);
-                this->branches++;
-            }
-            
-        }else{
-            
-            int belongs = 0;
-            int level = 0;
-            int levelStarting = this->problem->getStartingLevel();
-            
-            int numberOfElements = problem->getTotalElements();
-            int * numberOfRepetitions = problem->getElemensToRepeat();
-            int timesRepeated [numberOfElements];
-            int currentVariable = 0;
-            
-            for (variable = numberOfElements - 1; variable >= 0; variable--) {
-                belongs = 0;
-                timesRepeated[variable] = 0;
-                for (level = levelStarting; level <= currentLevel && belongs == 0; level += 2){
-                    currentVariable = solution->getVariable(level);
-                    timesRepeated[currentVariable]++;
-                    if (currentVariable == variable) {
-                        if(timesRepeated[currentVariable] == numberOfRepetitions[currentVariable]){
-                            belongs = 1;
-                            level = currentLevel;
-                        }
+        
+        int belongs = 0;
+        int varInPos = 0;
+        int levelStarting = this->problem->getStartingLevel();
+        
+        int numberOfElements = problem->getTotalElements();
+        int * numberOfRepetitions = problem->getElemensToRepeat();
+        int timesRepeated [numberOfElements];
+        int currentVariable = 0;
+        
+        for (variable = numberOfElements - 1; variable >= 0; variable--) {
+            belongs = 0;
+            timesRepeated[variable] = 0;
+            for (varInPos = levelStarting; varInPos <= currentLevel && belongs == 0; varInPos ++){
+                currentVariable = solution->getVariable(varInPos * 2);
+                if (currentVariable == variable) {
+                    timesRepeated[variable]++;
+                    if(timesRepeated[variable] == numberOfRepetitions[variable]){
+                        belongs = 1;
+                        varInPos = currentLevel;
                     }
                 }
-                
-                if (belongs == 0) {
+            }
+            
+            if (belongs == 0) {
+                int intVariable = 0;
+                for (intVariable = this->problem->getUpperBound(intVariable); intVariable >= this->problem->getLowerBound(intVariable); intVariable--) {
                     this->treeOnAStack.push_back(variable);
+                    this->levelOfTree.push_back(currentLevel + 1);
+                    
+                    this->treeOnAStack.push_back(intVariable);
                     this->levelOfTree.push_back(currentLevel + 1);
                     this->branches++;
                 }
             }
         }
     }
-
 }
 
 void BranchAndBound::prune(Solution * solution, int currentLevel){
@@ -382,12 +316,8 @@ void BranchAndBound::prune(Solution * solution, int currentLevel){
 }
 
 int BranchAndBound::aLeafHasBeenReached(){
-    if (this->problem->getType() != ProblemType::permutation_with_repetition_and_combination) /** For other prolems. **/
-        if (this->currentLevel == totalLevels)
-            return 1; 
-    
-    if(this->currentLevel + 1 == this->problem->totalVariables / 2) /**For FJSSP**/
-        return 1;
+    if (this->currentLevel == totalLevels)
+            return 1;
     return 0;
 }
 
@@ -539,17 +469,15 @@ void BranchAndBound::printCurrentSolution(int withVariables){
  **/
 void BranchAndBound::printParetoFront(int withVariables){
     
-    int numberOfVariables = this->problem->getNumberOfVariables();
-    int numberOfObjectives = this->problem->getNumberOfObjectives();
-    int indexVar = 0;
     int counterSolutions = 0;
     
-    int printVariables = withVariables;
     
     std::vector<Solution* >::iterator it;
     
     for (it = this->paretoFront.begin(); it != this->paretoFront.end(); it++) {
-        printf("%6d ", ++counterSolutions);
+        printf("[%6d]\n", ++counterSolutions);
+        this->problem->printSolution((*it));
+/*
         for (indexVar = 0; indexVar < numberOfObjectives; indexVar++)
             printf("%26.16f ", (*it)->getObjective(indexVar));
         
@@ -559,7 +487,9 @@ void BranchAndBound::printParetoFront(int withVariables){
             for (indexVar = 0; indexVar < numberOfVariables; indexVar++)
                 printf("%3d ", (*it)->getVariable(indexVar));
         }
-        printf("|\n");
+ */
+ printf("\n");
+        
     }
 }
 
