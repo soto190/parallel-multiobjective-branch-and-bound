@@ -137,8 +137,8 @@ void BranchAndBound::start(){
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
         
-        //printCurrentSolution();
-        //printf("\n");
+        printCurrentSolution();
+        printf("\n");
         if (aLeafHasBeenReached() == 0)
             if(improvesTheGrid(this->currentSolution) == 1)
 //            if(improvesTheLowerBound(this->currentSolution) == 1)

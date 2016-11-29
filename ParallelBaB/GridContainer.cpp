@@ -31,7 +31,7 @@ HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double ma
     disabledBuckets = 0;
     
     grid = GridContainer<Solution * >(rows, cols);
-    gridState = new int[rows * cols];
+    gridState = new BucketState[rows * cols];
     
     rangeinx = new double [rows];
     rangeiny = new double [cols];
@@ -52,7 +52,7 @@ HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double ma
     
     int r = 0;
     for (r = 0; r < rows * cols; r++){
-        gridState[r] = 0;
+        gridState[r] = BucketState::unexplored;
     }
     
 }
@@ -70,7 +70,7 @@ int * HandlerContainer::checkCoordinate(Solution *solution){
 
 int HandlerContainer::set(Solution * solution, int x, int y){
 
-    if(this->getStateOf(x, y) == 0){
+    if(this->getStateOf(x, y) == BucketState::unexplored){
         
         /**
          Empty the dominated containers.
@@ -81,14 +81,14 @@ int HandlerContainer::set(Solution * solution, int x, int y){
         int nRow = 0;
         for (nRow = y + 1; nRow < this->grid.getRows(); nRow++)
             for (nCol = x + 1; nCol < this->grid.getCols(); nCol++)
-                if(this->getStateOf(nCol, nRow) == 2) /** If the bucket in (nCol, nRow) is dominated the exploration continue to the next row**/
+                if(this->getStateOf(nCol, nRow) == BucketState::dominated) /** If the bucket in (nCol, nRow) is dominated the exploration continue to the next row**/
                     nCol = this->grid.getCols();
                 else
                     this->clearContainer(nCol, nRow);
         
         Solution * copyOfSolution = new Solution(* solution);
         this->grid.set(copyOfSolution, x, y);
-        this->setStateOf(1, x, y);
+        this->setStateOf(BucketState::nondominated, x, y);
         this->totalElements++;
         this->activeBuckets++;
         this->unexploredBuckets--;
@@ -96,7 +96,7 @@ int HandlerContainer::set(Solution * solution, int x, int y){
         return 1;
 
     }
-    else if(this->getStateOf(x, y) == 1)
+    else if(this->getStateOf(x, y) == BucketState::nondominated)
        return this->updateBucket(solution, x, y);
     
     /**If the bucket is dominated (State = 2) the element is not added.**/
@@ -116,7 +116,7 @@ int * HandlerContainer::add(Solution * solution){
 }
 
 void HandlerContainer::clearContainer(int x, int y){
-    this->setStateOf(2, x, y);
+    this->setStateOf(BucketState::dominated, x, y);
 
     if (this->grid.getSizeOf(x, y) > 0){
         this->totalElements -= this->grid.getSizeOf(x, y);
@@ -174,11 +174,11 @@ void HandlerContainer::printStates(){
  * 1: non-Dominated (Pareto front).
  * 2: Dominated.
  */
-int HandlerContainer::getStateOf(int x, int y){
+BucketState HandlerContainer::getStateOf(int x, int y){
     return this->gridState[x * this->getCols() + y];
 }
 
-void HandlerContainer::setStateOf(int state, int x, int y){
+void HandlerContainer::setStateOf(BucketState state, int x, int y){
     this->gridState[x * this->getCols() + y] = state;
 }
 
@@ -314,13 +314,13 @@ HandlerContainer3D::HandlerContainer3D(int rows, int cols, int depth, double max
 
 int * HandlerContainer3D::checkCoordinate(Solution *solution){
     
-    int * coordinate = new int[3];
+    int * coordinate = new int[this->getNumberOfDimension()];
     
     coordinate[0] = binarySearch(solution->getObjective(0), this->rangeinx, this->getCols());
     
     coordinate[1] = binarySearch(solution->getObjective(1), this->rangeiny, this->getRows());
     
-    coordinate[2] = binarySearch(solution->getObjective(3), this->rangeinz, this->getDepth());
+    coordinate[2] = binarySearch(solution->getObjective(2), this->rangeinz, this->getDepth());
     
     return coordinate;
     
@@ -511,6 +511,10 @@ double HandlerContainer3D::getMaxIn(int dimension){
     return maxin[dimension];
 }
 
-unsigned int HandlerContainer3D::getDimensionSize(int dimension){
+unsigned int HandlerContainer3D::getSizeOfDimension(int dimension){
     return dimensionSize[dimension];
+}
+
+unsigned int HandlerContainer3D::getNumberOfDimension(){
+    return this->grid.getNumberOfDimensions();
 }

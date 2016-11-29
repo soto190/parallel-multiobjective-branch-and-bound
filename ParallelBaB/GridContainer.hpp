@@ -80,6 +80,7 @@ class GridContainer3D{
     unsigned int cols;
     unsigned int rows;
     unsigned int deep;
+    unsigned int dimensions;
     
 public:
     GridContainer3D();
@@ -89,6 +90,7 @@ public:
         rows = height;
         deep = depth;
         m_Data.resize(cols * rows * deep);
+        dimensions = 3;
     }
     
     std::vector<T>& operator()(size_t x, size_t y, size_t z){
@@ -130,6 +132,10 @@ public:
         m_Data[(x * cols) + y + (cols * rows * z)].clear();
         m_Data[(x * cols) + y + (cols * rows * z)].resize(1);
     }
+    
+    unsigned int getNumberOfDimensions(){
+        return this->dimensions;
+    }
 };
 
 
@@ -143,7 +149,7 @@ class HandlerContainer{
     unsigned long totalElements;
     
     GridContainer<Solution *> grid;
-    int * gridState;
+    BucketState * gridState;
     
     unsigned long debug_counter = 0;
 
@@ -168,8 +174,8 @@ public:
     unsigned long getSize();
     unsigned long getSizeOf(int x, int y);
 
-    int getStateOf(int x, int y);
-    void setStateOf(int state, int x, int y);
+    BucketState getStateOf(int x, int y);
+    void setStateOf(BucketState state, int x, int y);
     void printGridSize();
     void printStates();
     
@@ -210,7 +216,7 @@ public:
     HandlerContainer3D(int width, int height, int depth, double maxValX, double maxValY, double maxValZ);
     
     int * add(Solution * solution);
-    int * checkCoordinate(Solution * solution); /**NOTE TODO: Choose an appropiate name method.**/
+    int * checkCoordinate(Solution * solution); /**NOTE TODO: Rename method with a representative name.**/
     int set(Solution * solution, int x, int y, int z);
     
     
@@ -232,7 +238,8 @@ public:
     int updateBucket(Solution * solution, int x, int y, int z);
     
     double getMaxIn(int dimension);
-    unsigned int getDimensionSize(int dimension);
+    unsigned int getSizeOfDimension(int dimension);
+    unsigned int getNumberOfDimension();
     
     std::vector<Solution *> getParetoFront();
 };
