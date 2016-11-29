@@ -252,8 +252,8 @@ void ProblemTSP::loadInstance(char *filePath[]){
         
         /** The string "NODE_COORD_SECTION" is read with the carriage return "NODE_COORD_SECTION\r".
          The next line removes it.**/
-        label = std::regex_replace(label, std::regex("(\r)"), "");
-        //label.erase(label.size() - 1);
+        //label = std::regex_replace(label, std::regex("(\r)"), "");
+        label.erase(label.size() - 1);
         
         /** Reads the total of cities. **/
         if(label.compare("NAME") == 0){

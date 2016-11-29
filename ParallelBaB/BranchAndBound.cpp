@@ -89,11 +89,10 @@ void BranchAndBound::initialize(){
     this->totalNodes = this->computeTotalNodes(totalLevels);
 
     int variable = 0;
-        
+    
     if (this->problem->getType() == ProblemType::permutation_with_repetition_and_combination) {
-        for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
-            
-            int interVar = 0;
+        int interVar = 0;
+        for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--)
             for (interVar = this->problem->getUpperBound(1); interVar >= this->problem->getLowerBound(1); interVar--) {
                 
                 this->treeOnAStack.push_back(variable);
@@ -104,9 +103,6 @@ void BranchAndBound::initialize(){
                 this->levelOfTree.push_back(this->problem->getStartingLevel());
                 this->branches++;
             }
-            
-            
-        }
     }
     else
         for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
@@ -268,34 +264,30 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
         }
     
     /** If permutation and combination **/
-
     if(problem->getType() == ProblemType::permutation_with_repetition_and_combination){
         
         int belongs = 0;
         int varInPos = 0;
+        int intVariable = 0;
         int levelStarting = this->problem->getStartingLevel();
         
         int numberOfElements = problem->getTotalElements();
         int * numberOfRepetitions = problem->getElemensToRepeat();
         int timesRepeated [numberOfElements];
-        int currentVariable = 0;
         
         for (variable = numberOfElements - 1; variable >= 0; variable--) {
             belongs = 0;
             timesRepeated[variable] = 0;
-            for (varInPos = levelStarting; varInPos <= currentLevel && belongs == 0; varInPos ++){
-                currentVariable = solution->getVariable(varInPos * 2);
-                if (currentVariable == variable) {
+            for (varInPos = levelStarting; varInPos <= currentLevel && belongs == 0; varInPos ++)
+                if (solution->getVariable(varInPos * 2) == variable) {
                     timesRepeated[variable]++;
                     if(timesRepeated[variable] == numberOfRepetitions[variable]){
                         belongs = 1;
                         varInPos = currentLevel;
                     }
                 }
-            }
             
-            if (belongs == 0) {
-                int intVariable = 0;
+            if (belongs == 0)
                 for (intVariable = this->problem->getUpperBound(intVariable); intVariable >= this->problem->getLowerBound(intVariable); intVariable--) {
                     this->treeOnAStack.push_back(variable);
                     this->levelOfTree.push_back(currentLevel + 1);
@@ -304,7 +296,6 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
                     this->levelOfTree.push_back(currentLevel + 1);
                     this->branches++;
                 }
-            }
         }
     }
 }
@@ -358,7 +349,7 @@ int BranchAndBound::updateLowerBound(Solution * solution){
 int BranchAndBound::improvesTheLowerBound(Solution * solution){
     
     unsigned long paretoFrontSize = this->paretoFront.size();
-    int domination = 0;
+    DominanceRelation domination;
     unsigned long index = 0;
     int improves = 1;
     if (paretoFrontSize > 0) {
@@ -367,7 +358,7 @@ int BranchAndBound::improvesTheLowerBound(Solution * solution){
         for (index = 0; index < paretoFrontSize; index++) {
             
             domination = dominanceOperator(solution, this->paretoFront.at(index));
-            if(domination == -1 || domination == 11 ){
+            if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
                 improves = 0;
                 index = paretoFrontSize;
             }
@@ -398,7 +389,7 @@ int BranchAndBound::improvesTheGrid(Solution * solution){
 int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *>& bucketFront){
     
     unsigned long paretoFrontSize = bucketFront.size();
-    int domination = 0;
+    DominanceRelation domination;
     unsigned long index = 0;
     int improves = 1;
     if (paretoFrontSize > 0) {
@@ -406,7 +397,7 @@ int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *>& bu
         for (index = 0; index < paretoFrontSize; index++) {
             
             domination = dominanceOperator(solution, bucketFront.at(index));
-            if(domination == -1 || domination == 11 ){
+            if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
                 improves = 0;
                 index = paretoFrontSize;
             }
@@ -426,15 +417,21 @@ long BranchAndBound::permut(int n, int i) {
 unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
     long totalNodes = 0;
     
-    if(this->problem->getType() == 0)
+    if(this->problem->getType() == ProblemType::permutation)
         for (int i = 0; i < totalVariables; i++)
             totalNodes += (totalVariables - i) * permut(totalVariables, i);
     
-    else if(this->problem->getType() == 1){
+    else if(this->problem->getType() == ProblemType::combination){
         long nodes_per_branch = (this->problem->getUpperBound(0) + 1) - this->problem->getLowerBound(0);
         long deepest_level = this->totalLevels + 1;
         totalNodes = (pow(nodes_per_branch, deepest_level + 1) - 1) / (nodes_per_branch - 1);
+    }else if(this->problem->getType() == ProblemType::permutation_with_repetition_and_combination){
+        /** TODO: Implements the correct computation of total nodes. **/
+//        for (int i = 0; i < totalVariables; i++)
+//            totalNodes += (totalVariables - i) * permut(totalVariables, i) * ((this->problem->getUpperBound(1) + 1) - this->problem->getLowerBound(1));
+        
     }
+    
     return totalNodes;
 }
 
@@ -470,8 +467,6 @@ void BranchAndBound::printCurrentSolution(int withVariables){
 void BranchAndBound::printParetoFront(int withVariables){
     
     int counterSolutions = 0;
-    
-    
     std::vector<Solution* >::iterator it;
     
     for (it = this->paretoFront.begin(); it != this->paretoFront.end(); it++) {
@@ -494,7 +489,6 @@ void BranchAndBound::printParetoFront(int withVariables){
 }
 
 int BranchAndBound::setParetoFrontFile(const char * outputFile){
-  
     this->outputFile = new char[255];
     std::strcpy(this->outputFile, outputFile);
     return 0;
