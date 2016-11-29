@@ -37,7 +37,6 @@
 		2112824A1D639AB30038DBEE /* BranchAndBound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BranchAndBound.cpp; sourceTree = "<group>"; };
 		2112824B1D639AB30038DBEE /* BranchAndBound.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BranchAndBound.hpp; sourceTree = "<group>"; };
 		2112824C1D639AB30038DBEE /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		2112824D1D639AB30038DBEE /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		2112824E1D639AB30038DBEE /* myutils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = myutils.cpp; sourceTree = "<group>"; };
 		2112824F1D639AB30038DBEE /* myutils.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = myutils.hpp; sourceTree = "<group>"; };
 		211282501D639AB30038DBEE /* Problem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Problem.cpp; sourceTree = "<group>"; };
@@ -88,7 +87,6 @@
 		211282291D63988E0038DBEE /* ParallelBaB */ = {
 			isa = PBXGroup;
 			children = (
-				2112824D1D639AB30038DBEE /* Makefile */,
 				2112824A1D639AB30038DBEE /* BranchAndBound.cpp */,
 				2112824B1D639AB30038DBEE /* BranchAndBound.hpp */,
 				217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */,

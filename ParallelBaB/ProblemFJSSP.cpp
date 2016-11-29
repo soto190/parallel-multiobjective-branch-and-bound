@@ -460,7 +460,6 @@ void ProblemFJSSP::printProblemInfo(){
     }
 }
 
-
 double ProblemFJSSP::printSchedule(Solution * solution){
     
     int makespan = 0;

@@ -137,19 +137,18 @@ void BranchAndBound::start(){
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
         
-        printCurrentSolution();
-        printf("\n");
+//        printCurrentSolution();
+//        printf("\n");
+        
         if (aLeafHasBeenReached() == 0)
-            if(improvesTheGrid(this->currentSolution) == 1)
-//            if(improvesTheLowerBound(this->currentSolution) == 1)
+            if(improvesTheGrid(this->currentSolution) == 1) // if(improvesTheLowerBound(this->currentSolution) == 1)
                 this->branch(this->currentSolution, this->currentLevel);
-            else{
+            else
                 /**
                  * The branch is pruned, no nodes are added to the stack, and the partial evaluation is reduced.
                  **/
                 this->prunedBranches++;
                 //this->prune(this->currentSolution, this->currentLevel);
-            }
         else{
             
             //this->problem->evaluatePartial(this->currentSolution, this->totalLevels);
@@ -161,11 +160,11 @@ void BranchAndBound::start(){
             this->totalUpdatesInLowerBound += updated;
    
        
-            if (updated == 1) {
-                printf("[%6lu]\n", this->paretoContainer->getSize());
-                printCurrentSolution(1);
-                printf("+\n");
-            }
+//            if (updated == 1) {
+//                printf("[%6lu]\n", this->paretoContainer->getSize());
+//                printCurrentSolution(1);
+//                printf("+\n");
+//            }
     
             //int nextLevel = this->levelOfTree.back();
             //this->problem->removeLastLevelEvaluation(this->currentSolution, nextLevel);
@@ -288,7 +287,7 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
                 }
             
             if (belongs == 0)
-                for (intVariable = this->problem->getUpperBound(intVariable); intVariable >= this->problem->getLowerBound(intVariable); intVariable--) {
+                for (intVariable = this->problem->getUpperBound(1); intVariable >= this->problem->getLowerBound(1); intVariable--) {
                     this->treeOnAStack.push_back(variable);
                     this->levelOfTree.push_back(currentLevel + 1);
                     

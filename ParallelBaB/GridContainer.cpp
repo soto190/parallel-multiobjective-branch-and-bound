@@ -312,7 +312,7 @@ HandlerContainer3D::HandlerContainer3D(int rows, int cols, int depth, double max
     
 }
 
-int * HandlerContainer3D::checkCoordinate(Solution *solution){
+int * HandlerContainer3D::getCandidateBucket(Solution *solution){
     
     int * coordinate = new int[this->getNumberOfDimension()];
     
@@ -338,9 +338,9 @@ int HandlerContainer3D::set(Solution * solution, int x, int y, int z){
         int nCol = 0;
         int nRow = 0;
         int nDeep = 0;
-        for (nRow = y + 1; nRow < this->grid.getRows(); nRow++)
-            for (nCol = x + 1; nCol < this->grid.getCols(); nCol++)
-                for (nCol = z + 1; nDeep < this->grid.getDepth(); nDeep++)
+        for (nCol = z + 1; nDeep < this->grid.getDepth(); nDeep++)
+            for (nRow = y + 1; nRow < this->grid.getRows(); nRow++)
+                for (nCol = x + 1; nCol < this->grid.getCols(); nCol++)
                     if(this->getStateOf(nCol, nRow, nDeep) == BucketState::dominated) /** If the bucket in (nCol, nRow) is dominated the exploration continue to the next row**/
                         nCol = this->grid.getDepth();
                     else
@@ -368,7 +368,7 @@ int HandlerContainer3D::set(Solution * solution, int x, int y, int z){
  **/
 int * HandlerContainer3D::add(Solution * solution){
     
-    int * coordinate = checkCoordinate(solution);
+    int * coordinate = getCandidateBucket(solution);
     
     this->set(solution, coordinate[0], coordinate[1], coordinate[2]);
     
