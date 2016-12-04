@@ -70,6 +70,7 @@ int * HandlerContainer::checkCoordinate(Solution *solution){
 
 int HandlerContainer::set(Solution * solution, int x, int y){
 
+    
     if(this->getStateOf(x, y) == BucketState::unexplored){
         
         /**

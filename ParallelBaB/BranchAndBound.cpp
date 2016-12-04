@@ -371,15 +371,15 @@ int BranchAndBound::improvesTheGrid(Solution * solution){
     int * bucketCoordinate = paretoContainer->checkCoordinate(solution);
     
     int stateOfBucket = this->paretoContainer->getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
-
+    
     int improveIt = 0;
-    if(stateOfBucket == 2)
+    if(stateOfBucket == BucketState::dominated)
         improveIt = 0;
-    else if(stateOfBucket == 0)
+    else if(stateOfBucket == BucketState::unexplored)
         improveIt = 1;
     else{
         vector<Solution *> bucketFront = this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]);
-         improveIt = this->improvesTheBucket(solution, bucketFront);
+        improveIt = this->improvesTheBucket(solution, bucketFront);
     }
     delete bucketCoordinate;
     return improveIt;
@@ -393,13 +393,10 @@ int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *>& bu
     int improves = 1;
     if (paretoFrontSize > 0) {
         
-        for (index = 0; index < paretoFrontSize; index++) {
-            
+        for (index = 0; index < paretoFrontSize && improves == 1; index++) {
             domination = dominanceOperator(solution, bucketFront.at(index));
-            if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
+            if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals)
                 improves = 0;
-                index = paretoFrontSize;
-            }
         }
     }
     
