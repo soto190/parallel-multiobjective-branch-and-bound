@@ -67,6 +67,7 @@ public:
      Job 2 has 2 operations: [2] = 2
      **/
     int * jobHasNoperations;
+    int * releaseTime;
     
     /** operationInJobIsNumber saids the number of an operation with respect witha all the operations from all the jobs.
      if we have 2 jobs with 3 operations.

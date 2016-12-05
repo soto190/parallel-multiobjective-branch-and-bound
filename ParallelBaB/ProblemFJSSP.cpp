@@ -18,6 +18,7 @@ ProblemFJSSP::~ProblemFJSSP(){
     
     delete [] processingTime;
     delete [] jobHasNoperations;
+    delete [] releaseTime;
     delete [] operationInJobIsNumber;
     delete [] operationIsFromJob;
 
@@ -248,10 +249,15 @@ double ProblemFJSSP::evaluatePartialTest3(Solution * solution, int levelEvaluati
         totalWorkload += this->processingTime[numberOp][machine];
         
         if (operationOfJob[job] == 0) { /** If it is the first operation of the job.**/
-            
-            startingTime[numberOp] = timeInMachine[machine];
-            timeInMachine[machine] += this->processingTime[numberOp][machine];
-            endingTime[numberOp] = timeInMachine[machine];
+            if(timeInMachine[machine] >= this->releaseTime[job]){
+                startingTime[numberOp] = timeInMachine[machine];
+                timeInMachine[machine] += this->processingTime[numberOp][machine];
+                endingTime[numberOp] = timeInMachine[machine];
+            }else{ /** If the job has to wait for the release time.**/
+                startingTime[numberOp] = this->releaseTime[job];
+                timeInMachine[machine] = this->releaseTime[job] + this->processingTime[numberOp][machine];
+                endingTime[numberOp] = timeInMachine[machine];
+            }
             
         }else{
             if(endingTime[numberOp - 1] > timeInMachine[machine]){ /**The operation is waiting for their dependency operation.**/
@@ -393,6 +399,7 @@ void ProblemFJSSP::loadInstance(char* filePath[]){
     this->totalJobs = std::stoi(elemens.at(0));
     this->totalMachines = std::stoi(elemens.at(1));
     this->jobHasNoperations = new int[this->totalJobs];
+    this->releaseTime = new int[this->totalJobs];
     
     std::getline(infile, line);
     std::getline(infile, line);
@@ -403,6 +410,14 @@ void ProblemFJSSP::loadInstance(char* filePath[]){
         this->jobHasNoperations[job] = std::stoi(elemens.at(job));
         this->totalOperations += this->jobHasNoperations[job];
     }
+    
+    std::getline(infile, line);
+    std::getline(infile, line);
+    elemens = split(line, ' ');
+    for (job = 0; job < this->totalJobs; job++)
+        this->releaseTime[job] = std::stoi(elemens.at(job));
+    
+    
     this->operationIsFromJob = new int[this->totalOperations];
     
     std::getline(infile, line);
@@ -439,13 +454,18 @@ void ProblemFJSSP::printProblemInfo(){
     printf("Total machines: %d\n", this->totalMachines);
     printf("Total operations: %d\n", this->totalOperations);
 
-    printf("Operations in each job: ");
+    printf("Operations in each job:\n");
     
     int job = 0, machine = 0, operation = 0;
     for (job = 0; job < this->totalJobs; job++)
         printf("%2d ", this->jobHasNoperations[job]);
     printf("\n");
     
+    printf("Release time for each job:\n");
+    for (job = 0; job < this->totalJobs; job++)
+        printf("%2d ", this->releaseTime[job]);
+    printf("\n");
+
     printf("Processing times: \n");
     printf("\t\t  ");
     for (machine = 0; machine < this->totalMachines; machine++)
@@ -500,11 +520,15 @@ double ProblemFJSSP::printSchedule(Solution * solution){
         totalWorkload += this->processingTime[numberOp][machine];
         
         if (operationOfJob[job] == 0) { /** If it is the first operation of the job.**/
-            
-            startingTime[numberOp] = timeInMachine[machine];
-            timeInMachine[machine] += this->processingTime[numberOp][machine];
-            endingTime[numberOp] = timeInMachine[machine];
-            
+            if(timeInMachine[machine] >= this->releaseTime[job]){
+                startingTime[numberOp] = timeInMachine[machine];
+                timeInMachine[machine] += this->processingTime[numberOp][machine];
+                endingTime[numberOp] = timeInMachine[machine];
+            }else{ /** If the job has to wait for the release time.**/
+                startingTime[numberOp] = this->releaseTime[job];
+                timeInMachine[machine] = this->releaseTime[job] + this->processingTime[numberOp][machine];
+                endingTime[numberOp] = timeInMachine[machine];
+            }
         }else{
             if(endingTime[numberOp - 1] > timeInMachine[machine]){ /**The operation is waiting for their dependency operation.**/
                 
@@ -583,10 +607,6 @@ void ProblemFJSSP::printPartialSolution(Solution * solution, int level){
         for (indexVar = level + this->totalOperations + 1; indexVar < this->getNumberOfVariables(); indexVar++)
             printf("  - ");
 */
-        
         printf("|");
     }
-
-    
-    
 }
