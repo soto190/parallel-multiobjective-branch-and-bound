@@ -127,7 +127,7 @@ int main(int argc, const char * argv[]) {
     BranchAndBound BaB(problem);
     BaB.setParetoFrontFile(outputFile.c_str());
     BaB.setSummarizeFile(summarizeFile.c_str());
-    BaB.start();
+    BaB.solve();
     
     return 0;
 }

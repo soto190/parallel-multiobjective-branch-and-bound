@@ -58,6 +58,10 @@ int ProblemHCSP::getUpperBound(int indexVar){
     return this->totalMappings - 1;
 }
 
+int ProblemHCSP::getLowerBoundInObj(int nObj){
+    return INT_MAX;
+}
+
 int ProblemHCSP::getTotalElements(){
     return 0;
 }

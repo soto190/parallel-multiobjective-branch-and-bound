@@ -59,6 +59,9 @@ public:
     int totalJobs;
     int totalOperations;
     int totalMachines;
+    int sumOfMinPij;
+    int * assignationMinPij;
+    int * minWorkload;
 
     /** jobaHasNoperations saids how many operations have each job. 
      if we have 2 jobs with 3 operations and 1 job with 2 operations.
@@ -111,8 +114,7 @@ public:
     double evaluatePartialTest2(Solution * solution, int currentLevel);
     double evaluatePartialTest3(Solution * solution, int currentLevel);
 
-    
-
+    int getLowerBoundInObj(int nObj);
 };
 
 #endif /* ProblemFJSSP_hpp */

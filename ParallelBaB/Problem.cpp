@@ -54,6 +54,10 @@ int Problem::getUpperBound(int index){
     return this->upperBound[index];
 }
 
+int Problem::getLowerBoundInObj(int nObj){
+    return INT_MAX;
+}
+
 int Problem::getTotalElements(){
     return 0;
 }

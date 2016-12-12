@@ -67,8 +67,15 @@ void BranchAndBound::initialize(){
     int numberOfObjectives = this->problem->getNumberOfObjectives();
     int numberOfVariables = this->problem->getNumberOfVariables();
     this->currentSolution = new Solution(numberOfObjectives, numberOfVariables);
+    this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
     this->problem->createDefaultSolution(this->currentSolution);
     this->problem->evaluate(this->currentSolution);
+    
+    int nObj = 0;
+    for (nObj = 0; nObj < numberOfObjectives; nObj++)
+        this->bestObjectivesFound->setObjective(nObj, this->currentSolution->getObjective(nObj));
+    
+    this->bestObjectivesFound->setObjective(1, this->getLowerBoundInObj(1));
     
     this->paretoContainer = new HandlerContainer(100, 100, this->currentSolution->getObjective(0), this->currentSolution->getObjective(1));
     
@@ -113,7 +120,7 @@ void BranchAndBound::initialize(){
 
 }
 
-void BranchAndBound::start(){
+void BranchAndBound::solve(){
     
     /**
      * set maxTime as parameter.
@@ -137,8 +144,7 @@ void BranchAndBound::start(){
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
         
-//        printCurrentSolution();
-//        printf("\n");
+        printCurrentSolution();
         
         if (aLeafHasBeenReached() == 0)
             if(improvesTheGrid(this->currentSolution) == 1) // if(improvesTheLowerBound(this->currentSolution) == 1)
@@ -151,7 +157,6 @@ void BranchAndBound::start(){
                 //this->prune(this->currentSolution, this->currentLevel);
         else{
             
-            //this->problem->evaluatePartial(this->currentSolution, this->totalLevels);
             this->problem->evaluateLastLevel(this->currentSolution);
             this->leaves++;
             
@@ -160,16 +165,11 @@ void BranchAndBound::start(){
             this->totalUpdatesInLowerBound += updated;
    
        
-//            if (updated == 1) {
-//                printf("[%6lu]\n", this->paretoContainer->getSize());
-//                printCurrentSolution(1);
-//                printf("+\n");
-//            }
-    
-            //int nextLevel = this->levelOfTree.back();
-            //this->problem->removeLastLevelEvaluation(this->currentSolution, nextLevel);
+            if (updated == 1)
+                printf(" + [%6lu]", this->paretoContainer->getSize());
         }
-        
+        printf("\n");
+
         /*std::chrono::seconds sec(maxTime);
         if (time_span.count() > sec.count()) {
          //timeUp = 1;
@@ -322,6 +322,13 @@ int BranchAndBound::theTreeHasMoreBranches(){
 
 int BranchAndBound::updateParetoGrid(Solution * solution){
     
+    
+    int nObj = 0;
+    for (nObj = 0; nObj < this->problem->totalObjectives; nObj++)
+        if (solution->getObjective(nObj) < this->bestObjectivesFound->getObjective(nObj)) {
+            this->bestObjectivesFound->objective[nObj] = solution->getObjective(nObj);
+        }
+
     int * bucketCoord = paretoContainer->checkCoordinate(solution);
     int updated = this->paretoContainer->set(solution, bucketCoord[0], bucketCoord[1]);
     delete [] bucketCoord;
@@ -368,21 +375,33 @@ int BranchAndBound::improvesTheLowerBound(Solution * solution){
 }
 
 int BranchAndBound::improvesTheGrid(Solution * solution){
-    int * bucketCoordinate = paretoContainer->checkCoordinate(solution);
-    
-    int stateOfBucket = this->paretoContainer->getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
-    
-    int improveIt = 0;
-    if(stateOfBucket == BucketState::dominated)
-        improveIt = 0;
-    else if(stateOfBucket == BucketState::unexplored)
-        improveIt = 1;
-    else{
-        vector<Solution *> bucketFront = this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]);
-        improveIt = this->improvesTheBucket(solution, bucketFront);
-    }
-    delete bucketCoordinate;
-    return improveIt;
+    /**
+    int nObj = 0;
+    int flag = 0;
+    //for (nObj = 0; nObj < this->problem->totalObjectives; nObj++)
+        if (solution->getObjective(1) <= this->bestObjectivesFound->getObjective(1)) {
+            this->bestObjectivesFound->objective[1] = solution->getObjective(1);
+            flag = 1;
+        }
+    **/
+    //if (flag == 1) {
+        int * bucketCoordinate = paretoContainer->checkCoordinate(solution);
+        
+        int stateOfBucket = this->paretoContainer->getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
+        
+        int improveIt = 0;
+        if(stateOfBucket == BucketState::dominated)
+            improveIt = 0;
+        else if(stateOfBucket == BucketState::unexplored)
+            improveIt = 1;
+        else{
+            vector<Solution *> bucketFront = this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]);
+            improveIt = this->improvesTheBucket(solution, bucketFront);
+        }
+        delete bucketCoordinate;
+        return improveIt;
+    // }
+    //return 0;
 }
 
 int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *>& bucketFront){
@@ -408,6 +427,14 @@ long BranchAndBound::permut(int n, int i) {
     for (int j = n; j > n - i; j--)
         result *= j;
     return result;
+}
+
+int BranchAndBound::getUpperBound(int objective){
+    return 0;
+}
+
+int BranchAndBound::getLowerBoundInObj(int nObj){
+   return this->problem->getLowerBoundInObj(nObj);
 }
 
 unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
@@ -511,9 +538,9 @@ int BranchAndBound::saveSummarize(){
     printf("Total time:          %f\n" , this->totalTime);
     printf("Grid data:\n");
     printf("\tGrid dimension:    %d x %d\n", this->paretoContainer->getCols(), this->paretoContainer->getRows());
-    printf("\tActive buckets:    %ld\n", this->paretoContainer->activeBuckets);
-    printf("\tDisabled buckets:  %ld\n", this->paretoContainer->disabledBuckets);
-    printf("\tUnexplored buckets:%ld\n", this->paretoContainer->unexploredBuckets);
+    printf("\tnon-dominated buckets:    %ld\n", this->paretoContainer->activeBuckets);
+    printf("\tdominated buckets:  %ld\n", this->paretoContainer->disabledBuckets);
+    printf("\tunexplored buckets:%ld\n", this->paretoContainer->unexploredBuckets);
     printf("\tTotal elements in: %ld\n", this->paretoContainer->getSize());
     
     std::ofstream myfile(this->summarizeFile);
@@ -535,8 +562,8 @@ int BranchAndBound::saveSummarize(){
         myfile <<"Grid data:\n";
         myfile <<"\tgrid dimension:" << this->paretoContainer->getCols() << " x " << this->paretoContainer->getRows() << "\n";
 
-        myfile <<"\tactive buckets:     " << this->paretoContainer->activeBuckets << "\n";
-        myfile <<"\tdisabled buckets:   " << this->paretoContainer->disabledBuckets << "\n";
+        myfile <<"\tnon-dominated buckets:\t" << this->paretoContainer->activeBuckets << "\n";
+        myfile <<"\tdominated buckets:   " << this->paretoContainer->disabledBuckets << "\n";
         myfile <<"\tunexplored buckets: " << this->paretoContainer->unexploredBuckets << "\n";
         myfile <<"\ttotal elements in:  " << this->paretoContainer->getSize() << "\n";
 

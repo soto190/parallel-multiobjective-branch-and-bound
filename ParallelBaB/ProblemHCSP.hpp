@@ -43,6 +43,8 @@ public:
 
     int getLowerBound(int indexVar);
     int getUpperBound(int indexVar);
+    int getLowerBoundInObj(int nObj);
+
     ProblemType getType();
     int getStartingLevel();
     int getFinalLevel();

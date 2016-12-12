@@ -46,6 +46,10 @@ int ProblemTSP::getUpperBound(int indexVar){
     return this->getNumberOfVariables() - 1;
 }
 
+int ProblemTSP::getLowerBoundInObj(int nObj){
+    return INT_MAX;
+}
+
 int ProblemTSP::getTotalElements(){
     return 0;
 }

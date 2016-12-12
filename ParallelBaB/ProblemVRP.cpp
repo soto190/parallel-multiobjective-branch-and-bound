@@ -25,6 +25,10 @@ int ProblemVRP::getUpperBound(int indexVar){
     return 1;
 }
 
+int ProblemVRP::getLowerBoundInObj(int nObj){
+    return INT_MAX;
+}
+
 ProblemType ProblemVRP::getType(){return ProblemType::combination;}
 int ProblemVRP::getStartingLevel(){return 0;}
 int ProblemVRP::getFinalLevel(){return 0;}

@@ -63,6 +63,8 @@ public:
     virtual int getLowerBound(int index) = 0;
     virtual int getUpperBound(int index) = 0;
     
+    virtual int getLowerBoundInObj(int nObj) = 0;
+    
     virtual void loadInstance(char* path[]);
     virtual void printInstance();
     virtual void printProblemInfo();

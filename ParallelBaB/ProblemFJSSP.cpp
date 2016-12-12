@@ -21,6 +21,8 @@ ProblemFJSSP::~ProblemFJSSP(){
     delete [] releaseTime;
     delete [] operationInJobIsNumber;
     delete [] operationIsFromJob;
+    delete [] assignationMinPij;
+    delete [] minWorkload;
 
 }
 /**
@@ -218,6 +220,8 @@ double ProblemFJSSP::evaluatePartialTest3(Solution * solution, int levelEvaluati
     int machine = 0;
     int numberOp = 0;
     
+    int minPij = this->sumOfMinPij;
+    
     int operationOfJob [this->totalJobs];
     int startingTime [this->totalOperations];
     int endingTime [this->totalOperations];
@@ -244,6 +248,8 @@ double ProblemFJSSP::evaluatePartialTest3(Solution * solution, int levelEvaluati
         
         numberOp = this->operationInJobIsNumber[job][operationOfJob[job]];
         
+        
+        minPij -= this->processingTime[numberOp][this->assignationMinPij[numberOp]];
         /** With the number of operation and the machine we can continue. **/
         workload[machine] += this->processingTime[numberOp][machine];
         totalWorkload += this->processingTime[numberOp][machine];
@@ -284,8 +290,18 @@ double ProblemFJSSP::evaluatePartialTest3(Solution * solution, int levelEvaluati
             maxWorkload = workload[machine];
     }
     
+//    int tempMaxWorkload = (maxWorkload + minPij) / this->totalMachines;
+//    if (tempMaxWorkload > maxWorkload)
+//        maxWorkload = tempMaxWorkload;
+    
     solution->setObjective(0, makespan);
-    solution->setObjective(1, maxWorkload);
+    solution->setObjective(1, totalWorkload + minPij);
+
+    
+    //    solution->setObjective(0, makespan);
+    //  solution->setObjective(1, maxWorkload);
+    //solution->setObjective(2, totalWorkload);
+
     
     return 0.0;
 }
@@ -310,25 +326,6 @@ void ProblemFJSSP::createDefaultSolution(Solution * solution){
     int machAssig = 1;
     int countOperations = 0;
     
-    /** permutation of jobs **/
-    /*for (job = 0; job < this->totalJobs; job++)
-        for (operation = 0; operation < this->jobHasNoperations[job]; operation++)
-            solution->setVariable(countOperations++, job);
-    */
-    /** permutation of operations.
-     
-    for (operation = 0; operation < this->totalOperations; operation++)
-        solution->setVariable(operation, operation);
-     **/
-    /*
-    for (operation = 0; operation < this->totalOperations; operation++){
-        
-        solution->setVariable(operation + this->totalOperations, machine++);
-        if(machine == this->totalMachines)
-            machine = 0;
-    }
-     */
-    
     for (job = 0; job < this->totalJobs; job++)
         for (operation = 0; operation < this->jobHasNoperations[job]; operation++){
             solution->setVariable(countOperations, job);
@@ -336,7 +333,6 @@ void ProblemFJSSP::createDefaultSolution(Solution * solution){
         }
     
     for (operation = 0; operation < this->totalOperations; operation++){
-        
         solution->setVariable(machAssig, machine++);
         if(machine == this->totalMachines)
             machine = 0;
@@ -360,6 +356,12 @@ int ProblemFJSSP::getUpperBound(int indexVar){
         return this->totalJobs - 1;
     else
         return this->totalMachines - 1;
+}
+
+int ProblemFJSSP::getLowerBoundInObj(int nObj){
+    if(nObj == 1)
+        return this->sumOfMinPij;
+    return INT_MAX;
 }
 
 ProblemType ProblemFJSSP::getType(){
@@ -419,22 +421,40 @@ void ProblemFJSSP::loadInstance(char* filePath[]){
     
     
     this->operationIsFromJob = new int[this->totalOperations];
+    this->sumOfMinPij = 0;
     
     std::getline(infile, line);
     this->processingTime = new int * [this->totalOperations];
+    this->assignationMinPij = new int [this->totalOperations];
+    this->minWorkload = new int[this->totalMachines];
+   
     int operation = 0;
     int machine = 0;
+    int minPij = INT_MAX;
+    int minMachine = 0;
+    
+    for (machine = 0; machine < this->totalMachines; machine++)
+        minWorkload[machine] = 0;
+    
     for (operation = 0; operation < this->totalOperations; operation++) {
         this->processingTime[operation] = new int[this->totalMachines];
         std::getline(infile, line);
         elemens = split(line, ' ');
-        
-        for (machine = 0; machine < this->totalMachines; machine++)
+        minPij = INT_MAX;
+        minMachine = 0;
+        for (machine = 0; machine < this->totalMachines; machine++){
             this->processingTime[operation][machine] = std::stoi(elemens.at(machine));
+            if (processingTime[operation][machine] < minPij){
+                minPij = processingTime[operation][machine];
+                minMachine = machine;
+            }
+        }
+        this->sumOfMinPij += minPij;
+        this->minWorkload[minMachine] += processingTime[operation][minMachine];
+        this->assignationMinPij[operation] = minMachine;
     }
     
     this->totalVariables = this->totalOperations * 2;
-    this->totalObjectives = 2;
     
     int operationCounter = 0;
     this->operationInJobIsNumber = new int * [this->totalJobs];
@@ -555,7 +575,9 @@ double ProblemFJSSP::printSchedule(Solution * solution){
     }
     
     solution->setObjective(0, makespan);
+    //solution->setObjective(0, maxWorkload);
     solution->setObjective(1, maxWorkload);
+    //solution->setObjective(2, totalWorkload);
     
     for (operation = 0; operation < this->totalOperations; operation++)
         printf("%d: %d %d - %d \n", operation, solution->getVariable(operation + this->totalOperations), startingTime[operation], endingTime[operation]);

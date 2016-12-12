@@ -43,6 +43,7 @@ public:
     
     std::vector<Solution * > paretoFront;
     Solution* currentSolution;
+    Solution* bestObjectivesFound;
     
     std::vector<int> treeOnAStack;
     std::vector<int> levelOfTree ;
@@ -67,7 +68,7 @@ public:
     
     double totalTime;
     
-    void start();
+    void solve();
     void initialize();
     int explore(Solution * solution);
     void branch(Solution * solution, int currentLevel);
@@ -85,13 +86,17 @@ private:
     int theTreeHasMoreBranches();
     int improvesTheLowerBound(Solution * solution);
     int updateLowerBound(Solution * solution);
+    int getLowerBoundInObj(int nObj);
+
     unsigned long computeTotalNodes(int totalVariables);
     long permut(int n, int i);
+    int getUpperBound(int objective);
     
     /**Grid functions**/
     int improvesTheGrid(Solution * solution);
     int updateParetoGrid(Solution * solution);
     int improvesTheBucket(Solution * solution, vector<Solution *>& bucketFront);
+    
     
 };
 
