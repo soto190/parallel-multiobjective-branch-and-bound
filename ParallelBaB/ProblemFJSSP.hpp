@@ -19,7 +19,10 @@
 #include "Problem.hpp"
 #include "myutils.hpp"
 
-
+//#define MAKESPAN  0;
+//#define MAXWORKLOAD 1;
+//#define TOTALWORKLOAD 2;
+//enum FJSSPObj{MAKESPAN = 0, MAXWORKLOAD = 1, TOTALWORKLOAD = 2};
 
 class ProblemFJSSP: public Problem {
 public:
@@ -39,6 +42,7 @@ public:
     double removeLastLevelEvaluation(Solution * solution, int newLevel);
     
     void createDefaultSolution(Solution * solution);
+    Solution * getSolutionWithLowerBoundInObj(int nObj);
     void printSolution(Solution * solution);
     void printPartialSolution(Solution * solution, int level);
     
@@ -115,6 +119,10 @@ public:
     double evaluatePartialTest3(Solution * solution, int currentLevel);
 
     int getLowerBoundInObj(int nObj);
+    void buildSolutionWithGoodMaxWorkload(Solution * solution);
+    void buildSolutionWithGoodMaxWorkloadv1(Solution * solution);
+    void buildSolutionWithGoodMaxWorkloadv2(Solution * solution);
+
 };
 
 #endif /* ProblemFJSSP_hpp */

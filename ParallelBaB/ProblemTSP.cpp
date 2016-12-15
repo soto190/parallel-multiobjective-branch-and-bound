@@ -212,6 +212,12 @@ void ProblemTSP::createDefaultSolution(Solution *solution){
     
 }
 
+Solution * ProblemTSP::getSolutionWithLowerBoundInObj(int nObj){
+    Solution * solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
+    
+    return solution;
+}
+
 void ProblemTSP::printInstance(){
     
     printf("Hello from Problem TSP!\n");

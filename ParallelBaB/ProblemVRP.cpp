@@ -50,6 +50,12 @@ void ProblemVRP::createDefaultSolution(Solution *solution){
 
 }
 
+Solution * ProblemVRP::getSolutionWithLowerBoundInObj(int nObj){
+    Solution * solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
+    
+    return solution;
+}
+
 void ProblemVRP::printInstance(){
     printf("Hello from Problem VRP!\n");
 }

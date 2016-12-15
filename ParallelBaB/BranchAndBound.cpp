@@ -66,16 +66,19 @@ void BranchAndBound::initialize(){
     
     int numberOfObjectives = this->problem->getNumberOfObjectives();
     int numberOfVariables = this->problem->getNumberOfVariables();
+    
     this->currentSolution = new Solution(numberOfObjectives, numberOfVariables);
-    this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
     this->problem->createDefaultSolution(this->currentSolution);
-    this->problem->evaluate(this->currentSolution);
+
+    this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
     
     int nObj = 0;
     for (nObj = 0; nObj < numberOfObjectives; nObj++)
         this->bestObjectivesFound->setObjective(nObj, this->currentSolution->getObjective(nObj));
+
+    Solution * bestInObj1 = this->problem->getSolutionWithLowerBoundInObj(1);
     
-    this->bestObjectivesFound->setObjective(1, this->getLowerBoundInObj(1));
+    this->bestObjectivesFound->setObjective(1, bestInObj1->getObjective(1));
     
     this->paretoContainer = new HandlerContainer(100, 100, this->currentSolution->getObjective(0), this->currentSolution->getObjective(1));
     
@@ -83,7 +86,12 @@ void BranchAndBound::initialize(){
     this->problem->printSolution(this->currentSolution);
     printf("\n");
     
+    this->problem->printSolution(bestInObj1);
+    printf("\n");
+    
+    updateParetoGrid(bestInObj1);
     updateParetoGrid(this->currentSolution);
+    
     this->currentLevel = this->problem->getStartingLevel();
     this->totalLevels = this->problem->getFinalLevel();
     this->branches = 0;
@@ -166,7 +174,7 @@ void BranchAndBound::solve(){
    
        
             if (updated == 1)
-                printf(" + [%6lu]", this->paretoContainer->getSize());
+                printf(" + [%6lu] \n", this->paretoContainer->getSize());
         }
         printf("\n");
 
@@ -410,14 +418,12 @@ int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *>& bu
     DominanceRelation domination;
     unsigned long index = 0;
     int improves = 1;
-    if (paretoFrontSize > 0) {
-        
+    if (paretoFrontSize > 0)
         for (index = 0; index < paretoFrontSize && improves == 1; index++) {
             domination = dominanceOperator(solution, bucketFront.at(index));
             if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals)
                 improves = 0;
         }
-    }
     
     return improves;
 }

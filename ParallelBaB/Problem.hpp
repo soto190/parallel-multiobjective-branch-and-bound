@@ -46,7 +46,8 @@ public:
     virtual int getStartingLevel() = 0;
     virtual int getFinalLevel() = 0;
     
-    virtual Solution* createSolution() = 0;
+    virtual Solution * createSolution() = 0;
+    virtual Solution * getSolutionWithLowerBoundInObj(int nObj) = 0;
     
     void setName(const char* name);
     char * getName();

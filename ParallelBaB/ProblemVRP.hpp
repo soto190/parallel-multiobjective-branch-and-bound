@@ -26,6 +26,8 @@ public:
     double removeLastLevelEvaluation(Solution * solution, int newLevel);
     
     void createDefaultSolution(Solution * solution);
+    Solution * getSolutionWithLowerBoundInObj(int nObj);
+
     void printSolution(Solution * solution);
     void printPartialSolution(Solution * solution, int level);
     

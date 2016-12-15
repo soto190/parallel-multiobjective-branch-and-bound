@@ -265,6 +265,12 @@ void ProblemHCSP::createDefaultSolution(Solution *solution){
 
 }
 
+Solution * ProblemHCSP::getSolutionWithLowerBoundInObj(int nObj){
+    Solution * solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
+    
+    return solution;
+}
+
 void ProblemHCSP::printInstance(){
     
     printf("Hello from Problem Scheduling!\n");

@@ -82,6 +82,11 @@ double Problem::evaluatePartial(Solution * solution, int levelEvaluation){
 void Problem::createDefaultSolution(Solution * solution){
 }
 
+Solution * Problem::getSolutionWithLowerBoundInObj(int nObj){
+    Solution* solution = new Solution(this->totalObjectives, this->totalVariables);
+    return solution;
+}
+
 void Problem::printSolution(Solution * solution){
 
 }

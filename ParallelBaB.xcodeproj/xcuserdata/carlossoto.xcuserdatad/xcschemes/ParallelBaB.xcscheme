@@ -75,7 +75,7 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/carlossoto/Documents/workspace/Instances/FJSSP/Kacem/Kacem-I0.txt"
+            argument = "/Users/carlossoto/Documents/workspace/Instances/FJSSP/Kacem/Kacem-I3.txt"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
