@@ -25,6 +25,12 @@ HandlerContainer::~HandlerContainer(){
 }
 
 HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double maxValY){
+    
+   /* if(maxValX < rows)
+        rows = maxValX;
+    if(maxValY < cols)
+        cols = maxValY;
+    */
     totalElements = 0;
     unexploredBuckets = rows * cols;
     activeBuckets = 0;
@@ -38,6 +44,8 @@ HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double ma
     maxinx = maxValX;
     maxiny = maxValY;
     int divs = 0;
+    
+   
     double rx = maxValX / cols;
     double ry = maxValY / rows;
         
@@ -51,9 +59,8 @@ HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double ma
         rangeiny[divs] = rangeiny[divs - 1] + ry;
     
     int r = 0;
-    for (r = 0; r < rows * cols; r++){
+    for (r = 0; r < rows * cols; r++)
         gridState[r] = BucketState::unexplored;
-    }
     
 }
 
@@ -219,9 +226,8 @@ std::vector<Solution *> HandlerContainer::getParetoFront(){
                 std::vector<Solution * > bucket = this->get(bucketX, bucketY);
                 paretoFront.insert(paretoFront.begin(), bucket.begin() , bucket.end());
             }
-            else if (state == 2){
+            else if (state == 2)
                 bucketX = this->getCols();
-            }
         }
     }
     
