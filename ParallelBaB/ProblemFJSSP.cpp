@@ -23,7 +23,9 @@ ProblemFJSSP::~ProblemFJSSP(){
     delete [] operationIsFromJob;
     delete [] assignationMinPij;
     delete [] minWorkload;
-
+    delete [] assignationBestWorkload;
+    delete [] bestWorkloads;
+    
 }
 /**
  * The first part of the array is the order of execution.
@@ -41,173 +43,6 @@ double ProblemFJSSP::evaluatePartial(Solution * solution, int levelEvaluation){
     return 0.0;
 }
 
-double ProblemFJSSP::evaluatePartialTest1(Solution * solution, int levelEvaluation){
-    
-    int makespan = 0;
-    int maxWorkload = 0;
-    int totalWorkload = 0;
-    
-    int operationInPosition = 0;
-    int currentOperation = 0;
-    int operation = 0;
-    int job = 0;
-    int machine = 0;
-    int numberOp = 0;
-    
-    int operationOfJob [this->totalJobs];
-    int startingTime [this->totalOperations];
-    int endingTime [this->totalOperations];
-    int timeInMachine [this->totalMachines];
-    int workload [this->totalMachines];
-    
-    for (operation = 0; operation < this->totalOperations; operation++) {
-        startingTime[operation] = 0;
-        endingTime[operation] = 0;
-    }
-    
-    for (job = 0; job < this->totalJobs; job++)
-        operationOfJob[job] = 0;
-    
-    for (machine = 0; machine < this->totalMachines; machine++){
-        timeInMachine[machine] = 0;
-        workload[machine] = 0;
-    }
-    
-    for (operationInPosition = 0; operationInPosition <= levelEvaluation; operationInPosition++) {
-        
-        currentOperation = solution->getVariable(operationInPosition);
-        job = this->operationIsFromJob[currentOperation];
-        machine = solution->getVariable(operationInPosition + this->totalOperations);
-        
-        numberOp = this->operationInJobIsNumber[job][operationOfJob[job]];
-        
-        /** With the number of operation and the machine we can continue. **/
-        workload[machine] += this->processingTime[numberOp][machine];
-        totalWorkload += this->processingTime[numberOp][machine];
-        
-        if (operationOfJob[job] == 0) { /** If it is the first operation of the job.**/
-            
-            startingTime[numberOp] = timeInMachine[machine];
-            timeInMachine[machine] += this->processingTime[numberOp][machine];
-            endingTime[numberOp] = timeInMachine[machine];
-            
-        }else{
-            if(endingTime[numberOp - 1] > timeInMachine[machine]){ /**The operation is waiting for their dependency operation.**/
-                
-                startingTime[numberOp] = endingTime[numberOp - 1];
-                timeInMachine[machine] = endingTime[numberOp - 1] + this->processingTime[numberOp][machine];
-                endingTime[numberOp] = timeInMachine[machine];
-                
-            }else{ /**The operation starts when the machine is avaliable.**/
-                
-                startingTime[numberOp] = timeInMachine[machine];
-                timeInMachine[machine] += this->processingTime[numberOp][machine];
-                endingTime[numberOp] = timeInMachine[machine];
-                
-            }
-        }
-        
-        operationOfJob[job]++;
-        
-        if (timeInMachine[machine] > makespan)
-            makespan = timeInMachine[machine];
-        
-        if(workload[machine] > maxWorkload)
-            maxWorkload = workload[machine];
-    }
-    
-    solution->setObjective(0, makespan);
-    solution->setObjective(1, maxWorkload);
-    
-    return 0.0;
-}
-
-double ProblemFJSSP::evaluatePartialTest2(Solution * solution, int levelEvaluation){
-    
-    int makespan = 0;
-    int maxWorkload = 0;
-    int totalWorkload = 0;
-    
-    int operationInPosition = 0;
-    int operation = 0;
-    int job = 0;
-    int machine = 0;
-    int numberOp = 0;
-    
-    int operationOfJob [this->totalJobs];
-    int startingTime [this->totalOperations];
-    int endingTime [this->totalOperations];
-    int timeInMachine [this->totalMachines];
-    int workload [this->totalMachines];
-    
-    for (operation = 0; operation < this->totalOperations; operation++) {
-        startingTime[operation] = 0;
-        endingTime[operation] = 0;
-    }
-    
-    for (job = 0; job < this->totalJobs; job++)
-        operationOfJob[job] = 0;
-    
-    for (machine = 0; machine < this->totalMachines; machine++){
-        timeInMachine[machine] = 0;
-        workload[machine] = 0;
-    }
-
-    int orginalLevelEvaluation = levelEvaluation;
-    orginalLevelEvaluation *= 1;
-    
-    if(levelEvaluation > this->getFinalLevel() / 2)
-        levelEvaluation = levelEvaluation / 2;
-
-    
-    for (operationInPosition = 0; operationInPosition <= levelEvaluation; operationInPosition++) {
-
-        job = solution->getVariable(operationInPosition);
-        machine = solution->getVariable(operationInPosition + this->totalOperations);
-        
-        numberOp = this->operationInJobIsNumber[job][operationOfJob[job]];
-        
-        /** With the number of operation and the machine we can continue. **/
-        workload[machine] += this->processingTime[numberOp][machine];
-        totalWorkload += this->processingTime[numberOp][machine];
-        
-        if (operationOfJob[job] == 0) { /** If it is the first operation of the job.**/
-            
-            startingTime[numberOp] = timeInMachine[machine];
-            timeInMachine[machine] += this->processingTime[numberOp][machine];
-            endingTime[numberOp] = timeInMachine[machine];
-            
-        }else{
-            if(endingTime[numberOp - 1] > timeInMachine[machine]){ /**The operation is waiting for their dependency operation.**/
-                
-                startingTime[numberOp] = endingTime[numberOp - 1];
-                timeInMachine[machine] = endingTime[numberOp - 1] + this->processingTime[numberOp][machine];
-                endingTime[numberOp] = timeInMachine[machine];
-                
-            }else{ /**The operation starts when the machine is avaliable.**/
-                
-                startingTime[numberOp] = timeInMachine[machine];
-                timeInMachine[machine] += this->processingTime[numberOp][machine];
-                endingTime[numberOp] = timeInMachine[machine];
-                
-            }
-        }
-        
-        operationOfJob[job]++;
-        
-        if (timeInMachine[machine] > makespan)
-            makespan = timeInMachine[machine];
-        
-        if(workload[machine] > maxWorkload)
-            maxWorkload = workload[machine];
-    }
-    
-    solution->setObjective(0, makespan);
-    solution->setObjective(1, maxWorkload);
-    
-    return 0.0;
-}
-
 double ProblemFJSSP::evaluatePartialTest3(Solution * solution, int levelEvaluation){
     
     int makespan = 0;
@@ -221,7 +56,8 @@ double ProblemFJSSP::evaluatePartialTest3(Solution * solution, int levelEvaluati
     int numberOp = 0;
     
     int minPij = this->sumOfMinPij;
-    
+    int bestWL [this->totalMachines];
+
     int operationOfJob [this->totalJobs];
     int startingTime [this->totalOperations];
     int endingTime [this->totalOperations];
@@ -239,6 +75,7 @@ double ProblemFJSSP::evaluatePartialTest3(Solution * solution, int levelEvaluati
     for (machine = 0; machine < this->totalMachines; machine++){
         timeInMachine[machine] = 0;
         workload[machine] = 0;
+        bestWL[machine] = this->bestWorkloads[machine];
     }
     
     for (operationInPosition = 0; operationInPosition <= levelEvaluation; operationInPosition++) {
@@ -248,12 +85,15 @@ double ProblemFJSSP::evaluatePartialTest3(Solution * solution, int levelEvaluati
         
         numberOp = this->operationInJobIsNumber[job][operationOfJob[job]];
         
+        /** The minimun total workload is reduced. **/
+        minPij -= this->processingTime[numberOp][this->assignationMinPij[machine]];
         
-        minPij -= this->processingTime[numberOp][this->assignationMinPij[numberOp]];
         /** With the number of operation and the machine we can continue. **/
         workload[machine] += this->processingTime[numberOp][machine];
         totalWorkload += this->processingTime[numberOp][machine];
         
+        bestWL[this->assignationBestWorkload[numberOp]] -= this->processingTime[numberOp][this->assignationBestWorkload[numberOp]];
+    
         if (operationOfJob[job] == 0) { /** If it is the first operation of the job.**/
             if(timeInMachine[machine] >= this->releaseTime[job]){
                 startingTime[numberOp] = timeInMachine[machine];
@@ -282,26 +122,21 @@ double ProblemFJSSP::evaluatePartialTest3(Solution * solution, int levelEvaluati
         }
         
         operationOfJob[job]++;
-        
+       
         if (timeInMachine[machine] > makespan)
             makespan = timeInMachine[machine];
         
         if(workload[machine] > maxWorkload)
             maxWorkload = workload[machine];
     }
-    
-//    int tempMaxWorkload = (maxWorkload + minPij) / this->totalMachines;
-//    if (tempMaxWorkload > maxWorkload)
-//        maxWorkload = tempMaxWorkload;
+
+    for (machine = 0; machine < this->totalMachines; machine++)
+        if(workload[machine] + bestWL[machine] > maxWorkload)
+            maxWorkload = workload[machine] + bestWL[machine];
     
     solution->setObjective(0, makespan);
-    //solution->setObjective(1, totalWorkload + minPij);
-
-    
-    //    solution->setObjective(0, makespan);
     solution->setObjective(1, maxWorkload);
-    //solution->setObjective(2, totalWorkload);
-
+    //solution->setObjective(2, totalWorkload + minPij);
     
     return 0.0;
 }
@@ -348,7 +183,7 @@ Solution * ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj){
     if(nObj == 0){
         this->createDefaultSolution(solution);
     }else if(nObj == 1){
-        buildSolutionWithGoodMaxWorkload(solution);
+        solution = this->goodSolutionWithMaxWorkload;
     }
     else if(nObj == 2){
         int job = 0;
@@ -382,127 +217,6 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkload(Solution * solution){
 
 }
 
-void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv1(Solution *solution){
-    
-    int nJob = 0, nOperation = 0, nMachine = 0; /** Counters to handle in 'for' loops. **/
-    int countOperations = 0;
-    int procTiOp = 0;
-    int maxWorkloadIsReduced = 1;
-    
-    int maxWorkload = 0;
-    int minWorkload = INT_MAX;
-    int maxWorkloadObj = 0;
-    int totalWorkload = 0;
-    
-    int operationOfJob [this->totalJobs];
-    int workload [this->totalMachines];
-    int maxWorkloadedMachine = 0;
-    int minWorkloadedMachine = 0;
-    
-    
-    for (nMachine = 0; nMachine < this->totalMachines; nMachine++)
-        workload[nMachine] = 0;
-    
-    int counterOperations = 0;
-    for (nJob = 0; nJob < this->totalJobs; nJob++){
-        operationOfJob[nJob] = 0;
-        for (nOperation = 0; nOperation < this->jobHasNoperations[nJob]; nOperation++){
-            
-            nMachine = this->assignationMinPij[counterOperations];
-            procTiOp = this->processingTime[counterOperations][nMachine];
-            workload[nMachine] += procTiOp;
-            totalWorkload += procTiOp;
-            
-            solution->setVariable(countOperations, nJob);
-            solution->setVariable((counterOperations * 2) + 1, nMachine);
-            
-            countOperations += 2;
-            counterOperations++;
-        }
-    }
-    
-    /** Computes the workloads. **/
-
-    for (nMachine = 0; nMachine < this->totalMachines; nMachine++) {
-        if(workload[nMachine] > maxWorkload) {
-            maxWorkload = workload[nMachine];
-            maxWorkloadedMachine = nMachine;
-            maxWorkloadObj = workload[nMachine];
-        }
-        
-        if(workload[nMachine] < minWorkload) {
-            minWorkload = workload[nMachine];
-            minWorkloadedMachine = nMachine;
-        }
-    }
-    
-    /** TODO: Some code inside the while can be optimized. **/
-    /** Reallocate some operations. **/
-    while (maxWorkloadIsReduced == 1) {
-        
-        int minOperationInMinMachine = 0;
-        int minWeightInMin = INT_MAX;
-        int bestMinMachine = 0;
-        minWorkload = INT_MAX;
-        
-        /** Searches for the min operation's processing in the less loaded machine. **/
-        for (nOperation = 0; nOperation < this->totalOperations; nOperation++)
-            if(solution->getVariable((nOperation * 2) + 1) == maxWorkloadedMachine)
-                if(this->processingTime[nOperation][minWorkloadedMachine] < minWeightInMin){
-                    minOperationInMinMachine = nOperation;
-                    minWeightInMin = this->processingTime[nOperation][minWorkloadedMachine];
-                }
-        
-        /** Removes from the most loaded machine the choosen operation. **/
-        workload[maxWorkloadedMachine] -= this->processingTime[minOperationInMinMachine][maxWorkloadedMachine];
-        totalWorkload -= this->processingTime[minOperationInMinMachine][maxWorkloadedMachine];
-        
-        /** Test the removed operation in all the machines to choose the minimun increment. **/
-        for (nMachine = 0; nMachine < this->totalMachines; nMachine++) {
-            workload[nMachine] += this->processingTime[minOperationInMinMachine][nMachine];
-            if (workload[nMachine] < minWorkload) {
-                bestMinMachine = nMachine;
-                minWorkload = workload[nMachine];
-            }
-            workload[nMachine] -= this->processingTime[minOperationInMinMachine][nMachine];
-        }
-        
-        /** Applies the change. **/
-        totalWorkload += this->processingTime[minOperationInMinMachine][bestMinMachine];
-        workload[bestMinMachine] += this->processingTime[minOperationInMinMachine][bestMinMachine];
-        solution->setVariable((minOperationInMinMachine * 2) + 1, bestMinMachine);
-        
-        /** Recalculates the maxWorkload and minWorkload for the next iteration. **/
-        maxWorkload = 0;
-        minWorkload = INT_MAX;
-        
-        for (nMachine = 0; nMachine < this->totalMachines; nMachine++) {
-            if(workload[nMachine] > maxWorkload) {
-                maxWorkload = workload[nMachine];
-                maxWorkloadedMachine = nMachine;
-            }
-            
-            if(workload[nMachine] < minWorkload) {
-                minWorkload = workload[nMachine];
-                minWorkloadedMachine = nMachine;
-            }
-        }
-        
-        if(maxWorkload < maxWorkloadObj)
-            maxWorkloadObj = maxWorkload;
-        else{
-            /** Removes the change. **/
-            workload[maxWorkloadedMachine] += this->processingTime[minOperationInMinMachine][maxWorkloadedMachine];
-            workload[bestMinMachine] -= this->processingTime[minOperationInMinMachine][bestMinMachine];
-            totalWorkload += this->processingTime[minOperationInMinMachine][maxWorkloadedMachine];
-            totalWorkload -= this->processingTime[minOperationInMinMachine][bestMinMachine];
-            
-            solution->setVariable((minOperationInMinMachine * 2) + 1, maxWorkloadedMachine);
-            maxWorkloadIsReduced = 0;
-        }
-    }
-}
-
 void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution *solution){
    
     int nJob = 0;
@@ -523,8 +237,8 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution *solution){
     
     for (nMachine = 0; nMachine < this->totalMachines; nMachine++)
         workload[nMachine] = 0;
-
-    /** Assign the operations to machines which generates the min TotalWorkload and computes the machine's workloads. **/
+    
+    /** Assign the operations to machines which generates the min TotalWorkload and computes the machines workloads. **/
     int counterOperations = 0;
     for (nJob = 0; nJob < this->totalJobs; nJob++){
         operationOfJob[nJob] = 0;
@@ -532,6 +246,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution *solution){
             
             nMachine = this->assignationMinPij[counterOperations];
             procTiOp = this->processingTime[counterOperations][nMachine];
+            this->assignationBestWorkload[counterOperations] = nMachine;
             
             workload[nMachine] += procTiOp;
             totalWorkload += procTiOp;
@@ -549,14 +264,14 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution *solution){
         }
     }
     
-    int minOperationInMinMachine = 0;
-    int bestMinMachine = 0;
+    int bestOperation = 0;
+    int bestMachine = 0;
     
     /** Searches for the min operation's processing with the less increment. **/
     while (maxWorkloadIsReduced == 1) {
         
-        minOperationInMinMachine = 0;
-        bestMinMachine = 0;
+        bestOperation = 0;
+        bestMachine = 0;
         minWorkload = INT_MAX;
         
         for (nOperation = 0; nOperation < this->totalOperations; nOperation++)
@@ -564,25 +279,27 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution *solution){
                 for (nMachine = 0; nMachine < this->totalMachines; nMachine++)
                     if(nMachine != maxWorkloadedMachine
                        && (workload[nMachine] + this->processingTime[nOperation][nMachine]) < minWorkload) {
-                        minOperationInMinMachine = nOperation;
-                        bestMinMachine = nMachine;
+                        bestOperation = nOperation;
+                        bestMachine = nMachine;
                         minWorkload = workload[nMachine] + this->processingTime[nOperation][nMachine];
                     }
         
         /** Applies the change. **/
-        totalWorkload -= this->processingTime[minOperationInMinMachine][maxWorkloadedMachine];
-        workload[maxWorkloadedMachine] -= this->processingTime[minOperationInMinMachine][maxWorkloadedMachine];
+        totalWorkload -= this->processingTime[bestOperation][maxWorkloadedMachine];
+        workload[maxWorkloadedMachine] -= this->processingTime[bestOperation][maxWorkloadedMachine];
+      
+        totalWorkload += this->processingTime[bestOperation][bestMachine];
+        workload[bestMachine] += this->processingTime[bestOperation][bestMachine];
         
-        totalWorkload += this->processingTime[minOperationInMinMachine][bestMinMachine];
-        workload[bestMinMachine] += this->processingTime[minOperationInMinMachine][bestMinMachine];
+        solution->setVariable((bestOperation * 2) + 1, bestMachine);
         
-        solution->setVariable((minOperationInMinMachine * 2) + 1, bestMinMachine);
+        this->assignationBestWorkload[bestOperation] = bestMachine;
         
         /** Recalculates the maxWorkload and minWorkload for the next iteration. **/
         maxWorkload = 0;
         minWorkload = INT_MAX;
         int lastMaxWorkloadedMachine = maxWorkloadedMachine;
-        int lastBestWorkloadMachine = bestMinMachine;
+        int lastBestWorkloadMachine = bestMachine;
         for (nMachine = 0; nMachine < this->totalMachines; nMachine++)
             if(workload[nMachine] > maxWorkload) {
                 maxWorkload = workload[nMachine];
@@ -595,18 +312,24 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution *solution){
             maxWorkloadObj = maxWorkload;
         else{
             /** Removes the change. **/
-            workload[lastMaxWorkloadedMachine] += this->processingTime[minOperationInMinMachine][maxWorkloadedMachine];
-            workload[lastBestWorkloadMachine] -= this->processingTime[minOperationInMinMachine][lastBestWorkloadMachine];
-            totalWorkload += this->processingTime[minOperationInMinMachine][lastMaxWorkloadedMachine];
-            totalWorkload -= this->processingTime[minOperationInMinMachine][lastBestWorkloadMachine];
+            workload[lastMaxWorkloadedMachine] += this->processingTime[bestOperation][lastMaxWorkloadedMachine];
+            workload[lastBestWorkloadMachine] -= this->processingTime[bestOperation][lastBestWorkloadMachine];
             
-            solution->setVariable((minOperationInMinMachine * 2) + 1, lastMaxWorkloadedMachine);
+            totalWorkload += this->processingTime[bestOperation][lastMaxWorkloadedMachine];
+            totalWorkload -= this->processingTime[bestOperation][lastBestWorkloadMachine];
+            
+            solution->setVariable((bestOperation * 2) + 1, lastMaxWorkloadedMachine);
             solution->setObjective(1, workload[lastMaxWorkloadedMachine]);
+            
+            this->assignationBestWorkload[bestOperation] = lastMaxWorkloadedMachine;
+
             maxWorkloadIsReduced = 0;
         }
     }
+    
+    for (nMachine = 0; nMachine < this->totalMachines; nMachine++)
+        this->bestWorkloads[nMachine] = workload[nMachine];
 }
-
 
 /** For all the variables the lower bound is 0. **/
 int ProblemFJSSP::getLowerBound(int indexVar){
@@ -693,6 +416,8 @@ void ProblemFJSSP::loadInstance(char* filePath[]){
     this->processingTime = new int * [this->totalOperations];
     this->assignationMinPij = new int [this->totalOperations];
     this->minWorkload = new int[this->totalMachines];
+    this->assignationBestWorkload = new int [this->totalOperations];
+    this->bestWorkloads = new int[this->totalMachines];
    
     int operation = 0;
     int machine = 0;
@@ -731,6 +456,9 @@ void ProblemFJSSP::loadInstance(char* filePath[]){
             this->operationIsFromJob[operationCounter++] = job;
         }
     }
+    goodSolutionWithMaxWorkload = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
+    buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
+
 }
 
 void ProblemFJSSP::printInstance(){}
@@ -772,7 +500,7 @@ double ProblemFJSSP::printSchedule(Solution * solution){
     int maxWorkload = 0;
     int totalWorkload = 0;
     
-    int currentJob = 0;
+    int operationInPosition = 0;
     int operation = 0;
     int job = 0;
     int machine = 0;
@@ -797,11 +525,15 @@ double ProblemFJSSP::printSchedule(Solution * solution){
         workload[machine] = 0;
     }
     
-    for (currentJob = 0; currentJob < this->totalOperations; currentJob++) {
-        job = solution->getVariable(currentJob);
-        machine = solution->getVariable(currentJob + this->totalOperations);
+    printf("\n");
+    for (operationInPosition = 0; operationInPosition < this->totalOperations; operationInPosition++) {
+        
+        job = solution->getVariable(operationInPosition * 2);
+        machine = solution->getVariable((operationInPosition * 2) + 1);
+        
         numberOp = this->operationInJobIsNumber[job][operationOfJob[job]];
         
+        /** With the number of operation and the machine we can continue. **/
         workload[machine] += this->processingTime[numberOp][machine];
         totalWorkload += this->processingTime[numberOp][machine];
         
@@ -815,6 +547,7 @@ double ProblemFJSSP::printSchedule(Solution * solution){
                 timeInMachine[machine] = this->releaseTime[job] + this->processingTime[numberOp][machine];
                 endingTime[numberOp] = timeInMachine[machine];
             }
+            
         }else{
             if(endingTime[numberOp - 1] > timeInMachine[machine]){ /**The operation is waiting for their dependency operation.**/
                 
@@ -841,12 +574,10 @@ double ProblemFJSSP::printSchedule(Solution * solution){
     }
     
     solution->setObjective(0, makespan);
-    //solution->setObjective(0, maxWorkload);
     solution->setObjective(1, maxWorkload);
-    //solution->setObjective(2, totalWorkload);
     
     for (operation = 0; operation < this->totalOperations; operation++)
-        printf("%d: %d %d - %d \n", operation, solution->getVariable(operation + this->totalOperations), startingTime[operation], endingTime[operation]);
+        printf("%d: %d %d - %d \n", operation, solution->getVariable((operation * 2) + 1), startingTime[operation], endingTime[operation]);
     
     printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
     

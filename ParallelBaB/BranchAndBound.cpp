@@ -86,6 +86,7 @@ void BranchAndBound::initialize(){
     this->problem->printSolution(this->currentSolution);
     printf("\n");
     
+    printf("Best workload:\n");
     this->problem->printSolution(bestInObj1);
     printf("\n");
     
@@ -152,7 +153,7 @@ void BranchAndBound::solve(){
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
         
-        //printCurrentSolution();
+        printCurrentSolution();
         
         if (aLeafHasBeenReached() == 0)
             if(improvesTheGrid(this->currentSolution) == 1) // if(improvesTheLowerBound(this->currentSolution) == 1)
@@ -174,12 +175,12 @@ void BranchAndBound::solve(){
    
        
             if (updated == 1){
-                printCurrentSolution();
+                // printCurrentSolution();
                 printf(" + [%6lu] \n", this->paretoContainer->getSize());
-                printf("\n");
+                // printf("\n");
             }
         }
-        //printf("\n");
+        printf("\n");
 
         /*std::chrono::seconds sec(maxTime);
         if (time_span.count() > sec.count()) {
