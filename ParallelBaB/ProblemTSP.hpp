@@ -75,6 +75,8 @@ public:
     /**Print information**/
     void printInstance();
     void printProblemInfo();
+    void printSolutionInfo(Solution * solution);
+
     
 private:
     void readCost(char * pathFile);

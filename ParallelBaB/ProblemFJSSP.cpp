@@ -138,6 +138,16 @@ double ProblemFJSSP::evaluatePartialTest3(Solution * solution, int levelEvaluati
     solution->setObjective(1, maxWorkload);
     //solution->setObjective(2, totalWorkload + minPij);
     
+    if(maxWorkload < this->bestWorkloadFound){
+        this->bestWorkloadFound = maxWorkload;
+
+        for (machine = 0; machine < this->totalMachines; machine++)
+            this->bestWorkloads[machine] = workload[machine];
+        
+        for (operation = 0; operation < this->totalOperations; operation++)
+            this->assignationBestWorkload[operation] = solution->getVariable((operation * 2) + 1);
+    }
+    
     return 0.0;
 }
 
@@ -327,6 +337,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution *solution){
         }
     }
     
+    this->bestWorkloadFound = maxWorkloadObj;
     for (nMachine = 0; nMachine < this->totalMachines; nMachine++)
         this->bestWorkloads[nMachine] = workload[nMachine];
 }
@@ -411,7 +422,7 @@ void ProblemFJSSP::loadInstance(char* filePath[]){
     
     this->operationIsFromJob = new int[this->totalOperations];
     this->sumOfMinPij = 0;
-    
+    this->bestWorkloadFound = INT_MAX;
     std::getline(infile, line);
     this->processingTime = new int * [this->totalOperations];
     this->assignationMinPij = new int [this->totalOperations];
@@ -494,7 +505,11 @@ void ProblemFJSSP::printProblemInfo(){
     }
 }
 
-double ProblemFJSSP::printSchedule(Solution * solution){
+void ProblemFJSSP::printSolutionInfo(Solution *solution){
+    printSchedule(solution);
+}
+
+void ProblemFJSSP::printSchedule(Solution * solution){
     
     int makespan = 0;
     int maxWorkload = 0;
@@ -525,7 +540,6 @@ double ProblemFJSSP::printSchedule(Solution * solution){
         workload[machine] = 0;
     }
     
-    printf("\n");
     for (operationInPosition = 0; operationInPosition < this->totalOperations; operationInPosition++) {
         
         job = solution->getVariable(operationInPosition * 2);
@@ -580,8 +594,6 @@ double ProblemFJSSP::printSchedule(Solution * solution){
         printf("%d: %d %d - %d \n", operation, solution->getVariable((operation * 2) + 1), startingTime[operation], endingTime[operation]);
     
     printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
-    
-    return 0.0;
 }
 
 void ProblemFJSSP::printSolution(Solution * solution){

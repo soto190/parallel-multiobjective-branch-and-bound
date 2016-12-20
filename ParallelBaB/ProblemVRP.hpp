@@ -46,7 +46,9 @@ public:
     
     void printInstance();
     void printProblemInfo();
+    void printSolutionInfo(Solution * solution);
     void loadInstance(char* path[]);
+    
     
 };
 

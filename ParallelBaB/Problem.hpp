@@ -69,6 +69,7 @@ public:
     virtual void loadInstance(char* path[]);
     virtual void printInstance();
     virtual void printProblemInfo();
+    virtual void printSolutionInfo(Solution * solution);
 };
 
 #endif /* Problem_hpp */

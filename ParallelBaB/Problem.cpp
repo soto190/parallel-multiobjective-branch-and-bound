@@ -87,19 +87,15 @@ Solution * Problem::getSolutionWithLowerBoundInObj(int nObj){
     return solution;
 }
 
-void Problem::printSolution(Solution * solution){
+void Problem::printSolution(Solution * solution){}
 
-}
+void Problem::printPartialSolution(Solution * solution, int level){}
 
-void Problem::printPartialSolution(Solution * solution, int level){
-}
+void Problem::printInstance(){}
 
+void Problem::printProblemInfo(){}
 
-void Problem::printInstance(){
-}
-
-void Problem::printProblemInfo(){
-}
+void Problem::printSolutionInfo(Solution *solution){}
 
 void Problem::loadInstance(char * filePath[]){
 }

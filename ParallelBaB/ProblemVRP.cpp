@@ -63,6 +63,10 @@ void ProblemVRP::printInstance(){
 void ProblemVRP::printProblemInfo(){
 }
 
+void ProblemVRP::printSolutionInfo(Solution *solution){
+    printf("TODO: Implement this function.\n");
+}
+
 void ProblemVRP::loadInstance(char *path[]){
 }
 

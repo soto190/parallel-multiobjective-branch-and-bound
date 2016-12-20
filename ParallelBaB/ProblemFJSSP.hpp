@@ -45,6 +45,7 @@ public:
     Solution * getSolutionWithLowerBoundInObj(int nObj);
     void printSolution(Solution * solution);
     void printPartialSolution(Solution * solution, int level);
+    void printSolutionInfo(Solution * solution);
     
     int getLowerBound(int indexVar);
     int getUpperBound(int indexVar);
@@ -92,6 +93,7 @@ public:
     int totalOperations;
     int totalMachines;
     int sumOfMinPij;
+    int bestWorkloadFound;
     int * assignationMinPij;
     int * assignationBestWorkload;
     int * bestWorkloads;
@@ -144,7 +146,7 @@ public:
 
     void printInstance();
     void printProblemInfo();
-    double printSchedule(Solution * solution);
+    void printSchedule(Solution * solution);
     
     double evaluatePartialTest3(Solution * solution, int currentLevel);
 

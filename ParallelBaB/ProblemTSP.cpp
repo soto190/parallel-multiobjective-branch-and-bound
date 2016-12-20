@@ -417,6 +417,10 @@ void ProblemTSP::printSolution(Solution * solution){
     printPartialSolution(solution, this->totalVariables);
 }
 
+void ProblemTSP::printSolutionInfo(Solution *solution){
+    printf("TODO: Implement this function.\n");
+}
+
 void ProblemTSP::printPartialSolution(Solution * solution, int level){
     
 }

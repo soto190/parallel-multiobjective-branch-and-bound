@@ -77,6 +77,8 @@ public:
     
     void printInstance();
     void printProblemInfo();
+    void printSolutionInfo(Solution * solution);
+
     
 };
 #endif /* ProblemHCSP_hpp */
