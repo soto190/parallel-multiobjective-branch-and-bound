@@ -55,6 +55,7 @@ BranchAndBound::~BranchAndBound(){
 }
 
 void BranchAndBound::initialize(){
+    this->start = std::clock();;
     
     this->treeOnAStack.resize(1000);
     this->levelOfTree.resize(1000);
@@ -136,7 +137,6 @@ void BranchAndBound::solve(){
      */
     //int maxTime = 10;
     this->initialize();
-    
     double timeUp = 0;
     //double saveEvery = 3600;
     // double maxTime = 0;
@@ -145,8 +145,8 @@ void BranchAndBound::solve(){
     printf("Starting Branch and Bound...\n");
     printf("Total levels %d...\n", totalLevels);
     
-    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-    std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+    this->t1 = std::chrono::high_resolution_clock::now();
+    this->t2 = std::chrono::high_resolution_clock::now();
     
     while(theTreeHasMoreBranches() == 1 && timeUp == 0){
         
@@ -181,16 +181,14 @@ void BranchAndBound::solve(){
         }
         // printf("\n");
 
-        /*std::chrono::seconds sec(maxTime);
-        if (time_span.count() > sec.count()) {
-         //timeUp = 1;
-        }
-         */
+        this->saveEvery(3600);
+        
+       
     }
 
     this->paretoFront = paretoContainer->getParetoFront();
     
-    t2 = std::chrono::high_resolution_clock::now();
+    this->t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
     this->totalTime = time_span.count();
 
@@ -233,7 +231,6 @@ int BranchAndBound::explore(Solution * solution){
         this->levelOfTree.pop_back();
         
         solution->setVariable(this->currentLevel, element);
-        
     }
     
     return 0;
@@ -630,4 +627,23 @@ int BranchAndBound::saveParetoFront(){
     }
     else printf("Unable to open file...\n");
     return 0;
+}
+
+void BranchAndBound::saveEvery(double timeInSeconds){
+    
+    if(((std::clock() - this->start ) / (double) CLOCKS_PER_SEC) > timeInSeconds){
+        this->start = std::clock();
+        
+        this->paretoFront = paretoContainer->getParetoFront();
+        
+        this->t2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+        this->totalTime = time_span.count();
+        
+        printf("The pareto front found is: \n");
+        this->printParetoFront(1);
+        this->saveParetoFront();
+        this->saveSummarize();
+        
+    }
 }

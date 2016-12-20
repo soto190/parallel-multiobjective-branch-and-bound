@@ -26,11 +26,11 @@ HandlerContainer::~HandlerContainer(){
 
 HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double maxValY){
     
-   /* if(maxValX < rows)
-        rows = maxValX;
-    if(maxValY < cols)
-        cols = maxValY;
-    */
+    if(maxValY < rows)
+        rows = maxValY;
+    if(maxValX < cols)
+        cols = maxValX;
+    
     totalElements = 0;
     unexploredBuckets = rows * cols;
     activeBuckets = 0;
@@ -219,7 +219,7 @@ std::vector<Solution *> HandlerContainer::getParetoFront(){
     int bucketX = 0;
     int bucketY = 0;
     
-    for (bucketY = 0; bucketY < this->getRows(); bucketY++) {
+    for (bucketY = 0; bucketY < this->getRows(); bucketY++)
         for (bucketX = 0; bucketX < this->getCols(); bucketX++) {
             int state = this->getStateOf(bucketX, bucketY);
             if (state == 1) {
@@ -229,7 +229,6 @@ std::vector<Solution *> HandlerContainer::getParetoFront(){
             else if (state == 2)
                 bucketX = this->getCols();
         }
-    }
     
     extractParetoFront(paretoFront);
     return paretoFront;

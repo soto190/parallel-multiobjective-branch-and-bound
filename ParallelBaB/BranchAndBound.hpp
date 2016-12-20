@@ -14,6 +14,7 @@
 #include <vector>
 #include <math.h>
 #include <chrono>
+#include <ctime>
 #include <fstream>
 #include <iomanip>
 #include "Problem.hpp"
@@ -67,6 +68,9 @@ public:
     char * summarizeFile;
     
     double totalTime;
+    std::clock_t start;
+    std::chrono::high_resolution_clock::time_point t1;
+    std::chrono::high_resolution_clock::time_point t2;
     
     void solve();
     void initialize();
@@ -79,6 +83,7 @@ public:
     int saveParetoFront();
     int setSummarizeFile(const char * outputFile);
     int saveSummarize();
+    void saveEvery(double timeInSeconds);
     
 private:
     void printCurrentSolution(int withVariables = 0);
