@@ -14,7 +14,6 @@ template <class T> GridContainer<T>::GridContainer(){
 template <class T> GridContainer3D<T>::GridContainer3D(){
 }
 
-
 HandlerContainer::HandlerContainer(){
 }
 
@@ -64,15 +63,10 @@ HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double ma
     
 }
 
-int * HandlerContainer::checkCoordinate(Solution *solution){
-
-    int * coordinate = new int[2];
+void HandlerContainer::checkCoordinate(Solution *solution, int * coordinate){
     
     coordinate[0] = binarySearch(solution->getObjective(0), this->rangeinx, this->getCols());
     coordinate[1] = binarySearch(solution->getObjective(1), this->rangeiny, this->getRows());
-    
-    return coordinate;
-
 }
 
 int HandlerContainer::set(Solution * solution, int x, int y){
@@ -114,13 +108,13 @@ int HandlerContainer::set(Solution * solution, int x, int y){
 /**
  NOTES TODO: Improve it by using a binary tree to search the bucket which will contain the new solution.
  **/
-int * HandlerContainer::add(Solution * solution){
+void HandlerContainer::add(Solution * solution){
 
-    int * coordinate = checkCoordinate(solution);
+    
+    int coordinate [2];
+    checkCoordinate(solution, coordinate);
     
     this->set(solution, coordinate[0], coordinate[1]);
-
-    return coordinate;
 }
 
 void HandlerContainer::clearContainer(int x, int y){
@@ -344,7 +338,7 @@ int HandlerContainer3D::set(Solution * solution, int x, int y, int z){
         int nCol = 0;
         int nRow = 0;
         int nDeep = 0;
-        for (nCol = z + 1; nDeep < this->grid.getDepth(); nDeep++)
+        for (nDeep = z + 1; nDeep < this->grid.getDepth(); nDeep++)
             for (nRow = y + 1; nRow < this->grid.getRows(); nRow++)
                 for (nCol = x + 1; nCol < this->grid.getCols(); nCol++)
                     if(this->getStateOf(nCol, nRow, nDeep) == BucketState::dominated) /** If the bucket in (nCol, nRow) is dominated the exploration continue to the next row**/

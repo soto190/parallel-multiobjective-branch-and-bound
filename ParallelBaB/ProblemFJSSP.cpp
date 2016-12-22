@@ -307,7 +307,6 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution *solution){
         
         /** Recalculates the maxWorkload and minWorkload for the next iteration. **/
         maxWorkload = 0;
-        minWorkload = INT_MAX;
         int lastMaxWorkloadedMachine = maxWorkloadedMachine;
         int lastBestWorkloadMachine = bestMachine;
         for (nMachine = 0; nMachine < this->totalMachines; nMachine++)
@@ -527,6 +526,9 @@ void ProblemFJSSP::printSchedule(Solution * solution){
     int timeInMachine [this->totalMachines];
     int workload [this->totalMachines];
     
+    char gantt[this->totalMachines][255];
+    int time = 0;
+    
     for (operation = 0; operation < this->totalOperations; operation++) {
         startingTime[operation] = 0;
         endingTime[operation] = 0;
@@ -538,6 +540,11 @@ void ProblemFJSSP::printSchedule(Solution * solution){
     for (machine = 0; machine < this->totalMachines; machine++){
         timeInMachine[machine] = 0;
         workload[machine] = 0;
+        
+        /**creates an empty gantt**/
+        for (time = 0; time < 255; time++) {
+            gantt[machine][time] = ' ';
+        }
     }
     
     for (operationInPosition = 0; operationInPosition < this->totalOperations; operationInPosition++) {
@@ -578,6 +585,9 @@ void ProblemFJSSP::printSchedule(Solution * solution){
             }
         }
         
+        for (time = startingTime[numberOp]; time < endingTime[numberOp]; time++)
+            gantt[machine][time] = 'a' + job;
+        
         operationOfJob[job]++;
         
         if (timeInMachine[machine] > makespan)
@@ -590,10 +600,24 @@ void ProblemFJSSP::printSchedule(Solution * solution){
     solution->setObjective(0, makespan);
     solution->setObjective(1, maxWorkload);
     
+    printf("Op :  M  ti -  tf\n");
     for (operation = 0; operation < this->totalOperations; operation++)
-        printf("%d: %d %d - %d \n", operation, solution->getVariable((operation * 2) + 1), startingTime[operation], endingTime[operation]);
+        printf("%3d: %2d %3d - %3d \n", operation, solution->getVariable((operation * 2) + 1), startingTime[operation], endingTime[operation]);
     
     printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
+    
+    for (machine = 0; machine < this->totalMachines; machine++) {
+        printf("M%d  |", machine);
+        for (time = 0; time < makespan; time++)
+            printf("%3c", gantt[machine][time]);
+        printf("| %3d\n", workload[machine]);
+    }
+    
+    printf("Time:");
+    for (time = 0; time < makespan; time++)
+        printf("%3d", (time));
+    
+    printf("\n");
 }
 
 void ProblemFJSSP::printSolution(Solution * solution){
@@ -629,15 +653,6 @@ void ProblemFJSSP::printPartialSolution(Solution * solution, int level){
         for (indexVar = level + 1; indexVar < this->totalOperations; indexVar ++)
             printf("  - ");
         
-        /*
-        printf(" | ");
-
-        for (indexVar = this->totalOperations; indexVar <= level + this->totalOperations; indexVar++)
-            printf("%3d ", solution->getVariable(indexVar));
-        
-        for (indexVar = level + this->totalOperations + 1; indexVar < this->getNumberOfVariables(); indexVar++)
-            printf("  - ");
-*/
         printf("|");
     }
 }

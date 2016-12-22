@@ -162,8 +162,8 @@ public:
     HandlerContainer();
     ~HandlerContainer();
     HandlerContainer(int width, int height, double maxValX, double maxValY);
-    int * add(Solution * solution);
-    int * checkCoordinate(Solution * solution); /**NOTE TODO: Choose an appropiate name method.**/
+    void add(Solution * solution);
+    void checkCoordinate(Solution * solution, int * coordinate); /**NOTE TODO: Choose an appropiate name method.**/
     int set(Solution * solution, int x, int y);
     
     

@@ -71,14 +71,16 @@ void BranchAndBound::initialize(){
     this->currentSolution = new Solution(numberOfObjectives, numberOfVariables);
     this->problem->createDefaultSolution(this->currentSolution);
 
+    Solution * bestInObj1 = this->problem->getSolutionWithLowerBoundInObj(1);
+    Solution * bestInObj2 = this->problem->getSolutionWithLowerBoundInObj(2);
+    
     this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
     
     int nObj = 0;
     for (nObj = 0; nObj < numberOfObjectives; nObj++)
         this->bestObjectivesFound->setObjective(nObj, this->currentSolution->getObjective(nObj));
 
-    Solution * bestInObj1 = this->problem->getSolutionWithLowerBoundInObj(1);
-    
+   
     this->bestObjectivesFound->setObjective(1, bestInObj1->getObjective(1));
     
     this->paretoContainer = new HandlerContainer(100, 100, this->currentSolution->getObjective(0), this->currentSolution->getObjective(1));
@@ -87,11 +89,15 @@ void BranchAndBound::initialize(){
     this->problem->printSolution(this->currentSolution);
     printf("\n");
     
-    printf("Best workload:\n");
+    printf("Best max workload:\n");
     this->problem->printSolution(bestInObj1);
+    printf("\n");
+    printf("Best total workload:\n");
+    this->problem->printSolution(bestInObj2);
     printf("\n");
     
     updateParetoGrid(bestInObj1);
+    updateParetoGrid(bestInObj2);
     updateParetoGrid(this->currentSolution);
     
     this->currentLevel = this->problem->getStartingLevel();
@@ -132,14 +138,8 @@ void BranchAndBound::initialize(){
 
 void BranchAndBound::solve(){
     
-    /**
-     * set maxTime as parameter.
-     */
-    //int maxTime = 10;
     this->initialize();
     double timeUp = 0;
-    //double saveEvery = 3600;
-    // double maxTime = 0;
     int updated = 0;
     
     printf("Starting Branch and Bound...\n");
@@ -172,7 +172,6 @@ void BranchAndBound::solve(){
             updated = this->updateParetoGrid(this->currentSolution);
 //            updated = this->updateLowerBound(this->currentSolution);
             this->totalUpdatesInLowerBound += updated;
-   
        
             if (updated == 1){
                 printCurrentSolution();
@@ -182,8 +181,6 @@ void BranchAndBound::solve(){
         // printf("\n");
 
         this->saveEvery(3600);
-        
-       
     }
 
     this->paretoFront = paretoContainer->getParetoFront();
@@ -197,7 +194,7 @@ void BranchAndBound::solve(){
     this->saveParetoFront();
     this->saveSummarize();
     
-    //this->problem->printSolutionInfo(this->paretoFront.back());
+    this->problem->printSolutionInfo(this->paretoFront.back());
 }
 
 /**
@@ -338,9 +335,9 @@ int BranchAndBound::updateParetoGrid(Solution * solution){
             this->bestObjectivesFound->objective[nObj] = solution->getObjective(nObj);
         }
 
-    int * bucketCoord = paretoContainer->checkCoordinate(solution);
+    int bucketCoord [2];
+    paretoContainer->checkCoordinate(solution, bucketCoord);
     int updated = this->paretoContainer->set(solution, bucketCoord[0], bucketCoord[1]);
-    delete [] bucketCoord;
     return updated;
 }
 
@@ -384,17 +381,8 @@ int BranchAndBound::improvesTheLowerBound(Solution * solution){
 }
 
 int BranchAndBound::improvesTheGrid(Solution * solution){
-    /**
-    int nObj = 0;
-    int flag = 0;
-    //for (nObj = 0; nObj < this->problem->totalObjectives; nObj++)
-        if (solution->getObjective(1) <= this->bestObjectivesFound->getObjective(1)) {
-            this->bestObjectivesFound->objective[1] = solution->getObjective(1);
-            flag = 1;
-        }
-    **/
-    //if (flag == 1) {
-        int * bucketCoordinate = paretoContainer->checkCoordinate(solution);
+        int bucketCoordinate[2];
+        paretoContainer->checkCoordinate(solution, bucketCoordinate);
         
         int stateOfBucket = this->paretoContainer->getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
         
@@ -407,10 +395,8 @@ int BranchAndBound::improvesTheGrid(Solution * solution){
             vector<Solution *> bucketFront = this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]);
             improveIt = this->improvesTheBucket(solution, bucketFront);
         }
-        delete bucketCoordinate;
         return improveIt;
-    // }
-    //return 0;
+
 }
 
 int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *>& bucketFront){
