@@ -176,6 +176,8 @@ void BranchAndBound::solve(){
             if (updated == 1){
                 printCurrentSolution();
                 printf(" + [%6lu] \n", this->paretoContainer->getSize());
+                //problem->printSolutionInfo(this->currentSolution);
+                //printf("\n");
             }
         }
         // printf("\n");

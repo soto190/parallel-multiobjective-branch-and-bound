@@ -605,18 +605,21 @@ void ProblemFJSSP::printSchedule(Solution * solution){
         printf("%3d: %2d %3d - %3d \n", operation, solution->getVariable((operation * 2) + 1), startingTime[operation], endingTime[operation]);
     
     printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
-    
+
     for (machine = 0; machine < this->totalMachines; machine++) {
         printf("M%d  |", machine);
         for (time = 0; time < makespan; time++)
             printf("%3c", gantt[machine][time]);
         printf("| %3d\n", workload[machine]);
     }
-    
+     printf("----");
+    for (time = 0; time < makespan; time++)
+        printf("---");
+    printf("--\n");
+
     printf("Time:");
     for (time = 0; time < makespan; time++)
         printf("%3d", (time));
-    
     printf("\n");
 }
 
