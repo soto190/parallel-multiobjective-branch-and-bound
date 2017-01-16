@@ -46,11 +46,13 @@ public:
     Solution* currentSolution;
     Solution* bestObjectivesFound;
     
-    std::vector<int> treeOnAStack;
-    std::vector<int> levelOfTree ;
+    std::vector<int> treeOnAStack; /** Remove **/
+    std::vector<int> levelOfTree ; /** Remove **/
     
-    int currentLevel;
-    int totalLevels;
+    int ** ivm_tree;
+    
+    int currentLevel; /** Active level **/
+    int totalLevels;  /** Number of tree levels **/
     
     unsigned long totalNodes;
     unsigned long branches;

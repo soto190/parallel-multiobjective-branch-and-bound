@@ -153,7 +153,7 @@ void BranchAndBound::solve(){
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
         
-        //printCurrentSolution();
+        printCurrentSolution();
         
         if (aLeafHasBeenReached() == 0)
             if(improvesTheGrid(this->currentSolution) == 1) // if(improvesTheLowerBound(this->currentSolution) == 1)
@@ -180,7 +180,7 @@ void BranchAndBound::solve(){
                 //printf("\n");
             }
         }
-        // printf("\n");
+        printf("\n");
 
         this->saveEvery(3600);
     }
