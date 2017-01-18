@@ -22,6 +22,7 @@
 #include "myutils.hpp"
 #include "GridContainer.hpp"
 #include "Dominance.hpp"
+#include "IVMTree.hpp"
 
 
 class BranchAndBound{
@@ -46,10 +47,10 @@ public:
     Solution* currentSolution;
     Solution* bestObjectivesFound;
     
-    std::vector<int> treeOnAStack; /** Remove **/
-    std::vector<int> levelOfTree ; /** Remove **/
+    //std::vector<int> treeOnAStack; /** Remove **/
+    //std::vector<int> levelOfTree ; /** Remove **/
     
-    int ** ivm_tree;
+    IVMTree * ivm_tree;
     
     int currentLevel; /** Active level **/
     int totalLevels;  /** Number of tree levels **/

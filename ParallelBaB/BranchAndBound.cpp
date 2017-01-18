@@ -19,7 +19,9 @@ BranchAndBound::BranchAndBound(Problem * problem){
     this->problem = problem;
     
     this->paretoContainer = new HandlerContainer();
-
+    
+    this->ivm_tree = new IVMTree();
+    
     this->currentLevel = 0;
     this->totalLevels = 0;
     this->totalNodes = 0;
@@ -50,19 +52,14 @@ BranchAndBound::~BranchAndBound(){
     delete this->currentSolution;
     
     this->paretoFront.clear();
-    this->treeOnAStack.clear();
-    this->levelOfTree.clear();
+    
+    delete this->ivm_tree;
 }
 
 void BranchAndBound::initialize(){
+    
     this->start = std::clock();;
     
-    this->treeOnAStack.resize(1000);
-    this->levelOfTree.resize(1000);
-    this->paretoFront.resize(1000);
-    
-    this->treeOnAStack.clear();
-    this->levelOfTree.clear();
     this->paretoFront.clear();
     
     int numberOfObjectives = this->problem->getNumberOfObjectives();
@@ -100,6 +97,9 @@ void BranchAndBound::initialize(){
     updateParetoGrid(bestInObj2);
     updateParetoGrid(this->currentSolution);
     
+    this->ivm_tree = new IVMTree(this->problem->totalVariables * 2, this->problem->getUpperBound(0));
+    this->ivm_tree->setActiveLevel(0);
+    
     this->currentLevel = this->problem->getStartingLevel();
     this->totalLevels = this->problem->getFinalLevel();
     this->branches = 0;
@@ -111,29 +111,30 @@ void BranchAndBound::initialize(){
     this->totalUpdatesInLowerBound = 0;
     this->totalNodes = this->computeTotalNodes(totalLevels);
 
-    int variable = 0;
+    int values = 0;
+    
+    for (values = 0; values < this->ivm_tree->getNumberOfRows(); values++) {
+        this->ivm_tree->limit_exploration[values] = this->getUpperBound(values);
+    }
     
     if (this->problem->getType() == ProblemType::permutation_with_repetition_and_combination) {
-        int interVar = 0;
-        for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--)
-            for (interVar = this->problem->getUpperBound(1); interVar >= this->problem->getLowerBound(1); interVar--) {
-                
-                this->treeOnAStack.push_back(variable);
-                this->levelOfTree.push_back(this->problem->getStartingLevel());
-                this->branches++;
-                
-                this->treeOnAStack.push_back(interVar);
-                this->levelOfTree.push_back(this->problem->getStartingLevel());
-                this->branches++;
-            }
-    }
-    else
-        for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
-            this->treeOnAStack.push_back(variable);
-            this->levelOfTree.push_back(this->problem->getStartingLevel());
+        for (values = this->problem->getLowerBound(0); values < this->problem->getUpperBound(0); values++)
+            this->ivm_tree->setNode(this->problem->getStartingLevel(), values);
+        
+        for (values = 0; values < this->problem->getUpperBound(1); values++){
+            this->ivm_tree->setNode(this->problem->getStartingLevel() + 1, values);
             this->branches++;
         }
-
+        this->ivm_tree->moveToNextLevel();
+        this->ivm_tree->setMaxValueInLevel(this->problem->getStartingLevel(), this->problem->getUpperBound(0));
+        this->ivm_tree->setMaxValueInLevel(this->problem->getStartingLevel() + 1, this->problem->getUpperBound(1));
+    }
+    else{
+        for (values = this->problem->getUpperBound(0); values >= this->problem->getLowerBound(0); values--) {
+            this->ivm_tree->setNode(this->problem->getStartingLevel(), values);
+            this->branches++;
+        }
+    }
 }
 
 void BranchAndBound::solve(){
@@ -208,28 +209,19 @@ int BranchAndBound::explore(Solution * solution){
     if(this->problem->getType() == ProblemType::permutation_with_repetition_and_combination){
         /** If permutation with combination. **/
         this->exploredNodes++;
-        int subLevel = this->levelOfTree.back();
-        int element = this->treeOnAStack.back();
-        this->treeOnAStack.pop_back();
-        this->levelOfTree.pop_back();
         
-        solution->setVariable((subLevel * 2) + 1, element);
+        int level = this->ivm_tree->getCurrentLevel();
+        int element = this->ivm_tree->getActiveNode();
+        
+        solution->setVariable(level, element);
         
         /****/
-        element = this->treeOnAStack.back();
-        this->currentLevel = this->levelOfTree.back();
-        this->treeOnAStack.pop_back();
-        this->levelOfTree.pop_back();
-        
-        solution->setVariable(this->currentLevel * 2, element);
+        element = this->ivm_tree->getFatherNode();
+        solution->setVariable(level - 1, element);
+        this->currentLevel = level;
     }
     else{
-        int element = this->treeOnAStack.back();
-        this->currentLevel = this->levelOfTree.back();
-        this->treeOnAStack.pop_back();
-        this->levelOfTree.pop_back();
         
-        solution->setVariable(this->currentLevel, element);
     }
     
     return 0;
@@ -255,8 +247,8 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
                 }
             
             if (belongs == 0) {
-                this->treeOnAStack.push_back(variable);
-                this->levelOfTree.push_back(currentLevel + 1);
+                //this->treeOnAStack.push_back(variable);
+                //this->levelOfTree.push_back(currentLevel + 1);
                 this->branches++;
             }
         }
@@ -265,8 +257,8 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
     /**If combination**/
     if(problem->getType() == ProblemType::combination)
         for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
-            this->levelOfTree.push_back(currentLevel + 1);
-            this->treeOnAStack.push_back(variable);
+            //this->levelOfTree.push_back(currentLevel + 1);
+            //this->treeOnAStack.push_back(variable);
             this->branches++;
         }
     
@@ -294,22 +286,25 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
                     }
                 }
             
-            if (belongs == 0)
-                for (intVariable = this->problem->getUpperBound(1); intVariable >= this->problem->getLowerBound(1); intVariable--) {
-                    this->treeOnAStack.push_back(variable);
-                    this->levelOfTree.push_back(currentLevel + 1);
-                    
-                    this->treeOnAStack.push_back(intVariable);
-                    this->levelOfTree.push_back(currentLevel + 1);
-                    this->branches++;
-                }
+            if (belongs == 0){
+                this->ivm_tree->setNode(currentLevel + 1, variable);
+                this->branches++;
+            }
         }
+        
+        this->ivm_tree->moveToNextLevel();
+        for (intVariable = this->problem->getUpperBound(1); intVariable >= this->problem->getLowerBound(1); intVariable--)
+            this->ivm_tree->setNode(currentLevel + 1, intVariable);
+        
     }
 }
 
 void BranchAndBound::prune(Solution * solution, int currentLevel){
+    this->ivm_tree->pruneActiveNode();
+    
     this->prunedBranches++;
-    int nextExploration = this->levelOfTree.back();
+    int nextExploration = this->ivm_tree->getNextNode();
+    //int nextExploration = this->levelOfTree.back();
     this->problem->removeLastEvaluation(solution, currentLevel, nextExploration);
 }
 
@@ -323,9 +318,7 @@ int BranchAndBound::aLeafHasBeenReached(){
  * If the Stack is empty then it does not have more branches to explore.
  */
 int BranchAndBound::theTreeHasMoreBranches(){
-    if(this->treeOnAStack.empty() == 1)
-        return 0;
-    return 1;
+    return this->ivm_tree->hasPendingBranches();
 }
 
 int BranchAndBound::updateParetoGrid(Solution * solution){
