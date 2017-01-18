@@ -45,6 +45,8 @@ public:
     int moveToNextLevel();
     int moveToNextNode();
     
+    void showIVM();
+    
 };
 
 #endif /* IVMTree_hpp */

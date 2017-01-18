@@ -97,7 +97,7 @@ void BranchAndBound::initialize(){
     updateParetoGrid(bestInObj2);
     updateParetoGrid(this->currentSolution);
     
-    this->ivm_tree = new IVMTree(this->problem->totalVariables * 2, this->problem->getUpperBound(0));
+    this->ivm_tree = new IVMTree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
     this->ivm_tree->setActiveLevel(0);
     
     this->currentLevel = this->problem->getStartingLevel();
@@ -114,14 +114,14 @@ void BranchAndBound::initialize(){
     int values = 0;
     
     for (values = 0; values < this->ivm_tree->getNumberOfRows(); values++) {
-        this->ivm_tree->limit_exploration[values] = this->getUpperBound(values);
+        this->ivm_tree->limit_exploration[values] = this->problem->getUpperBound(values);
     }
     
     if (this->problem->getType() == ProblemType::permutation_with_repetition_and_combination) {
-        for (values = this->problem->getLowerBound(0); values < this->problem->getUpperBound(0); values++)
+        for (values = this->problem->getLowerBound(0); values <= this->problem->getUpperBound(0); values++)
             this->ivm_tree->setNode(this->problem->getStartingLevel(), values);
         
-        for (values = 0; values < this->problem->getUpperBound(1); values++){
+        for (values = 0; values <= this->problem->getUpperBound(1); values++){
             this->ivm_tree->setNode(this->problem->getStartingLevel() + 1, values);
             this->branches++;
         }
@@ -135,6 +135,7 @@ void BranchAndBound::initialize(){
             this->branches++;
         }
     }
+    this->ivm_tree->showIVM();
 }
 
 void BranchAndBound::solve(){
@@ -150,11 +151,11 @@ void BranchAndBound::solve(){
     this->t2 = std::chrono::high_resolution_clock::now();
     
     while(theTreeHasMoreBranches() == 1 && timeUp == 0){
-        
+        this->ivm_tree->showIVM();
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
         
-        printCurrentSolution();
+        //printCurrentSolution();
         
         if (aLeafHasBeenReached() == 0)
             if(improvesTheGrid(this->currentSolution) == 1) // if(improvesTheLowerBound(this->currentSolution) == 1)
@@ -163,8 +164,7 @@ void BranchAndBound::solve(){
                 /**
                  * The branch is pruned, no nodes are added to the stack, and the partial evaluation is reduced.
                  **/
-                this->prunedBranches++;
-                //this->prune(this->currentSolution, this->currentLevel);
+                this->prune(this->currentSolution, this->currentLevel);
         else{
             
             this->problem->evaluateLastLevel(this->currentSolution);

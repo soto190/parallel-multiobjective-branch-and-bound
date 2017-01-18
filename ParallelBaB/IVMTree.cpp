@@ -110,4 +110,20 @@ void IVMTree::setMaxValueInLevel(int level, int value){
     this->max_in_level[level] = value;
 }
 
+void IVMTree::showIVM(){
+    
+    int r = 0, c = 0;
+    
+    for (r = 0; r < this->rows; r++) {
+        printf("[%3d] %3d | ", r, this->active_nodes[r]);
+        for (c = 0; c < this->cols; c++)
+            printf("%3d", this->ivm[r][c]);
+        if (this->active_level == r)
+            printf("|*\n");
+        else
+            printf("|\n");
+    }
+}
+
+
 
