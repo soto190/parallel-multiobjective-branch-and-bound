@@ -70,6 +70,14 @@ int * ProblemHCSP::getElemensToRepeat(){
     return nullptr;
 }
 
+int ProblemHCSP::getMapping(int map, int position){
+    return 0;
+}
+
+int ProblemHCSP::getMappingOf(int value1, int value2){
+    return 0;
+}
+
 double ProblemHCSP::computeProcessingTime(int task, int machine, int config){
    return this->processingTime[task][machine] / this->speed[config][machine];
 }

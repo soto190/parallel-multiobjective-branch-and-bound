@@ -51,6 +51,8 @@ public:
     int getStartingLevel();
     int getFinalLevel();
     
+    int getMapping(int map, int position);
+    int getMappingOf(int value1, int value2);
     int * getElemensToRepeat();
     int getTotalElements();
     

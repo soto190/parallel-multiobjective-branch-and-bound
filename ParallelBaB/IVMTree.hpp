@@ -26,7 +26,7 @@ public:
     int * limit_exploration;
     int active_level;
     
-    int * max_in_level;
+    int * max_nodes_in_level;
     
     int getNumberOfRows();
     int getNumberOfCols();
@@ -34,9 +34,7 @@ public:
     
     int hasPendingBranches();
     void setNode(int level, int value);
-    void setMaxValueInLevel(int level, int value);
     int getActiveNode();
-    int getNextNode();
     int getFatherNode();
     int pruneActiveNode();
 

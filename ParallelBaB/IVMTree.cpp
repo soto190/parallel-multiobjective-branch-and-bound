@@ -18,13 +18,13 @@ IVMTree::IVMTree(int rows, int cols){
     this->cols = cols;
     int r = 0, c = 0;
     this->active_nodes = new int[rows];
-    this->max_in_level = new int[rows];
+    this->max_nodes_in_level = new int[rows];
     this->ivm = new int * [rows];
     
     for (r = 0; r < rows; r++){
         this->ivm[r] = new int[cols];
         this->active_nodes[r] = 0;
-        this->max_in_level[r] = 0;
+        this->max_nodes_in_level[r] = 0;
         for (c = 0; c < cols; c++)
             this->ivm[r][c] = -1;
     }
@@ -35,11 +35,13 @@ IVMTree::IVMTree(int rows, int cols){
 
 IVMTree::~IVMTree(){
     delete [] active_nodes;
-    delete [] max_in_level;
+    delete [] max_nodes_in_level;
     int r = 0;
     for (r = 0; r < rows; r++)
         delete [] this->ivm[r];
+    
     delete [] ivm;
+    delete [] limit_exploration;
 }
 
 int IVMTree::getNumberOfRows(){
@@ -58,13 +60,16 @@ int IVMTree::hasPendingBranches(){
     
     int hasBranches = 1;
     
-    int level = 0;
+    /*
     for (level = 0; level < this->rows; level++)
         if (this->active_nodes[level] < this->limit_exploration[level])
             level = this->rows;
         else
             hasBranches = 0;
+    */
     
+    if (this->active_nodes[0] == -1)
+        hasBranches = 0;
     return hasBranches;
 }
 
@@ -73,7 +78,9 @@ int IVMTree::getCurrentLevel(){
 }
 
 void IVMTree::setNode(int level, int value){
-    this->ivm[level][value] = value;
+    
+    this->ivm[level][this->max_nodes_in_level[level]] = value;
+    this->max_nodes_in_level[level]++;
 }
 
 int IVMTree::moveToNextLevel(){
@@ -81,33 +88,39 @@ int IVMTree::moveToNextLevel(){
 }
 
 int IVMTree::moveToNextNode(){
-    return this->active_nodes[active_level]++;
+    return this->ivm[active_level][active_nodes[active_level]];
 }
 
 int IVMTree::getActiveNode(){
     return this->ivm[active_level][active_nodes[active_level]];
 }
 
-int IVMTree::getNextNode(){
-    
-    while (active_nodes[active_level] + 1 >= this->max_in_level[active_level])
-        active_level--;
-    
-    return this->ivm[active_level][active_nodes[active_level]++];
-}
-
 int IVMTree::getFatherNode(){
     return this->ivm[active_level - 1][active_nodes[active_level - 1]];
 }
 
+/** Prune the active node. **/
 int IVMTree::pruneActiveNode(){
     this->ivm[active_level][active_nodes[active_level]] = -1;
-    this->getNextNode();
-    return 1;
-}
+    this->max_nodes_in_level[active_level]--;
+    
+    if(max_nodes_in_level[active_level] > 0){
+        this->active_nodes[active_level]++;
+        return this->ivm[active_level][active_nodes[active_level]];
+    }
+    
+    while (max_nodes_in_level[active_level] == 0) {
+        this->active_nodes[active_level] = -1;
+        /** Go to father node. **/
+        this->active_level--;
+        /** Prune father node. **/
+        this->ivm[active_level][active_nodes[active_level]] = -1;
+        this->max_nodes_in_level[active_level]--;
+        /** Move to next node. **/
+        this->active_nodes[active_level]++;
+    }
 
-void IVMTree::setMaxValueInLevel(int level, int value){
-    this->max_in_level[level] = value;
+    return this->ivm[active_level][active_nodes[active_level]];
 }
 
 void IVMTree::showIVM(){

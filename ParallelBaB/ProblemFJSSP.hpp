@@ -56,6 +56,9 @@ public:
     int * getElemensToRepeat();
     int getTotalElements();
     
+    int getMapping(int map, int position);
+    int getMappingOf(int value1, int value2);
+    
     
     
     Solution* createSolution();
@@ -98,6 +101,9 @@ public:
     int * assignationBestWorkload;
     int * bestWorkloads;
     int * minWorkload;
+    
+    int ** mapToJobMachine;
+    int ** jobMachineToMap;
 
     
     
@@ -149,7 +155,7 @@ public:
     void printSchedule(Solution * solution);
     
     double evaluatePartialTest3(Solution * solution, int currentLevel);
-
+    double evaluatePartialTest4(Solution * solution, int currentLevel);
     int getLowerBoundInObj(int nObj);
     void buildSolutionWithGoodMaxWorkload(Solution * solution);
     void buildSolutionWithGoodMaxWorkloadv2(Solution * solution);

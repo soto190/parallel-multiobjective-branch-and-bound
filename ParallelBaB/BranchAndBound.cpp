@@ -97,8 +97,6 @@ void BranchAndBound::initialize(){
     updateParetoGrid(bestInObj2);
     updateParetoGrid(this->currentSolution);
     
-    this->ivm_tree = new IVMTree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
-    this->ivm_tree->setActiveLevel(0);
     
     this->currentLevel = this->problem->getStartingLevel();
     this->totalLevels = this->problem->getFinalLevel();
@@ -111,30 +109,27 @@ void BranchAndBound::initialize(){
     this->totalUpdatesInLowerBound = 0;
     this->totalNodes = this->computeTotalNodes(totalLevels);
 
-    int values = 0;
+    int value = 0;
     
-    for (values = 0; values < this->ivm_tree->getNumberOfRows(); values++) {
-        this->ivm_tree->limit_exploration[values] = this->problem->getUpperBound(values);
+    this->ivm_tree = new IVMTree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
+    this->ivm_tree->setActiveLevel(0);
+    
+    
+    for (value = 0; value < this->ivm_tree->getNumberOfRows(); value++) {
+        this->ivm_tree->limit_exploration[value] = this->problem->getUpperBound(value);
     }
     
     if (this->problem->getType() == ProblemType::permutation_with_repetition_and_combination) {
-        for (values = this->problem->getLowerBound(0); values <= this->problem->getUpperBound(0); values++)
-            this->ivm_tree->setNode(this->problem->getStartingLevel(), values);
-        
-        for (values = 0; values <= this->problem->getUpperBound(1); values++){
-            this->ivm_tree->setNode(this->problem->getStartingLevel() + 1, values);
-            this->branches++;
-        }
-        this->ivm_tree->moveToNextLevel();
-        this->ivm_tree->setMaxValueInLevel(this->problem->getStartingLevel(), this->problem->getUpperBound(0));
-        this->ivm_tree->setMaxValueInLevel(this->problem->getStartingLevel() + 1, this->problem->getUpperBound(1));
+        for (value = this->problem->getLowerBound(0); value <= this->problem->getUpperBound(0); value++)
+            this->ivm_tree->setNode(this->problem->getStartingLevel(), value);
     }
     else{
-        for (values = this->problem->getUpperBound(0); values >= this->problem->getLowerBound(0); values--) {
-            this->ivm_tree->setNode(this->problem->getStartingLevel(), values);
+        for (value = this->problem->getUpperBound(0); value >= this->problem->getLowerBound(0); value--) {
+            this->ivm_tree->setNode(this->problem->getStartingLevel(), value);
             this->branches++;
         }
     }
+    this->currentLevel = this->ivm_tree->getCurrentLevel();
     this->ivm_tree->showIVM();
 }
 
@@ -151,11 +146,11 @@ void BranchAndBound::solve(){
     this->t2 = std::chrono::high_resolution_clock::now();
     
     while(theTreeHasMoreBranches() == 1 && timeUp == 0){
-        this->ivm_tree->showIVM();
+        //this->ivm_tree->showIVM();
         this->explore(this->currentSolution);
-        this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
         
-        //printCurrentSolution();
+        this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
+        printCurrentSolution();
         
         if (aLeafHasBeenReached() == 0)
             if(improvesTheGrid(this->currentSolution) == 1) // if(improvesTheLowerBound(this->currentSolution) == 1)
@@ -171,7 +166,6 @@ void BranchAndBound::solve(){
             this->leaves++;
             
             updated = this->updateParetoGrid(this->currentSolution);
-//            updated = this->updateLowerBound(this->currentSolution);
             this->totalUpdatesInLowerBound += updated;
        
             if (updated == 1){
@@ -202,7 +196,7 @@ void BranchAndBound::solve(){
 
 /**
  * The same as stackPop();
- *  Gets an element form the stack and removes the level corresponding to the element.
+ *  Gets an element form the stack a nd removes the level corresponding to the element.
  **/
 int BranchAndBound::explore(Solution * solution){
 
@@ -210,15 +204,16 @@ int BranchAndBound::explore(Solution * solution){
         /** If permutation with combination. **/
         this->exploredNodes++;
         
+        if(this->aLeafHasBeenReached()){
+            this->ivm_tree->active_level--;
+            this->ivm_tree->pruneActiveNode();
+        }
         int level = this->ivm_tree->getCurrentLevel();
         int element = this->ivm_tree->getActiveNode();
         
         solution->setVariable(level, element);
-        
-        /****/
-        element = this->ivm_tree->getFatherNode();
-        solution->setVariable(level - 1, element);
         this->currentLevel = level;
+    
     }
     else{
         
@@ -247,8 +242,6 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
                 }
             
             if (belongs == 0) {
-                //this->treeOnAStack.push_back(variable);
-                //this->levelOfTree.push_back(currentLevel + 1);
                 this->branches++;
             }
         }
@@ -257,8 +250,6 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
     /**If combination**/
     if(problem->getType() == ProblemType::combination)
         for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
-            //this->levelOfTree.push_back(currentLevel + 1);
-            //this->treeOnAStack.push_back(variable);
             this->branches++;
         }
     
@@ -267,49 +258,58 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
         
         int belongs = 0;
         int varInPos = 0;
-        int intVariable = 0;
         int levelStarting = this->problem->getStartingLevel();
         
         int numberOfElements = problem->getTotalElements();
-        int * numberOfRepetitions = problem->getElemensToRepeat();
+        int * numberOfRepetitionsAllowed = problem->getElemensToRepeat();
         int timesRepeated [numberOfElements];
+        int map = 0;
+        int jobToCheck = 0;
+        int jobAllocated = 0;
+        int toAdd = 0;
         
-        for (variable = numberOfElements - 1; variable >= 0; variable--) {
+        for (variable = 0; variable <= numberOfElements - 1; variable++) {
             belongs = 0;
-            timesRepeated[variable] = 0;
-            for (varInPos = levelStarting; varInPos <= currentLevel && belongs == 0; varInPos ++)
-                if (solution->getVariable(varInPos * 2) == variable) {
-                    timesRepeated[variable]++;
-                    if(timesRepeated[variable] == numberOfRepetitions[variable]){
+            jobToCheck = variable;
+            timesRepeated[jobToCheck] = 0;
+            
+            for (varInPos = levelStarting; varInPos <= currentLevel && belongs == 0; varInPos ++){
+                map = solution->getVariable(varInPos);
+                jobAllocated = this->problem->getMapping(map, 0);
+                if (jobToCheck == jobAllocated) {
+                    timesRepeated[jobToCheck]++;
+                    if(timesRepeated[jobToCheck] == numberOfRepetitionsAllowed[jobToCheck]){
                         belongs = 1;
                         varInPos = currentLevel;
                     }
                 }
-            
-            if (belongs == 0){
-                this->ivm_tree->setNode(currentLevel + 1, variable);
-                this->branches++;
-            }
+             }
+             
+             if (belongs == 0){
+                 int machine = 0;
+                 for(machine = 0; machine < 3; machine++){
+                     toAdd = this->problem->getMappingOf(jobToCheck, machine);
+                     this->ivm_tree->setNode(currentLevel + 1, toAdd);
+                     this->branches++;
+                 }
+             }
         }
         
         this->ivm_tree->moveToNextLevel();
-        for (intVariable = this->problem->getUpperBound(1); intVariable >= this->problem->getLowerBound(1); intVariable--)
-            this->ivm_tree->setNode(currentLevel + 1, intVariable);
-        
+        this->ivm_tree->active_nodes[this->ivm_tree->active_level] = 0;
     }
 }
 
 void BranchAndBound::prune(Solution * solution, int currentLevel){
-    this->ivm_tree->pruneActiveNode();
     
     this->prunedBranches++;
-    int nextExploration = this->ivm_tree->getNextNode();
-    //int nextExploration = this->levelOfTree.back();
-    this->problem->removeLastEvaluation(solution, currentLevel, nextExploration);
+    this->ivm_tree->pruneActiveNode();
+    
+    //this->problem->removeLastEvaluation(solution, currentLevel, nextExploration);
 }
 
 int BranchAndBound::aLeafHasBeenReached(){
-    if (this->currentLevel == totalLevels)
+    if (this->currentLevel == this->totalLevels)
             return 1;
     return 0;
 }
@@ -447,27 +447,7 @@ unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
 }
 
 void BranchAndBound::printCurrentSolution(int withVariables){
-    
     this->problem->printPartialSolution(this->currentSolution, this->currentLevel);
-/*
-    int indexVar = 0;
-    
-    for (indexVar = 0; indexVar < this->problem->getNumberOfObjectives(); indexVar++)
-        printf("%26.16f ", this->currentSolution->getObjective(indexVar));
-    
-    if (withVariables == 1) {
-        
-        printf(" | ");
-        
-        for (indexVar = 0; indexVar <= this->currentLevel; indexVar++)
-            printf("%3d ", this->currentSolution->getVariable(indexVar));
-        
-        for (indexVar = currentLevel + 1; indexVar < this->problem->getNumberOfVariables(); indexVar++)
-            printf("  - ");
-        
-        printf("|");
-    }
- */
 }
 
 /**
@@ -483,19 +463,7 @@ void BranchAndBound::printParetoFront(int withVariables){
     for (it = this->paretoFront.begin(); it != this->paretoFront.end(); it++) {
         printf("[%6d]\n", ++counterSolutions);
         this->problem->printSolution((*it));
-/*
-        for (indexVar = 0; indexVar < numberOfObjectives; indexVar++)
-            printf("%26.16f ", (*it)->getObjective(indexVar));
-        
-        if(printVariables == 1){
-            printf("| ");
-            
-            for (indexVar = 0; indexVar < numberOfVariables; indexVar++)
-                printf("%3d ", (*it)->getVariable(indexVar));
-        }
- */
- printf("\n");
-        
+        printf("\n");
     }
 }
 

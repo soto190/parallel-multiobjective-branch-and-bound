@@ -66,6 +66,14 @@ int * Problem::getElemensToRepeat(){
     return nullptr;
 }
 
+int Problem::getMapping(int map, int position){
+    return 0;
+}
+
+int Problem::getMappingOf(int value1, int value2){
+    return 0;
+}
+
 Solution* Problem::createSolution(){
     Solution* solution = new Solution(this->totalObjectives, this->totalVariables);
     return solution;

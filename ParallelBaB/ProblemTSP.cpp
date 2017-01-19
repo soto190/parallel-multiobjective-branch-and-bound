@@ -58,6 +58,15 @@ int * ProblemTSP::getElemensToRepeat(){
     return nullptr;
 }
 
+int ProblemTSP::getMapping(int map, int position){
+    return 0;
+}
+
+int ProblemTSP::getMappingOf(int value1, int value2){
+    return 0;
+}
+
+
 double ProblemTSP::evaluate(Solution* solution){
     double sumDist = 0;
     double sumCost = 0;

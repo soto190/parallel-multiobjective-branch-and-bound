@@ -42,7 +42,8 @@ public:
     
     int * getElemensToRepeat();
     int getTotalElements();
-    
+    int getMapping(int map, int position);
+    int getMappingOf(int value1, int value2);
     
     void printInstance();
     void printProblemInfo();

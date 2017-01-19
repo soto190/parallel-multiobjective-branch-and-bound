@@ -41,6 +41,14 @@ int * ProblemVRP::getElemensToRepeat(){
     return nullptr;
 }
 
+int ProblemVRP::getMapping(int map, int position){
+    return 0;
+}
+
+int ProblemVRP::getMappingOf(int value1, int value2){
+    return 0;
+}
+
 Solution* ProblemVRP::createSolution(){
     Solution * solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
     return solution;
