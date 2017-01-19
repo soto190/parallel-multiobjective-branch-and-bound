@@ -147,18 +147,16 @@ void BranchAndBound::solve(){
     
     while(theTreeHasMoreBranches() == 1 && timeUp == 0){
         //this->ivm_tree->showIVM();
+        //printf("\n");
         this->explore(this->currentSolution);
         
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
-        printCurrentSolution();
+        //printCurrentSolution();
         
         if (aLeafHasBeenReached() == 0)
             if(improvesTheGrid(this->currentSolution) == 1) // if(improvesTheLowerBound(this->currentSolution) == 1)
                 this->branch(this->currentSolution, this->currentLevel);
             else
-                /**
-                 * The branch is pruned, no nodes are added to the stack, and the partial evaluation is reduced.
-                 **/
                 this->prune(this->currentSolution, this->currentLevel);
         else{
             
@@ -171,12 +169,11 @@ void BranchAndBound::solve(){
             if (updated == 1){
                 printCurrentSolution();
                 printf(" + [%6lu] \n", this->paretoContainer->getSize());
+                //this->ivm_tree->showIVM();
                 //problem->printSolutionInfo(this->currentSolution);
                 //printf("\n");
             }
         }
-        printf("\n");
-
         this->saveEvery(3600);
     }
 
@@ -205,7 +202,7 @@ int BranchAndBound::explore(Solution * solution){
         this->exploredNodes++;
         
         if(this->aLeafHasBeenReached()){
-            this->ivm_tree->active_level--;
+            //this->ivm_tree->active_level--;
             this->ivm_tree->pruneActiveNode();
         }
         int level = this->ivm_tree->getCurrentLevel();
@@ -287,6 +284,7 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
              
              if (belongs == 0){
                  int machine = 0;
+                 /**TODO: change the limit of the 'for cycle'.**/
                  for(machine = 0; machine < 3; machine++){
                      toAdd = this->problem->getMappingOf(jobToCheck, machine);
                      this->ivm_tree->setNode(currentLevel + 1, toAdd);

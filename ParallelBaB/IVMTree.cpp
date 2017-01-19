@@ -23,13 +23,14 @@ IVMTree::IVMTree(int rows, int cols){
     
     for (r = 0; r < rows; r++){
         this->ivm[r] = new int[cols];
-        this->active_nodes[r] = 0;
+        this->active_nodes[r] = -1;
         this->max_nodes_in_level[r] = 0;
         for (c = 0; c < cols; c++)
             this->ivm[r][c] = -1;
     }
     
     this->active_level = 0;
+    this->active_nodes[0] = 0;
     this->limit_exploration = new int[rows];
 }
 
@@ -113,11 +114,18 @@ int IVMTree::pruneActiveNode(){
         this->active_nodes[active_level] = -1;
         /** Go to father node. **/
         this->active_level--;
+        
+        if (active_level == -1) {
+            active_level = 0;
+            return this->ivm[active_level][active_nodes[8]];
+        }
+        
         /** Prune father node. **/
         this->ivm[active_level][active_nodes[active_level]] = -1;
         this->max_nodes_in_level[active_level]--;
         /** Move to next node. **/
         this->active_nodes[active_level]++;
+        
     }
 
     return this->ivm[active_level][active_nodes[active_level]];
