@@ -169,9 +169,9 @@ void BranchAndBound::solve(){
             if (updated == 1){
                 printCurrentSolution();
                 printf(" + [%6lu] \n", this->paretoContainer->getSize());
-                //this->ivm_tree->showIVM();
+                this->ivm_tree->showIVM();
                 //problem->printSolutionInfo(this->currentSolution);
-                //printf("\n");
+                printf("\n");
             }
         }
         this->saveEvery(3600);
@@ -285,7 +285,7 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
              if (belongs == 0){
                  int machine = 0;
                  /**TODO: change the limit of the 'for cycle'.**/
-                 for(machine = 0; machine < 3; machine++){
+                 for(machine = 0; machine < 5; machine++){
                      toAdd = this->problem->getMappingOf(jobToCheck, machine);
                      this->ivm_tree->setNode(currentLevel + 1, toAdd);
                      this->branches++;
