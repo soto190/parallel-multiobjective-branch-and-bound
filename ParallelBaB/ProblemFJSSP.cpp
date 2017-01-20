@@ -302,10 +302,16 @@ void ProblemFJSSP::createDefaultSolution(Solution * solution){
     int operation = 0;
     int countOperations = 0;
     int map = 0;
+    int machine = 0;
     
     for (job = 0; job < this->totalJobs; job++)
-        for (operation = 0; operation < this->jobHasNoperations[job]; operation++)
-            solution->setVariable(countOperations++, map++);
+        for (operation = 0; operation < this->jobHasNoperations[job]; operation++){
+            map = this->jobMachineToMap[job][machine];
+            solution->setVariable(countOperations++, map);
+            machine++;
+            if (machine == this->totalMachines)
+                machine = 0;
+        }
     
     this->evaluate(solution);
 }
@@ -505,6 +511,10 @@ int ProblemFJSSP::getMapping(int map, int position){
 
 int ProblemFJSSP::getMappingOf(int job, int machine){
     return this->jobMachineToMap[job][machine];
+}
+
+int ProblemFJSSP::getTimesValueIsRepeated(int value){
+    return this->totalMachines;
 }
 
 Solution* ProblemFJSSP::createSolution(){

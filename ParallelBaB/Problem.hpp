@@ -62,6 +62,7 @@ public:
     virtual int * getElemensToRepeat() = 0;
     virtual int getMapping(int map, int position) = 0;
     virtual int getMappingOf(int value1, int value2);
+    virtual int getTimesValueIsRepeated(int value);
     
     virtual int getLowerBound(int index) = 0;
     virtual int getUpperBound(int index) = 0;

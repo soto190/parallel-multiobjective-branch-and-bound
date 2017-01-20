@@ -74,6 +74,10 @@ int Problem::getMappingOf(int value1, int value2){
     return 0;
 }
 
+int Problem::getTimesValueIsRepeated(int value){
+    return 0;
+}
+
 Solution* Problem::createSolution(){
     Solution* solution = new Solution(this->totalObjectives, this->totalVariables);
     return solution;

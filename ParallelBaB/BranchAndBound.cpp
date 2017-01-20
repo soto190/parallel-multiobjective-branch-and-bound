@@ -146,8 +146,8 @@ void BranchAndBound::solve(){
     this->t2 = std::chrono::high_resolution_clock::now();
     
     while(theTreeHasMoreBranches() == 1 && timeUp == 0){
-        //this->ivm_tree->showIVM();
-        //printf("\n");
+        this->ivm_tree->showIVM();
+        printf("\n");
         this->explore(this->currentSolution);
         
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
@@ -265,7 +265,7 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
         int jobAllocated = 0;
         int toAdd = 0;
         
-        for (variable = 0; variable <= numberOfElements - 1; variable++) {
+        for (variable = 0; variable < numberOfElements; variable++) {
             belongs = 0;
             jobToCheck = variable;
             timesRepeated[jobToCheck] = 0;
@@ -284,8 +284,7 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
              
              if (belongs == 0){
                  int machine = 0;
-                 /**TODO: change the limit of the 'for cycle'.**/
-                 for(machine = 0; machine < 5; machine++){
+                 for(machine = 0; machine < this->problem->getTimesValueIsRepeated(0); machine++){
                      toAdd = this->problem->getMappingOf(jobToCheck, machine);
                      this->ivm_tree->setNode(currentLevel + 1, toAdd);
                      this->branches++;

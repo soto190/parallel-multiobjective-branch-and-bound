@@ -41,8 +41,8 @@ Solution::Solution(const Solution &solution){
     this->totalObjectives = solution.totalObjectives;
     this->totalVariables = solution.totalVariables;
     
-    this->objective = new double[solution.totalObjectives];
-    this->variable = new int[solution.totalVariables];
+    this->objective = new double[this->totalObjectives];
+    this->variable = new int[this->totalVariables];
     this->execTime = new double[16];
     
     int index = 0;

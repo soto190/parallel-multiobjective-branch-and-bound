@@ -66,6 +66,9 @@ int ProblemTSP::getMappingOf(int value1, int value2){
     return 0;
 }
 
+int ProblemTSP::getTimesValueIsRepeated(int value){
+    return 0;
+}
 
 double ProblemTSP::evaluate(Solution* solution){
     double sumDist = 0;
