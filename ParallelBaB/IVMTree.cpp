@@ -16,6 +16,7 @@ IVMTree::IVMTree(int rows, int cols){
 
     this->rows = rows;
     this->cols = cols;
+    this->hasBranches = 1;
     int r = 0, c = 0;
     this->active_nodes = new int[rows];
     this->max_nodes_in_level = new int[rows];
@@ -31,7 +32,8 @@ IVMTree::IVMTree(int rows, int cols){
     
     this->active_level = 0;
     this->active_nodes[0] = 0;
-    this->limit_exploration = new int[rows];
+    this->start_exploration = new int[rows];
+    this->end_exploration = new int[rows];
 }
 
 IVMTree::~IVMTree(){
@@ -42,7 +44,8 @@ IVMTree::~IVMTree(){
         delete [] this->ivm[r];
     
     delete [] ivm;
-    delete [] limit_exploration;
+    delete [] start_exploration;
+    delete [] end_exploration;
 }
 
 int IVMTree::getNumberOfRows(){
@@ -53,25 +56,35 @@ int IVMTree::getNumberOfCols(){
     return this->cols;
 }
 
+int IVMTree::getTreeDeep(){
+    return this->rows;
+}
+
 void IVMTree::setActiveLevel(int level){
     this->active_level = level;
 }
 
+void IVMTree::setExplorationInterval(int *starts, int *ends){
+    int level = 0;
+    for (level = 0; level < this->rows; level++) {
+        this->active_nodes[level] = starts[level];
+        this->end_exploration[level] = ends[level];
+    }
+}
+
 int IVMTree::hasPendingBranches(){
-    
-    int hasBranches = 1;
     
     /*
     for (level = 0; level < this->rows; level++)
-        if (this->active_nodes[level] < this->limit_exploration[level])
+        if (this->active_nodes[level] < this->end_exploration[level])
             level = this->rows;
         else
             hasBranches = 0;
     */
     
     if (this->active_nodes[0] == -1)
-        hasBranches = 0;
-    return hasBranches;
+        this->hasBranches = 0;
+    return this->hasBranches;
 }
 
 int IVMTree::getCurrentLevel(){
@@ -79,7 +92,6 @@ int IVMTree::getCurrentLevel(){
 }
 
 void IVMTree::setNode(int level, int value){
-    
     this->ivm[level][this->max_nodes_in_level[level]] = value;
     this->max_nodes_in_level[level]++;
 }
@@ -115,9 +127,12 @@ int IVMTree::pruneActiveNode(){
         /** Go to father node. **/
         this->active_level--;
         
+        /** If is the first level of the tree*/
         if (active_level == -1) {
             active_level = 0;
-            return this->ivm[active_level][active_nodes[8]];
+            this->max_nodes_in_level[active_level]--;
+            this->hasBranches = 0;
+            return this->ivm[active_level][active_nodes[0]];
         }
         
         /** Prune father node. **/

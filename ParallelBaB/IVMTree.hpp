@@ -23,14 +23,18 @@ public:
     ~IVMTree();
     int ** ivm;
     int * active_nodes;
-    int * limit_exploration;
+    int * start_exploration;
+    int * end_exploration;
     int active_level;
+    int hasBranches = 1;
     
     int * max_nodes_in_level;
     
     int getNumberOfRows();
     int getNumberOfCols();
     void setActiveLevel(int level);
+    void setExplorationInterval(int * starts, int * ends);
+    int getTreeDeep();
     
     int hasPendingBranches();
     void setNode(int level, int value);

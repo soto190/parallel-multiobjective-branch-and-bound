@@ -24,8 +24,8 @@ Solution::Solution(int totalObjectives, int totalVariables){
     this->objective = new double[totalObjectives];
     this->variable = new int[totalVariables];
     this->execTime = new double[16];
-    int index;
     
+    int index;
     for (index = 0; index < totalObjectives; index++)
         Solution::objective[index] = 0;
     

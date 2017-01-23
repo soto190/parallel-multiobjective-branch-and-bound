@@ -35,15 +35,15 @@ public:
     }
     
     std::vector<T>& operator()(size_t x, size_t y){
-        return m_Data[x * cols + y];
+        return m_Data[y * cols + x];
     }
     
     void set(T obj, size_t x, size_t y){
-       m_Data[x * cols + y].push_back(obj);
+       m_Data[y * cols + x].push_back(obj);
     }
     
     std::vector<T>& get(size_t x, size_t y){
-        return m_Data[x * cols + y];
+        return m_Data[y * cols + x];
     }
     
     int getCols(){
@@ -55,20 +55,20 @@ public:
     }
     
     unsigned long getSizeOf(size_t x, size_t y){
-        return m_Data[x * cols + y].size();
+        return m_Data[y * cols + x].size();
     }
     
     void clear(size_t x, size_t y){
         
         Solution * pd;
-        for(std::vector<Solution *>::iterator it = m_Data[x * cols + y].begin(); it != m_Data[x * cols + y].end(); ++it) {
+        for(std::vector<Solution *>::iterator it = m_Data[y * cols + x].begin(); it != m_Data[y * cols + x].end(); ++it) {
             pd = * it;
             delete pd;
         }
 
         
-        m_Data[x * cols + y].clear();
-        m_Data[x * cols + y].resize(1);
+        m_Data[y * cols + x].clear();
+        m_Data[y * cols + x].resize(1);
     }
 
 };

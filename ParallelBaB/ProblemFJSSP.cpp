@@ -31,6 +31,7 @@ ProblemFJSSP::~ProblemFJSSP(){
     delete [] minWorkload;
     delete [] assignationBestWorkload;
     delete [] bestWorkloads;
+    //delete goodSolutionWithMaxWorkload;
     
 }
 /**
@@ -52,6 +53,8 @@ double ProblemFJSSP::evaluatePartial(Solution * solution, int levelEvaluation){
 /**
  This representation is a contigous allocation of job and machine, :
   [J, M, J, M, J, M, J, M]
+ 
+ Remove this later.
  **/
 double ProblemFJSSP::evaluatePartialTest3(Solution * solution, int levelEvaluation){
     
@@ -276,14 +279,14 @@ double ProblemFJSSP::evaluatePartialTest4(Solution * solution, int levelEvaluati
         
         for (machine = 0; machine < this->totalMachines; machine++)
             this->bestWorkloads[machine] = workload[machine];
-        /*
+        
         for (operation = 0; operation < this->totalOperations; operation++)
-            this->assignationBestWorkload[operation] = solution->getVariable(operation);
-         */
+            this->assignationBestWorkload[operation] = this->mapToJobMachine[solution->getVariable(operation)][1];
     }
     
     return 0.0;
 }
+
 double ProblemFJSSP::evaluateLastLevel(Solution * solution){
     return 0.0;
 }

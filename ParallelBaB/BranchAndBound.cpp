@@ -50,6 +50,7 @@ BranchAndBound::~BranchAndBound(){
     }
     
     delete this->currentSolution;
+    delete this->bestObjectivesFound;
     
     this->paretoFront.clear();
     
@@ -80,9 +81,12 @@ void BranchAndBound::initialize(){
    
     this->bestObjectivesFound->setObjective(1, bestInObj1->getObjective(1));
     
-    this->paretoContainer = new HandlerContainer(100, 100, this->currentSolution->getObjective(0), this->currentSolution->getObjective(1));
+    double obj1 = this->currentSolution->getObjective(0);
+    double obj2 = this->currentSolution->getObjective(1);
+
+    this->paretoContainer = new HandlerContainer(100, 100, obj1, obj2);
     
-    printf("Ranges: %f %f \n Initial solution:\n", currentSolution->getObjective(0), currentSolution->getObjective(1));
+    printf("Ranges: %f %f \n Initial solution:\n", obj1, obj2);
     this->problem->printSolution(this->currentSolution);
     printf("\n");
     
@@ -108,6 +112,9 @@ void BranchAndBound::initialize(){
     this->callsToBranch = 0;
     this->totalUpdatesInLowerBound = 0;
     this->totalNodes = this->computeTotalNodes(totalLevels);
+    
+    delete bestInObj1;
+    delete bestInObj2;
 
     int value = 0;
     
@@ -115,16 +122,18 @@ void BranchAndBound::initialize(){
     this->ivm_tree->setActiveLevel(0);
     
     
-    for (value = 0; value < this->ivm_tree->getNumberOfRows(); value++) {
-        this->ivm_tree->limit_exploration[value] = this->problem->getUpperBound(value);
-    }
+    for (value = 0; value < this->ivm_tree->getNumberOfRows(); value++)
+        this->ivm_tree->end_exploration[value] = this->problem->getUpperBound(value);
+    
     
     if (this->problem->getType() == ProblemType::permutation_with_repetition_and_combination) {
-        for (value = this->problem->getLowerBound(0); value <= this->problem->getUpperBound(0); value++)
+        for (value = this->problem->getLowerBound(0); value <= this->problem->getUpperBound(0); value++){
             this->ivm_tree->setNode(this->problem->getStartingLevel(), value);
+            this->branches++;
+        }
     }
     else{
-        for (value = this->problem->getUpperBound(0); value >= this->problem->getLowerBound(0); value--) {
+        for (value = this->problem->getLowerBound(0); value <= this->problem->getUpperBound(0); value++) {
             this->ivm_tree->setNode(this->problem->getStartingLevel(), value);
             this->branches++;
         }
@@ -146,8 +155,8 @@ void BranchAndBound::solve(){
     this->t2 = std::chrono::high_resolution_clock::now();
     
     while(theTreeHasMoreBranches() == 1 && timeUp == 0){
-        this->ivm_tree->showIVM();
-        printf("\n");
+//        this->ivm_tree->showIVM();
+//        printf("\n");
         this->explore(this->currentSolution);
         
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
@@ -169,9 +178,8 @@ void BranchAndBound::solve(){
             if (updated == 1){
                 printCurrentSolution();
                 printf(" + [%6lu] \n", this->paretoContainer->getSize());
-                this->ivm_tree->showIVM();
+                //this->ivm_tree->showIVM();
                 //problem->printSolutionInfo(this->currentSolution);
-                printf("\n");
             }
         }
         this->saveEvery(3600);

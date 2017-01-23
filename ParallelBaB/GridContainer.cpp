@@ -25,21 +25,22 @@ HandlerContainer::~HandlerContainer(){
 
 HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double maxValY){
     
-    if(maxValY < rows)
-        rows = maxValY;
     if(maxValX < cols)
         cols = maxValX;
+    if(maxValY < rows)
+        rows = maxValY;
+   
     
     totalElements = 0;
     unexploredBuckets = rows * cols;
     activeBuckets = 0;
     disabledBuckets = 0;
     
-    grid = GridContainer<Solution * >(rows, cols);
-    gridState = new BucketState[rows * cols];
+    grid = GridContainer<Solution * >(cols, rows);
+    gridState = new BucketState[cols * rows];
     
-    rangeinx = new double [rows];
-    rangeiny = new double [cols];
+    rangeinx = new double [cols];
+    rangeiny = new double [rows];
     maxinx = maxValX;
     maxiny = maxValY;
     int divs = 0;
@@ -83,7 +84,8 @@ int HandlerContainer::set(Solution * solution, int x, int y){
         int nRow = 0;
         for (nRow = y + 1; nRow < this->grid.getRows(); nRow++)
             for (nCol = x + 1; nCol < this->grid.getCols(); nCol++)
-                if(this->getStateOf(nCol, nRow) == BucketState::dominated) /** If the bucket in (nCol, nRow) is dominated the exploration continue to the next row**/
+                if(this->getStateOf(nCol, nRow) == BucketState::dominated)
+                /** If the bucket in (nCol, nRow) is dominated the exploration continue to the next row**/
                     nCol = this->grid.getCols();
                 else
                     this->clearContainer(nCol, nRow);
@@ -177,11 +179,11 @@ void HandlerContainer::printStates(){
  * 2: Dominated.
  */
 BucketState HandlerContainer::getStateOf(int x, int y){
-    return this->gridState[x * this->getCols() + y];
+    return this->gridState[y * this->getCols() + x];
 }
 
 void HandlerContainer::setStateOf(BucketState state, int x, int y){
-    this->gridState[x * this->getCols() + y] = state;
+    this->gridState[y * this->getCols() + x] = state;
 }
 
 int HandlerContainer::updateBucket(Solution * solution, int x, int y){
