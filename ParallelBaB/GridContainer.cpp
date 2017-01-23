@@ -156,7 +156,7 @@ void HandlerContainer::printGridSize(){
     for (nRow = this->grid.getRows() - 1; nRow >= 0 ; nRow--){
         printf("[%3d] ", nRow);
         for (nCol = 0; nCol < this->grid.getCols(); nCol++)
-            printf("%3ld ", this->grid.getSizeOf(nRow, nCol));
+            printf("%3ld ", this->grid.getSizeOf(nCol, nRow));
         printf("\n");
     }
 }
@@ -167,7 +167,7 @@ void HandlerContainer::printStates(){
     for (nRow = this->grid.getRows() - 1; nRow >= 0 ; nRow--){
         printf("[%3d] ", nRow);
         for (nCol = 0; nCol < this->grid.getCols(); nCol++)
-            printf("%3d", this->getStateOf(nRow, nCol));
+            printf("%3d", this->getStateOf(nCol, nRow));
         printf("\n");
     }
 }
@@ -424,7 +424,7 @@ void HandlerContainer3D::printGridSize(){
     for (nRow = this->grid.getRows() - 1; nRow >= 0 ; nRow--){
         printf("[%3d] ", nRow);
         for (nCol = 0; nCol < this->grid.getCols(); nCol++)
-            printf("%3ld ", this->grid.getSizeOf(nRow, nCol, nDeep));
+            printf("%3ld ", this->grid.getSizeOf(nCol, nRow, nDeep));
         printf("\n");
     }
 }
@@ -441,7 +441,7 @@ void HandlerContainer3D::printStates(){
     for (nRow = this->grid.getRows() - 1; nRow >= 0 ; nRow--){
         printf("[%3d] ", nRow);
         for (nCol = 0; nCol < this->grid.getCols(); nCol++)
-            printf("%3d", this->getStateOf(nRow, nCol, nDeep));
+            printf("%3d", this->getStateOf(nCol, nRow, nDeep));
         printf("\n");
     }
 }

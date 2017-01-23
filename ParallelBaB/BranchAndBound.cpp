@@ -185,6 +185,8 @@ void BranchAndBound::solve(){
         this->saveEvery(3600);
     }
 
+    paretoContainer->printGridSize();
+    paretoContainer->printStates();
     this->paretoFront = paretoContainer->getParetoFront();
     
     this->t2 = std::chrono::high_resolution_clock::now();
