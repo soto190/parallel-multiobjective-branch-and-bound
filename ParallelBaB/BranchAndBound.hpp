@@ -105,6 +105,7 @@ private:
     int updateParetoGrid(Solution * solution);
     int improvesTheBucket(Solution * solution, vector<Solution *>& bucketFront);
     
+    int computeLimitExploration();
     
 };
 

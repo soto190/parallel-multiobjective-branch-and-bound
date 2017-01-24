@@ -71,40 +71,48 @@ void HandlerContainer::checkCoordinate(Solution *solution, int * coordinate){
 }
 
 int HandlerContainer::set(Solution * solution, int x, int y){
+    int nCol = 0;
+    int nRow = 0;
+    int updated = 0;
+    Solution * copyOfSolution;
 
-    
-    if(this->getStateOf(x, y) == BucketState::unexplored){
-        
-        /**
-         Empty the dominated containers.
-         Calls to this segment of code on worst case O((cols - 1) * (rows - 1))
-         **/
-        
-        int nCol = 0;
-        int nRow = 0;
-        for (nRow = y + 1; nRow < this->grid.getRows(); nRow++)
-            for (nCol = x + 1; nCol < this->grid.getCols(); nCol++)
-                if(this->getStateOf(nCol, nRow) == BucketState::dominated)
-                /** If the bucket in (nCol, nRow) is dominated the exploration continue to the next row**/
-                    nCol = this->grid.getCols();
-                else
-                    this->clearContainer(nCol, nRow);
-        
-        Solution * copyOfSolution = new Solution(* solution);
-        this->grid.set(copyOfSolution, x, y);
-        this->setStateOf(BucketState::nondominated, x, y);
-        this->totalElements++;
-        this->activeBuckets++;
-        this->unexploredBuckets--;
-        
-        return 1;
-
+    switch (this->getStateOf(x, y)) {
+            
+        case BucketState::unexplored:
+            
+            /**
+             Empty the dominated containers.
+             Calls to this segment of code on worst case O((cols - 1) * (rows - 1))
+             **/
+            
+            for (nRow = y + 1; nRow < this->grid.getRows(); nRow++)
+                for (nCol = x + 1; nCol < this->grid.getCols(); nCol++)
+                    if(this->getStateOf(nCol, nRow) == BucketState::dominated)
+                    /** If the bucket in (nCol, nRow) is dominated the exploration continue to the next row**/
+                        nCol = this->grid.getCols();
+                    else
+                        this->clearContainer(nCol, nRow);
+            
+            copyOfSolution = new Solution(* solution);
+            this->grid.set(copyOfSolution, x, y);
+            this->setStateOf(BucketState::nondominated, x, y);
+            this->totalElements++;
+            this->activeBuckets++;
+            this->unexploredBuckets--;
+            
+            updated = 1;
+            break;
+            
+        case BucketState::nondominated:
+            updated  = this->updateBucket(solution, x, y);
+            break;
+            
+        case BucketState::dominated:
+            /**If the bucket is dominated (State = 2) the element is not added. Then do nothing**/
+            break;
     }
-    else if(this->getStateOf(x, y) == BucketState::nondominated)
-       return this->updateBucket(solution, x, y);
     
-    /**If the bucket is dominated (State = 2) the element is not added.**/
-    return 0;
+    return updated;
 }
 
 /**
@@ -217,12 +225,12 @@ std::vector<Solution *> HandlerContainer::getParetoFront(){
     
     for (bucketY = 0; bucketY < this->getRows(); bucketY++)
         for (bucketX = 0; bucketX < this->getCols(); bucketX++) {
-            int state = this->getStateOf(bucketX, bucketY);
-            if (state == 1) {
+            BucketState state = this->getStateOf(bucketX, bucketY);
+            if (state == BucketState::nondominated) {
                 std::vector<Solution * > bucket = this->get(bucketX, bucketY);
                 paretoFront.insert(paretoFront.begin(), bucket.begin() , bucket.end());
             }
-            else if (state == 2)
+            else if (state == BucketState::dominated)
                 bucketX = this->getCols();
         }
     

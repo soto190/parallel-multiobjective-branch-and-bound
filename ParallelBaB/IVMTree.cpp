@@ -82,8 +82,8 @@ int IVMTree::hasPendingBranches(){
             hasBranches = 0;
     */
     
-    if (this->active_nodes[0] == -1)
-        this->hasBranches = 0;
+    // if (this->active_nodes[0] == -1)
+    //   this->hasBranches = 0;
     return this->hasBranches;
 }
 
@@ -117,6 +117,7 @@ int IVMTree::pruneActiveNode(){
     this->ivm[active_level][active_nodes[active_level]] = -1;
     this->max_nodes_in_level[active_level]--;
     
+    /** If there are more nodes in the active_level, then move to the next node. **/
     if(max_nodes_in_level[active_level] > 0){
         this->active_nodes[active_level]++;
         return this->ivm[active_level][active_nodes[active_level]];

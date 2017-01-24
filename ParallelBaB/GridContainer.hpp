@@ -68,7 +68,7 @@ public:
 
         
         m_Data[y * cols + x].clear();
-        m_Data[y * cols + x].resize(1);
+        m_Data[y * cols + x].resize(0);
     }
 
 };

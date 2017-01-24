@@ -59,7 +59,7 @@ unsigned int * dominationStatus(Solution * solution, std::vector<Solution *>& fr
     status[3] = 0;
     
     unsigned long paretoFrontSize = front.size();
-    int domination = 0;
+    DominanceRelation domination;
     int index = 0;
     if (paretoFrontSize > 0) {
         
@@ -70,15 +70,24 @@ unsigned int * dominationStatus(Solution * solution, std::vector<Solution *>& fr
         for (index = 0; index < paretoFrontSize; index++) {
             
             domination = dominanceOperator(solution, front.at(index));
-            
-            if(domination == 1)
-                status[0]++;
-            else if(domination == 0)
-                status[1]++;
-            else if(domination == -1)
-                status[2]++;
-            else if(domination == 11)
-                status[3] = 1;
+
+            switch (domination) {
+                case DominanceRelation::Dominates :
+                    status[0]++;
+                    break;
+                
+                case DominanceRelation::Nondominated:
+                    status[1]++;
+                    break;
+                
+                case DominanceRelation::Dominated:
+                    status[2]++;
+                    break;
+                
+                case DominanceRelation::Equals:
+                    status[3] = 1;
+                    break;
+            }
         }
     }
     else
@@ -102,21 +111,30 @@ int updateFront(Solution * solution, std::vector<Solution *>& paretoFront){
         
         domination = dominanceOperator(solution, paretoFront.at(nSol));
         
-        if(domination == DominanceRelation::Dominates){
-            paretoFront.erase(begin + nSol);
-            status[0]++;
-            nSol--;
+        switch (domination) {
+                
+            case DominanceRelation::Dominates:
+                paretoFront.erase(begin + nSol);
+                status[0]++;
+                nSol--;
+                break;
+            
+            case DominanceRelation::Nondominated:
+                status[1]++;
+                break;
+            
+            case DominanceRelation::Dominated:
+                status[2]++;
+                nSol = paretoFront.size();
+                break;
+            
+            case DominanceRelation::Equals:
+                status[3] = 1;
+                nSol = paretoFront.size();
+                break;
+                
         }
-        else if(domination == DominanceRelation::Nondominated)
-            status[1]++;
-        else if(domination == DominanceRelation::Dominated){
-            status[2]++;
-            nSol = paretoFront.size();
-        }
-        else if(domination == DominanceRelation::Equals){
-            status[3] = 1;
-            nSol = paretoFront.size();
-        }
+        
     }
     
     /**
@@ -142,7 +160,7 @@ void extractParetoFront(std::vector<Solution *>& front){
     
     unsigned long nextSol = 0;
     unsigned long currentSol = 0;
-    int domination = 0;
+    DominanceRelation domination;
     
     for (currentSol = 0; currentSol < front.size() - 1; currentSol++) {
         Solution * solution = front.at(currentSol);
