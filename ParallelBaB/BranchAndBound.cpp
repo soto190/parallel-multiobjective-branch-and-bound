@@ -55,6 +55,8 @@ BranchAndBound::~BranchAndBound(){
     this->paretoFront.clear();
     
     delete this->ivm_tree;
+    delete [] this->start_of_tree;
+    delete [] this->end_of_tree;
 }
 
 void BranchAndBound::initialize(){
@@ -62,6 +64,7 @@ void BranchAndBound::initialize(){
     this->start = std::clock();;
     
     this->paretoFront.clear();
+    this->ivm_tree = new IVMTree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
     
     int numberOfObjectives = this->problem->getNumberOfObjectives();
     int numberOfVariables = this->problem->getNumberOfVariables();
@@ -117,55 +120,52 @@ void BranchAndBound::initialize(){
 
     int value = 0;
     
-    this->ivm_tree = new IVMTree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
-    this->ivm_tree->setActiveLevel(0);
+    /** 
+     *  TODO: uses these things as parameters for the B&B. Posible parameters starts_tree -> the level of the tree, and an array with the interval.
+     *  TODO: Choose one end_of_tree from B&B or end_exploration from IVM.
+     *
+     **/
+    int starts_tree = 0;
+    this->start_of_tree = new int[this->problem->totalVariables];
+    this->end_of_tree = new int[this->problem->totalVariables];
+    this->computeLimitExploration(starts_tree, new int[8]{0, 4, 3, 2, 1, 0, 6, 8});
+    this->ivm_tree->setExplorationInterval(starts_tree, this->start_of_tree, this->end_of_tree);
     
-    for (value = 0; value < this->ivm_tree->getNumberOfRows(); value++)
-        this->ivm_tree->end_exploration[value] = this->problem->getUpperBound(value);
+    this->currentLevel = starts_tree - 1;
+    
+    for (value = 0; value < starts_tree; value++)
+        this->currentSolution->setVariable(value, this->ivm_tree->start_exploration[value]);
+    
+    this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
     
     switch(this->problem->getType()){
         case ProblemType::permutation_with_repetition_and_combination:
-            for (value = this->problem->getLowerBound(0); value <= this->problem->getUpperBound(0); value++){
-                this->ivm_tree->setNode(this->problem->getStartingLevel(), value);
-                this->branches++;
-            }
+            if(this->currentLevel == 0)
+                for (value = this->problem->getLowerBound(0); value <= this->problem->getUpperBound(0); value++) {
+                    this->ivm_tree->setNode(this->currentLevel, value);
+                    this->branches++;
+                }
+            else
+                this->branch(this->currentSolution, this->currentLevel);
             break;
             
         case ProblemType::permutation:
             for (value = this->problem->getLowerBound(0); value <= this->problem->getUpperBound(0); value++) {
-                this->ivm_tree->setNode(this->problem->getStartingLevel(), value);
+                this->ivm_tree->setNode(this->currentLevel, value);
                 this->branches++;
             }
             break;
             
         case ProblemType::combination:
             for (value = this->problem->getLowerBound(0); value <= this->problem->getUpperBound(0); value++) {
-                this->ivm_tree->setNode(this->problem->getStartingLevel(), value);
+                this->ivm_tree->setNode(this->currentLevel, value);
                 this->branches++;
             }
             break;
             
         case ProblemType::XD:
             break;
-    
     }
-    
-    /**
-    if (this->problem->getType() == ProblemType::permutation_with_repetition_and_combination) {
-        for (value = this->problem->getLowerBound(0); value <= this->problem->getUpperBound(0); value++){
-            this->ivm_tree->setNode(this->problem->getStartingLevel(), value);
-            this->branches++;
-        }
-    }
-    else{
-        for (value = this->problem->getLowerBound(0); value <= this->problem->getUpperBound(0); value++) {
-            this->ivm_tree->setNode(this->problem->getStartingLevel(), value);
-            this->branches++;
-        }
-    }
-     **/
-    this->currentLevel = this->ivm_tree->getCurrentLevel();
-    this->ivm_tree->showIVM();
 }
 
 void BranchAndBound::solve(){
@@ -184,7 +184,6 @@ void BranchAndBound::solve(){
 
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
-        //printCurrentSolution();
         
         if (aLeafHasBeenReached() == 0)
             if(improvesTheGrid(this->currentSolution) == 1) // if(improvesTheLowerBound(this->currentSolution) == 1)
@@ -225,18 +224,18 @@ void BranchAndBound::solve(){
  *  Gets the next node to explore.
  **/
 int BranchAndBound::explore(Solution * solution){
-
-        this->exploredNodes++;
-        
-        if(this->aLeafHasBeenReached())
-            this->ivm_tree->pruneActiveNode();
-        
-        int level = this->ivm_tree->getCurrentLevel();
-        int element = this->ivm_tree->getActiveNode();
-        
-        solution->setVariable(level, element);
-        this->currentLevel = level;
-
+    
+    this->exploredNodes++;
+    
+    if(this->aLeafHasBeenReached())
+        this->ivm_tree->pruneActiveNode();
+    
+    int level = this->ivm_tree->getCurrentLevel();
+    int element = this->ivm_tree->getActiveNode();
+    
+    solution->setVariable(level, element);
+    this->currentLevel = level;
+    
     return 0;
 }
 
@@ -244,15 +243,14 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
     
     this->callsToBranch++;
     int variable = 0;
-    int belongs = 0;
+    int isInPermut = 0;
     int level = 0;
     int levelStarting= 0;
     
     int varInPos = 0;
     
-    int numberOfElements = problem->getTotalElements();
     int * numberOfRepetitionsAllowed = problem->getElemensToRepeat();
-    int timesRepeated [numberOfElements];
+    int timesRepeated [problem->getTotalElements()];
     int map = 0;
     int jobToCheck = 0;
     int jobAllocated = 0;
@@ -262,19 +260,17 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
     switch (this->problem->getType()) {
             
         case ProblemType::permutation:
-            belongs = 0;
-            level = 0;
             levelStarting = this->problem->getStartingLevel();
             
             for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
-                belongs = 0;
-                for (level = levelStarting; level <= currentLevel && belongs == 0; level++)
+                isInPermut = 0;
+                for (level = levelStarting; level <= currentLevel && isInPermut == 0; level++)
                     if (solution->getVariable(level) == variable) {
-                        belongs = 1;
+                        isInPermut = 1;
                         level = currentLevel;
                     }
                 
-                if (belongs == 0) {
+                if (isInPermut == 0) {
                     this->ivm_tree->setNode(currentLevel + 1, variable);
                     this->branches++;
                 }
@@ -284,27 +280,26 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
             
         case ProblemType::permutation_with_repetition_and_combination:
             
+            /** TODO: Sort the branches considering the objective value. **/
             /** TODO: Branch to calculates the limit of the Tree. **/
-            for (variable = 0; variable < numberOfElements; variable++) {
-                belongs = 0;
+            for (variable = 0; variable < problem->getTotalElements(); variable++) {
+                isInPermut = 0;
                 jobToCheck = variable;
                 timesRepeated[jobToCheck] = 0;
                 
-                for (varInPos = this->problem->getStartingLevel(); varInPos <= currentLevel && belongs == 0; varInPos ++){
+                for (varInPos = this->problem->getStartingLevel(); varInPos <= currentLevel && isInPermut == 0; varInPos ++){
                     map = solution->getVariable(varInPos);
                     jobAllocated = this->problem->getMapping(map, 0);
                     if (jobToCheck == jobAllocated) {
                         timesRepeated[jobToCheck]++;
                         if(timesRepeated[jobToCheck] == numberOfRepetitionsAllowed[jobToCheck]){
-                            belongs = 1;
+                            isInPermut = 1;
                             varInPos = currentLevel;
                         }
                     }
                 }
                 
-                if (belongs == 0){
-                    
-                    machine = 0;
+                if (isInPermut == 0){
                     for(machine = 0; machine < this->problem->getTimesValueIsRepeated(0); machine++){
                         toAdd = this->problem->getMappingOf(jobToCheck, machine);
                         this->ivm_tree->setNode(currentLevel + 1, toAdd);
@@ -395,7 +390,6 @@ int BranchAndBound::improvesTheLowerBound(Solution * solution){
             }
         }
     
-    
     return improves;
 }
 
@@ -422,8 +416,8 @@ int BranchAndBound::improvesTheGrid(Solution * solution){
             improveIt = this->improvesTheBucket(solution, bucketFront);
             break;
     }
-    return improveIt;
     
+    return improveIt;
 }
 
 int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *>& bucketFront){
@@ -441,9 +435,59 @@ int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *>& bu
     
     return improves;
 }
-
-int BranchAndBound::computeLimitExploration(){
+/**
+ * level indicates the position to start to build.
+ *
+ **/
+int BranchAndBound::computeLimitExploration(int level, int * partialBranch){
     
+    int job = 0;
+    int isIn = 0;
+    int varInPos = 0;
+    int * numberOfRepetitionsAllowed = problem->getElemensToRepeat();
+    int timesRepeated [problem->getTotalElements()];
+    int map = 0;
+    int jobToCheck = 0;
+    int jobAllocated = 0;
+    int cl = 0; /** Current level.**/
+    
+    for (cl = 0; cl < level; cl++) {
+        this->start_of_tree[cl] = partialBranch[cl];
+        this->end_of_tree[cl] = partialBranch[cl];
+    }
+    
+    for (cl = level; cl <= this->totalLevels; cl++)
+        this->start_of_tree[cl] = 0;
+
+    if (level == 0) {
+        this->start_of_tree[0] = 0;
+        this->end_of_tree[0] = this->problem->getUpperBound(0);
+    }
+    
+    /** For each level search the job to allocate.**/
+    for (cl = level - 1; cl < this->totalLevels; cl++)
+        for (job = problem->getTotalElements() - 1; job >= 0; job--) {
+            isIn = 0;
+            jobToCheck = job;
+            timesRepeated[jobToCheck] = 0;
+            
+            for (varInPos = 0; varInPos <= cl && isIn == 0; varInPos++){
+                map = this->end_of_tree[varInPos];
+                jobAllocated = this->problem->getMapping(map, 0);
+                if (jobToCheck == jobAllocated) {
+                    timesRepeated[jobToCheck]++;
+                    if(timesRepeated[jobToCheck] == numberOfRepetitionsAllowed[jobToCheck]){
+                        isIn = 1;
+                        varInPos = cl;
+                    }
+                }
+            }
+            
+            if (isIn == 0){
+                this->end_of_tree[cl + 1] = this->problem->getMappingOf(jobToCheck, this->problem->getTimesValueIsRepeated(0) - 1);
+                job = 0; /** To finish the loop. **/
+            }
+        }
     
     return 0;
 }

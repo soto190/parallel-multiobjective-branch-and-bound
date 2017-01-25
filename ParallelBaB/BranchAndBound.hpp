@@ -44,13 +44,16 @@ public:
     HandlerContainer * paretoContainer;
     
     std::vector<Solution * > paretoFront;
-    Solution* currentSolution;
-    Solution* bestObjectivesFound;
+    Solution * currentSolution;
+    Solution * bestObjectivesFound;
     
     //std::vector<int> treeOnAStack; /** Remove **/
     //std::vector<int> levelOfTree ; /** Remove **/
     
     IVMTree * ivm_tree;
+    int * start_of_tree;
+    int * end_of_tree;
+    int levels_completed;
     
     int currentLevel; /** Active level **/
     int totalLevels;  /** Number of tree levels **/
@@ -105,7 +108,7 @@ private:
     int updateParetoGrid(Solution * solution);
     int improvesTheBucket(Solution * solution, vector<Solution *>& bucketFront);
     
-    int computeLimitExploration();
+    int computeLimitExploration(int level, int * partialRoot);
     
 };
 

@@ -26,6 +26,7 @@ public:
     int * start_exploration;
     int * end_exploration;
     int active_level;
+    int starting_level;
     int hasBranches = 1;
     
     int * max_nodes_in_level;
@@ -33,7 +34,7 @@ public:
     int getNumberOfRows();
     int getNumberOfCols();
     void setActiveLevel(int level);
-    void setExplorationInterval(int * starts, int * ends);
+    void setExplorationInterval(int starting_level, int * starts, int * ends);
     int getTreeDeep();
     
     int hasPendingBranches();

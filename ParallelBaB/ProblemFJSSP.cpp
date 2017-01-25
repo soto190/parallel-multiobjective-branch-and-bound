@@ -784,8 +784,6 @@ void ProblemFJSSP::printPartialSolution(Solution * solution, int level){
     
     int indexVar = 0;
     int withVariables = 1;
-    int job = 0;
-    int machine = 0;
     
     for (indexVar = 0; indexVar < this->getNumberOfObjectives(); indexVar++)
         printf("%7.0f ", solution->getObjective(indexVar));
@@ -794,23 +792,27 @@ void ProblemFJSSP::printPartialSolution(Solution * solution, int level){
         
         printf(" | ");
         
-        for (indexVar = 0; indexVar <= level; indexVar++){
-            job = this->getMapping(solution->getVariable(indexVar), 0);
-            printf("%3d ", job);
-        }
+        for (indexVar = 0; indexVar <= level; indexVar++)
+            printf("%3d ", solution->getVariable(indexVar));
+        
+        for (indexVar = level + 1; indexVar < this->totalOperations; indexVar ++)
+            printf("  - ");
+        /*
+        printf("|\n\t\t\t\t | ");
+        for (indexVar = 0; indexVar <= level; indexVar++)
+            printf("%3d ", this->getMapping(solution->getVariable(indexVar), 0));
+        
         for (indexVar = level + 1; indexVar < this->totalOperations; indexVar ++)
                 printf("  - ");
         
         printf("|\n\t\t\t\t | ");
 
-        for (indexVar = 0; indexVar <= level; indexVar++){
-            machine = this->getMapping(solution->getVariable(indexVar), 1);
-            printf("%3d ", machine);
-        }
+        for (indexVar = 0; indexVar <= level; indexVar++)
+            printf("%3d ", this->getMapping(solution->getVariable(indexVar), 1));
         
         for (indexVar = level + 1; indexVar < this->totalOperations; indexVar ++)
             printf("  - ");
-        
+        */
         printf("|");
     }
 }
