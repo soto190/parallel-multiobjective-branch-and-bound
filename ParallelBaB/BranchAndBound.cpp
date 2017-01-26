@@ -6,6 +6,13 @@
 //  Copyright © 2016 Carlos Soto. All rights reserved.
 //
 
+/**
+ * TODO: Sort the branches considering the objective values.
+ * TODO: Create a structure to store the objective values in each level of the tree.
+ * TODO: Create method to split the intervals.
+ * TODO:
+ *
+ **/
 #include "BranchAndBound.hpp"
 
 
@@ -184,6 +191,9 @@ void BranchAndBound::solve(){
 
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
+        
+        //printCurrentSolution();
+        //printf("\n");
         
         if (aLeafHasBeenReached() == 0)
             if(improvesTheGrid(this->currentSolution) == 1) // if(improvesTheLowerBound(this->currentSolution) == 1)
