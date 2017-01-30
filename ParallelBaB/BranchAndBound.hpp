@@ -47,12 +47,7 @@ public:
     Solution * currentSolution;
     Solution * bestObjectivesFound;
     
-    //std::vector<int> treeOnAStack; /** Remove **/
-    //std::vector<int> levelOfTree ; /** Remove **/
-    
     IVMTree * ivm_tree;
-    int * start_of_tree;
-    int * end_of_tree;
     int levels_completed;
     
     int currentLevel; /** Active level **/
@@ -79,7 +74,7 @@ public:
     std::chrono::high_resolution_clock::time_point t2;
     
     void solve();
-    void initialize();
+    void initialize(int starting_level, int * branch);
     int explore(Solution * solution);
     void branch(Solution * solution, int currentLevel);
     void prune(Solution * solution, int currentLevel);
@@ -108,7 +103,7 @@ private:
     int updateParetoGrid(Solution * solution);
     int improvesTheBucket(Solution * solution, vector<Solution *>& bucketFront);
     
-    int computeLimitExploration(int level, int * partialRoot);
+    int computeExplorationInterval(int level, int * partialRoot);
     
 };
 

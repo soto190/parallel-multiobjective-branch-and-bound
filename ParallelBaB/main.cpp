@@ -72,51 +72,7 @@ int main(int argc, const char * argv[]) {
     problem->loadInstance(files);
     problem->printProblemInfo();
     
-    /* Eliminar despues
-    Solution * solution = new Solution(2, 24);
-    
-    solution->setVariable(0, 0);
-    solution->setVariable(0 + 12, 3);
-    
-    solution->setVariable(1, 0);
-    solution->setVariable(1 + 12, 1);
-    
-    solution->setVariable(2, 0);
-    solution->setVariable(2 + 12, 3);
-    
-    solution->setVariable(3, 1);
-    solution->setVariable(3 + 12, 0);
-    
-    solution->setVariable(4, 1);
-    solution->setVariable(4 + 12, 4);
-    
-    solution->setVariable(5, 1);
-    solution->setVariable(5 + 12, 0);
-    
-    solution->setVariable(6, 2);
-    solution->setVariable(6 + 12, 2);
-    
-    solution->setVariable(7, 2);
-    solution->setVariable(7 + 12, 1);
-    
-    solution->setVariable(8, 2);
-    solution->setVariable(8 + 12, 3);
-    
-    solution->setVariable(9, 2);
-    solution->setVariable(9 + 12, 3);
-    
-    solution->setVariable(10, 3);
-    solution->setVariable(10 + 12, 0);
-    
-    solution->setVariable(11, 3);
-    solution->setVariable(11 + 12, 1);
-    
-    
-    problem->evaluatePartial(solution, 5);
-    
-    printf("%f %f\n", solution->getObjective(0), solution->getObjective(1));
-    */
-    
+
     /** Preparing output files: 
      * - CSV: contains the Pareto front.
      * - TXT: contains a log file.

@@ -116,7 +116,7 @@ int HandlerContainer::set(Solution * solution, int x, int y){
 }
 
 /**
- NOTES TODO: Improve it by using a binary tree to search the bucket which will contain the new solution.
+ * It uses a binary search tree locate the bucket which will contain the new solution.
  **/
 void HandlerContainer::add(Solution * solution){
 
@@ -210,7 +210,7 @@ int HandlerContainer::updateBucket(Solution * solution, int x, int y){
         /** No solutions were removed and the new solution was added**/
         else if(paretoFront->size() == sizeBeforeUpdate + 1)
             this->totalElements++;
-        /**else the size doesnt change**/
+        /** else the size doesnt change**/
     }
     return updated;
 }

@@ -8,12 +8,15 @@
 
 /**
  * TODO: Sort the branches considering the objective values.
- * TODO: Create a structure to store the objective values in each level of the tree.
+ * TODO: Create a structure to store the objective values in each level of the tree (in the solution class or in the B&B class?).
  * TODO: Create method to split the intervals.
- * TODO:
+ * TODO: Implements methods to share the information.
+ * TODO: Decide if the grid is shared or each B&B has their own grid.
+ * TODO: If the grid is shared, then only block the cell which is updated, because to verify the improvement only requieres read acces.
  *
  **/
 #include "BranchAndBound.hpp"
+
 
 
 BranchAndBound::BranchAndBound(){
@@ -27,7 +30,7 @@ BranchAndBound::BranchAndBound(Problem * problem){
     
     this->paretoContainer = new HandlerContainer();
     
-    this->ivm_tree = new IVMTree();
+    this->ivm_tree = new IVMTree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
     
     this->currentLevel = 0;
     this->totalLevels = 0;
@@ -62,27 +65,42 @@ BranchAndBound::~BranchAndBound(){
     this->paretoFront.clear();
     
     delete this->ivm_tree;
-    delete [] this->start_of_tree;
-    delete [] this->end_of_tree;
 }
 
-void BranchAndBound::initialize(){
+void BranchAndBound::initialize(int starts_tree, int * branch){
     
-    this->start = std::clock();;
-    
+    this->start = std::clock();
     this->paretoFront.clear();
-    this->ivm_tree = new IVMTree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
-    
+
     int numberOfObjectives = this->problem->getNumberOfObjectives();
     int numberOfVariables = this->problem->getNumberOfVariables();
     
+    /**
+     *  TODO: uses these things as parameters for the B&B. Posible parameters starts_tree -> the level of the tree, and an array with the interval.
+     **/
+    this->computeExplorationInterval(starts_tree, branch);
+    
+    this->currentLevel = starts_tree - 1;
+    this->totalLevels = this->problem->getFinalLevel();
+    this->branches = 0;
+    this->exploredNodes = 0;
+    this->unexploredNodes = 0;
+    this->prunedNodes = 0;
+    this->prunedBranches = 0;
+    this->callsToBranch = 0;
+    this->totalUpdatesInLowerBound = 0;
+    this->totalNodes = this->computeTotalNodes(totalLevels);
+
+    
+    
     this->currentSolution = new Solution(numberOfObjectives, numberOfVariables);
+     this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
     this->problem->createDefaultSolution(this->currentSolution);
 
+    this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
+    
     Solution * bestInObj1 = this->problem->getSolutionWithLowerBoundInObj(1);
     Solution * bestInObj2 = this->problem->getSolutionWithLowerBoundInObj(2);
-    
-    this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
     
     int nObj = 0;
     for (nObj = 0; nObj < numberOfObjectives; nObj++)
@@ -106,39 +124,15 @@ void BranchAndBound::initialize(){
     this->problem->printSolution(bestInObj2);
     printf("\n");
     
-    updateParetoGrid(bestInObj1);
-    updateParetoGrid(bestInObj2);
-    updateParetoGrid(this->currentSolution);
+    this->updateParetoGrid(bestInObj1);
+    this->updateParetoGrid(bestInObj2);
+    this->updateParetoGrid(this->currentSolution);
     
-    
-    this->currentLevel = this->problem->getStartingLevel();
-    this->totalLevels = this->problem->getFinalLevel();
-    this->branches = 0;
-    this->exploredNodes = 0;
-    this->unexploredNodes = 0;
-    this->prunedNodes = 0;
-    this->prunedBranches = 0;
-    this->callsToBranch = 0;
-    this->totalUpdatesInLowerBound = 0;
-    this->totalNodes = this->computeTotalNodes(totalLevels);
-    
+
     delete bestInObj1;
     delete bestInObj2;
 
     int value = 0;
-    
-    /** 
-     *  TODO: uses these things as parameters for the B&B. Posible parameters starts_tree -> the level of the tree, and an array with the interval.
-     *  TODO: Choose one end_of_tree from B&B or end_exploration from IVM.
-     *
-     **/
-    int starts_tree = 0;
-    this->start_of_tree = new int[this->problem->totalVariables];
-    this->end_of_tree = new int[this->problem->totalVariables];
-    this->computeLimitExploration(starts_tree, new int[8]{0, 4, 3, 2, 1, 0, 6, 8});
-    this->ivm_tree->setExplorationInterval(starts_tree, this->start_of_tree, this->end_of_tree);
-    
-    this->currentLevel = starts_tree - 1;
     
     for (value = 0; value < starts_tree; value++)
         this->currentSolution->setVariable(value, this->ivm_tree->start_exploration[value]);
@@ -177,7 +171,7 @@ void BranchAndBound::initialize(){
 
 void BranchAndBound::solve(){
     
-    this->initialize();
+    this->initialize(0, new int[8]{0, 8, 8, 5, 5, 2, 2, 2});
     double timeUp = 0;
     int updated = 0;
     
@@ -192,17 +186,16 @@ void BranchAndBound::solve(){
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
         
-        //printCurrentSolution();
-        //printf("\n");
+//        printCurrentSolution();
+//        printf("\n");
         
         if (aLeafHasBeenReached() == 0)
-            if(improvesTheGrid(this->currentSolution) == 1) // if(improvesTheLowerBound(this->currentSolution) == 1)
+            if(improvesTheGrid(this->currentSolution) == 1)
                 this->branch(this->currentSolution, this->currentLevel);
             else
                 this->prune(this->currentSolution, this->currentLevel);
         else{
             
-            this->problem->evaluateLastLevel(this->currentSolution);
             this->leaves++;
             
             updated = this->updateParetoGrid(this->currentSolution);
@@ -357,6 +350,7 @@ int BranchAndBound::theTreeHasMoreBranches(){
 
 int BranchAndBound::updateParetoGrid(Solution * solution){
     
+    /** TODO: Call a mutex in this method. **/
     int nObj = 0;
     for (nObj = 0; nObj < this->problem->totalObjectives; nObj++)
         if (solution->getObjective(nObj) < this->bestObjectivesFound->getObjective(nObj))
@@ -414,7 +408,7 @@ int BranchAndBound::improvesTheGrid(Solution * solution){
     switch (stateOfBucket) {
             
         case BucketState::dominated:
-            improveIt = 0;
+            //improveIt = 0;
             break;
             
         case BucketState::unexplored:
@@ -445,12 +439,14 @@ int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *>& bu
     
     return improves;
 }
+
 /**
  * level indicates the position to start to build.
  *
  **/
-int BranchAndBound::computeLimitExploration(int level, int * partialBranch){
+int BranchAndBound::computeExplorationInterval(int level, int * partialBranch){
     
+    /** This is only for the FJSSP. **/
     int job = 0;
     int isIn = 0;
     int varInPos = 0;
@@ -461,19 +457,28 @@ int BranchAndBound::computeLimitExploration(int level, int * partialBranch){
     int jobAllocated = 0;
     int cl = 0; /** Current level.**/
     
+    
+    this->ivm_tree->starting_level = level;
+    this->ivm_tree->active_level = level - 1;
+    
     for (cl = 0; cl < level; cl++) {
-        this->start_of_tree[cl] = partialBranch[cl];
-        this->end_of_tree[cl] = partialBranch[cl];
+        this->ivm_tree->start_exploration[cl] = partialBranch[cl];
+        this->ivm_tree->end_exploration[cl] = partialBranch[cl];
+        this->ivm_tree->max_nodes_in_level[cl] = 1;
+        this->ivm_tree->active_nodes[cl] = partialBranch[cl];
+        this->ivm_tree->ivm[cl][partialBranch[cl]] = partialBranch[cl];
     }
     
-    for (cl = level; cl <= this->totalLevels; cl++)
-        this->start_of_tree[cl] = 0;
-
+    for (cl = level; cl <= this->totalLevels; cl++){
+        this->ivm_tree->start_exploration[cl] = 0;
+        this->ivm_tree->max_nodes_in_level[cl] = 0;
+    }
+    
     if (level == 0) {
-        this->start_of_tree[0] = 0;
-        this->end_of_tree[0] = this->problem->getUpperBound(0);
+        this->ivm_tree->start_exploration[0] = 0;
+        this->ivm_tree->end_exploration[0] = this->problem->getUpperBound(0);
     }
-    
+
     /** For each level search the job to allocate.**/
     for (cl = level - 1; cl < this->totalLevels; cl++)
         for (job = problem->getTotalElements() - 1; job >= 0; job--) {
@@ -482,7 +487,7 @@ int BranchAndBound::computeLimitExploration(int level, int * partialBranch){
             timesRepeated[jobToCheck] = 0;
             
             for (varInPos = 0; varInPos <= cl && isIn == 0; varInPos++){
-                map = this->end_of_tree[varInPos];
+                map = this->ivm_tree->end_exploration[varInPos];
                 jobAllocated = this->problem->getMapping(map, 0);
                 if (jobToCheck == jobAllocated) {
                     timesRepeated[jobToCheck]++;
@@ -494,8 +499,9 @@ int BranchAndBound::computeLimitExploration(int level, int * partialBranch){
             }
             
             if (isIn == 0){
-                this->end_of_tree[cl + 1] = this->problem->getMappingOf(jobToCheck, this->problem->getTimesValueIsRepeated(0) - 1);
-                job = 0; /** To finish the loop. **/
+                this->ivm_tree->end_exploration[cl + 1] = this->problem->getMappingOf(jobToCheck, this->problem->getTimesValueIsRepeated(0) - 1);
+                /** To finish the loop. **/
+                job = 0;
             }
         }
     
