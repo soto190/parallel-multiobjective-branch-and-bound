@@ -9,7 +9,6 @@
 /**
  * TODO: Sort the branches considering the objective values.
  * TODO: Create a structure to store the objective values in each level of the tree (in the solution class or in the B&B class?).
- * TODO: Create method to split the intervals.
  * TODO: Implements methods to share the information.
  * TODO: Decide if the grid is shared or each B&B has their own grid.
  * TODO: If the grid is shared, then only block the cell which is updated, because to verify the improvement only requieres read acces.
@@ -75,11 +74,6 @@ void BranchAndBound::initialize(int starts_tree, int * branch){
     int numberOfObjectives = this->problem->getNumberOfObjectives();
     int numberOfVariables = this->problem->getNumberOfVariables();
     
-    /**
-     *  TODO: uses these things as parameters for the B&B. Posible parameters starts_tree -> the level of the tree, and an array with the interval.
-     **/
-    this->computeExplorationInterval(starts_tree, branch);
-    
     this->currentLevel = starts_tree - 1;
     this->totalLevels = this->problem->getFinalLevel();
     this->branches = 0;
@@ -92,9 +86,10 @@ void BranchAndBound::initialize(int starts_tree, int * branch){
     this->totalNodes = this->computeTotalNodes(totalLevels);
 
     
-    
+    this->initializeExplorationInterval(starts_tree, branch);
+
     this->currentSolution = new Solution(numberOfObjectives, numberOfVariables);
-     this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
+    this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
     this->problem->createDefaultSolution(this->currentSolution);
 
     this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
@@ -119,8 +114,7 @@ void BranchAndBound::initialize(int starts_tree, int * branch){
     
     printf("Best max workload:\n");
     this->problem->printSolution(bestInObj1);
-    printf("\n");
-    printf("Best total workload:\n");
+    printf("\nBest total workload:\n");
     this->problem->printSolution(bestInObj2);
     printf("\n");
     
@@ -169,14 +163,19 @@ void BranchAndBound::initialize(int starts_tree, int * branch){
     }
 }
 
-void BranchAndBound::solve(){
+void BranchAndBound::solve(int starting_level, int * branch){
     
-    this->initialize(0, new int[8]{0, 8, 8, 5, 5, 2, 2, 2});
+    printf("Starting Branch and Bound...\nTotal levels %d...\nStarting at level %d\nReceived branch: [", totalLevels, starting_level);
+    
+    int index = 0;
+    for (index = 0; index <  this->problem->getNumberOfVariables(); index++)
+        printf("%3d ", branch[index]);
+    
+    printf("]\n");
+
+    this->initialize(starting_level, branch);
     double timeUp = 0;
     int updated = 0;
-    
-    printf("Starting Branch and Bound...\n");
-    printf("Total levels %d...\n", totalLevels);
     
     this->t1 = std::chrono::high_resolution_clock::now();
     this->t2 = std::chrono::high_resolution_clock::now();
@@ -185,9 +184,6 @@ void BranchAndBound::solve(){
 
         this->explore(this->currentSolution);
         this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
-        
-//        printCurrentSolution();
-//        printf("\n");
         
         if (aLeafHasBeenReached() == 0)
             if(improvesTheGrid(this->currentSolution) == 1)
@@ -230,6 +226,7 @@ int BranchAndBound::explore(Solution * solution){
     
     this->exploredNodes++;
     
+    /** If the active node is a leaf the we need to go up. **/
     if(this->aLeafHasBeenReached())
         this->ivm_tree->pruneActiveNode();
     
@@ -284,20 +281,19 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
         case ProblemType::permutation_with_repetition_and_combination:
             
             /** TODO: Sort the branches considering the objective value. **/
-            /** TODO: Branch to calculates the limit of the Tree. **/
             for (variable = 0; variable < problem->getTotalElements(); variable++) {
                 isInPermut = 0;
                 jobToCheck = variable;
                 timesRepeated[jobToCheck] = 0;
                 
-                for (varInPos = this->problem->getStartingLevel(); varInPos <= currentLevel && isInPermut == 0; varInPos ++){
+                for (varInPos = this->problem->getStartingLevel(); varInPos <= currentLevel; varInPos ++){
                     map = solution->getVariable(varInPos);
                     jobAllocated = this->problem->getMapping(map, 0);
                     if (jobToCheck == jobAllocated) {
                         timesRepeated[jobToCheck]++;
                         if(timesRepeated[jobToCheck] == numberOfRepetitionsAllowed[jobToCheck]){
                             isInPermut = 1;
-                            varInPos = currentLevel;
+                            varInPos = currentLevel + 1;
                         }
                     }
                 }
@@ -444,7 +440,7 @@ int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *>& bu
  * level indicates the position to start to build.
  *
  **/
-int BranchAndBound::computeExplorationInterval(int level, int * partialBranch){
+int BranchAndBound::initializeExplorationInterval(int level, int * partialBranch){
     
     /** This is only for the FJSSP. **/
     int job = 0;
@@ -508,6 +504,88 @@ int BranchAndBound::computeExplorationInterval(int level, int * partialBranch){
     return 0;
 }
 
+void BranchAndBound::computeLastBranch(int level, int * branch){
+    /** This is only for the FJSSP. **/
+    int totalLevels = this->problem->getFinalLevel();
+    int job = 0;
+    int isIn = 0;
+    int varInPos = 0;
+    int * numberOfRepetitionsAllowed = problem->getElemensToRepeat();
+    int timesRepeated [problem->getTotalElements()];
+    int map = 0;
+    int jobToCheck = 0;
+    int jobAllocated = 0;
+    int cl = 0; /** Current level.**/
+    
+    if (level == 0)
+        branch[0] = this->problem->getUpperBound(0);
+    
+    /** For each level search the job to allocate.**/
+    for (cl = level - 1; cl < totalLevels; cl++)
+        for (job = problem->getTotalElements() - 1; job >= 0; job--) {
+            isIn = 0;
+            jobToCheck = job;
+            timesRepeated[jobToCheck] = 0;
+            
+            for (varInPos = 0; varInPos <= cl; varInPos++){
+                map = branch[varInPos];
+                jobAllocated = this->problem->getMapping(map, 0);
+                if (jobToCheck == jobAllocated) {
+                    timesRepeated[jobToCheck]++;
+                    if(timesRepeated[jobToCheck] == numberOfRepetitionsAllowed[jobToCheck]){
+                        isIn = 1;
+                        varInPos = cl + 1;
+                    }
+                }
+            }
+            
+            if (isIn == 0){
+                branch[cl + 1] = this->problem->getMappingOf(jobToCheck, this->problem->getTimesValueIsRepeated(0) - 1);
+                /** To finish the loop. **/
+                job = 0;
+            }
+        }
+}
+
+/** Generates an interval for each possible value in the given level of the branch_to_split.
+ *  Level: 4
+ *  Branch: [ 8 8 4 3 ...]
+ *  Generates the intervals:
+ *  Interval_1: [8 8 4 0]
+ *  Interval_2: [8 8 4 1]
+ *  Interval_3: [8 8 4 2]
+ *  Interval_4: [8 8 4 3]
+ *
+ *   Remeber to avoid to split the intervals in the last levels.
+ **/
+void BranchAndBound::splitInterval(int level, int * branch_to_split){
+    
+    int index_interval = 0;
+    int index_var = 0;
+    int number_of_variables = this->problem->totalVariables;
+    int sections = branch_to_split[level] + 1;
+    
+    /** TODO: Instead of a matrix store the intervals in a vector. **/
+    int intervals [sections][number_of_variables];
+
+   
+    /** From level + 1 to the last position are initialized at 0. **/
+    for (index_interval = 0; index_interval < sections; index_interval++)
+        for (index_var = level + 1; index_var < number_of_variables; index_var++)
+            intervals[index_interval][index_var] = -1;
+
+    /** Copy the first variables of the branch_to_split. **/
+    for (index_interval = 0; index_interval < sections; index_interval++)
+        for (index_var = 0; index_var < level; index_var++)
+            intervals[index_interval][index_var] = branch_to_split[index_var];
+
+    /** The first interval intervals[0] starts at 0. **/
+    intervals[0][level] = 0;
+    for (index_interval = 1; index_interval < sections; index_interval++)
+        intervals[index_interval][level] = intervals[index_interval - 1][level] + 1;
+    
+}
+
 long BranchAndBound::permut(int n, int i) {
     long result = 1;
     for (int j = n; j > n - i; j--)
@@ -523,6 +601,10 @@ int BranchAndBound::getLowerBoundInObj(int nObj){
    return this->problem->getLowerBoundInObj(nObj);
 }
 
+/**
+ * This functions compute the number of nodes.
+ *
+ */
 unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
     long totalNodes = 0;
     long nodes_per_branch = 0;
@@ -559,8 +641,6 @@ void BranchAndBound::printCurrentSolution(int withVariables){
 
 /**
  * This function prints the pareto front found.
- * If receives value of 0 or no parameters then the variables of the solution won't be printed.
- * If receives value of 1 the variables of the solutioj will be printed.
  **/
 void BranchAndBound::printParetoFront(int withVariables){
     
@@ -700,6 +780,5 @@ void BranchAndBound::saveEvery(double timeInSeconds){
         this->printParetoFront(1);
         this->saveParetoFront();
         this->saveSummarize();
-        
     }
 }

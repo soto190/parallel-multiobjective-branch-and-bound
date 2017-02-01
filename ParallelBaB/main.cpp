@@ -54,9 +54,7 @@ int main(int argc, const char * argv[]) {
     std::strcpy(files[0], argv[2]);
     std::strcpy(files[1], argv[3]);
     
-    
-    /**Experimental section**/
-    
+    /** Get name of the instance. **/
     std::vector<std::string> elemens;
     std::vector<std::string> splited;
     elemens = split(argv[2], '/');
@@ -65,13 +63,11 @@ int main(int argc, const char * argv[]) {
     splited = split(elemens[sizeOfElems - 1], '.' );
     printf("Name: %s\n", splited[0].c_str());
     
-    /**Ends experimental section***/
-    
     printf("Files:\n\t%s\n\t%s\n", files[0],  files[1]);
     problem->setName(splited[0].c_str());
     problem->loadInstance(files);
     problem->printProblemInfo();
-    
+    /** End **/
 
     /** Preparing output files: 
      * - CSV: contains the Pareto front.
@@ -80,10 +76,32 @@ int main(int argc, const char * argv[]) {
     std::string outputFile = argv[4] + splited[0] + ".csv";
     std::string summarizeFile = argv[4] + splited[0] + ".txt";
     
+    
+    /** Creating the B&B. **/
     BranchAndBound BaB(problem);
     BaB.setParetoFrontFile(outputFile.c_str());
     BaB.setSummarizeFile(summarizeFile.c_str());
-    BaB.solve();
+    
+    /** Testing the Intervals. **/
+ 
+    int * last_branch = new int[8];
+    int * branch = new int[8];
+
+    
+    int starting_level = 0;
+
+    int level_to_split = 0;
+    
+    BaB.computeLastBranch(starting_level, last_branch);
+    BaB.splitInterval(level_to_split, last_branch);
+    BaB.splitInterval(level_to_split + 1, last_branch);
+    BaB.splitInterval(level_to_split + 2, last_branch);
+
+    BaB.solve(starting_level, last_branch);
+    
+    
+    delete [] last_branch;
+    delete [] branch;
     
     return 0;
 }

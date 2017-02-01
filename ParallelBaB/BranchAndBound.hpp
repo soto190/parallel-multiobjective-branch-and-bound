@@ -73,7 +73,7 @@ public:
     std::chrono::high_resolution_clock::time_point t1;
     std::chrono::high_resolution_clock::time_point t2;
     
-    void solve();
+    void solve(int starting_level, int * branch);
     void initialize(int starting_level, int * branch);
     int explore(Solution * solution);
     void branch(Solution * solution, int currentLevel);
@@ -98,13 +98,21 @@ private:
     long permut(int n, int i);
     int getUpperBound(int objective);
     
-    /**Grid functions**/
+    /** Grid functions. **/
     int improvesTheGrid(Solution * solution);
     int updateParetoGrid(Solution * solution);
     int improvesTheBucket(Solution * solution, vector<Solution *>& bucketFront);
+    /** End Grid functions. **/
     
-    int computeExplorationInterval(int level, int * partialRoot);
+    /** IVM functions. **/
     
+public:
+    void computeLastBranch(int level, int * branch);
+    void splitInterval(int level_to_split, int * branch_to_split);
+private:
+    int initializeExplorationInterval(int level, int * branch);
+    
+    /** End IVM functions **/
 };
 
 #endif /* BranchAndBound_hpp */
