@@ -23,6 +23,7 @@
 #include "GridContainer.hpp"
 #include "Dominance.hpp"
 #include "IVMTree.hpp"
+#include "Interval.hpp"
 
 
 class BranchAndBound{
@@ -37,17 +38,18 @@ public:
     ~BranchAndBound();
     
     Problem* problem;
-    /**
-     * paretofFront needs to be a vector because omp works better with it or use the intel vector version.
-     */
     
-    HandlerContainer * paretoContainer;
     
-    std::vector<Solution * > paretoFront;
     Solution * currentSolution;
     Solution * bestObjectivesFound;
     
+    /** intervals are the pending branches to be explored. **/
+    std::vector<Interval *> intervals;
+    /** paretofFront needs to be a vector because omp works better with it anothre way is to use the intel vector version. **/
+    std::vector<Solution * > paretoFront;
+    HandlerContainer * paretoContainer;
     IVMTree * ivm_tree;
+    
     int levels_completed;
     
     int currentLevel; /** Active level **/
@@ -73,7 +75,7 @@ public:
     std::chrono::high_resolution_clock::time_point t1;
     std::chrono::high_resolution_clock::time_point t2;
     
-    void solve(int starting_level, int * branch);
+    void solve(Interval * interval);
     void initialize(int starting_level, int * branch);
     int explore(Solution * solution);
     void branch(Solution * solution, int currentLevel);
@@ -105,13 +107,12 @@ private:
     /** End Grid functions. **/
     
     /** IVM functions. **/
-    
 public:
-    void computeLastBranch(int level, int * branch);
-    void splitInterval(int level_to_split, int * branch_to_split);
-private:
-    int initializeExplorationInterval(int level, int * branch);
     
+    void computeLastBranch(Interval * branch);
+    void splitInterval(Interval * branch);
+private:
+    int initializeExplorationInterval(Interval * branch, IVMTree * tree);
     /** End IVM functions **/
 };
 

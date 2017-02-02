@@ -83,25 +83,12 @@ int main(int argc, const char * argv[]) {
     BaB.setSummarizeFile(summarizeFile.c_str());
     
     /** Testing the Intervals. **/
- 
-    int * last_branch = new int[8];
-    int * branch = new int[8];
 
+    Interval * branch_int = new Interval (problem->getNumberOfVariables());
     
-    int starting_level = 0;
-
-    int level_to_split = 0;
-    
-    BaB.computeLastBranch(starting_level, last_branch);
-    BaB.splitInterval(level_to_split, last_branch);
-    BaB.splitInterval(level_to_split + 1, last_branch);
-    BaB.splitInterval(level_to_split + 2, last_branch);
-
-    BaB.solve(starting_level, last_branch);
-    
-    
-    delete [] last_branch;
-    delete [] branch;
+    BaB.computeLastBranch(branch_int);
+    branch_int->build_up_to = 3;
+    BaB.solve(branch_int);
     
     return 0;
 }

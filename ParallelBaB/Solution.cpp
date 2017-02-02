@@ -43,7 +43,7 @@ Solution::Solution(const Solution &solution){
     
     this->objective = new double[this->totalObjectives];
     this->variable = new int[this->totalVariables];
-    this->execTime = new double[16];
+    this->execTime = new double[64];
     
     int index = 0;
     
@@ -53,7 +53,7 @@ Solution::Solution(const Solution &solution){
     for (index = 0; index < this->totalVariables; index++)
         this->variable[index] = solution.variable[index];
     
-    for (index = 0; index < 16; index++)
+    for (index = 0; index < 64; index++)
         this->execTime[index] = solution.execTime[index];
     
 }

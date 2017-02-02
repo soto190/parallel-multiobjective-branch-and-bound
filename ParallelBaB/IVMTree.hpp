@@ -20,7 +20,9 @@ class IVMTree{
 public:
     IVMTree();
     IVMTree(int rows, int cols);
+    
     ~IVMTree();
+    
     int ** ivm;
     int * active_nodes;
     int * start_exploration;
