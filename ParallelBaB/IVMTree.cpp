@@ -33,7 +33,6 @@ IVMTree::IVMTree(int rows, int cols){
     
     this->starting_level = 0;
     this->active_level = 0;
-    this->active_nodes[0] = 0;
     this->start_exploration = new int[rows];
     this->end_exploration = new int[rows];
 }
@@ -159,10 +158,34 @@ void IVMTree::showIVM(){
     
     int r = 0, c = 0;
     
+    char sep = '-';
     for (r = 0; r < this->rows; r++) {
-        printf("[%3d] %3d | ", r, this->active_nodes[r]);
+        /** The integer verctor. **/
+        if (this->active_nodes[r] == -1)
+            printf("[%3d] %3c ", r, sep);
+        else
+            printf("[%3d] %3d ", r, this->active_nodes[r]);
+        
+        /** The solution. **/
+        if (this->active_nodes[r] == -1 || this->ivm[r][this->active_nodes[r]] == -1)
+            printf(" %3c ", sep);
+        else
+            printf(" %3d ", this->ivm[r][this->active_nodes[r]]);
+        
+        /** Max nodes in level. **/
+        //if (this->active_nodes[r] == -1 || this->ivm[r][this->active_nodes[r]] == -1)
+        //  printf(" %3c | ", sep);
+        //else
+            printf(" %3d | ", this->max_nodes_in_level[r]);
+        
+        /** The matrix. **/
         for (c = 0; c < this->cols; c++)
-            printf("%3d", this->ivm[r][c]);
+            if (this->ivm[r][c] == -1)
+                printf("%3c", sep);
+            else
+                printf("%3d", this->ivm[r][c]);
+        
+        /** The active level. **/
         if (this->active_level == r)
             printf("|*\n");
         else

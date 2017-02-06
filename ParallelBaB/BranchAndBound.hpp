@@ -24,9 +24,11 @@
 #include "Dominance.hpp"
 #include "IVMTree.hpp"
 #include "Interval.hpp"
+#include "tbb/parallel_for.h"
+#include "tbb/task.h"
 
 
-class BranchAndBound{
+class BranchAndBound:public tbb::task{
     
 public:
     
@@ -35,6 +37,7 @@ public:
      **/
     BranchAndBound();
     BranchAndBound(Problem * problem);
+    BranchAndBound(Problem * problem, const Interval & branch);
     ~BranchAndBound();
     
     Problem* problem;
@@ -44,11 +47,12 @@ public:
     Solution * bestObjectivesFound;
     
     /** intervals are the pending branches to be explored. **/
-    std::vector<Interval *> intervals;
+    std::vector<Interval> intervals;
     /** paretofFront needs to be a vector because omp works better with it anothre way is to use the intel vector version. **/
-    std::vector<Solution * > paretoFront;
+    std::vector<Solution *> paretoFront;
     HandlerContainer * paretoContainer;
     IVMTree * ivm_tree;
+    Interval * starting_interval;
     
     int levels_completed;
     
@@ -75,8 +79,8 @@ public:
     std::chrono::high_resolution_clock::time_point t1;
     std::chrono::high_resolution_clock::time_point t2;
     
-    void solve(Interval * interval);
-    void initialize(int starting_level, int * branch);
+    void solve(const Interval & interval);
+    void initialize(int starting_level);
     int explore(Solution * solution);
     void branch(Solution * solution, int currentLevel);
     void prune(Solution * solution, int currentLevel);
@@ -108,12 +112,22 @@ private:
     
     /** IVM functions. **/
 public:
-    
     void computeLastBranch(Interval * branch);
-    void splitInterval(Interval * branch);
+    void setStartingInterval(Interval * branch);
+    void splitInterval(const Interval & branch);
 private:
-    int initializeExplorationInterval(Interval * branch, IVMTree * tree);
+    int initializeExplorationInterval(const Interval & branch, IVMTree * tree);
+    int branchInterval(const Interval &branch);
     /** End IVM functions **/
+
+public:
+    task* execute(); 
+    
+    void operator()(const Interval& branch){
+        this->solve(branch);
+    };
+    
 };
+
 
 #endif /* BranchAndBound_hpp */

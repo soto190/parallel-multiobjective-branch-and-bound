@@ -16,6 +16,10 @@
 		211282611D639AB30038DBEE /* ProblemVRP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 211282561D639AB30038DBEE /* ProblemVRP.cpp */; };
 		211282621D639AB30038DBEE /* Solution.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 211282581D639AB30038DBEE /* Solution.cpp */; };
 		2119FB481E41E14C00197CE4 /* Interval.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2119FB461E41E14C00197CE4 /* Interval.cpp */; };
+		2119FB501E434B4200197CE4 /* libtbb.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2119FB4E1E434B4200197CE4 /* libtbb.dylib */; };
+		2119FB511E434B4200197CE4 /* libtbbmalloc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2119FB4F1E434B4200197CE4 /* libtbbmalloc.dylib */; };
+		2119FB521E434B7000197CE4 /* libtbb.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2119FB4E1E434B4200197CE4 /* libtbb.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		2119FB531E434B7000197CE4 /* libtbbmalloc.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2119FB4F1E434B4200197CE4 /* libtbbmalloc.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		212AFB1E1E3F35CE004FC057 /* Dominance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21F4CBA51DAE97CC004A308F /* Dominance.cpp */; };
 		21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */; };
 		217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */; };
@@ -25,12 +29,14 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		211282251D63988E0038DBEE /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
+			buildActionMask = 12;
+			dstPath = "";
+			dstSubfolderSpec = 16;
 			files = (
+				2119FB521E434B7000197CE4 /* libtbb.dylib in CopyFiles */,
+				2119FB531E434B7000197CE4 /* libtbbmalloc.dylib in CopyFiles */,
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -53,6 +59,8 @@
 		211282591D639AB30038DBEE /* Solution.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Solution.hpp; sourceTree = "<group>"; };
 		2119FB461E41E14C00197CE4 /* Interval.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Interval.cpp; sourceTree = "<group>"; };
 		2119FB471E41E14C00197CE4 /* Interval.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Interval.hpp; sourceTree = "<group>"; };
+		2119FB4E1E434B4200197CE4 /* libtbb.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtbb.dylib; path = ../../../../Libraries/tbb2017_20161128oss/build/macos_intel64_clang_cc8.0.0_os10.11.6_release/libtbb.dylib; sourceTree = "<group>"; };
+		2119FB4F1E434B4200197CE4 /* libtbbmalloc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtbbmalloc.dylib; path = ../../../../Libraries/tbb2017_20161128oss/build/macos_intel64_clang_cc8.0.0_os10.11.6_release/libtbbmalloc.dylib; sourceTree = "<group>"; };
 		21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProblemFJSSP.cpp; sourceTree = "<group>"; };
 		21780F1D1DD9B7D80032EECA /* ProblemFJSSP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ProblemFJSSP.hpp; sourceTree = "<group>"; };
 		217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GridContainer.cpp; sourceTree = "<group>"; };
@@ -68,6 +76,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2119FB501E434B4200197CE4 /* libtbb.dylib in Frameworks */,
+				2119FB511E434B4200197CE4 /* libtbbmalloc.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -79,6 +89,7 @@
 			children = (
 				211282291D63988E0038DBEE /* ParallelBaB */,
 				211282281D63988E0038DBEE /* Products */,
+				2119FB4D1E434B4200197CE4 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -120,6 +131,15 @@
 				2112824C1D639AB30038DBEE /* main.cpp */,
 			);
 			path = ParallelBaB;
+			sourceTree = "<group>";
+		};
+		2119FB4D1E434B4200197CE4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2119FB4E1E434B4200197CE4 /* libtbb.dylib */,
+				2119FB4F1E434B4200197CE4 /* libtbbmalloc.dylib */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -200,7 +220,7 @@
 		2112822C1D63988E0038DBEE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -222,6 +242,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = /Users/carlossoto/Libraries/tbb2017_20161128oss/build/macos_intel64_clang_cc8.0.0_os10.11.6_release;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -236,6 +257,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LIBRARY_SEARCH_PATHS = /Users/carlossoto/Libraries/tbb2017_20161128oss/build/macos_intel64_clang_cc8.0.0_os10.11.6_release;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -246,7 +268,7 @@
 		2112822D1D63988E0038DBEE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
+				ALWAYS_SEARCH_USER_PATHS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
@@ -268,6 +290,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				FRAMEWORK_SEARCH_PATHS = /Users/carlossoto/Libraries/tbb2017_20161128oss/build/macos_intel64_clang_cc8.0.0_os10.11.6_release;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -276,6 +299,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				LIBRARY_SEARCH_PATHS = /Users/carlossoto/Libraries/tbb2017_20161128oss/build/macos_intel64_clang_cc8.0.0_os10.11.6_release;
 				MACOSX_DEPLOYMENT_TARGET = 10.11;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
@@ -285,6 +309,8 @@
 		2112822F1D63988E0038DBEE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = /Users/carlossoto/Libraries/tbb2017_20161128oss/include;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -292,6 +318,8 @@
 		211282301D63988E0038DBEE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = "";
+				HEADER_SEARCH_PATHS = /Users/carlossoto/Libraries/tbb2017_20161128oss/include;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

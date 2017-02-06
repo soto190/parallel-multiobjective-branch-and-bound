@@ -17,6 +17,10 @@
 #include "BranchAndBound.hpp"
 #include "myutils.hpp"
 #include "GridContainer.hpp"
+#include <tbb/task_scheduler_init.h>
+#include <tbb/blocked_range.h>
+#include <tbb/parallel_for.h>
+#include <tbb/task_group.h>
 
 
 /**
@@ -76,19 +80,52 @@ int main(int argc, const char * argv[]) {
     std::string outputFile = argv[4] + splited[0] + ".csv";
     std::string summarizeFile = argv[4] + splited[0] + ".txt";
     
+    tbb::task_scheduler_init init(tbb::task_scheduler_init::automatic);
     
     /** Creating the B&B. **/
-    BranchAndBound BaB(problem);
-    BaB.setParetoFrontFile(outputFile.c_str());
-    BaB.setSummarizeFile(summarizeFile.c_str());
     
-    /** Testing the Intervals. **/
+    Interval branch_init (problem->getNumberOfVariables());
+    
+    /*
+    branch_init.interval[0] = 8;
+    branch_init.interval[1] = 8;
+    branch_init.interval[2] = 2;
+    branch_init.interval[3] = 2;
+    branch_init.interval[4] = 2;
+    branch_init.build_up_to = 3;
+*/
+    
+    BranchAndBound BaB_master(problem, branch_init);
+    BaB_master.setParetoFrontFile(outputFile.c_str());
+    BaB_master.setSummarizeFile(summarizeFile.c_str());
+    
+    //BaB_master.computeLastBranch(&branch_init);
+    //branch_init.build_up_to = 0;
+    
+    
+    BaB_master.splitInterval(branch_init);
+    BaB_master.initialize(0);
 
-    Interval * branch_int = new Interval (problem->getNumberOfVariables());
+    //    BaB_master.solve(branch_init);
     
-    BaB.computeLastBranch(branch_int);
-    branch_int->build_up_to = 3;
-    BaB.solve(branch_int);
+    Interval branch (0);
+    while (BaB_master.intervals.size() > 0) {
     
+        Problem * problem_task =  new ProblemFJSSP(2, 1);
+        problem_task->setName(splited[0].c_str());
+        problem_task->loadInstance(files);
+        
+        branch = BaB_master.intervals.back();
+        BaB_master.intervals.pop_back();
+
+        BranchAndBound * BaB_task = new(tbb::task::allocate_root()) BranchAndBound(problem_task, branch);
+        
+        BaB_task->paretoContainer = BaB_master.paretoContainer;
+        tbb::task::spawn(*BaB_task);
+    }
+
+    BaB_master.printParetoFront();
+    BaB_master.saveParetoFront();
+    BaB_master.saveSummarize();
     return 0;
 }

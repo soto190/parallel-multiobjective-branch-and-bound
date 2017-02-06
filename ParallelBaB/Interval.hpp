@@ -24,9 +24,14 @@ class Interval{
 public:
     int build_up_to = -1;
     int * interval;
+    int max_size = 0;
     
     Interval(int max_size);
     ~Interval();
+    
+    Interval& operator=(const Interval& toCopy);
+    
+    void showInterval() const;
 };
 
 
