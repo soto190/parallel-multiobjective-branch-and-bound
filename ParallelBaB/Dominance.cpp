@@ -114,6 +114,7 @@ int updateFront(Solution * solution, std::vector<Solution *>& paretoFront){
         switch (domination) {
                 
             case DominanceRelation::Dominates:
+                
                 paretoFront.erase(begin + nSol);
                 status[0]++;
                 nSol--;

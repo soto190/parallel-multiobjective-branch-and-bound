@@ -816,3 +816,85 @@ void ProblemFJSSP::printPartialSolution(Solution * solution, int level){
         printf("|");
     }
 }
+
+ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
+
+    this->totalJobs = toCopy.totalJobs;
+    this->totalOperations = toCopy.totalOperations;
+    this->totalMachines = toCopy.totalMachines;
+    this->totalVariables = toCopy.totalVariables;
+    this->totalObjectives = toCopy.totalObjectives;
+    this->totalConstraints = toCopy.totalConstraints;
+    
+    this->lowerBound = new int[totalVariables];
+    this->upperBound = new int[totalVariables];
+    
+    std::strcpy(this->name, toCopy.name);
+    
+    this->goodSolutionWithMaxWorkload = toCopy.goodSolutionWithMaxWorkload;
+    
+    this->sumOfMinPij = toCopy.sumOfMinPij;
+    this->bestWorkloadFound = toCopy.bestWorkloadFound;
+    
+    this->totalOperations = toCopy.totalOperations;
+    this->jobMachineToMap = new int * [totalJobs];
+    this->mapToJobMachine = new int * [totalJobs * totalMachines];
+    
+    this->jobHasNoperations = new int[totalJobs];
+    this->releaseTime = new int[totalJobs];
+    
+    int job = 0, map = 0, machine = 0, operation = 0, operationCounter = 0;
+
+    for (job = 0; job < this->totalJobs; job++) {
+        this->jobHasNoperations[job] = toCopy.jobHasNoperations[job];
+        this->releaseTime[job] = toCopy.releaseTime[job];
+        this->jobMachineToMap[job] = new int[this->totalMachines];
+        
+        for (machine = 0; machine < this->totalMachines; machine++) {
+            this->mapToJobMachine[map] = new int[2];
+            this->mapToJobMachine[map][0] = toCopy.mapToJobMachine[map][0];
+            this->mapToJobMachine[map][1] = toCopy.mapToJobMachine[map][1];
+            this->jobMachineToMap[job][machine] = toCopy.jobMachineToMap[job][machine];
+            map++;
+        }
+    }
+
+    for (machine = 0; machine < this->totalMachines; machine++) {
+        this->minWorkload[machine] = toCopy.minWorkload[machine];
+        this->bestWorkloads[machine] = toCopy.bestWorkloads[machine];
+    }
+    
+    this->operationInJobIsNumber = new int * [this->totalOperations];
+
+    this->operationIsFromJob = new int[this->totalOperations];
+    this->assignationMinPij = new int[totalOperations];
+    this->assignationBestWorkload = new int[totalOperations];
+    this->minWorkload = new int[totalOperations];
+    this->bestWorkloads = new int[totalMachines];
+    
+
+    this->processingTime = new int * [totalOperations];
+    
+    for (operation = 0; operation < this->totalOperations; operation++){
+        
+        this->processingTime[operation] = new int[totalMachines];
+        for (machine = 0; machine < this->totalMachines; machine++) {
+            this->processingTime[operation][machine] = toCopy.processingTime[operation][machine];
+        
+        }
+        
+        this->assignationMinPij[operation] = toCopy.assignationMinPij[operation];
+    }
+    
+    for (job = 0; job < this->totalJobs; job++) {
+        this->operationInJobIsNumber[job] = new int[this->jobHasNoperations[job]];
+        for(operation = 0; operation < this->jobHasNoperations[job]; operation++){
+            this->operationInJobIsNumber[job][operation] = toCopy.operationInJobIsNumber[job][operation];
+            this->operationIsFromJob[operationCounter] = toCopy.operationIsFromJob[operationCounter];
+            operationCounter++;
+        }
+    }
+
+    return *this;
+}
+

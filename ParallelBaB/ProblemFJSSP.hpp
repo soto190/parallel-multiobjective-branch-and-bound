@@ -160,6 +160,8 @@ public:
     void buildSolutionWithGoodMaxWorkload(Solution * solution);
     void buildSolutionWithGoodMaxWorkloadv2(Solution * solution);
 
+    ProblemFJSSP& operator=(const ProblemFJSSP& toCopy);
+    
 };
 
 #endif /* ProblemFJSSP_hpp */

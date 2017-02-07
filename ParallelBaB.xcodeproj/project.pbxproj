@@ -24,6 +24,7 @@
 		21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */; };
 		217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */; };
 		218B0DB91E2D769F000B52F4 /* IVMTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 218B0DB71E2D769F000B52F4 /* IVMTree.cpp */; };
+		21E8EF8C1E48BD0800A716C6 /* ParallelBranchAndBound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21E8EF8A1E48BD0800A716C6 /* ParallelBranchAndBound.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -67,6 +68,8 @@
 		217A2E8F1D944DBB00A4E9EA /* GridContainer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = GridContainer.hpp; sourceTree = "<group>"; };
 		218B0DB71E2D769F000B52F4 /* IVMTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IVMTree.cpp; sourceTree = "<group>"; };
 		218B0DB81E2D769F000B52F4 /* IVMTree.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IVMTree.hpp; sourceTree = "<group>"; };
+		21E8EF8A1E48BD0800A716C6 /* ParallelBranchAndBound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParallelBranchAndBound.cpp; sourceTree = "<group>"; };
+		21E8EF8B1E48BD0800A716C6 /* ParallelBranchAndBound.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ParallelBranchAndBound.hpp; sourceTree = "<group>"; };
 		21F4CBA51DAE97CC004A308F /* Dominance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Dominance.cpp; sourceTree = "<group>"; };
 		21F4CBA61DAE97CC004A308F /* Dominance.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Dominance.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -106,6 +109,8 @@
 			children = (
 				2112824A1D639AB30038DBEE /* BranchAndBound.cpp */,
 				2112824B1D639AB30038DBEE /* BranchAndBound.hpp */,
+				21E8EF8A1E48BD0800A716C6 /* ParallelBranchAndBound.cpp */,
+				21E8EF8B1E48BD0800A716C6 /* ParallelBranchAndBound.hpp */,
 				21F4CBA51DAE97CC004A308F /* Dominance.cpp */,
 				21F4CBA61DAE97CC004A308F /* Dominance.hpp */,
 				217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */,
@@ -209,6 +214,7 @@
 				2119FB481E41E14C00197CE4 /* Interval.cpp in Sources */,
 				2112825A1D639AB30038DBEE /* BranchAndBound.cpp in Sources */,
 				218B0DB91E2D769F000B52F4 /* IVMTree.cpp in Sources */,
+				21E8EF8C1E48BD0800A716C6 /* ParallelBranchAndBound.cpp in Sources */,
 				2112825D1D639AB30038DBEE /* myutils.cpp in Sources */,
 				2112825F1D639AB30038DBEE /* ProblemHCSP.cpp in Sources */,
 			);

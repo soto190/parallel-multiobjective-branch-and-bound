@@ -26,6 +26,7 @@
 #include "Interval.hpp"
 #include "tbb/parallel_for.h"
 #include "tbb/task.h"
+#include "tbb/mutex.h"
 
 
 class BranchAndBound:public tbb::task{
@@ -36,12 +37,13 @@ public:
      * The constructor should receives the parameters to start at some point of the tree.
      **/
     BranchAndBound();
-    BranchAndBound(Problem * problem);
-    BranchAndBound(Problem * problem, const Interval & branch);
+    BranchAndBound(int rank, std::shared_ptr<Problem> problem);
+    BranchAndBound(int rank, std::shared_ptr<Problem> problem, const Interval & branch);
     ~BranchAndBound();
     
-    Problem* problem;
+    std::shared_ptr<Problem> problem;
     
+    tbb::mutex MutexToUpdateGrid;
     
     Solution * currentSolution;
     Solution * bestObjectivesFound;
@@ -50,7 +52,9 @@ public:
     std::vector<Interval> intervals;
     /** paretofFront needs to be a vector because omp works better with it anothre way is to use the intel vector version. **/
     std::vector<Solution *> paretoFront;
-    HandlerContainer * paretoContainer;
+    
+    std::shared_ptr<HandlerContainer> paretoContainer;
+    
     IVMTree * ivm_tree;
     Interval * starting_interval;
     
@@ -92,7 +96,12 @@ public:
     int saveSummarize();
     void saveEvery(double timeInSeconds);
     
+    void setParetoContainer(std::shared_ptr<HandlerContainer> paretoContainer);
+    std::shared_ptr<HandlerContainer> getParetoContainer();
+
+    
 private:
+    int rank;
     void printCurrentSolution(int withVariables = 0);
     int aLeafHasBeenReached();
     int theTreeHasMoreBranches();
@@ -117,7 +126,6 @@ public:
     void splitInterval(const Interval & branch);
 private:
     int initializeExplorationInterval(const Interval & branch, IVMTree * tree);
-    int branchInterval(const Interval &branch);
     /** End IVM functions **/
 
 public:

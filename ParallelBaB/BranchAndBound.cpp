@@ -19,15 +19,14 @@
 
 
 BranchAndBound::BranchAndBound(){
-    
+
 }
 
-BranchAndBound::BranchAndBound(Problem * problem){
-    
-    
+BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem){
+    this->rank = rank;
     this->problem = problem;
     
-    this->paretoContainer = new HandlerContainer();
+    this->paretoContainer = std::make_shared<HandlerContainer>();
     
     this->ivm_tree = new IVMTree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
     this->intervals.reserve(100);
@@ -47,12 +46,11 @@ BranchAndBound::BranchAndBound(Problem * problem){
     
 }
 
-BranchAndBound::BranchAndBound(Problem * problem, const Interval & branch){
+BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const Interval & branch){
     
-    
+    this->rank = rank;
     this->problem = problem;
     
-    this->paretoContainer = new HandlerContainer();
     
     this->ivm_tree = new IVMTree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
     this->intervals.reserve(100);
@@ -77,6 +75,29 @@ BranchAndBound::BranchAndBound(Problem * problem, const Interval & branch){
         this->starting_interval->interval[val] = branch.interval[val];
     }
     this->starting_interval->build_up_to = branch.build_up_to;
+    
+    int numberOfObjectives = this->problem->getNumberOfObjectives();
+    int numberOfVariables = this->problem->getNumberOfVariables();
+    
+    this->currentSolution = new Solution(numberOfObjectives, numberOfVariables);
+    this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
+    this->problem->createDefaultSolution(this->currentSolution);
+    
+    this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
+    
+    Solution * bestInObj1 = this->problem->getSolutionWithLowerBoundInObj(1);
+    //Solution * bestInObj2 = this->problem->getSolutionWithLowerBoundInObj(2);
+    
+    int nObj = 0;
+    for (nObj = 0; nObj < numberOfObjectives; nObj++)
+        this->bestObjectivesFound->setObjective(nObj, this->currentSolution->getObjective(nObj));
+    
+    this->bestObjectivesFound->setObjective(1, bestInObj1->getObjective(1));
+    
+    double obj1 = this->currentSolution->getObjective(0);
+    double obj2 = this->currentSolution->getObjective(1);
+    
+    this->paretoContainer = std::make_shared<HandlerContainer> (100, 100, obj1, obj2);
         
 }
 
@@ -84,7 +105,7 @@ BranchAndBound::~BranchAndBound(){
     
     delete [] this->outputFile;
     delete [] this->summarizeFile;
-    delete this->problem;
+    //delete this->problem;
     
     Solution * pd;
     for(std::vector<Solution *>::iterator it = paretoFront.begin(); it != paretoFront.end(); ++it) {
@@ -105,7 +126,7 @@ BranchAndBound::~BranchAndBound(){
 void BranchAndBound::initialize(int starts_tree){
     
     this->start = std::clock();
-    this->paretoFront.clear();
+    //this->paretoFront.clear();
 
     int numberOfObjectives = this->problem->getNumberOfObjectives();
     int numberOfVariables = this->problem->getNumberOfVariables();
@@ -143,7 +164,7 @@ void BranchAndBound::initialize(int starts_tree){
     double obj1 = this->currentSolution->getObjective(0);
     double obj2 = this->currentSolution->getObjective(1);
 
-    this->paretoContainer = new HandlerContainer(100, 100, obj1, obj2);
+    // this->paretoContainer = new HandlerContainer(100, 100, obj1, obj2);
     
     printf("Ranges: %f %f \n Initial solution:\n", obj1, obj2);
     this->problem->printSolution(this->currentSolution);
@@ -240,6 +261,8 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTr
 
 
 tbb::task* BranchAndBound::execute() {
+   
+
     this->solve(*starting_interval);
     return NULL;
 }
@@ -311,13 +334,14 @@ void BranchAndBound::solve(const Interval& branch){
             this->saveEvery(3600);
         }
     }
-    //this->paretoFront = paretoContainer->getParetoFront();
     
     this->t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
     this->totalTime = time_span.count();
 
-    printf("The pareto front found is: \n");
+    printf("B&B %d ended.", this->rank);
+    //printf("The pareto front found is: \n");
+    //this->paretoFront = paretoContainer->getParetoFront();
     //this->printParetoFront(1);
     //this->saveParetoFront();
     //this->saveSummarize();
@@ -446,7 +470,7 @@ int BranchAndBound::aLeafHasBeenReached(){
 }
 
 /**
- * If the Stack is empty then it does not have more branches to explore.
+ * Check if the ivm has pending branches to be explored.
  */
 int BranchAndBound::theTreeHasMoreBranches(){
     return this->ivm_tree->hasPendingBranches();
@@ -461,8 +485,11 @@ int BranchAndBound::updateParetoGrid(Solution * solution){
             this->bestObjectivesFound->objective[nObj] = solution->getObjective(nObj);
 
     int bucketCoord [2];
-    paretoContainer->checkCoordinate(solution, bucketCoord);
+    this->paretoContainer->checkCoordinate(solution, bucketCoord);
+    
+    MutexToUpdateGrid.lock();
     int updated = this->paretoContainer->set(solution, bucketCoord[0], bucketCoord[1]);
+    MutexToUpdateGrid.unlock();
     return updated;
 }
 
@@ -471,7 +498,10 @@ int BranchAndBound::updateParetoGrid(Solution * solution){
  * Adds the new solution to the Pareto front and removes the dominated solutions.
  */
 int BranchAndBound::updateLowerBound(Solution * solution){
-    return updateFront(solution, this->paretoFront);
+    MutexToUpdateGrid.lock();
+    int updated = updateFront(solution, this->paretoFront);
+    MutexToUpdateGrid.unlock();
+    return updated;
 }
 
 /**
@@ -672,7 +702,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
         }
     }
 
-
+/*
     int index_branch = 0;
     printf("Received branch:  ");
     branch_to_split.showInterval();
@@ -681,13 +711,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
         printf("Generated branch: ");
         this->intervals.at(index_branch).showInterval();
     }
-    
-    
-}
-
-int BranchAndBound::branchInterval(const Interval &branch){
-
-    return 0;
+  */
 }
 
 long BranchAndBound::permut(int n, int i) {
@@ -768,6 +792,14 @@ int BranchAndBound::setSummarizeFile(const char * outputFile){
     this->summarizeFile = new char[255];
     std::strcpy(this->summarizeFile, outputFile);
     return 0;
+}
+
+void BranchAndBound::setParetoContainer(std::shared_ptr<HandlerContainer> paretoContainer){
+    this->paretoContainer = paretoContainer;
+}
+
+std::shared_ptr<HandlerContainer> BranchAndBound::getParetoContainer(){
+    return this->paretoContainer;
 }
 
 int BranchAndBound::saveSummarize(){
