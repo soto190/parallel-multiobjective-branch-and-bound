@@ -22,7 +22,10 @@ public:
     ~Solution();
     
     double * objective;
+    double ** partialObjective;
     int * variable;
+    
+    int build_up_to = -1;
     
     int totalVariables;
     int totalObjectives;

@@ -33,26 +33,26 @@
 
 int main(int argc, const char * argv[]) {
     
-   std::shared_ptr<Problem> problem (new ProblemFJSSP(2, 1));
-    /*
+   std::shared_ptr<Problem> problem;
+    
     if(strcmp(argv[1], "TSP") == 0){
         printf("Problem: TSP\n");
-        problem = new ProblemTSP(2, 1);
+        problem = std::make_shared<ProblemTSP>(2, 1);
     }else if(strcmp(argv[1], "HCSP") == 0){
         printf("Problem: HCSP\n");
-        problem = new ProblemHCSP(2, 1);
+        problem = std::make_shared<ProblemHCSP>(2, 1);
     }else if(strcmp(argv[1], "VRP") == 0){
         printf("Problem: VRP\n");
-        problem = new ProblemVRP(2, 1);
+        problem = std::make_shared<ProblemVRP>(2, 1);
     }else if(strcmp(argv[1], "FJSSP") == 0){
         printf("Problem: FJSSP\n");
-        problem =  new ProblemFJSSP(2, 1);
+        problem = std::make_shared<ProblemFJSSP>(2, 1);
     }
     else{
         printf("Problem no found.\n");
         return 0;
     }
-*/
+
     char *files[2];
     files[0] = new char[255];
     files[1] = new char[255];
@@ -85,45 +85,13 @@ int main(int argc, const char * argv[]) {
     
     tbb::task_scheduler_init init(tbb::task_scheduler_init::automatic);
     
-    
     ParallelBranchAndBound * pbb = new(tbb::task::allocate_root()) ParallelBranchAndBound();
     pbb->setInstanceFile(files);
-    pbb->setProblem(problem);
     pbb->setParetoFrontFile(outputFile.c_str());
-    pbb->setSummarizeFile(outputFile.c_str());
-
+    pbb->setSummarizeFile(summarizeFile.c_str());
+    pbb->setProblem(problem);
+    
     tbb::task::spawn_root_and_wait(*pbb);
 
-    /** Creating the B&B. **/
-    
-    
-    /*
-    BranchAndBound * BaB_master = new(tbb::task::allocate_root()) BranchAndBound(problem, branch_init);
-    BaB_master->setParetoFrontFile(outputFile.c_str());
-    BaB_master->setSummarizeFile(summarizeFile.c_str());
-    
-    BaB_master->splitInterval(branch_init);
-    */
-    //    BaB_master.solve(branch_init);
-    /*
-    Interval branch (0);
-    while (BaB_master.intervals.size() > 0) {
-    
-        Problem * problem_task =  new ProblemFJSSP(2, 1);
-        problem_task->setName(splited[0].c_str());
-        problem_task->loadInstance(files);
-        
-        branch = BaB_master.intervals.back();
-        BaB_master.intervals.pop_back();
-
-        BranchAndBound * BaB_task = new(tbb::task::allocate_root()) BranchAndBound(problem_task, branch);
-        
-        BaB_task->paretoContainer = BaB_master.paretoContainer;
-        tbb::task::spawn(*BaB_task);
-    }
-*/
-//    BaB_master->printParetoFront();
-//    BaB_master->saveParetoFront();
-//    BaB_master->saveSummarize();
     return 0;
 }

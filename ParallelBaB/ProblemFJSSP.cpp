@@ -257,13 +257,17 @@ double ProblemFJSSP::evaluatePartialTest4(Solution * solution, int levelEvaluati
             }
         }
         
+        /** This counts the number of operations from a job allocated. **/
         operationOfJob[job]++;
         
-        if (timeInMachine[machine] > makespan)
+        if (timeInMachine[machine] > makespan){
             makespan = timeInMachine[machine];
-        
-        if(workload[machine] > maxWorkload)
+            solution->partialObjective[operationInPosition][0] = makespan;
+        }
+        if(workload[machine] > maxWorkload){
             maxWorkload = workload[machine];
+            solution->partialObjective[operationInPosition][1] = maxWorkload;
+        }
     }
     
     for (machine = 0; machine < this->totalMachines; machine++)
@@ -274,6 +278,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution * solution, int levelEvaluati
     solution->setObjective(1, maxWorkload);
     //solution->setObjective(2, totalWorkload + minPij);
     
+    /** Updates the best workloads and the assignation. **/
     if(maxWorkload < this->bestWorkloadFound){
         this->bestWorkloadFound = maxWorkload;
         
@@ -526,6 +531,7 @@ Solution* ProblemFJSSP::createSolution(){
 }
 
 void ProblemFJSSP::loadInstance(char* filePath[]){
+    
     std::ifstream infile(filePath[0]);
     std::string line;
     std::vector<std::string> elemens;

@@ -48,4 +48,5 @@ int binarySearch(double value, double * vector, int size);
 
 
 
+
 #endif /* myutils_hpp */

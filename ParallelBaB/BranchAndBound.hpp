@@ -71,7 +71,7 @@ public:
     
     unsigned long unexploredNodes;
     unsigned long prunedNodes;
-    unsigned long prunedBranches;
+    unsigned long callsToPrune;
     
     unsigned long totalUpdatesInLowerBound;
     
@@ -82,6 +82,8 @@ public:
     std::clock_t start;
     std::chrono::high_resolution_clock::time_point t1;
     std::chrono::high_resolution_clock::time_point t2;
+    double getTotalTime();
+    
     
     void solve(const Interval & interval);
     void initialize(int starting_level);

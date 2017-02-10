@@ -14,23 +14,28 @@
  *
  *
  */
-Solution::Solution(int totalObjectives, int totalVariables){
+Solution::Solution(int numberOfObjectives, int numberOfVariables){
     this->makespan = 0;
     this->energy = 0;
     this->machineWithMakespan = 0;
-    this->totalObjectives = totalObjectives;
-    this->totalVariables = totalVariables;
+    this->totalObjectives = numberOfObjectives;
+    this->totalVariables = numberOfVariables;
     
-    this->objective = new double[totalObjectives];
-    this->variable = new int[totalVariables];
+    this->objective = new double[numberOfObjectives];
+    this->variable = new int[numberOfVariables];
     this->execTime = new double[16];
+    this->partialObjective = new double * [numberOfVariables];
     
-    int index;
-    for (index = 0; index < totalObjectives; index++)
-        Solution::objective[index] = 0;
+    int index = 0, index_in = 0;
+    for (index = 0; index < numberOfObjectives; index++)
+        this->objective[index] = 0;
     
-    for (index = 0; index < totalVariables; index++)
-        Solution::variable[index] = 0;
+    for (index = 0; index < numberOfVariables; index++){
+        this->variable[index] = 0;
+        this->partialObjective[index] = new double[numberOfObjectives];
+        for (index_in = 0; index_in < numberOfObjectives; index_in++)
+            this->partialObjective[index][index_in] = 0;
+    }
     
     for (index = 0; index < 16; index++)
         this->execTime[index] = 0;
@@ -38,20 +43,26 @@ Solution::Solution(int totalObjectives, int totalVariables){
 
 Solution::Solution(const Solution &solution){
     
+    this->build_up_to = solution.build_up_to;
     this->totalObjectives = solution.totalObjectives;
     this->totalVariables = solution.totalVariables;
     
     this->objective = new double[this->totalObjectives];
     this->variable = new int[this->totalVariables];
+    this->partialObjective = new double * [solution.totalVariables];
     this->execTime = new double[64];
     
-    int index = 0;
+    int index = 0, index_in = 0;
     
     for (index = 0; index < this->totalObjectives; index++)
         this->objective[index] = solution.objective[index];
     
-    for (index = 0; index < this->totalVariables; index++)
+    for (index = 0; index < this->totalVariables; index++){
         this->variable[index] = solution.variable[index];
+        this->partialObjective[index] = new double[solution.totalObjectives];
+        for (index_in = 0; index_in < solution.totalObjectives; index_in++)
+            this->partialObjective[index][index_in] = solution.partialObjective[index][index_in];
+    }
     
     for (index = 0; index < 64; index++)
         this->execTime[index] = solution.execTime[index];
@@ -116,19 +127,27 @@ int Solution::dominates(const Solution & solution){
 }
 
 Solution& Solution::operator=(const Solution &solution){
+    
+    this->build_up_to = solution.build_up_to;
+
     this->totalObjectives = solution.totalObjectives;
     this->totalVariables = solution.totalVariables;
     
     this->objective = new double[solution.totalObjectives];
     this->variable = new int[solution.totalVariables];
     
-    int index = 0;
+    int index = 0, index_in = 0;
     
     for (index = 0; index < this->totalObjectives; index++)
         this->objective[index] = solution.objective[index];
     
-    for (index = 0; index < this->totalVariables; index++)
+    
+    for (index = 0; index < this->totalVariables; index++){
         this->variable[index] = solution.variable[index];
+        this->partialObjective[index] = new double[solution.totalObjectives];
+        for (index_in = 0; index_in < solution.totalObjectives; index_in++)
+            this->partialObjective[index][index_in] = solution.partialObjective[index][index_in];
+    }
     
     /**Section for the HCSP problem**/
     this->execTime = new double[16];

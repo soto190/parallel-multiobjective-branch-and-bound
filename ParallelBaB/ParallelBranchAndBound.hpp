@@ -19,7 +19,7 @@
 class ParallelBranchAndBound: public tbb::task{
 
 public:
-    char * outputFile;
+    char * outputParetoFile;
     char * summarizeFile;
     char * path[2];
     
