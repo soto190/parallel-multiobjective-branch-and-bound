@@ -17,7 +17,7 @@ IVMTree::IVMTree(int rows, int cols){
     this->rows = rows;
     this->cols = cols;
     this->hasBranches = 1;
-    this->active_nodes = new int[rows];
+    this->active_node = new int[rows];
     this->max_nodes_in_level = new int[rows];
     this->ivm = new int * [rows];
     
@@ -25,7 +25,7 @@ IVMTree::IVMTree(int rows, int cols){
 
     for (r = 0; r < rows; r++){
         this->ivm[r] = new int[cols];
-        this->active_nodes[r] = -1;
+        this->active_node[r] = -1;
         this->max_nodes_in_level[r] = 0;
         for (c = 0; c < cols; c++)
             this->ivm[r][c] = -1;
@@ -43,7 +43,7 @@ IVMTree::~IVMTree(){
     for (r = 0; r < rows; r++)
         delete [] this->ivm[r];
     
-    delete [] active_nodes;
+    delete [] active_node;
     delete [] max_nodes_in_level;
     delete [] ivm;
     delete [] start_exploration;
@@ -76,7 +76,7 @@ void IVMTree::setExplorationInterval(int starting_level, int *starts, int *ends)
     this->active_level = starting_level - 1;
 
     for (level = 0; level < this->rows; level++) {
-        this->active_nodes[level] = starts[level];
+        this->active_node[level] = starts[level];
         this->start_exploration[level] = starts[level];
         this->end_exploration[level] = ends[level];
         this->max_nodes_in_level[level] = 0;
@@ -103,33 +103,33 @@ int IVMTree::moveToNextLevel(){
 }
 
 int IVMTree::moveToNextNode(){
-    return this->ivm[active_level][active_nodes[active_level]];
+    return this->ivm[active_level][active_node[active_level]];
 }
 
 int IVMTree::getActiveNode(){
-    return this->ivm[active_level][active_nodes[active_level]];
+    return this->ivm[active_level][active_node[active_level]];
 }
 
 int IVMTree::getFatherNode(){
-    return this->ivm[active_level - 1][active_nodes[active_level - 1]];
+    return this->ivm[active_level - 1][active_node[active_level - 1]];
 }
 
 /** Prune the active node and set the active_level pointing a new active node. **/
 int IVMTree::pruneActiveNode(){
     
-    this->ivm[active_level][active_nodes[active_level]] = -1;
+    this->ivm[active_level][active_node[active_level]] = -1;
     this->max_nodes_in_level[active_level]--;
     
     /** If there are more nodes in the active_level, then move to the next node. **/
     if(max_nodes_in_level[active_level] > 0){
-        this->active_nodes[active_level]++;
-        return this->ivm[active_level][active_nodes[active_level]];
+        this->active_node[active_level]++;
+        return this->ivm[active_level][active_node[active_level]];
     }
     
     /** while the active level doesnt have nodes **/
     while (max_nodes_in_level[active_level] == 0) {
         
-        this->active_nodes[active_level] = -1;
+        this->active_node[active_level] = -1;
         
         /** Go to father node. **/
         this->active_level--;
@@ -139,19 +139,19 @@ int IVMTree::pruneActiveNode(){
             active_level = 0;
             this->max_nodes_in_level[active_level]--;
             this->hasBranches = 0;
-            return this->ivm[active_level][active_nodes[0]];
+            return this->ivm[active_level][active_node[0]];
         }
         
         /** Prune father node. **/
-        this->ivm[active_level][active_nodes[active_level]] = -1;
+        this->ivm[active_level][active_node[active_level]] = -1;
         this->max_nodes_in_level[active_level]--;
         
         /** Move to next node. **/
-        this->active_nodes[active_level]++;
+        this->active_node[active_level]++;
         
     }
 
-    return this->ivm[active_level][active_nodes[active_level]];
+    return this->ivm[active_level][active_node[active_level]];
 }
 
 void IVMTree::showIVM(){
@@ -161,16 +161,16 @@ void IVMTree::showIVM(){
     char sep = '-';
     for (r = 0; r < this->rows; r++) {
         /** The integer verctor. **/
-        if (this->active_nodes[r] == -1)
+        if (this->active_node[r] == -1)
             printf("[%3d] %3c ", r, sep);
         else
-            printf("[%3d] %3d ", r, this->active_nodes[r]);
+            printf("[%3d] %3d ", r, this->active_node[r]);
         
         /** The solution. **/
-        if (this->active_nodes[r] == -1 || this->ivm[r][this->active_nodes[r]] == -1)
+        if (this->active_node[r] == -1 || this->ivm[r][this->active_node[r]] == -1)
             printf(" %3c ", sep);
         else
-            printf(" %3d ", this->ivm[r][this->active_nodes[r]]);
+            printf(" %3d ", this->ivm[r][this->active_node[r]]);
         
         /** Max nodes in level. **/
         //if (this->active_nodes[r] == -1 || this->ivm[r][this->active_nodes[r]] == -1)

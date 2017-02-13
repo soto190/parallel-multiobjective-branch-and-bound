@@ -16,44 +16,42 @@ tbb::task * ParallelBranchAndBound::execute(){
     BranchAndBound * BaB_master = new(tbb::task::allocate_root()) BranchAndBound(numberOfBB++, problem, branch_init);
     BaB_master->setParetoFrontFile(this->outputParetoFile);
     BaB_master->setSummarizeFile(this->summarizeFile);
-    
     BaB_master->splitInterval(branch_init);
+    BaB_master->setGlobalPool(BaB_master->localPool);
     
-    int refCount = (int) BaB_master->intervals.size();
-    this->set_ref_count(refCount + 1);
+//    std::shared_ptr<Problem> copyProblem = this->problem;
 
     Interval branch (0);
 
     tbb::task_list tl;
+    int counter_threads = 0;
     
+    int refCount = (int) BaB_master->localPool->size();
+//    int refCount = 1;
+    this->set_ref_count(refCount + 1);
+
     vector<BranchAndBound *> bb_threads;
-    while (BaB_master->intervals.size() > 0) {
+    while (counter_threads++ < refCount){
         
-        
-        branch = BaB_master->intervals.back();
-        BaB_master->intervals.pop_back();
-        
-        std::shared_ptr<Problem> copyProblem = this->problem;
-        BranchAndBound * BaB_task = new(tbb::task::allocate_child()) BranchAndBound(numberOfBB++, copyProblem, branch);
+        BranchAndBound * BaB_task = new(tbb::task::allocate_child()) BranchAndBound(numberOfBB++, this->problem, branch);
         BaB_task->setParetoContainer(BaB_master->getParetoContainer());
+        BaB_task->setGlobalPool(BaB_master->globalPool);
         
         bb_threads.push_back(BaB_task);
         tl.push_back( * BaB_task);
     }
     
-    tbb::task::spawn_and_wait_for_all(tl);
     
-
-    //  BaB_master->solve(branch_init);
+    tbb::task::spawn_and_wait_for_all(tl);
     
     BaB_master->getTotalTime();
     
     BranchAndBound * bb_in;
     while (bb_threads.size() > 0) {
+        
         bb_in = bb_threads.back();
         bb_threads.pop_back();
         
-        BaB_master->totalNodes += bb_in->totalNodes;
         BaB_master->exploredNodes += bb_in->exploredNodes;
         BaB_master->callsToBranch += bb_in->callsToBranch;
         BaB_master->branches += bb_in->branches;
@@ -70,7 +68,6 @@ tbb::task * ParallelBranchAndBound::execute(){
     BaB_master->printParetoFront();
     BaB_master->saveParetoFront();
     BaB_master->saveSummarize();
-    
     
     return NULL;
 }

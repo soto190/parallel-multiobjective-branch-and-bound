@@ -24,7 +24,7 @@ public:
     ~IVMTree();
     
     int ** ivm;
-    int * active_nodes;
+    int * active_node;
     int * start_exploration;
     int * end_exploration;
     int active_level;

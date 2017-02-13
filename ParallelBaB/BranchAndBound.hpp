@@ -48,12 +48,13 @@ public:
     Solution * currentSolution;
     Solution * bestObjectivesFound;
     
-    /** intervals are the pending branches to be explored. **/
-    std::vector<Interval> intervals;
-    /** paretofFront needs to be a vector because omp works better with it anothre way is to use the intel vector version. **/
-    std::vector<Solution *> paretoFront;
+    std::shared_ptr<std::vector<Interval>> globalPool;
+    std::shared_ptr<std::vector<Interval>> localPool; /** intervals are the pending branches to be explored. **/
     
-    std::shared_ptr<HandlerContainer> paretoContainer;
+    std::vector<Solution *> paretoFront; /** paretofFront. **/
+    
+    std::shared_ptr<HandlerContainer> paretoContainer; /** Global Pareto container. **/
+    
     
     IVMTree * ivm_tree;
     Interval * starting_interval;
@@ -132,7 +133,7 @@ private:
 
 public:
     task* execute(); 
-    
+    void setGlobalPool(std::shared_ptr<std::vector<Interval>> globalPool);
     void operator()(const Interval& branch){
         this->solve(branch);
     };

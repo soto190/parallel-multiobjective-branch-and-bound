@@ -33,7 +33,9 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem){
     this->paretoContainer = std::make_shared<HandlerContainer>();
     
     this->ivm_tree = new IVMTree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
-    this->intervals.reserve(100);
+    this->localPool = std::make_shared<vector<Interval>>();
+    
+    this->localPool->reserve(100);
     
     this->currentLevel = 0;
     this->totalLevels = 0;
@@ -60,7 +62,8 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
     
     
     this->ivm_tree = new IVMTree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
-    this->intervals.reserve(100);
+    this->localPool = make_shared<vector<Interval>>();
+    this->localPool->reserve(100);
     
     this->currentLevel = 0;
     this->totalLevels = 0;
@@ -81,6 +84,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
     for (val = 0; val < this->problem->getNumberOfVariables(); val++) {
         this->starting_interval->interval[val] = branch.interval[val];
     }
+    
     this->starting_interval->build_up_to = branch.build_up_to;
     
     int numberOfObjectives = this->problem->getNumberOfObjectives();
@@ -124,7 +128,7 @@ BranchAndBound::~BranchAndBound(){
     delete this->bestObjectivesFound;
     
     this->paretoFront.clear();
-    this->intervals.clear();
+    this->localPool->clear();
     
     //delete this->ivm_tree;
     //delete this->starting_interval;
@@ -133,7 +137,6 @@ BranchAndBound::~BranchAndBound(){
 void BranchAndBound::initialize(int starts_tree){
     
     this->start = std::clock();
-    //this->paretoFront.clear();
 
     int numberOfObjectives = this->problem->getNumberOfObjectives();
     int numberOfVariables = this->problem->getNumberOfVariables();
@@ -221,9 +224,10 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTr
         tree->start_exploration[cl] = branch.interval[cl];
         tree->end_exploration[cl] =  branch.interval[cl];
         tree->max_nodes_in_level[cl] = 1;
-        tree->active_nodes[cl] = branch.interval[cl];
+        tree->active_node[cl] = branch.interval[cl];
         tree->ivm[cl][branch.interval[cl]] = branch.interval[cl];
 
+        /** TODO: Check this part. The interval is equivalent to the solution?. **/
         this->currentSolution->setVariable(cl, this->ivm_tree->start_exploration[cl]);
     }
 
@@ -258,12 +262,10 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTr
         }
     }
     
-    //this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
-
     this->branch(this->currentSolution, branch.build_up_to);
     this->ivm_tree->active_level--;
-    this->ivm_tree->active_nodes[this->ivm_tree->active_level] = 0;
-    tree->active_nodes[tree->active_level] = tree->start_exploration[tree->active_level];
+    this->ivm_tree->active_node[this->ivm_tree->active_level] = 0;
+    tree->active_node[tree->active_level] = tree->start_exploration[tree->active_level];
 
     return 0;
 }
@@ -271,9 +273,9 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTr
 
 tbb::task* BranchAndBound::execute() {
    
-
     this->solve(*starting_interval);
     return NULL;
+
 }
 
 
@@ -291,67 +293,83 @@ void BranchAndBound::setStartingInterval(Interval *branch){
 }
 
 void BranchAndBound::solve(const Interval& branch){
-    
-   
 
     double timeUp = 0;
     int updated = 0;
+    int working = 1;
     
     Interval branchInt = branch;
-
     this->initialize(branchInt.build_up_to);
-    this->splitInterval(branchInt);
     
-    printf("[BB%d] Starting Branch and Bound...\nTotal levels %d...\nStarting at level %d\nReceived branch:", this->rank, totalLevels, branch.build_up_to);
-    
-    branch.showInterval();
-    
+    while (working > 0) {
+        
+        MutexToUpdateGrid.lock();
+        if (this->globalPool->size() > 0) {
+            branchInt = this->globalPool->back();
+            this->globalPool->pop_back();
+            working++;
 
-    Interval activeBranch (this->problem->getNumberOfVariables());
-    
-    printf("[BB%d] Starting Branch and Bound...\n", this->rank);
-    while (intervals.size() > 0) {
-        
-        activeBranch = intervals.back();
-        intervals.pop_back();
-        
-        printf("[BB%d] Exploring interval: ", this-> rank);
-        activeBranch.showInterval();
-        this->initializeExplorationInterval(activeBranch, this->ivm_tree);
-       
-        while(theTreeHasMoreBranches() == 1 && timeUp == 0){
-            
-            this->explore(this->currentSolution);
-            this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
-           
-            if (aLeafHasBeenReached() == 0){
-                if(improvesTheGrid(this->currentSolution) == 1)
-                    this->branch(this->currentSolution, this->currentLevel);
-                else
-                    this->prune(this->currentSolution, this->currentLevel);
-            }else{
-                
-                this->leaves++;
-                
-                updated = this->updateParetoGrid(this->currentSolution);
-                this->totalUpdatesInLowerBound += updated;
-                
-                if (updated == 1){
-                    printf("[BB%d] ", this->rank);
-                    printCurrentSolution();
-                    printf(" + [%6lu] \n", this->paretoContainer->getSize());
-                }
-            }
-            this->saveEvery(3600);
+            printf("[BB%d] Picking from global pool:\n", this->rank);
         }
+        else{
+            working = 0;
+            printf("[BB%d] No more intervals in global pool, going to sleep.\n", this->rank);
+        }
+        MutexToUpdateGrid.unlock();
+        
+        this->splitInterval(branchInt);
+        
+        printf("[BB%d] Starting Branch and Bound...\n[BB%d] Total levels %d...\n[BB%d] Starting at level %d\n[BB%d] Received branch:", this->rank, this->rank, totalLevels, this->rank, branchInt.build_up_to, this->rank);
+        
+        branchInt.showInterval();
+        
+        
+        Interval activeBranch (this->problem->getNumberOfVariables());
+        
+        while (localPool->size() > 0) {
+            
+            activeBranch = localPool->back();
+            localPool->pop_back();
+            
+            printf("[BB%d] Exploring interval: ", this-> rank);
+            activeBranch.showInterval();
+            this->initializeExplorationInterval(activeBranch, this->ivm_tree);
+            
+            while(theTreeHasMoreBranches() == 1 && timeUp == 0){
+                
+                this->explore(this->currentSolution);
+                this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
+                
+                if (aLeafHasBeenReached() == 0){
+                    if(improvesTheGrid(this->currentSolution) == 1)
+                        this->branch(this->currentSolution, this->currentLevel);
+                    else
+                        this->prune(this->currentSolution, this->currentLevel);
+                }else{
+                    
+                    this->leaves++;
+                    
+                    updated = this->updateParetoGrid(this->currentSolution);
+                    this->totalUpdatesInLowerBound += updated;
+                    
+                    if (updated == 1){
+                        printf("[BB%d] ", this->rank);
+                        printCurrentSolution();
+                        printf(" + [%6lu] \n", this->paretoContainer->getSize());
+                    }
+                }
+                this->saveEvery(3600);
+            }
+        }
+        
+        this->t2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+        this->totalTime = time_span.count();
+        
+        printf("[BB%d] Exploration finished.\n", this->rank);
+        
     }
-    
-    this->t2 = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-    this->totalTime = time_span.count();
-
-    printf("[BB%d] Exploration finished.\n", this->rank);
-    //printf("The pareto front found is: \n");
+        //printf("The pareto front found is: \n");
     //this->paretoFront = paretoContainer->getParetoFront();
     //this->printParetoFront(1);
     //this->saveParetoFront();
@@ -388,7 +406,6 @@ int BranchAndBound::explore(Solution * solution){
 }
 
 void BranchAndBound::branch(Solution* solution, int currentLevel){
-    
     
     
     this->callsToBranch++;
@@ -483,7 +500,7 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
             if(branched > 0){
               
                 this->ivm_tree->moveToNextLevel();
-                this->ivm_tree->active_nodes[this->ivm_tree->active_level] = 0;
+                this->ivm_tree->active_node[this->ivm_tree->active_level] = 0;
             }
             else
                 this->ivm_tree->pruneActiveNode();
@@ -758,7 +775,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
                 
                 if(this->improvesTheGrid(&sol_test) == 1){
                     /**Add it to Intervals. **/
-                    this->intervals.push_back(*branch);
+                    this->localPool->push_back(*branch);
                     this->branches++;
                 }
                 else{
@@ -870,6 +887,10 @@ void BranchAndBound::setParetoContainer(std::shared_ptr<HandlerContainer> pareto
 
 std::shared_ptr<HandlerContainer> BranchAndBound::getParetoContainer(){
     return this->paretoContainer;
+}
+
+void BranchAndBound::setGlobalPool(std::shared_ptr<std::vector<Interval> > globalPool){
+    this->globalPool = globalPool;
 }
 
 int BranchAndBound::saveSummarize(){
