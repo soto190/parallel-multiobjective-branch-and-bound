@@ -30,7 +30,7 @@ public:
     int active_level;
     int starting_level;
     int hasBranches = 1;
-    
+    int root_node = 0;
     int * max_nodes_in_level;
     
     int getNumberOfRows();

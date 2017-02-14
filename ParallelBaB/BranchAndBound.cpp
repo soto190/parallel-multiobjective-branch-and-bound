@@ -202,7 +202,7 @@ void BranchAndBound::initialize(int starts_tree){
 /**
  * This modifies the IVMTree.
  *
- * - branch.level indicates the position to start to build.
+ * - branch.build_up_to.
  *
  **/
 int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTree *tree){
@@ -217,18 +217,22 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTr
     int jobToCheck = 0;
     int jobAllocated = 0;
     int cl = 0; /** Counter level.**/
-    
-    tree->starting_level = branch.build_up_to + 1; /** root node of this tree**/
+    tree->root_node = branch.build_up_to; /** root node of this tree**/
+    tree->starting_level = branch.build_up_to + 1; /** Level with the first branches of the tree. **/
     tree->active_level = branch.build_up_to + 1;
     
     /** Copy the built part. **/
     for (cl = 0; cl <= branch.build_up_to; cl++) {
-     
+        
+        for (varInPos = 0; varInPos < tree->getNumberOfCols(); varInPos++) {
+            tree->ivm[cl][varInPos] = -1;
+        }
         tree->start_exploration[cl] = branch.interval[cl];
         tree->end_exploration[cl] =  branch.interval[cl];
         tree->max_nodes_in_level[cl] = 1;
         tree->active_node[cl] = branch.interval[cl];
         tree->ivm[cl][branch.interval[cl]] = branch.interval[cl];
+        
 
         /** TODO: Check this part. The interval is equivalent to the solution?. **/
         this->currentSolution->setVariable(cl, this->ivm_tree->start_exploration[cl]);
@@ -341,7 +345,7 @@ void BranchAndBound::solve(const Interval& branch){
             
             while(theTreeHasMoreBranches() == 1 && timeUp == 0){
                 
-                this->explore(this->currentSolution);
+                this->explore(this->currentSolution);                
                 this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
                 
                 
@@ -600,11 +604,10 @@ int BranchAndBound::improvesTheLowerBound(Solution * solution){
 }
 
 int BranchAndBound::improvesTheGrid(Solution * solution){
+
     int bucketCoordinate[2];
-    //MutexToUpdateGrid.lock();
     this->paretoContainer->checkCoordinate(solution, bucketCoordinate);
-    int stateOfBucket = this->paretoContainer->getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
-    //MutexToUpdateGrid.unlock();
+    BucketState stateOfBucket = this->paretoContainer->getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
     int improveIt = 0;
     
     switch (stateOfBucket) {
@@ -618,15 +621,15 @@ int BranchAndBound::improvesTheGrid(Solution * solution){
             break;
             
         case BucketState::nondominated:
-            vector<Solution *> bucketFront = this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]);
-            improveIt = this->improvesTheBucket(solution, bucketFront);
+//            std::vector<Solution *> bucketFront = this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]);
+            improveIt = this->improvesTheBucket(solution, this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]));
             break;
     }
     
     return improveIt;
 }
 
-int BranchAndBound::improvesTheBucket(Solution *solution, vector<Solution *>& bucketFront){
+int BranchAndBound::improvesTheBucket(Solution *solution, std::vector<Solution *>& bucketFront){
     
     unsigned long paretoFrontSize = bucketFront.size();
     DominanceRelation domination;

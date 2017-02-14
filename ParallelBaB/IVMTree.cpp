@@ -117,38 +117,33 @@ int IVMTree::getFatherNode(){
 /** Prune the active node and set the active_level pointing a new active node. **/
 int IVMTree::pruneActiveNode(){
     
-    this->ivm[active_level][active_node[active_level]] = -1;
-    this->max_nodes_in_level[active_level]--;
+    this->ivm[active_level][active_node[active_level]] = -1; /** Marks the node as removed. **/
+    this->max_nodes_in_level[active_level]--; /** Reduces the number of nodes in the active level. **/
     
-    /** If there are more nodes in the active_level, then move to the next node. **/
-    if(max_nodes_in_level[active_level] > 0){
-        this->active_node[active_level]++;
+    if(max_nodes_in_level[active_level] > 0){ /** If there are more nodes in the active level, then move to the next node. **/
+        
+        /** TODO: Re-think if we always move to the right or if we can search for another node. **/
+        
+        this->active_node[active_level]++; /** Moves to the node of the right. **/
         return this->ivm[active_level][active_node[active_level]];
     }
     
-    /** while the active level doesnt have nodes **/
-    while (max_nodes_in_level[active_level] == 0) {
+    /** If the active level doesnt have more nodes then move to the father node while there are pending nodes **/
+    while (max_nodes_in_level[active_level] < 1) { /** TODO: Check, why max_nodes_in_level reach -1, the minimun should be 0. **/
         
-        this->active_node[active_level] = -1;
+        this->active_node[active_level] = -1;                       /** Mark the level. **/
+        this->active_level--;                                       /** Go to father node. **/
+        this->ivm[active_level][active_node[active_level]] = -1;    /** Prune the father node. **/
+        this->max_nodes_in_level[active_level]--;                   /** Reduce the number of nodes. **/
         
-        /** Go to father node. **/
-        this->active_level--;
-        
-        /** If it is the first level of the tree. */
-        if (active_level <= starting_level - 1) {
-            active_level = 0;
-            this->max_nodes_in_level[active_level]--;
-            this->hasBranches = 0;
-            return this->ivm[active_level][active_node[0]];
+        if (active_level == root_node) {                            /** Verify if it is the root level of the tree. */
+            this->hasBranches = 0;                                  /** Mark it as there are no more branches. **/
+            return this->ivm[active_level][active_node[root_node]]; /** Return the active node. **/
         }
-        
-        /** Prune father node. **/
-        this->ivm[active_level][active_node[active_level]] = -1;
-        this->max_nodes_in_level[active_level]--;
-        
-        /** Move to next node. **/
-        this->active_node[active_level]++;
-        
+        if(max_nodes_in_level[active_level] > 0){
+            this->active_node[active_level]++;                      /** Move to the next node. **/
+            return this->ivm[active_level][active_node[active_level]]; /** Return the active node. **/
+        }
     }
 
     return this->ivm[active_level][active_node[active_level]];

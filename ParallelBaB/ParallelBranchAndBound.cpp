@@ -21,7 +21,7 @@ tbb::task * ParallelBranchAndBound::execute(){
 
     
     
-    int refCount = 4; /** maximum number of threads. **/
+    int refCount = 4; /** Number of threads. **/
     this->set_ref_count(refCount + 1);
     
     int counter_threads = 0;
@@ -58,13 +58,14 @@ tbb::task * ParallelBranchAndBound::execute(){
         
     }
     
-    bb_threads.clear();
 
     BaB_master->paretoFront = BaB_master->paretoContainer->getParetoFront();
     BaB_master->printParetoFront();
     BaB_master->saveParetoFront();
     BaB_master->saveSummarize();
     
+    bb_threads.clear();
+
     return NULL;
 }
 
