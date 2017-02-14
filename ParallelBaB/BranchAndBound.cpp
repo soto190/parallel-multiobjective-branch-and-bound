@@ -36,6 +36,8 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem){
     this->localPool = std::make_shared<vector<Interval>>();
     
     this->localPool->reserve(100);
+    this->globalPool = std::make_shared<vector<Interval>>();
+
     
     this->currentLevel = 0;
     this->totalLevels = 0;
@@ -64,7 +66,8 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
     this->ivm_tree = new IVMTree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
     this->localPool = make_shared<vector<Interval>>();
     this->localPool->reserve(100);
-    
+    this->globalPool = std::make_shared<vector<Interval>>();
+
     this->currentLevel = 0;
     this->totalLevels = 0;
     this->totalNodes = 0;
@@ -261,11 +264,12 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTr
             }
         }
     }
-    
+    this->currentSolution->build_up_to = branch.build_up_to;
     this->branch(this->currentSolution, branch.build_up_to);
     this->ivm_tree->active_level--;
     this->ivm_tree->active_node[this->ivm_tree->active_level] = 0;
     tree->active_node[tree->active_level] = tree->start_exploration[tree->active_level];
+    this->ivm_tree->hasBranches = 1;
 
     return 0;
 }
@@ -277,7 +281,6 @@ tbb::task* BranchAndBound::execute() {
     return NULL;
 
 }
-
 
  
 void BranchAndBound::setStartingInterval(Interval *branch){
@@ -303,13 +306,15 @@ void BranchAndBound::solve(const Interval& branch){
     
     while (working > 0) {
         
+        
         MutexToUpdateGrid.lock();
         if (this->globalPool->size() > 0) {
             branchInt = this->globalPool->back();
             this->globalPool->pop_back();
             working++;
-
+            
             printf("[BB%d] Picking from global pool:\n", this->rank);
+            branchInt.showInterval();
         }
         else{
             working = 0;
@@ -317,12 +322,11 @@ void BranchAndBound::solve(const Interval& branch){
         }
         MutexToUpdateGrid.unlock();
         
-        this->splitInterval(branchInt);
-        
-        printf("[BB%d] Starting Branch and Bound...\n[BB%d] Total levels %d...\n[BB%d] Starting at level %d\n[BB%d] Received branch:", this->rank, this->rank, totalLevels, this->rank, branchInt.build_up_to, this->rank);
-        
-        branchInt.showInterval();
-        
+        if(working > 0){
+            this->splitInterval(branchInt);
+            printf("[BB%d] Starting Branch and Bound...\n[BB%d] Total levels %d...\n[BB%d] Starting at level %d\n[BB%d] Received branch:", this->rank, this->rank, totalLevels, this->rank, branchInt.build_up_to, this->rank);
+            branchInt.showInterval();
+        }
         
         Interval activeBranch (this->problem->getNumberOfVariables());
         
@@ -339,6 +343,7 @@ void BranchAndBound::solve(const Interval& branch){
                 
                 this->explore(this->currentSolution);
                 this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
+                
                 
                 if (aLeafHasBeenReached() == 0){
                     if(improvesTheGrid(this->currentSolution) == 1)
@@ -665,7 +670,6 @@ void BranchAndBound::computeLastBranch(Interval *  branch){
         branch->build_up_to = 0;
     }else
     /** For each level search the job to allocate.**/
-    //for (cl = level; cl < totalLevels; cl++)
         for (job = problem->getTotalElements() - 1; job >= 0; job--) {
             isIn = 0;
             jobToCheck = job;
@@ -691,12 +695,6 @@ void BranchAndBound::computeLastBranch(Interval *  branch){
                 job = 0;
             }
         }
-  /*
-    for (cl = 0; cl <= branch->build_up_to; cl++) {
-        printf("%3d ", branch->interval[cl]);
-    }
-    printf("last branch computed...\n");
-    */
 }
 
 /** Generates an interval for each possible value in the given level of the branch_to_split
@@ -756,31 +754,31 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
                 toAdd = this->problem->getMappingOf(jobToCheck, machine);
                 
                 /** Creates a new Interval. **/
-                Interval * branch = new Interval(number_of_variables);
+                Interval branch (number_of_variables);
                 
                 /** Copy the first variables of the branch_to_split-> **/
                 for (index_var = 0; index_var < level_to_split; index_var++)
-                    branch->interval[index_var] = branch_to_split.interval[index_var];
+                    branch.interval[index_var] = branch_to_split.interval[index_var];
                 
                 /** From level + 1 to last position are initialized with -1. **/
                 for (index_var = level_to_split + 1; index_var < number_of_variables; index_var++)
-                    branch->interval[index_var] = -1;
+                    branch.interval[index_var] = -1;
                 
                 /** Gets the branch to add. */
-                branch->interval[level_to_split] = toAdd;
-                branch->build_up_to = level_to_split;
+                branch.interval[level_to_split] = toAdd;
+                branch.build_up_to = level_to_split;
                 
                 sol_test.setVariable(level_to_split, toAdd);
                 this->problem->evaluatePartial(&sol_test, level_to_split);
                 
                 if(this->improvesTheGrid(&sol_test) == 1){
                     /**Add it to Intervals. **/
-                    this->localPool->push_back(*branch);
+                    this->localPool->push_back(branch);
                     this->branches++;
                 }
-                else{
+                else
                     this->prunedNodes++;
-                }
+                
             }
         }
     }

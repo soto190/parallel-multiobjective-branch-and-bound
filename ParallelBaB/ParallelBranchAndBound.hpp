@@ -22,9 +22,7 @@ public:
     char * outputParetoFile;
     char * summarizeFile;
     char * path[2];
-    
-    tbb::mutex mutexPareto;
-    
+        
     std::shared_ptr<Problem> problem;
     
     tbb::task* execute();

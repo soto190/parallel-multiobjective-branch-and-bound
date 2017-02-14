@@ -135,7 +135,7 @@ int IVMTree::pruneActiveNode(){
         this->active_level--;
         
         /** If it is the first level of the tree. */
-        if (active_level == starting_level - 1) {
+        if (active_level <= starting_level - 1) {
             active_level = 0;
             this->max_nodes_in_level[active_level]--;
             this->hasBranches = 0;
