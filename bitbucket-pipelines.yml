@@ -9,6 +9,6 @@ pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
-          - #./configure
-          - #make
-          - #make test
+          #- ./configure
+          - make
+          - make test
