@@ -82,10 +82,11 @@ int main(int argc, const char * argv[]) {
     std::string summarizeFile = argv[4] + splited[0] + ".txt";
     
     
-    
-    tbb::task_scheduler_init init(tbb::task_scheduler_init::automatic);
+    int number_of_threads = tbb::task_scheduler_init::default_num_threads();
+    tbb::task_scheduler_init init(number_of_threads);
     
     ParallelBranchAndBound * pbb = new(tbb::task::allocate_root()) ParallelBranchAndBound();
+    pbb->setNumberOfThreads(number_of_threads);
     pbb->setInstanceFile(files);
     pbb->setParetoFrontFile(outputFile.c_str());
     pbb->setSummarizeFile(summarizeFile.c_str());

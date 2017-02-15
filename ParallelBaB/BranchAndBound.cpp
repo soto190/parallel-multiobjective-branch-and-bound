@@ -317,8 +317,8 @@ void BranchAndBound::solve(const Interval& branch){
             this->globalPool->pop_back();
             working++;
             
-            printf("[BB%d] Picking from global pool:\n", this->rank);
-            branchInt.showInterval();
+            printf("[BB%d] Picking from global pool\n", this->rank);
+//            branchInt.showInterval();
         }
         else{
             working = 0;
@@ -328,8 +328,8 @@ void BranchAndBound::solve(const Interval& branch){
         
         if(working > 0){
             this->splitInterval(branchInt);
-            printf("[BB%d] Starting Branch and Bound...\n[BB%d] Total levels %d...\n[BB%d] Starting at level %d\n[BB%d] Received branch:", this->rank, this->rank, totalLevels, this->rank, branchInt.build_up_to, this->rank);
-            branchInt.showInterval();
+//            printf("[BB%d] Starting Branch and Bound...\n[BB%d] Total levels %d...\n[BB%d] Starting at level %d\n[BB%d] Received branch:", this->rank, this->rank, totalLevels, this->rank, branchInt.build_up_to, this->rank);
+//            branchInt.showInterval();
         }
         
         Interval activeBranch (this->problem->getNumberOfVariables());
@@ -339,13 +339,13 @@ void BranchAndBound::solve(const Interval& branch){
             activeBranch = localPool->back();
             localPool->pop_back();
             
-            printf("[BB%d] Exploring interval: ", this-> rank);
-            activeBranch.showInterval();
+//            printf("[BB%d] Exploring interval: ", this-> rank);
+//            activeBranch.showInterval();
             this->initializeExplorationInterval(activeBranch, this->ivm_tree);
             
             while(theTreeHasMoreBranches() == 1 && timeUp == 0){
                 
-                this->explore(this->currentSolution);                
+                this->explore(this->currentSolution);
                 this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
                 
                 
@@ -378,13 +378,6 @@ void BranchAndBound::solve(const Interval& branch){
         printf("[BB%d] Exploration finished.\n", this->rank);
         
     }
-        //printf("The pareto front found is: \n");
-    //this->paretoFront = paretoContainer->getParetoFront();
-    //this->printParetoFront(1);
-    //this->saveParetoFront();
-    //this->saveSummarize();
-    
-    //this->problem->printSolutionInfo(this->paretoFront.back());
 }
 
 double BranchAndBound::getTotalTime(){
@@ -394,6 +387,7 @@ double BranchAndBound::getTotalTime(){
     this->totalTime = time_span.count();
     return this->totalTime;
 }
+
 /**
  *  Gets the next node to explore.
  **/
@@ -416,15 +410,12 @@ int BranchAndBound::explore(Solution * solution){
 
 void BranchAndBound::branch(Solution* solution, int currentLevel){
     
-    
     this->callsToBranch++;
     int variable = 0;
     int isInPermut = 0;
     int level = 0;
     int levelStarting= 0;
-    
     int varInPos = 0;
-    
     int * numberOfRepetitionsAllowed = problem->getElemensToRepeat();
     int timesRepeated [problem->getTotalElements()];
     int map = 0;

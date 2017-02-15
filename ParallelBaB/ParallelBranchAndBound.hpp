@@ -19,6 +19,7 @@
 class ParallelBranchAndBound: public tbb::task{
 
 public:
+    int number_of_threads;
     char * outputParetoFile;
     char * summarizeFile;
     char * path[2];
@@ -27,6 +28,7 @@ public:
     
     tbb::task* execute();
     
+    void setNumberOfThreads(int number_of_threads);
     void setInstanceFile(char * path[]);
     void setProblem(std::shared_ptr<Problem> problem);
     void setParetoFrontFile(const char * outputFile);

@@ -10,26 +10,23 @@
 
 tbb::task * ParallelBranchAndBound::execute(){
     
-    int numberOfBB = 0;
+    int counter_threads = 0;
     Interval branch_init (problem->getNumberOfVariables());
     
-    BranchAndBound * BaB_master = new(tbb::task::allocate_root()) BranchAndBound(numberOfBB++, problem, branch_init);
+    BranchAndBound * BaB_master = new(tbb::task::allocate_root()) BranchAndBound(counter_threads, problem, branch_init);
     BaB_master->setParetoFrontFile(this->outputParetoFile);
     BaB_master->setSummarizeFile(this->summarizeFile);
     BaB_master->setGlobalPool(BaB_master->localPool);
     BaB_master->splitInterval(branch_init);
-
+    
+    this->set_ref_count(this->number_of_threads + 1);
     
     
-    int refCount = 4; /** Number of threads. **/
-    this->set_ref_count(refCount + 1);
-    
-    int counter_threads = 0;
     tbb::task_list tl;
     vector<BranchAndBound *> bb_threads;
-    while (counter_threads++ < refCount){
+    while (counter_threads++ < this->number_of_threads){
         
-        BranchAndBound * BaB_task = new(tbb::task::allocate_child()) BranchAndBound(numberOfBB++, this->problem, branch_init);
+        BranchAndBound * BaB_task = new(tbb::task::allocate_child()) BranchAndBound(counter_threads, this->problem, branch_init);
         BaB_task->setParetoContainer(BaB_master->getParetoContainer());
         BaB_task->setGlobalPool(BaB_master->globalPool);
         
@@ -58,7 +55,6 @@ tbb::task * ParallelBranchAndBound::execute(){
         
     }
     
-
     BaB_master->paretoFront = BaB_master->paretoContainer->getParetoFront();
     BaB_master->printParetoFront();
     BaB_master->saveParetoFront();
@@ -69,6 +65,9 @@ tbb::task * ParallelBranchAndBound::execute(){
     return NULL;
 }
 
+void ParallelBranchAndBound::setNumberOfThreads(int number_of_threads){
+    this->number_of_threads = number_of_threads;
+}
 
 void ParallelBranchAndBound::setInstanceFile(char *path []){
     this->path[0] = new char [255];
