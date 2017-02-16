@@ -459,7 +459,6 @@ void ProblemHCSP::printSolutionInfo(Solution *solution){
     printf("TODO: Implement this function.\n");
 }
 
-
 void ProblemHCSP::printPartialSolution(Solution * solution, int level){
 
 }

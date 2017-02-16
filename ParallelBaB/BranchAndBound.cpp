@@ -9,9 +9,7 @@
 /**
  * TODO: Sort the branches considering the objective values.
  * TODO: Create a structure to store the objective values in each level of the tree (in the solution class or in the B&B class?).
- * TODO: Implements methods to share the information.
  * TODO: Decide if the grid is shared or each B&B has their own grid.
- * TODO: If the grid is shared, then only block the cell which is updated, because to verify the improvement only requieres read acces.
  *
  **/
 #include "BranchAndBound.hpp"
@@ -367,7 +365,7 @@ void BranchAndBound::solve(const Interval& branch){
                         printf(" + [%6lu] \n", this->paretoContainer->getSize());
                     }
                 }
-                this->saveEvery(3600);
+                //this->saveEvery(3600);
             }
         }
         
@@ -404,7 +402,7 @@ int BranchAndBound::explore(Solution * solution){
     
     solution->setVariable(level, element);
     this->currentLevel = level;
-    
+    this->currentSolution->build_up_to = level;
     return 0;
 }
 
@@ -450,7 +448,6 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
             
         case ProblemType::permutation_with_repetition_and_combination:
             
-            /** TODO: Sort the branches considering the objective value. **/
             for (variable = 0; variable < problem->getTotalElements(); variable++) {
                 isInPermut = 0;
                 jobToCheck = variable;
@@ -494,7 +491,6 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
                     }
                 }
             }
-            
             
             /** Search for the next active node. **/
             if(branched > 0){
@@ -624,9 +620,22 @@ int BranchAndBound::improvesTheBucket(Solution *solution, std::vector<Solution *
     
     unsigned long paretoFrontSize = bucketFront.size();
     DominanceRelation domination;
-    unsigned long index = 0;
     int improves = 1;
-    if (paretoFrontSize > 0)
+    unsigned long index = 0;
+    if (paretoFrontSize > 0){
+      /*
+        std::vector<Solution* >::iterator it = bucketFront.begin();
+        while (it != bucketFront.end()) {
+            
+            domination = dominanceOperator(solution, (*it));
+            it++;
+            if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
+                improves = 0;
+                it = bucketFront.end();
+            }
+        }
+    */
+    
         for (index = 0; index < paretoFrontSize; index++) {
             domination = dominanceOperator(solution, bucketFront.at(index));
             if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
@@ -634,16 +643,16 @@ int BranchAndBound::improvesTheBucket(Solution *solution, std::vector<Solution *
                 index = paretoFrontSize + 1;
             }
         }
+    }
     
     return improves;
 }
 
 /**
+ *
  * TODO: method not used, delete later.
  *
  * The branch must contains all the nodes before the indicated level.
- *
- *
  *
  **/
 void BranchAndBound::computeLastBranch(Interval *  branch){
@@ -827,7 +836,7 @@ unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
             break;
             
         case ProblemType::permutation_with_repetition_and_combination:
-            /** TODO: **/
+            /** TODO: Design the correct computaiton of the number of nodes. **/
             nodes_per_branch = (this->problem->getUpperBound(0) + 1) - this->problem->getLowerBound(0);
             deepest_level = this->totalLevels + 1;
             totalNodes = (pow(nodes_per_branch, deepest_level + 1) - 1) / (nodes_per_branch - 1);
@@ -897,7 +906,7 @@ int BranchAndBound::saveSummarize(){
     printf("Calls to prune:      %ld\n", this->callsToPrune);
     printf("Pruned nodes:        %ld\n", this->prunedNodes);
     printf("Leaves reached:      %ld\n", this->leaves);
-    printf("Updates in PF:%ld\n", this->totalUpdatesInLowerBound);
+    printf("Updates in PF:       %ld\n", this->totalUpdatesInLowerBound);
     printf("Total time:          %f\n" , this->totalTime);
     printf("Grid data:\n");
     printf("\tGrid dimension:    %d x %d\n", this->paretoContainer->getCols(), this->paretoContainer->getRows());
@@ -923,12 +932,11 @@ int BranchAndBound::saveSummarize(){
         myfile << "Total time:          " << this->totalTime << "\n";
         
         myfile <<"Grid data:\n";
-        myfile <<"\tgrid dimension:" << this->paretoContainer->getCols() << " x " << this->paretoContainer->getRows() << "\n";
-
-        myfile <<"\tnon-dominated buckets:\t" << this->paretoContainer->activeBuckets << "\n";
-        myfile <<"\tdominated buckets:   " << this->paretoContainer->disabledBuckets << "\n";
-        myfile <<"\tunexplored buckets: " << this->paretoContainer->unexploredBuckets << "\n";
-        myfile <<"\ttotal elements in:  " << this->paretoContainer->getSize() << "\n";
+        myfile <<"\tdimension:         \t" << this->paretoContainer->getCols() << " x " << this->paretoContainer->getRows() << "\n";
+        myfile <<"\tnon-dominated:     \t" << this->paretoContainer->activeBuckets << "\n";
+        myfile <<"\tdominated:         \t" << this->paretoContainer->disabledBuckets << "\n";
+        myfile <<"\tunexplored:        \t" << this->paretoContainer->unexploredBuckets << "\n";
+        myfile <<"\tnumber of elements:\t" << this->paretoContainer->getSize() << "\n";
 
 
         myfile << "The pareto front found is: \n";

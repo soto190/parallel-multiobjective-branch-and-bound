@@ -373,9 +373,6 @@ int HandlerContainer3D::set(Solution * solution, int x, int y, int z){
     return 0;
 }
 
-/**
- NOTES TODO: Improve it by using a binary tree to search the bucket which will contain the new solution.
- **/
 int * HandlerContainer3D::add(Solution * solution){
     
     int * coordinate = getCandidateBucket(solution);

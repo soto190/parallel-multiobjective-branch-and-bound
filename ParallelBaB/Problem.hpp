@@ -13,8 +13,8 @@
 #include <iostream>
 #include <cstring>
 #include "Solution.hpp"
-
-//template <class TypeSolution>
+#include <tbb/mutex.h>
+#include <climits> /*For the Ehecatl wich uses GCC 4.4.7 and Xeon Phi, this activates INT_MAX.*/
 
 enum ProblemType{combination = 0, permutation = 1, permutation_with_repetition_and_combination = 2, XD=190};
 
@@ -32,6 +32,9 @@ public:
     int totalConstraints;
     int * lowerBound;
     int * upperBound;
+
+    tbb::mutex MutexToUpdate;
+
     
     virtual double evaluate(Solution * solution) = 0;
     virtual double evaluatePartial(Solution * solution, int levelEvaluation) = 0;

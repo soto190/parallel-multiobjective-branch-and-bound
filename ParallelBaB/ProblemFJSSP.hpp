@@ -63,35 +63,8 @@ public:
     
     Solution* createSolution();
     Solution* goodSolutionWithMaxWorkload;
-    
-    
+
     /**FJSSP functions**/
-    
-    /** The Soluion's representation is a vector:
-     Order
-     Of
-     Ejecution
-     | [ 0] = Job
-     | [ 1] = Machine
-     | [ 2] = Job
-     | [ 3] = Machine
-     | [ 4] = Job
-     | [ 5] = Machine
-     | [ 6] = Job
-     | [ 7] = Machine
-     | [ 8] = Job
-     | [ 9] = Machine
-     | [10] = Job
-     | [11] = Machine
-     | [12] = Job
-     | [13] = Machine
-     | [14] = Job
-     | [15] = Machine
-     | [16] = Job
-     V [17] = Machine
-     **/
-    
-    
     int totalJobs;
     int totalOperations;
     int totalMachines;
@@ -105,8 +78,6 @@ public:
     int ** mapToJobMachine;
     int ** jobMachineToMap;
 
-    
-    
     /** jobaHasNoperations saids how many operations have each job.
      if we have 2 jobs with 3 operations and 1 job with 2 operations.
      Job 0 has 3 operations: [0] = 3
@@ -154,7 +125,6 @@ public:
     void printProblemInfo();
     void printSchedule(Solution * solution);
     
-    double evaluatePartialTest3(Solution * solution, int currentLevel);
     double evaluatePartialTest4(Solution * solution, int currentLevel);
     int getLowerBoundInObj(int nObj);
     void buildSolutionWithGoodMaxWorkload(Solution * solution);

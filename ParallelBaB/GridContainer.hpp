@@ -216,7 +216,7 @@ public:
     HandlerContainer3D(int width, int height, int depth, double maxValX, double maxValY, double maxValZ);
     
     int * add(Solution * solution);
-    int * getCandidateBucket(Solution * solution); /**NOTE TODO: Rename method with a representative name.**/
+    int * getCandidateBucket(Solution * solution); /** TODO: Rename method with a representative name.**/
     int set(Solution * solution, int x, int y, int z);
     
     

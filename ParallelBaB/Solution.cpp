@@ -73,6 +73,11 @@ Solution::~Solution(){
     delete [] objective;
     delete [] variable;
     delete [] execTime;
+    int index = 0;
+    for (index = 0; index < this->totalVariables; index++)
+        delete [] this->partialObjective[index];
+    
+    delete [] this->partialObjective;
 }
 
 void Solution::setObjective(int index, double value){
@@ -90,7 +95,6 @@ int Solution::getVariable(int index){
 double Solution::getObjective(int index){
     return this->objective[index];
 }
-
 
 int Solution::dominates(const Solution & solution){
     int nObj = 0;

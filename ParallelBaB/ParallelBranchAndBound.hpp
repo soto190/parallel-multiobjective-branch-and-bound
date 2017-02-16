@@ -15,6 +15,7 @@
 #include "ProblemFJSSP.hpp"
 #include "tbb/task.h"
 #include "tbb/mutex.h"
+//#include <memory.h> /** For the Ehecatl wich uses GCC 4.4.7, this activates the shared_ptr. **/
 
 class ParallelBranchAndBound: public tbb::task{
 

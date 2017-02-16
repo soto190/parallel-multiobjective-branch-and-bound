@@ -8,7 +8,6 @@
 
 #include "ProblemFJSSP.hpp"
 
-
 ProblemFJSSP::~ProblemFJSSP(){
     int job = 0;
     for(job = 0; job < this->totalJobs; job++){
@@ -34,9 +33,11 @@ ProblemFJSSP::~ProblemFJSSP(){
     //delete goodSolutionWithMaxWorkload;
     
 }
+
 /**
- * The first part of the array is the order of execution.
- * The second part of the array is the machine assignations.
+ *
+ * Evaluates a given solution.
+ *
  */
 double ProblemFJSSP::evaluate(Solution * solution){
     
@@ -51,133 +52,23 @@ double ProblemFJSSP::evaluatePartial(Solution * solution, int levelEvaluation){
 }
 
 /**
- This representation is a contigous allocation of job and machine, :
-  [J, M, J, M, J, M, J, M]
- 
- Remove this later.
- **/
-double ProblemFJSSP::evaluatePartialTest3(Solution * solution, int levelEvaluation){
-    
-    int makespan = 0;
-    int maxWorkload = 0;
-    int totalWorkload = 0;
-    
-    int operationInPosition = 0;
-    int operation = 0;
-    int job = 0;
-    int machine = 0;
-    int numberOp = 0;
-    
-    int minPij = this->sumOfMinPij;
-    int bestWL [this->totalMachines];
-
-    int operationOfJob [this->totalJobs];
-    int startingTime [this->totalOperations];
-    int endingTime [this->totalOperations];
-    int timeInMachine [this->totalMachines];
-    int workload [this->totalMachines];
-    
-    for (operation = 0; operation < this->totalOperations; operation++) {
-        startingTime[operation] = 0;
-        endingTime[operation] = 0;
-    }
-    
-    for (job = 0; job < this->totalJobs; job++)
-        operationOfJob[job] = 0;
-    
-    for (machine = 0; machine < this->totalMachines; machine++){
-        timeInMachine[machine] = 0;
-        workload[machine] = 0;
-        bestWL[machine] = this->bestWorkloads[machine];
-    }
-    
-    for (operationInPosition = 0; operationInPosition <= levelEvaluation; operationInPosition++) {
-        
-        job = solution->getVariable(operationInPosition * 2);
-        machine = solution->getVariable((operationInPosition * 2) + 1);
-        
-        numberOp = this->operationInJobIsNumber[job][operationOfJob[job]];
-        
-        /** The minimun total workload is reduced. **/
-        minPij -= this->processingTime[numberOp][this->assignationMinPij[machine]];
-        
-        /** With the number of operation and the machine we can continue. **/
-        workload[machine] += this->processingTime[numberOp][machine];
-        totalWorkload += this->processingTime[numberOp][machine];
-        
-        bestWL[this->assignationBestWorkload[numberOp]] -= this->processingTime[numberOp][this->assignationBestWorkload[numberOp]];
-    
-        if (operationOfJob[job] == 0) { /** If it is the first operation of the job.**/
-            if(timeInMachine[machine] >= this->releaseTime[job]){
-                startingTime[numberOp] = timeInMachine[machine];
-                timeInMachine[machine] += this->processingTime[numberOp][machine];
-                endingTime[numberOp] = timeInMachine[machine];
-            }else{ /** If the job has to wait for the release time.**/
-                startingTime[numberOp] = this->releaseTime[job];
-                timeInMachine[machine] = this->releaseTime[job] + this->processingTime[numberOp][machine];
-                endingTime[numberOp] = timeInMachine[machine];
-            }
-            
-        }else{
-            if(endingTime[numberOp - 1] > timeInMachine[machine]){ /**The operation is waiting for their dependency operation.**/
-                
-                startingTime[numberOp] = endingTime[numberOp - 1];
-                timeInMachine[machine] = endingTime[numberOp - 1] + this->processingTime[numberOp][machine];
-                endingTime[numberOp] = timeInMachine[machine];
-                
-            }else{ /**The operation starts when the machine is avaliable.**/
-                
-                startingTime[numberOp] = timeInMachine[machine];
-                timeInMachine[machine] += this->processingTime[numberOp][machine];
-                endingTime[numberOp] = timeInMachine[machine];
-                
-            }
-        }
-        
-        operationOfJob[job]++;
-       
-        if (timeInMachine[machine] > makespan)
-            makespan = timeInMachine[machine];
-        
-        if(workload[machine] > maxWorkload)
-            maxWorkload = workload[machine];
-    }
-
-    for (machine = 0; machine < this->totalMachines; machine++)
-        if(workload[machine] + bestWL[machine] > maxWorkload)
-            maxWorkload = workload[machine] + bestWL[machine];
-    
-    solution->setObjective(0, makespan);
-    solution->setObjective(1, maxWorkload);
-    //solution->setObjective(2, totalWorkload + minPij);
-    
-    if(maxWorkload < this->bestWorkloadFound){
-        this->bestWorkloadFound = maxWorkload;
-
-        for (machine = 0; machine < this->totalMachines; machine++)
-            this->bestWorkloads[machine] = workload[machine];
-        
-        for (operation = 0; operation < this->totalOperations; operation++)
-            this->assignationBestWorkload[operation] = solution->getVariable((operation * 2) + 1);
-    }
-    
-    return 0.0;
-}
-
-
-/**
- This representation use a mapping:
- [ 0, 0, 0, 6, 6, 6, 3, 4, 5]
- map job machine
- 0    0   0
- 1    0   1
- 2    0   2
- 3    1   0
- 4    1   1
- 5    1   2
- 6    2   0
- 7    2   1
- 8    2   2
+ *
+ * TODO: improve the evaluation function.
+ *
+ * This representation use a mapping:
+ * solution [ 0, 0, 0, 6, 7, 6, 3, 4, 5]
+ * job      [ 0, 0, 0, 2, 2, 2, 1, 1, 1]
+ * machine  [ 0, 0, 0, 0, 1, 1, 0, 1, 2]
+ * map | job | machine
+ * 0  ->  0     0
+ * 1  ->  0     1
+ * 2  ->  0     2
+ * 3  ->  1     0
+ * 4  ->  1     1
+ * 5  ->  1     2
+ * 6  ->  2     0
+ * 7  ->  2     1
+ * 8  ->  2     2
  **/
 double ProblemFJSSP::evaluatePartialTest4(Solution * solution, int levelEvaluation){
     
@@ -213,6 +104,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution * solution, int levelEvaluati
         workload[machine] = 0;
         bestWL[machine] = this->bestWorkloads[machine];
     }
+    
     int map = 0;
     for (operationInPosition = 0; operationInPosition <= levelEvaluation; operationInPosition++) {
         map = solution->getVariable(operationInPosition);
@@ -232,17 +124,20 @@ double ProblemFJSSP::evaluatePartialTest4(Solution * solution, int levelEvaluati
         
         if (operationOfJob[job] == 0) { /** If it is the first operation of the job.**/
             if(timeInMachine[machine] >= this->releaseTime[job]){
+             
                 startingTime[numberOp] = timeInMachine[machine];
                 timeInMachine[machine] += this->processingTime[numberOp][machine];
                 endingTime[numberOp] = timeInMachine[machine];
+            
             }else{ /** If the job has to wait for the release time.**/
+                
                 startingTime[numberOp] = this->releaseTime[job];
                 timeInMachine[machine] = this->releaseTime[job] + this->processingTime[numberOp][machine];
                 endingTime[numberOp] = timeInMachine[machine];
-            }
             
+            }
         }else{
-            if(endingTime[numberOp - 1] > timeInMachine[machine]){ /**The operation is waiting for their dependency operation.**/
+            if(endingTime[numberOp - 1] > timeInMachine[machine]){ /** The operation starts inmediatly after their precedent operation.**/
                 
                 startingTime[numberOp] = endingTime[numberOp - 1];
                 timeInMachine[machine] = endingTime[numberOp - 1] + this->processingTime[numberOp][machine];
@@ -257,8 +152,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution * solution, int levelEvaluati
             }
         }
         
-        /** This counts the number of operations from a job allocated. **/
-        operationOfJob[job]++;
+        operationOfJob[job]++; /** This counts the number of operations from a job allocated. **/
         
         if (timeInMachine[machine] > makespan){
             makespan = timeInMachine[machine];
@@ -279,7 +173,9 @@ double ProblemFJSSP::evaluatePartialTest4(Solution * solution, int levelEvaluati
     //solution->setObjective(2, totalWorkload + minPij);
     
     /** Updates the best workloads and the assignation. **/
+    
     if(maxWorkload < this->bestWorkloadFound){
+        this->MutexToUpdate.lock();
         this->bestWorkloadFound = maxWorkload;
         
         for (machine = 0; machine < this->totalMachines; machine++)
@@ -287,6 +183,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution * solution, int levelEvaluati
         
         for (operation = 0; operation < this->totalOperations; operation++)
             this->assignationBestWorkload[operation] = this->mapToJobMachine[solution->getVariable(operation)][1];
+        this->MutexToUpdate.unlock();
     }
     
     return 0.0;
@@ -469,22 +366,12 @@ int ProblemFJSSP::getLowerBound(int indexVar){
 }
 
 /** 
- 1)
-    For the variables which are part of the permutation the upper bound is the number of Jobs.
-    For the variables which are part of the machine allocations the upper bound is the number of Machines.
- 
- 2) The Range of variables is the number of maps.
+ *
+ * The Range of variables is the number of maps.
+ *
  **/
 int ProblemFJSSP::getUpperBound(int indexVar){
-    /*
-    if (indexVar == 0 || indexVar % 2 == 0)
-        return this->totalJobs - 1;
-    else
-        return this->totalMachines - 1;
-    */
-    
     return (this->totalJobs * this->totalMachines) - 1;
-    
 }
 
 int ProblemFJSSP::getLowerBoundInObj(int nObj){
