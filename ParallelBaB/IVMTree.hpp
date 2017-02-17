@@ -26,7 +26,7 @@ public:
     int ** ivm;
     int * active_node;
     int * start_exploration;
-    int * end_exploration;
+    int * end_exploration; /** This is not used. **/
     int active_level;
     int starting_level;
     int hasBranches = 1;

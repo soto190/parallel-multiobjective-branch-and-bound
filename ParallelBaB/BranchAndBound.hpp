@@ -12,6 +12,7 @@
 #include <stdio.h>
 //#include <libiomp/omp.h>
 #include <vector>
+#include <queue>
 #include <math.h>
 #include <chrono>
 #include <ctime>
@@ -49,8 +50,8 @@ public:
     Solution * currentSolution;
     Solution * bestObjectivesFound;
     
-    std::shared_ptr<std::vector<Interval>> globalPool;
-    std::shared_ptr<std::vector<Interval>> localPool; /** intervals are the pending branches to be explored. **/
+    std::shared_ptr<std::queue<Interval>> globalPool;
+    std::shared_ptr<std::queue<Interval>> localPool; /** intervals are the pending branches to be explored. **/
     
     std::vector<Solution *> paretoFront; /** paretofFront. **/
     
@@ -69,8 +70,7 @@ public:
     unsigned long branches;
     unsigned long exploredNodes;
     unsigned long callsToBranch;
-    unsigned long leaves;
-    
+    unsigned long reachedLeaves;
     unsigned long unexploredNodes;
     unsigned long prunedNodes;
     unsigned long callsToPrune;
@@ -126,20 +126,21 @@ private:
     /** IVM functions. **/
 public:
     void computeLastBranch(Interval * branch);
-    void setStartingInterval(Interval * branch);
     void splitInterval(const Interval & branch);
+    void splitIntervalSolution(const Solution & solution);
 private:
     int initializeExplorationInterval(const Interval & branch, IVMTree * tree);
+    int initializeExplorationIntervalSolution(const Solution & branch, IVMTree * tree);
+
     /** End IVM functions **/
 
 public:
     task* execute(); 
-    void setGlobalPool(std::shared_ptr<std::vector<Interval>> globalPool);
+    void setGlobalPool(std::shared_ptr<std::queue<Interval>> globalPool);
     void operator()(const Interval& branch){
         this->solve(branch);
     };
     
 };
-
 
 #endif /* BranchAndBound_hpp */

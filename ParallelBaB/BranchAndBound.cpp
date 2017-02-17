@@ -31,10 +31,10 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem){
     this->paretoContainer = std::make_shared<HandlerContainer>();
     
     this->ivm_tree = new IVMTree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
-    this->localPool = std::make_shared<vector<Interval>>();
+    this->localPool = std::make_shared<std::queue<Interval>>();
     
-    this->localPool->reserve(100);
-    this->globalPool = std::make_shared<vector<Interval>>();
+    //this->localPool->reserve(100);
+    this->globalPool = std::make_shared<std::queue<Interval>>();
 
     
     this->currentLevel = 0;
@@ -42,7 +42,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem){
     this->totalNodes = 0;
     this->branches = 0;
     this->exploredNodes = 0;
-    this->leaves = 0;
+    this->reachedLeaves = 0;
     this->unexploredNodes = 0;
     this->prunedNodes = 0;
     this->callsToPrune = 0;
@@ -62,16 +62,16 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
     
     
     this->ivm_tree = new IVMTree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
-    this->localPool = make_shared<vector<Interval>>();
-    this->localPool->reserve(100);
-    this->globalPool = std::make_shared<vector<Interval>>();
+    this->localPool = std::make_shared<std::queue<Interval>>();
+//    this->localPool->reserve(100);
+    this->globalPool = std::make_shared<std::queue<Interval>>();
 
     this->currentLevel = 0;
     this->totalLevels = 0;
     this->totalNodes = 0;
     this->branches = 0;
     this->exploredNodes = 0;
-    this->leaves = 0;
+    this->reachedLeaves = 0;
     this->unexploredNodes = 0;
     this->prunedNodes = 0;
     this->callsToPrune = 0;
@@ -129,7 +129,8 @@ BranchAndBound::~BranchAndBound(){
     delete this->bestObjectivesFound;
     
     this->paretoFront.clear();
-    this->localPool->clear();
+
+//    this->localPool->clear();
     
     //delete this->ivm_tree;
     //delete this->starting_interval;
@@ -206,14 +207,15 @@ void BranchAndBound::initialize(int starts_tree){
 int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTree *tree){
     
     /** This is only for the FJSSP. **/
-    int job = 0;
+    /*int job = 0;
     int isIn = 0;
-    int varInPos = 0;
     int * numberOfRepetitionsAllowed = problem->getElemensToRepeat();
     int timesRepeated [problem->getTotalElements()];
     int map = 0;
     int jobToCheck = 0;
     int jobAllocated = 0;
+    */
+     int varInPos = 0;
     int cl = 0; /** Counter level.**/
     tree->root_node = branch.build_up_to; /** root node of this tree**/
     tree->starting_level = branch.build_up_to + 1; /** Level with the first branches of the tree. **/
@@ -236,12 +238,15 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTr
         this->currentSolution->setVariable(cl, this->ivm_tree->start_exploration[cl]);
     }
 
-    /** For each level search the job to allocate.**/
+    
+   
     for (cl = branch.build_up_to + 1; cl <= this->totalLevels; cl++){
         tree->start_exploration[cl] = 0;
         tree->max_nodes_in_level[cl] = 0;
     
-        for (job = problem->getTotalElements() - 1; job >= 0; job--) {
+        /* This part can be removed.*/
+         /** For each level search the last mapping to allocate.**/
+        /*for (job = problem->getTotalElements() - 1; job >= 0; job--) {
             isIn = 0;
             jobToCheck = job;
             timesRepeated[jobToCheck] = 0;
@@ -260,11 +265,11 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTr
             
             if (isIn == 0){
                 tree->end_exploration[cl] = this->problem->getMappingOf(jobToCheck, this->problem->getTimesValueIsRepeated(0) - 1);
-                
+         */
                 /** To finish the loop. **/
-                job = -1;
-            }
-        }
+        //      job = -1;
+        // }
+        //}
     }
     this->currentSolution->build_up_to = branch.build_up_to;
     this->branch(this->currentSolution, branch.build_up_to);
@@ -276,25 +281,11 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTr
     return 0;
 }
 
-
 tbb::task* BranchAndBound::execute() {
    
     this->solve(*starting_interval);
     return NULL;
 
-}
-
- 
-void BranchAndBound::setStartingInterval(Interval *branch){
-    this->starting_interval = new Interval(this->problem->getNumberOfVariables());
-    
-    int val = 0;
-    for (val = 0; val < this->problem->getNumberOfVariables(); val++) {
-        this->starting_interval->interval[val] = branch->interval[val];
-    }
-    this->starting_interval->build_up_to = branch->build_up_to;
-    
-    /**branch the given interval and split it. **/
 }
 
 void BranchAndBound::solve(const Interval& branch){
@@ -311,12 +302,12 @@ void BranchAndBound::solve(const Interval& branch){
         
         MutexToUpdateGrid.lock();
         if (this->globalPool->size() > 0) {
-            branchInt = this->globalPool->back();
-            this->globalPool->pop_back();
+            branchInt = this->globalPool->front();
+            this->globalPool->pop();
             working++;
             
-            printf("[BB%d] Picking from global pool\n", this->rank);
-//            branchInt.showInterval();
+            printf("[BB%d] Picking from global pool. Pool size is %lu\n", this->rank, this->globalPool->size());
+            branchInt.showInterval();
         }
         else{
             working = 0;
@@ -332,10 +323,10 @@ void BranchAndBound::solve(const Interval& branch){
         
         Interval activeBranch (this->problem->getNumberOfVariables());
         
-        while (localPool->size() > 0) {
+        while (this->localPool->size() > 0) {
             
-            activeBranch = localPool->back();
-            localPool->pop_back();
+            activeBranch = this->localPool->front();
+            this->localPool->pop();
             
 //            printf("[BB%d] Exploring interval: ", this-> rank);
 //            activeBranch.showInterval();
@@ -354,14 +345,14 @@ void BranchAndBound::solve(const Interval& branch){
                         this->prune(this->currentSolution, this->currentLevel);
                 }else{
                     
-                    this->leaves++;
+                    this->reachedLeaves++;
                     
                     updated = this->updateParetoGrid(this->currentSolution);
                     this->totalUpdatesInLowerBound += updated;
                     
                     if (updated == 1){
                         printf("[BB%d] ", this->rank);
-                        printCurrentSolution();
+                        this->printCurrentSolution();
                         printf(" + [%6lu] \n", this->paretoContainer->getSize());
                     }
                 }
@@ -718,6 +709,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
     int index_var = 0;
     int level_to_split = branch_to_split.build_up_to + 1;
     int number_of_variables = this->problem->totalVariables;
+    int branches_created = 0;
     
     int isIn = 0;
     int varInPos = 0;
@@ -733,7 +725,9 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
         sol_test.setVariable(index_var, branch_to_split.interval[index_var]);
     }
     
-    for (jobToCheck = problem->getTotalElements() - 1; jobToCheck >= 0; jobToCheck--) {
+//    for (jobToCheck = problem->getTotalElements() - 1; jobToCheck >= 0; jobToCheck--) {
+    for (jobToCheck = 0; jobToCheck < problem->getTotalElements(); jobToCheck++) {
+
         isIn = 0;
         timesRepeated[jobToCheck] = 0;
         
@@ -752,7 +746,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
         if (isIn == 0){
             int toAdd = 0;
             int machine = 0;
-            for(machine = this->problem->getTimesValueIsRepeated(0) - 1; machine >= 0 ; machine--){
+            for(machine = 0; machine < this->problem->getTimesValueIsRepeated(0); machine++){
                 
                 toAdd = this->problem->getMappingOf(jobToCheck, machine);
                 
@@ -776,8 +770,9 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
                 
                 if(this->improvesTheGrid(&sol_test) == 1){
                     /**Add it to Intervals. **/
-                    this->localPool->push_back(branch);
+                    this->localPool->push(branch);
                     this->branches++;
+                    branches_created++;
                 }
                 else
                     this->prunedNodes++;
@@ -786,16 +781,14 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
         }
     }
 
-/*
-    int index_branch = 0;
-    printf("Received branch:  ");
-    branch_to_split.showInterval();
-
-    for (index_branch = 0; index_branch < this->intervals.size(); index_branch++){
-        printf("Generated branch: ");
-        this->intervals.at(index_branch).showInterval();
+    if(branches_created > 4){
+        Interval B = this->localPool->front();
+        this->localPool->pop();
+        
+        MutexToUpdateGrid.lock();
+        this->globalPool->push(B);
+        MutexToUpdateGrid.unlock();
     }
- */
 }
 
 long BranchAndBound::permut(int n, int i) {
@@ -890,7 +883,7 @@ std::shared_ptr<HandlerContainer> BranchAndBound::getParetoContainer(){
     return this->paretoContainer;
 }
 
-void BranchAndBound::setGlobalPool(std::shared_ptr<std::vector<Interval> > globalPool){
+void BranchAndBound::setGlobalPool(std::shared_ptr<std::queue<Interval> > globalPool){
     this->globalPool = globalPool;
 }
 
@@ -905,7 +898,7 @@ int BranchAndBound::saveSummarize(){
     printf("Created branches:    %ld\n", this->branches);
     printf("Calls to prune:      %ld\n", this->callsToPrune);
     printf("Pruned nodes:        %ld\n", this->prunedNodes);
-    printf("Leaves reached:      %ld\n", this->leaves);
+    printf("Leaves reached:      %ld\n", this->reachedLeaves);
     printf("Updates in PF:       %ld\n", this->totalUpdatesInLowerBound);
     printf("Total time:          %f\n" , this->totalTime);
     printf("Grid data:\n");
@@ -927,7 +920,7 @@ int BranchAndBound::saveSummarize(){
         myfile << "Calls to branching:  " << this->callsToBranch << "\n";
         myfile << "Created branches:    " << this->branches << "\n";
         myfile << "Calls to prune:      " << this->callsToPrune << "\n";
-        myfile << "Leaves reached:      " << this->leaves << "\n";
+        myfile << "Leaves reached:      " << this->reachedLeaves << "\n";
         myfile << "Updates in PF:       " << this->totalUpdatesInLowerBound << "\n";
         myfile << "Total time:          " << this->totalTime << "\n";
         

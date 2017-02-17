@@ -50,7 +50,7 @@ tbb::task * ParallelBranchAndBound::execute(){
         BaB_master->branches += bb_in->branches;
         BaB_master->callsToPrune += bb_in->callsToPrune;
         BaB_master->prunedNodes += bb_in->prunedNodes;
-        BaB_master->leaves += bb_in->leaves;
+        BaB_master->reachedLeaves += bb_in->reachedLeaves;
         BaB_master->totalUpdatesInLowerBound += bb_in->totalUpdatesInLowerBound;
         
     }
