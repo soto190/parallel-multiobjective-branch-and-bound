@@ -51,6 +51,7 @@ public:
     int moveToNextNode();
     
     void showIVM();
+    IVMTree& operator()(int rows, int cols);
     
 };
 

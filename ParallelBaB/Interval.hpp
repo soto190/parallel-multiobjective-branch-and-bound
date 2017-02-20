@@ -26,11 +26,13 @@ public:
     int * interval;
     int max_size = 0;
     
+    Interval();
     Interval(int max_size);
     Interval(const Interval &toCopy);
     ~Interval();
     
     Interval& operator=(const Interval& toCopy);
+    Interval& operator()(int size);
     
     void showInterval() const;
 };

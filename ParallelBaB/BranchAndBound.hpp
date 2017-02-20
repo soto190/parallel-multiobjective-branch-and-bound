@@ -48,18 +48,18 @@ public:
     tbb::mutex MutexToUpdateGrid;
     
     Solution currentSolution;
-    Solution * bestObjectivesFound;
+    Solution bestObjectivesFound;
     
     std::shared_ptr<std::queue<Interval>> globalPool;
-    std::shared_ptr<std::queue<Interval>> localPool; /** intervals are the pending branches to be explored. **/
+    std::shared_ptr<std::queue<Interval>> localPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
     
     std::vector<Solution *> paretoFront; /** paretofFront. **/
     
     std::shared_ptr<HandlerContainer> paretoContainer; /** Global Pareto container. **/
     
     
-    IVMTree * ivm_tree;
-    Interval * starting_interval;
+    IVMTree ivm_tree;
+    Interval starting_interval;
     
     int levels_completed;
     
@@ -123,12 +123,12 @@ private:
     
     /** IVM functions. **/
 public:
-    void computeLastBranch(Interval * branch);
+    void computeLastBranch(Interval & branch);
     void splitInterval(const Interval & branch);
     void splitIntervalSolution(const Solution & solution);
 private:
-    int initializeExplorationInterval(const Interval & branch, IVMTree * tree);
-    int initializeExplorationIntervalSolution(const Solution & branch, IVMTree * tree);
+    int initializeExplorationInterval(const Interval & branch, IVMTree & tree);
+    int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);
 
     /** End IVM functions **/
 

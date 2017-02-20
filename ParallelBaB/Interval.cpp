@@ -9,11 +9,16 @@
 #include "Interval.hpp"
 
 
+
 /**
  *
  * size is equals to the number of variables.
  *
  **/
+
+Interval::Interval(){
+}
+
 Interval::Interval(int max_size){
     this->interval = new int[max_size];
     this->build_up_to = -1;
@@ -62,4 +67,13 @@ void Interval::showInterval() const{
     
     printf("]\n");
     
+}
+
+Interval& Interval::operator()(int size){
+    
+    this->interval = new int[size];
+    this->build_up_to = -1;
+    this->max_size = size;
+    
+    return *this;
 }
