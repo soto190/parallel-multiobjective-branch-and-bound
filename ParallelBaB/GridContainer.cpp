@@ -70,13 +70,20 @@ void HandlerContainer::checkCoordinate(Solution &solution, int * coordinate){
     coordinate[1] = binarySearch(solution.getObjective(1), this->rangeiny, this->getRows());
 }
 
+
+/**
+ *
+ * Sets a copy of the solution.
+ */
+ 
 int HandlerContainer::set(Solution & solution, int x, int y){
     int nCol = 0;
     int nRow = 0;
     int updated = 0;
-    Solution * copyOfSolution = new Solution(solution);
-
-    switch (this->getStateOf(x, y)) {
+    BucketState state = this->getStateOf(x, y);
+    Solution * copyOfSolution = nullptr;
+    
+    switch (state) {
             
         case BucketState::unexplored:
             
@@ -93,7 +100,7 @@ int HandlerContainer::set(Solution & solution, int x, int y){
                     else
                         this->clearContainer(nCol, nRow);
             
-            
+            copyOfSolution = new Solution(solution);
             this->grid.set(copyOfSolution, x, y);
             this->setStateOf(BucketState::nondominated, x, y);
             this->totalElements++;
@@ -104,6 +111,7 @@ int HandlerContainer::set(Solution & solution, int x, int y){
             break;
             
         case BucketState::nondominated:
+            copyOfSolution = new Solution(solution);
             updated  = this->updateBucket(*copyOfSolution, x, y);
             break;
             
@@ -199,7 +207,7 @@ int HandlerContainer::updateBucket(Solution & solution, int x, int y){
     std::vector<Solution *> *paretoFront = &grid.get(x, y);
     unsigned long sizeBeforeUpdate = paretoFront->size();
     
-    int updated = updateFront(&solution, *paretoFront);
+    int updated = updateFront(solution, *paretoFront);
     if(updated == 1){
         if(paretoFront->size() < sizeBeforeUpdate){ /** Some solutions were removed. **/
             unsigned long int removedElements = sizeBeforeUpdate - (paretoFront->size() - 1);
@@ -321,21 +329,21 @@ HandlerContainer3D::HandlerContainer3D(int rows, int cols, int depth, double max
     
 }
 
-int * HandlerContainer3D::getCandidateBucket(Solution *solution){
+int * HandlerContainer3D::getCandidateBucket(Solution &solution){
     
     int * coordinate = new int[this->getNumberOfDimension()];
     
-    coordinate[0] = binarySearch(solution->getObjective(0), this->rangeinx, this->getCols());
+    coordinate[0] = binarySearch(solution.getObjective(0), this->rangeinx, this->getCols());
     
-    coordinate[1] = binarySearch(solution->getObjective(1), this->rangeiny, this->getRows());
+    coordinate[1] = binarySearch(solution.getObjective(1), this->rangeiny, this->getRows());
     
-    coordinate[2] = binarySearch(solution->getObjective(2), this->rangeinz, this->getDepth());
+    coordinate[2] = binarySearch(solution.getObjective(2), this->rangeinz, this->getDepth());
     
     return coordinate;
     
 }
 
-int HandlerContainer3D::set(Solution * solution, int x, int y, int z){
+int HandlerContainer3D::set(Solution & solution, int x, int y, int z){
     
     if(this->getStateOf(x, y, z) == BucketState::unexplored){
         
@@ -355,8 +363,8 @@ int HandlerContainer3D::set(Solution * solution, int x, int y, int z){
                     else
                         this->clearContainer(nCol, nRow, nDeep);
         
-        Solution * copyOfSolution = new Solution(* solution);
-        this->grid.set(copyOfSolution, x, y, z);
+        //Solution * copyOfSolution = new Solution(solution);
+        this->grid.set(&solution, x, y, z);
         this->setStateOf(BucketState::nondominated, x, y, z);
         this->totalElements++;
         this->activeBuckets++;
@@ -366,13 +374,13 @@ int HandlerContainer3D::set(Solution * solution, int x, int y, int z){
         
     }
     else if(this->getStateOf(x, y, z) == BucketState::nondominated)
-        return this->updateBucket(solution, x, y, z);
+        return this->updateBucket(&solution, x, y, z);
     
     /**If the bucket is dominated (State = 2) the element is not added.**/
     return 0;
 }
 
-int * HandlerContainer3D::add(Solution * solution){
+int * HandlerContainer3D::add(Solution & solution){
     
     int * coordinate = getCandidateBucket(solution);
     
@@ -470,7 +478,7 @@ int HandlerContainer3D::updateBucket(Solution * solution, int x, int y, int z){
     std::vector<Solution *> paretoFront = grid.get(x, y, z);
     unsigned long sizeBeforeUpdate = paretoFront.size();
     
-    int updated = updateFront(solution, paretoFront);
+    int updated = updateFront(*solution, paretoFront);
     if(updated == 1){
         /**Some solutions were removed **/
         if(paretoFront.size() < sizeBeforeUpdate){

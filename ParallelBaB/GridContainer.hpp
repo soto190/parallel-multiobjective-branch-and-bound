@@ -215,9 +215,9 @@ public:
     ~HandlerContainer3D();
     HandlerContainer3D(int width, int height, int depth, double maxValX, double maxValY, double maxValZ);
     
-    int * add(Solution * solution);
-    int * getCandidateBucket(Solution * solution); /** TODO: Rename method with a representative name.**/
-    int set(Solution * solution, int x, int y, int z);
+    int * add(Solution & solution);
+    int * getCandidateBucket(Solution & solution); /** TODO: Rename method with a representative name.**/
+    int set(Solution & solution, int x, int y, int z);
     
     
     std::vector<Solution *>& get(int x, int y, int z);
