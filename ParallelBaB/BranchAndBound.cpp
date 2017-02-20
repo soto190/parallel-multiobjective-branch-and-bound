@@ -97,14 +97,14 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
     
     this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
     
-    Solution * bestInObj1 = this->problem->getSolutionWithLowerBoundInObj(1);
+    Solution bestInObj1 = *this->problem->getSolutionWithLowerBoundInObj(1);
     //Solution * bestInObj2 = this->problem->getSolutionWithLowerBoundInObj(2);
     
     int nObj = 0;
     for (nObj = 0; nObj < numberOfObjectives; nObj++)
         this->bestObjectivesFound->setObjective(nObj, this->currentSolution.getObjective(nObj));
     
-    this->bestObjectivesFound->setObjective(1, bestInObj1->getObjective(1));
+    this->bestObjectivesFound->setObjective(1, bestInObj1.getObjective(1));
     
     double obj1 = this->currentSolution.getObjective(0);
     double obj2 = this->currentSolution.getObjective(1);
@@ -164,18 +164,18 @@ void BranchAndBound::initialize(int starts_tree){
 
     this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
     
-    Solution * bestInObj1 = this->problem->getSolutionWithLowerBoundInObj(1);
-    Solution * bestInObj2 = this->problem->getSolutionWithLowerBoundInObj(2);
+    Solution bestInObj1 = *this->problem->getSolutionWithLowerBoundInObj(1);
+    Solution bestInObj2 = *this->problem->getSolutionWithLowerBoundInObj(2);
     
     int nObj = 0;
     for (nObj = 0; nObj < numberOfObjectives; nObj++)
         this->bestObjectivesFound->setObjective(nObj, this->currentSolution.getObjective(nObj));
 
-    this->bestObjectivesFound->setObjective(1, bestInObj1->getObjective(1));
+    this->bestObjectivesFound->setObjective(1, bestInObj1.getObjective(1));
     
     this->updateParetoGrid(bestInObj1);
     this->updateParetoGrid(bestInObj2);
-    this->updateParetoGrid(&this->currentSolution);
+    this->updateParetoGrid(this->currentSolution);
 
     /*
     double obj1 = this->currentSolution.getObjective(0);
@@ -192,10 +192,6 @@ void BranchAndBound::initialize(int starts_tree){
     this->problem->printSolution(bestInObj2);
     printf("\n");
     */
-    
-
-    //delete bestInObj1;
-    //delete bestInObj2;
 }
 
 /**
@@ -272,7 +268,7 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTr
         //}
     }
     this->currentSolution.build_up_to = branch.build_up_to;
-    this->branch(&this->currentSolution, branch.build_up_to);
+    this->branch(this->currentSolution, branch.build_up_to);
     this->ivm_tree->active_level--;
     this->ivm_tree->active_node[this->ivm_tree->active_level] = 0;
     tree->active_node[tree->active_level] = tree->start_exploration[tree->active_level];
@@ -331,20 +327,20 @@ void BranchAndBound::solve(const Interval& branch){
             
             while(theTreeHasMoreBranches() == 1 && timeUp == 0){
                 
-                this->explore(&this->currentSolution);
+                this->explore(this->currentSolution);
                 this->problem->evaluatePartial(&this->currentSolution, this->currentLevel);
                 
                 
                 if (aLeafHasBeenReached() == 0){
-                    if(improvesTheGrid(&this->currentSolution) == 1)
-                        this->branch(&this->currentSolution, this->currentLevel);
+                    if(this->improvesTheGrid(this->currentSolution) == 1)
+                        this->branch(this->currentSolution, this->currentLevel);
                     else
-                        this->prune(&this->currentSolution, this->currentLevel);
+                        this->prune(this->currentSolution, this->currentLevel);
                 }else{
                     
                     this->reachedLeaves++;
                     
-                    updated = this->updateParetoGrid(&this->currentSolution);
+                    updated = this->updateParetoGrid(this->currentSolution);
                     this->totalUpdatesInLowerBound += updated;
                     
                     if (updated == 1){
@@ -373,8 +369,9 @@ double BranchAndBound::getTotalTime(){
 
 /**
  *  Gets the next node to explore.
+ * Modifies the solution.
  **/
-int BranchAndBound::explore(Solution * solution){
+int BranchAndBound::explore(Solution & solution){
     
     this->exploredNodes++;
     
@@ -384,13 +381,19 @@ int BranchAndBound::explore(Solution * solution){
     int level = this->ivm_tree->getCurrentLevel();
     int element = this->ivm_tree->getActiveNode();
     
-    solution->setVariable(level, element);
+    solution.setVariable(level, element);
     this->currentLevel = level;
     this->currentSolution.build_up_to = level;
     return 0;
 }
 
-void BranchAndBound::branch(Solution* solution, int currentLevel){
+/**
+ * Modifies the variable at built_up_to + 1 of the solution.
+ *
+ *
+ */
+ 
+void BranchAndBound::branch(Solution& solution, int currentLevel){
     
     this->callsToBranch++;
     int variable = 0;
@@ -417,7 +420,7 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
             for (variable = this->problem->getUpperBound(0); variable >= this->problem->getLowerBound(0); variable--) {
                 isInPermut = 0;
                 for (level = levelStarting; level <= currentLevel; level++)
-                    if (solution->getVariable(level) == variable) {
+                    if (solution.getVariable(level) == variable) {
                         isInPermut = 1;
                         level = currentLevel + 1;
                     }
@@ -438,7 +441,7 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
                 timesRepeated[jobToCheck] = 0;
                 
                 for (varInPos = 0; varInPos <= currentLevel; varInPos ++){
-                    map = solution->getVariable(varInPos);
+                    map = solution.getVariable(varInPos);
                     jobAllocated = this->problem->getMapping(map, 0);
                     if (jobToCheck == jobAllocated) {
                         timesRepeated[jobToCheck]++;
@@ -454,8 +457,8 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
                     for(machine = 0; machine < this->problem->getTimesValueIsRepeated(0); machine++){
                         toAdd = this->problem->getMappingOf(jobToCheck, machine);
                         
-                        solution->setVariable(currentLevel + 1, toAdd);
-                        this->problem->evaluatePartial(solution, currentLevel + 1);
+                        solution.setVariable(currentLevel + 1, toAdd);
+                        this->problem->evaluatePartial(&solution, currentLevel + 1);
                        
                         if (this->improvesTheGrid(solution)) {
                           /*  double element[3];
@@ -499,7 +502,7 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
     }
 }
 
-void BranchAndBound::prune(Solution * solution, int currentLevel){
+void BranchAndBound::prune(Solution & solution, int currentLevel){
     
     this->callsToPrune++;
     this->ivm_tree->pruneActiveNode();
@@ -519,31 +522,20 @@ int BranchAndBound::theTreeHasMoreBranches(){
     return this->ivm_tree->hasPendingBranches();
 }
 
-int BranchAndBound::updateParetoGrid(Solution * solution){
+int BranchAndBound::updateParetoGrid(Solution & solution){
 
     int nObj = 0;
     for (nObj = 0; nObj < this->problem->totalObjectives; nObj++)
-        if (solution->getObjective(nObj) < this->bestObjectivesFound->getObjective(nObj))
-            this->bestObjectivesFound->objective[nObj] = solution->getObjective(nObj);
+        if (solution.getObjective(nObj) < this->bestObjectivesFound->getObjective(nObj))
+            this->bestObjectivesFound->objective[nObj] = solution.getObjective(nObj);
 
     
     MutexToUpdateGrid.lock();
     int bucketCoord [2];
     this->paretoContainer->checkCoordinate(solution, bucketCoord);
-    int updated = this->paretoContainer->set(solution, bucketCoord[0], bucketCoord[1]);
+    int updated = this->paretoContainer->set(&solution, bucketCoord[0], bucketCoord[1]);
     MutexToUpdateGrid.unlock();
     
-    return updated;
-}
-
-
-/**
- * Adds the new solution to the Pareto front and removes the dominated solutions.
- */
-int BranchAndBound::updateLowerBound(Solution * solution){
-    //MutexToUpdateGrid.lock();
-    int updated = updateFront(solution, this->paretoFront);
-    //MutexToUpdateGrid.unlock();
     return updated;
 }
 
@@ -555,26 +547,10 @@ int BranchAndBound::updateLowerBound(Solution * solution){
  *  4- Any solution in the front dominates dominates the solution.
  *  5- It is not repeated.
  *  6- It is non-dominated.
+ *
+ *  NOTE: This doesnt modifies the solution. Can be const & solution.
  */
-int BranchAndBound::improvesTheLowerBound(Solution * solution){
-    
-    unsigned long paretoFrontSize = this->paretoFront.size();
-    DominanceRelation domination;
-    unsigned long index = 0;
-    int improves = 1;
-    if (paretoFrontSize > 0)
-        for (index = 0; index < paretoFrontSize; index++) {
-            domination = dominanceOperator(solution, this->paretoFront.at(index));
-            if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
-                improves = 0;
-                index = paretoFrontSize;
-            }
-        }
-    
-    return improves;
-}
-
-int BranchAndBound::improvesTheGrid(Solution * solution){
+int BranchAndBound::improvesTheGrid(Solution & solution){
 
     int bucketCoordinate[2];
     this->paretoContainer->checkCoordinate(solution, bucketCoordinate);
@@ -592,15 +568,15 @@ int BranchAndBound::improvesTheGrid(Solution * solution){
             break;
             
         case BucketState::nondominated:
-//            std::vector<Solution *> bucketFront = this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]);
-            improveIt = this->improvesTheBucket(solution, this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]));
+            std::vector<Solution *> bucketFront = this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]);
+            improveIt = this->improvesTheBucket(solution, bucketFront);
             break;
     }
     
     return improveIt;
 }
 
-int BranchAndBound::improvesTheBucket(Solution *solution, std::vector<Solution *>& bucketFront){
+int BranchAndBound::improvesTheBucket(Solution& solution, std::vector<Solution *> bucketFront){
     
     unsigned long paretoFrontSize = bucketFront.size();
     DominanceRelation domination;
@@ -621,7 +597,7 @@ int BranchAndBound::improvesTheBucket(Solution *solution, std::vector<Solution *
     */
     
         for (index = 0; index < paretoFrontSize; index++) {
-            domination = dominanceOperator(solution, bucketFront.at(index));
+            domination = dominanceOperator(&solution, bucketFront.at(index));
             if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
                 improves = 0;
                 index = paretoFrontSize + 1;
@@ -756,7 +732,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
                 sol_test.setVariable(level_to_split, toAdd);
                 this->problem->evaluatePartial(&sol_test, level_to_split);
                 
-                if(this->improvesTheGrid(&sol_test) == 1){
+                if(this->improvesTheGrid(sol_test) == 1){
                     /**Add it to Intervals. **/
                     this->localPool->push(branch);
                     this->branches++;

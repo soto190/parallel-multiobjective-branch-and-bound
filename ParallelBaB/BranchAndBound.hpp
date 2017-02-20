@@ -89,9 +89,9 @@ public:
     
     void solve(const Interval & interval);
     void initialize(int starting_level);
-    int explore(Solution * solution);
-    void branch(Solution * solution, int currentLevel);
-    void prune(Solution * solution, int currentLevel);
+    int explore(Solution & solution);
+    void branch(Solution & solution, int currentLevel);
+    void prune(Solution & solution, int currentLevel);
     void printParetoFront(int withVariables = 0);
     
     int setParetoFrontFile(const char * outputFile);
@@ -105,12 +105,10 @@ public:
 
     
 private:
-    int rank;
+    int rank; /** identifies the number of thread-B&B**/
     void printCurrentSolution(int withVariables = 0);
     int aLeafHasBeenReached();
     int theTreeHasMoreBranches();
-    int improvesTheLowerBound(Solution * solution);
-    int updateLowerBound(Solution * solution);
     int getLowerBoundInObj(int nObj);
 
     unsigned long computeTotalNodes(int totalVariables);
@@ -118,9 +116,9 @@ private:
     int getUpperBound(int objective);
     
     /** Grid functions. **/
-    int improvesTheGrid(Solution * solution);
-    int updateParetoGrid(Solution * solution);
-    int improvesTheBucket(Solution * solution, vector<Solution *>& bucketFront);
+    int improvesTheGrid(Solution & solution);
+    int updateParetoGrid(Solution & solution);
+    int improvesTheBucket(Solution & solution, vector<Solution *> bucketFront);
     /** End Grid functions. **/
     
     /** IVM functions. **/

@@ -163,11 +163,11 @@ public:
     ~HandlerContainer();
     HandlerContainer(int width, int height, double maxValX, double maxValY);
     void add(Solution * solution);
-    void checkCoordinate(Solution * solution, int * coordinate); /**NOTE TODO: Choose an appropiate name method.**/
+    void checkCoordinate(Solution & solution, int * coordinate); /**NOTE TODO: Choose an appropiate name method.**/
     int set(Solution * solution, int x, int y);
     
     
-    std::vector<Solution *>& get(int x, int y);
+    std::vector<Solution *> get(int x, int y);
     void clearContainer(int x, int y);
     unsigned int getRows();
     unsigned int getCols();

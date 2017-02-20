@@ -64,10 +64,10 @@ HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double ma
     
 }
 
-void HandlerContainer::checkCoordinate(Solution *solution, int * coordinate){
+void HandlerContainer::checkCoordinate(Solution &solution, int * coordinate){
     
-    coordinate[0] = binarySearch(solution->getObjective(0), this->rangeinx, this->getCols());
-    coordinate[1] = binarySearch(solution->getObjective(1), this->rangeiny, this->getRows());
+    coordinate[0] = binarySearch(solution.getObjective(0), this->rangeinx, this->getCols());
+    coordinate[1] = binarySearch(solution.getObjective(1), this->rangeiny, this->getRows());
 }
 
 int HandlerContainer::set(Solution * solution, int x, int y){
@@ -122,7 +122,7 @@ void HandlerContainer::add(Solution * solution){
 
     
     int coordinate [2];
-    checkCoordinate(solution, coordinate);
+    checkCoordinate(*solution, coordinate);
     
     this->set(solution, coordinate[0], coordinate[1]);
 }
@@ -138,7 +138,7 @@ void HandlerContainer::clearContainer(int x, int y){
     }
 }
 
-std::vector<Solution *>& HandlerContainer::get(int x, int y){
+std::vector<Solution *> HandlerContainer::get(int x, int y){
     return grid(x, y);
 }
 
