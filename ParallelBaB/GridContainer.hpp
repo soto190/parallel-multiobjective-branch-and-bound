@@ -59,14 +59,14 @@ public:
     }
     
     void clear(size_t x, size_t y){
-        
+        /*
         Solution * pd;
         for(std::vector<Solution *>::iterator it = m_Data[y * cols + x].begin(); it != m_Data[y * cols + x].end(); ++it) {
             pd = * it;
             delete pd;
         }
 
-        
+        */
         m_Data[y * cols + x].clear();
         m_Data[y * cols + x].resize(0);
     }
@@ -122,13 +122,13 @@ public:
     }
     
     void clear(size_t x, size_t y, size_t z){
-        
+        /*
         Solution * pd;
         for(std::vector<Solution *>::iterator it = m_Data[(x * cols) + y + (cols * rows * z)].begin(); it != m_Data[(x * cols) + y + (cols * rows * z)].end(); ++it) {
             pd = * it;
             delete pd;
         }
-        
+        */
         m_Data[(x * cols) + y + (cols * rows * z)].clear();
         m_Data[(x * cols) + y + (cols * rows * z)].resize(1);
     }
@@ -162,9 +162,9 @@ public:
     HandlerContainer();
     ~HandlerContainer();
     HandlerContainer(int width, int height, double maxValX, double maxValY);
-    void add(Solution * solution);
+    void add(Solution & solution);
     void checkCoordinate(Solution & solution, int * coordinate); /** TODO: Choose an appropiate name method.**/
-    int set(Solution * solution, int x, int y);
+    int set(Solution & solution, int x, int y);
     
     
     std::vector<Solution *> get(int x, int y);
@@ -179,7 +179,7 @@ public:
     void printGridSize();
     void printStates();
     
-    int updateBucket(Solution * solution, int x, int y);
+    int updateBucket(Solution & solution, int x, int y);
     
     double getMaxIn(int dimension);
     

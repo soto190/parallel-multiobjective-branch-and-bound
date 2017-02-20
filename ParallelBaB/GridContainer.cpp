@@ -70,11 +70,11 @@ void HandlerContainer::checkCoordinate(Solution &solution, int * coordinate){
     coordinate[1] = binarySearch(solution.getObjective(1), this->rangeiny, this->getRows());
 }
 
-int HandlerContainer::set(Solution * solution, int x, int y){
+int HandlerContainer::set(Solution & solution, int x, int y){
     int nCol = 0;
     int nRow = 0;
     int updated = 0;
-    Solution * copyOfSolution = new Solution(* solution);
+    Solution * copyOfSolution = new Solution(solution);
 
     switch (this->getStateOf(x, y)) {
             
@@ -104,7 +104,7 @@ int HandlerContainer::set(Solution * solution, int x, int y){
             break;
             
         case BucketState::nondominated:
-            updated  = this->updateBucket(copyOfSolution, x, y);
+            updated  = this->updateBucket(*copyOfSolution, x, y);
             break;
             
         case BucketState::dominated:
@@ -118,11 +118,11 @@ int HandlerContainer::set(Solution * solution, int x, int y){
 /**
  * It uses a binary search tree locate the bucket which will contain the new solution.
  **/
-void HandlerContainer::add(Solution * solution){
+void HandlerContainer::add(Solution & solution){
 
     
     int coordinate [2];
-    checkCoordinate(*solution, coordinate);
+    checkCoordinate(solution, coordinate);
     
     this->set(solution, coordinate[0], coordinate[1]);
 }
@@ -194,12 +194,12 @@ void HandlerContainer::setStateOf(BucketState state, int x, int y){
     this->gridState[y * this->getCols() + x] = state;
 }
 
-int HandlerContainer::updateBucket(Solution * solution, int x, int y){
+int HandlerContainer::updateBucket(Solution & solution, int x, int y){
     
     std::vector<Solution *> *paretoFront = &grid.get(x, y);
     unsigned long sizeBeforeUpdate = paretoFront->size();
     
-    int updated = updateFront(solution, *paretoFront);
+    int updated = updateFront(&solution, *paretoFront);
     if(updated == 1){
         if(paretoFront->size() < sizeBeforeUpdate){ /** Some solutions were removed. **/
             unsigned long int removedElements = sizeBeforeUpdate - (paretoFront->size() - 1);

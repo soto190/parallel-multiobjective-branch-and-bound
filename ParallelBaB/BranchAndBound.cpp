@@ -513,7 +513,7 @@ int BranchAndBound::updateParetoGrid(Solution & solution){
     MutexToUpdateGrid.lock();
     int bucketCoord [2];
     this->paretoContainer->checkCoordinate(solution, bucketCoord);
-    int updated = this->paretoContainer->set(&solution, bucketCoord[0], bucketCoord[1]);
+    int updated = this->paretoContainer->set(solution, bucketCoord[0], bucketCoord[1]);
     MutexToUpdateGrid.unlock();
     
     return updated;
