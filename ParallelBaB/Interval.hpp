@@ -27,6 +27,7 @@ public:
     int max_size = 0;
     
     Interval(int max_size);
+    Interval(const Interval &toCopy);
     ~Interval();
     
     Interval& operator=(const Interval& toCopy);

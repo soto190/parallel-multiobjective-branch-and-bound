@@ -221,7 +221,7 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTr
     tree->starting_level = branch.build_up_to + 1; /** Level with the first branches of the tree. **/
     tree->active_level = branch.build_up_to + 1;
     
-    /** Copy the built part. **/
+    /** Copy the built part. TODO: Probably this part can be removed, considering the root node.**/
     for (cl = 0; cl <= branch.build_up_to; cl++) {
         
         for (varInPos = 0; varInPos < tree->getNumberOfCols(); varInPos++) {
@@ -294,20 +294,22 @@ void BranchAndBound::solve(const Interval& branch){
     int updated = 0;
     int working = 1;
     
-    Interval branchInt = branch;
-    this->initialize(branchInt.build_up_to);
+    Interval branchFromGlobal = branch;
+    Interval activeBranch (this->problem->getNumberOfVariables());
+
+    this->initialize(branchFromGlobal.build_up_to);
     
     while (working > 0) {
         
         
         MutexToUpdateGrid.lock();
         if (this->globalPool->size() > 0) {
-            branchInt = this->globalPool->front();
+            branchFromGlobal = this->globalPool->front();
             this->globalPool->pop();
             working++;
             
             printf("[BB%d] Picking from global pool. Pool size is %lu\n", this->rank, this->globalPool->size());
-            branchInt.showInterval();
+            branchFromGlobal.showInterval();
         }
         else{
             working = 0;
@@ -316,20 +318,15 @@ void BranchAndBound::solve(const Interval& branch){
         MutexToUpdateGrid.unlock();
         
         if(working > 0){
-            this->splitInterval(branchInt);
-//            printf("[BB%d] Starting Branch and Bound...\n[BB%d] Total levels %d...\n[BB%d] Starting at level %d\n[BB%d] Received branch:", this->rank, this->rank, totalLevels, this->rank, branchInt.build_up_to, this->rank);
-//            branchInt.showInterval();
+            this->splitInterval(branchFromGlobal);
         }
         
-        Interval activeBranch (this->problem->getNumberOfVariables());
         
         while (this->localPool->size() > 0) {
             
             activeBranch = this->localPool->front();
             this->localPool->pop();
             
-//            printf("[BB%d] Exploring interval: ", this-> rank);
-//            activeBranch.showInterval();
             this->initializeExplorationInterval(activeBranch, this->ivm_tree);
             
             while(theTreeHasMoreBranches() == 1 && timeUp == 0){
@@ -363,9 +360,6 @@ void BranchAndBound::solve(const Interval& branch){
         this->t2 = std::chrono::high_resolution_clock::now();
         std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
         this->totalTime = time_span.count();
-        
-        printf("[BB%d] Exploration finished.\n", this->rank);
-        
     }
 }
 
@@ -384,8 +378,7 @@ int BranchAndBound::explore(Solution * solution){
     
     this->exploredNodes++;
     
-    /** If the active node is a leaf then we need to go up. **/
-    if(this->aLeafHasBeenReached())
+    if(this->aLeafHasBeenReached())  /** If the active node is a leaf then we need to go up. **/
         this->ivm_tree->pruneActiveNode();
     
     int level = this->ivm_tree->getCurrentLevel();
@@ -483,15 +476,15 @@ void BranchAndBound::branch(Solution* solution, int currentLevel){
                 }
             }
             
-            /** Search for the next active node. **/
-            if(branched > 0){
-              
+            
+            if(branched > 0){ /** If a branched was created. **/
                 this->ivm_tree->moveToNextLevel();
                 this->ivm_tree->active_node[this->ivm_tree->active_level] = 0;
             }
-            else
+            else{ /** If no branches were created then move to the next node. **/
                 this->ivm_tree->pruneActiveNode();
-
+                this->prunedNodes++;
+            }
             break;
             
         case ProblemType::combination:
@@ -750,12 +743,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
                 
                 toAdd = this->problem->getMappingOf(jobToCheck, machine);
                 
-                /** Creates a new Interval. **/
-                Interval branch (number_of_variables);
-                
-                /** Copy the first variables of the branch_to_split-> **/
-                for (index_var = 0; index_var < level_to_split; index_var++)
-                    branch.interval[index_var] = branch_to_split.interval[index_var];
+                Interval branch (branch_to_split); /** Creates a new Interval form the given branch. **/
                 
                 /** From level + 1 to last position are initialized with -1. **/
                 for (index_var = level_to_split + 1; index_var < number_of_variables; index_var++)
@@ -781,7 +769,8 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
         }
     }
 
-    if(branches_created > 4){
+    /** TODO: Design something to decide where to add something to the global pool. **/
+    if(this->rank > 0 && branches_created > (this->problem->getUpperBound(0) / 2) && branch_to_split.build_up_to < (this->totalLevels - (this->totalLevels / 4))){
         Interval B = this->localPool->front();
         this->localPool->pop();
         

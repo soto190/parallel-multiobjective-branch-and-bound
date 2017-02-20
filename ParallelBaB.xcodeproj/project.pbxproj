@@ -62,6 +62,8 @@
 		2119FB471E41E14C00197CE4 /* Interval.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Interval.hpp; sourceTree = "<group>"; };
 		2119FB4E1E434B4200197CE4 /* libtbb.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtbb.dylib; path = ../../../../Libraries/tbb2017_20161128oss/build/macos_intel64_clang_cc8.0.0_os10.11.6_release/libtbb.dylib; sourceTree = "<group>"; };
 		2119FB4F1E434B4200197CE4 /* libtbbmalloc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtbbmalloc.dylib; path = ../../../../Libraries/tbb2017_20161128oss/build/macos_intel64_clang_cc8.0.0_os10.11.6_release/libtbbmalloc.dylib; sourceTree = "<group>"; };
+		216F69B01E5AE5FD00589E5D /* submit-multiple.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "submit-multiple.sh"; sourceTree = "<group>"; };
+		216F69B11E5AE66600589E5D /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProblemFJSSP.cpp; sourceTree = "<group>"; };
 		21780F1D1DD9B7D80032EECA /* ProblemFJSSP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ProblemFJSSP.hpp; sourceTree = "<group>"; };
 		217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GridContainer.cpp; sourceTree = "<group>"; };
@@ -90,6 +92,7 @@
 		2112821E1D63988D0038DBEE = {
 			isa = PBXGroup;
 			children = (
+				216F69AF1E5AE5A900589E5D /* results */,
 				211282291D63988E0038DBEE /* ParallelBaB */,
 				211282281D63988E0038DBEE /* Products */,
 				2119FB4D1E434B4200197CE4 /* Frameworks */,
@@ -134,6 +137,8 @@
 				211282581D639AB30038DBEE /* Solution.cpp */,
 				211282591D639AB30038DBEE /* Solution.hpp */,
 				2112824C1D639AB30038DBEE /* main.cpp */,
+				216F69B01E5AE5FD00589E5D /* submit-multiple.sh */,
+				216F69B11E5AE66600589E5D /* Makefile */,
 			);
 			path = ParallelBaB;
 			sourceTree = "<group>";
@@ -145,6 +150,13 @@
 				2119FB4F1E434B4200197CE4 /* libtbbmalloc.dylib */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		216F69AF1E5AE5A900589E5D /* results */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = results;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

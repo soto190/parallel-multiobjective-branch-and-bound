@@ -20,6 +20,17 @@ Interval::Interval(int max_size){
     this->max_size = max_size;
 }
 
+Interval::Interval(const Interval &toCopy){
+    this->max_size = toCopy.max_size;
+    this->build_up_to = toCopy.build_up_to;
+    this->interval = new int[max_size];
+    int index = 0;
+    
+    for (index = 0; index < toCopy.max_size; index++)
+        this->interval[index] = toCopy.interval[index];
+    
+}
+
 Interval::~Interval(){
     //delete [] interval;
 }
@@ -28,11 +39,11 @@ Interval& Interval::operator=(const Interval &toCopy){
     this->max_size = toCopy.max_size;
     this->build_up_to = toCopy.build_up_to;
     this->interval = new int[max_size];
-    int size = 0;
+    int index = 0;
     
-    for (size = 0; size < toCopy.max_size; size++) {
-        this->interval[size] = toCopy.interval[size];
-    }
+    for (index = 0; index < toCopy.max_size; index++)
+        this->interval[index] = toCopy.interval[index];
+    
     
     return *this;
 }
