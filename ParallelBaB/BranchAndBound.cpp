@@ -36,7 +36,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem){
     //this->localPool->reserve(100);
     this->globalPool = std::make_shared<std::queue<Interval>>();
 
-    
+    this->currentSolution(this->problem->getNumberOfObjectives(), this->problem->getNumberOfVariables());
     this->currentLevel = 0;
     this->totalLevels = 0;
     this->totalNodes = 0;
@@ -91,9 +91,9 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
     int numberOfObjectives = this->problem->getNumberOfObjectives();
     int numberOfVariables = this->problem->getNumberOfVariables();
     
-    this->currentSolution = new Solution(numberOfObjectives, numberOfVariables);
+    this->currentSolution(this->problem->getNumberOfObjectives(), this->problem->getNumberOfVariables());
     this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
-    this->problem->createDefaultSolution(this->currentSolution);
+    this->problem->createDefaultSolution(&this->currentSolution);
     
     this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
     
@@ -102,12 +102,12 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
     
     int nObj = 0;
     for (nObj = 0; nObj < numberOfObjectives; nObj++)
-        this->bestObjectivesFound->setObjective(nObj, this->currentSolution->getObjective(nObj));
+        this->bestObjectivesFound->setObjective(nObj, this->currentSolution.getObjective(nObj));
     
     this->bestObjectivesFound->setObjective(1, bestInObj1->getObjective(1));
     
-    double obj1 = this->currentSolution->getObjective(0);
-    double obj2 = this->currentSolution->getObjective(1);
+    double obj1 = this->currentSolution.getObjective(0);
+    double obj2 = this->currentSolution.getObjective(1);
     
     this->paretoContainer = std::make_shared<HandlerContainer> (100, 100, obj1, obj2);
         
@@ -125,7 +125,7 @@ BranchAndBound::~BranchAndBound(){
         delete pd;
     }
     
-    delete this->currentSolution;
+    //delete this->currentSolution;
     delete this->bestObjectivesFound;
     
     this->paretoFront.clear();
@@ -158,9 +158,9 @@ void BranchAndBound::initialize(int starts_tree){
     this->totalNodes = this->computeTotalNodes(totalLevels);
 
     
-    this->currentSolution = new Solution(numberOfObjectives, numberOfVariables);
+    this->currentSolution(numberOfObjectives, numberOfVariables);
     this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
-    this->problem->createDefaultSolution(this->currentSolution);
+    this->problem->createDefaultSolution(&this->currentSolution);
 
     this->bestObjectivesFound = new Solution(numberOfObjectives, numberOfVariables);
     
@@ -169,17 +169,17 @@ void BranchAndBound::initialize(int starts_tree){
     
     int nObj = 0;
     for (nObj = 0; nObj < numberOfObjectives; nObj++)
-        this->bestObjectivesFound->setObjective(nObj, this->currentSolution->getObjective(nObj));
+        this->bestObjectivesFound->setObjective(nObj, this->currentSolution.getObjective(nObj));
 
     this->bestObjectivesFound->setObjective(1, bestInObj1->getObjective(1));
     
     this->updateParetoGrid(bestInObj1);
     this->updateParetoGrid(bestInObj2);
-    this->updateParetoGrid(this->currentSolution);
+    this->updateParetoGrid(&this->currentSolution);
 
     /*
-    double obj1 = this->currentSolution->getObjective(0);
-    double obj2 = this->currentSolution->getObjective(1);
+    double obj1 = this->currentSolution.getObjective(0);
+    double obj2 = this->currentSolution.getObjective(1);
 
     // this->paretoContainer = new HandlerContainer(100, 100, obj1, obj2);
     printf("Ranges: %f %f \n Initial solution:\n", obj1, obj2);
@@ -235,7 +235,7 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTr
         
 
         /** TODO: Check this part. The interval is equivalent to the solution?. **/
-        this->currentSolution->setVariable(cl, this->ivm_tree->start_exploration[cl]);
+        this->currentSolution.setVariable(cl, this->ivm_tree->start_exploration[cl]);
     }
 
     
@@ -271,8 +271,8 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch, IVMTr
         // }
         //}
     }
-    this->currentSolution->build_up_to = branch.build_up_to;
-    this->branch(this->currentSolution, branch.build_up_to);
+    this->currentSolution.build_up_to = branch.build_up_to;
+    this->branch(&this->currentSolution, branch.build_up_to);
     this->ivm_tree->active_level--;
     this->ivm_tree->active_node[this->ivm_tree->active_level] = 0;
     tree->active_node[tree->active_level] = tree->start_exploration[tree->active_level];
@@ -331,20 +331,20 @@ void BranchAndBound::solve(const Interval& branch){
             
             while(theTreeHasMoreBranches() == 1 && timeUp == 0){
                 
-                this->explore(this->currentSolution);
-                this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
+                this->explore(&this->currentSolution);
+                this->problem->evaluatePartial(&this->currentSolution, this->currentLevel);
                 
                 
                 if (aLeafHasBeenReached() == 0){
-                    if(improvesTheGrid(this->currentSolution) == 1)
-                        this->branch(this->currentSolution, this->currentLevel);
+                    if(improvesTheGrid(&this->currentSolution) == 1)
+                        this->branch(&this->currentSolution, this->currentLevel);
                     else
-                        this->prune(this->currentSolution, this->currentLevel);
+                        this->prune(&this->currentSolution, this->currentLevel);
                 }else{
                     
                     this->reachedLeaves++;
                     
-                    updated = this->updateParetoGrid(this->currentSolution);
+                    updated = this->updateParetoGrid(&this->currentSolution);
                     this->totalUpdatesInLowerBound += updated;
                     
                     if (updated == 1){
@@ -386,7 +386,7 @@ int BranchAndBound::explore(Solution * solution){
     
     solution->setVariable(level, element);
     this->currentLevel = level;
-    this->currentSolution->build_up_to = level;
+    this->currentSolution.build_up_to = level;
     return 0;
 }
 
@@ -834,7 +834,7 @@ unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
 }
 
 void BranchAndBound::printCurrentSolution(int withVariables){
-    this->problem->printPartialSolution(this->currentSolution, this->currentLevel);
+    this->problem->printPartialSolution(&this->currentSolution, this->currentLevel);
 }
 
 /**

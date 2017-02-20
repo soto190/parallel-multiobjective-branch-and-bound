@@ -47,7 +47,7 @@ public:
     
     tbb::mutex MutexToUpdateGrid;
     
-    Solution * currentSolution;
+    Solution currentSolution;
     Solution * bestObjectivesFound;
     
     std::shared_ptr<std::queue<Interval>> globalPool;

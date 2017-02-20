@@ -14,6 +14,9 @@
  *
  *
  */
+Solution::Solution(){
+}
+
 Solution::Solution(int numberOfObjectives, int numberOfVariables){
     this->makespan = 0;
     this->energy = 0;
@@ -128,6 +131,35 @@ int Solution::dominates(const Solution & solution){
         return -1;
     else
         return 0;
+}
+
+Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables){
+    this->makespan = 0;
+    this->energy = 0;
+    this->machineWithMakespan = 0;
+    this->totalObjectives = numberOfObjectives;
+    this->totalVariables = numberOfVariables;
+    
+    this->objective = new double[numberOfObjectives];
+    this->variable = new int[numberOfVariables];
+    this->execTime = new double[16];
+    this->partialObjective = new double * [numberOfVariables];
+    
+    int index = 0, index_in = 0;
+    for (index = 0; index < numberOfObjectives; index++)
+        this->objective[index] = 0;
+    
+    for (index = 0; index < numberOfVariables; index++){
+        this->variable[index] = 0;
+        this->partialObjective[index] = new double[numberOfObjectives];
+        for (index_in = 0; index_in < numberOfObjectives; index_in++)
+            this->partialObjective[index][index_in] = 0;
+    }
+    
+    for (index = 0; index < 16; index++)
+        this->execTime[index] = 0;
+    
+    return *this;
 }
 
 Solution& Solution::operator=(const Solution &solution){
