@@ -31,7 +31,7 @@ public:
     ProblemTSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){};
     ~ProblemTSP();
     
-    double evaluate(Solution * solution);
+    double evaluate(Solution & solution);
     
     /**
      *

@@ -63,7 +63,6 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
     
     this->ivm_tree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
     this->localPool = std::make_shared<std::queue<Interval>>();
-//    this->localPool->reserve(100);
     this->globalPool = std::make_shared<std::queue<Interval>>();
 
     this->currentLevel = 0;
@@ -80,14 +79,8 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
     this->totalTime = 0;
     
     this->starting_interval(this->problem->getNumberOfVariables());
-    
-    int val = 0;
-    for (val = 0; val < this->problem->getNumberOfVariables(); val++) {
-        this->starting_interval.interval[val] = branch.interval[val];
-    }
-    
-    this->starting_interval.build_up_to = branch.build_up_to;
-    
+    this->starting_interval = branch; /** Copy the branch. **/
+
     int numberOfObjectives = this->problem->getNumberOfObjectives();
     int numberOfVariables = this->problem->getNumberOfVariables();
     
@@ -115,7 +108,6 @@ BranchAndBound::~BranchAndBound(){
     
     delete [] this->outputFile;
     delete [] this->summarizeFile;
-    //delete this->problem;
     
     Solution * pd;
     for(std::vector<Solution *>::iterator it = paretoFront.begin(); it != paretoFront.end(); ++it) {
@@ -123,10 +115,7 @@ BranchAndBound::~BranchAndBound(){
         delete pd;
     }
     
-    
     this->paretoFront.clear();
-
-//    this->localPool->clear();
 }
 
 void BranchAndBound::initialize(int starts_tree){
@@ -588,7 +577,7 @@ int BranchAndBound::improvesTheBucket(Solution& solution, std::vector<Solution *
     */
     
         for (index = 0; index < paretoFrontSize; index++) {
-            domination = dominanceOperator(&solution, bucketFront.at(index));
+            domination = dominanceOperator(solution, *bucketFront.at(index));
             if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
                 improves = 0;
                 index = paretoFrontSize + 1;

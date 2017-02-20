@@ -16,7 +16,7 @@
 
 enum DominanceRelation {Dominates = 1, Dominated = -1, Nondominated = 0, Equals = 11};
 
-DominanceRelation dominanceOperator(Solution * solutionA, Solution * solutionB);
+DominanceRelation dominanceOperator(Solution & solutionA, Solution & solutionB);
 unsigned int * dominationStatus(Solution * solution, std::vector<Solution *>& front);
 int updateFront(Solution * solution, std::vector<Solution * >& front);
 void extractParetoFront(std::vector<Solution *>& front);

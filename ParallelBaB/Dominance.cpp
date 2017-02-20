@@ -9,7 +9,7 @@
 #include "Dominance.hpp"
 
 
-DominanceRelation dominanceOperator(Solution * solutionA, Solution * solutionB){
+DominanceRelation dominanceOperator(Solution & solutionA, Solution & solutionB){
     int objective = 0;
     int solAIsBetterIn = 0;
     int solBIsBetterIn = 0;
@@ -19,9 +19,9 @@ DominanceRelation dominanceOperator(Solution * solutionA, Solution * solutionB){
      * For more objectives consider
      * if (solAIsBetterIn > 0 and solBIsBetterIn > 0) break the FOR because the solutions are non-dominated.
      **/
-    for (objective = 0; objective < solutionA->totalObjectives; objective++) {
-        double objA = solutionA->getObjective(objective);
-        double objB = solutionB->getObjective(objective);
+    for (objective = 0; objective < solutionA.totalObjectives; objective++) {
+        double objA = solutionA.getObjective(objective);
+        double objB = solutionB.getObjective(objective);
         
         if(objA < objB){
             solAIsBetterIn++;
@@ -69,7 +69,7 @@ unsigned int * dominationStatus(Solution * solution, std::vector<Solution *>& fr
         //#pragma omp parallel for if (paretoFrontSize >= 100) shared(status, solution) private(domination, index)
         for (index = 0; index < paretoFrontSize; index++) {
             
-            domination = dominanceOperator(solution, front.at(index));
+            domination = dominanceOperator(*solution, *front.at(index));
 
             switch (domination) {
                 case DominanceRelation::Dominates :
@@ -96,7 +96,7 @@ unsigned int * dominationStatus(Solution * solution, std::vector<Solution *>& fr
 }
 
 int updateFront(Solution * solution, std::vector<Solution *>& paretoFront){
-    unsigned int * status = new unsigned int[4];
+    unsigned int status[4];
     status[0] = 0;
     status[1] = 0;
     status[2] = 0;
@@ -109,7 +109,7 @@ int updateFront(Solution * solution, std::vector<Solution *>& paretoFront){
     
     for(nSol = 0; nSol < paretoFront.size(); nSol++){
         
-        domination = dominanceOperator(solution, paretoFront.at(nSol));
+        domination = dominanceOperator(* solution, * paretoFront.at(nSol));
         
         switch (domination) {
                 
@@ -133,9 +133,7 @@ int updateFront(Solution * solution, std::vector<Solution *>& paretoFront){
                 status[3] = 1;
                 nSol = paretoFront.size();
                 break;
-                
         }
-        
     }
     
     /**
@@ -144,14 +142,10 @@ int updateFront(Solution * solution, std::vector<Solution *>& paretoFront){
     //if(status[0] > 0 || status[1] == this->paretoFront.size() || status[2] == 0){
     int wasAdded = 0;
     if((status[3] == 0) && (paretoFront.size() == 0 || status[0] > 0 || status[1] == paretoFront.size() || status[2] == 0)){
-        
-        Solution * copyOfSolution = new Solution(*solution);
-        
-        paretoFront.push_back(copyOfSolution);
+        paretoFront.push_back(solution);
         wasAdded = 1;
     }
     
-    delete [] status;
     return  wasAdded;
 }
 
@@ -167,7 +161,7 @@ void extractParetoFront(std::vector<Solution *>& front){
         Solution * solution = front.at(currentSol);
         for(nextSol = currentSol + 1; nextSol < front.size(); nextSol++){
             
-            domination = dominanceOperator(solution, front.at(nextSol));
+            domination = dominanceOperator(* solution, * front.at(nextSol));
             
             if(domination == DominanceRelation::Dominates){
                 front.erase(begin + nextSol);

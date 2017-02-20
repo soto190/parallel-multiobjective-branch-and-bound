@@ -39,9 +39,9 @@ ProblemFJSSP::~ProblemFJSSP(){
  * Evaluates a given solution.
  *
  */
-double ProblemFJSSP::evaluate(Solution * solution){
+double ProblemFJSSP::evaluate(Solution & solution){
     
-    evaluatePartial(solution, this->getFinalLevel());
+    evaluatePartial(&solution, this->getFinalLevel());
     
     return 0.0;
 }
@@ -218,7 +218,7 @@ void ProblemFJSSP::createDefaultSolution(Solution * solution){
                 machine = 0;
         }
     
-    this->evaluate(solution);
+    this->evaluate(*solution);
 }
 
 Solution * ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj){
@@ -234,7 +234,7 @@ Solution * ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj){
         for (operation = 0; operation < this->totalOperations; operation++)
             solution->setVariable(operation, this->jobMachineToMap[this->operationIsFromJob[operation]][this->assignationMinPij[operation]]);
     }
-    this->evaluate(solution);
+    this->evaluate(*solution);
     return solution;
 }
 

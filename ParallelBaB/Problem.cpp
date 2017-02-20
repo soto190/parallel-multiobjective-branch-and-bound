@@ -83,7 +83,7 @@ Solution* Problem::createSolution(){
     return solution;
 }
 
-double Problem::evaluate(Solution * solution){
+double Problem::evaluate(Solution & solution){
     return 0;
 }
 

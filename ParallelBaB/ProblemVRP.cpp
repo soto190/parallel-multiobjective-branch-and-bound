@@ -11,7 +11,7 @@ ProblemVRP::~ProblemVRP(){
 }
 
 
-double ProblemVRP::evaluate(Solution * solution){return 0.0;}
+double ProblemVRP::evaluate(Solution & solution){return 0.0;}
 double ProblemVRP::evaluatePartial(Solution * solution, int levelEvaluation){return 0.0;}
 double ProblemVRP::evaluateLastLevel(Solution * solution){return 0.0;}
 double ProblemVRP::removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel){return 0.0;}

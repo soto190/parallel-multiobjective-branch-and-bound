@@ -90,7 +90,7 @@ double ProblemHCSP::computeEnergy(int task, int machine, int config, double proc
     return proc_time * pow(this->voltage[config][machine], 2);
 }
 
-double ProblemHCSP::evaluate(Solution * solution){
+double ProblemHCSP::evaluate(Solution & solution){
     
     int mapping = 0;
     int machine = 0;
@@ -103,25 +103,25 @@ double ProblemHCSP::evaluate(Solution * solution){
     int i_task = 0;
     
     for (i_machine = 0; i_machine < this->totalMachines; i_machine++)
-        solution->execTime[i_machine] = 0;
+        solution.execTime[i_machine] = 0;
     
     for (i_task = 0; i_task < this->totalTasks; i_task++) {
-        mapping = solution->getVariable(0);
+        mapping = solution.getVariable(0);
         machine = this->mappingConfig[mapping][0];
         config = this->mappingConfig[mapping][1];
         
         proc_prime = this->processingTime[i_task][machine] / this->speed[config][machine];
-        solution->execTime[machine] += proc_prime;
+        solution.execTime[machine] += proc_prime;
         energy += proc_prime * this->voltage[config][machine] * this->voltage[config][machine];
         
-        if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){
-            solution->machineWithMakespan = machine;
-            makespan = solution->execTime[machine];
+        if(solution.execTime[machine] >= solution.execTime[solution.machineWithMakespan]){
+            solution.machineWithMakespan = machine;
+            makespan = solution.execTime[machine];
         }
     }
     
-    solution->setObjective(0, makespan);
-    solution->setObjective(1, energy);
+    solution.setObjective(0, makespan);
+    solution.setObjective(1, energy);
     return 0;
 }
 

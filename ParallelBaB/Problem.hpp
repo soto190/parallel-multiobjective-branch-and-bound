@@ -36,7 +36,7 @@ public:
     tbb::mutex MutexToUpdate;
 
     
-    virtual double evaluate(Solution * solution) = 0;
+    virtual double evaluate(Solution & solution) = 0;
     virtual double evaluatePartial(Solution * solution, int levelEvaluation) = 0;
     virtual double evaluateLastLevel(Solution * solution) = 0;
     virtual double removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel) = 0;

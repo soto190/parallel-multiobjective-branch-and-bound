@@ -70,28 +70,28 @@ int ProblemTSP::getTimesValueIsRepeated(int value){
     return 0;
 }
 
-double ProblemTSP::evaluate(Solution* solution){
+double ProblemTSP::evaluate(Solution & solution){
     double sumDist = 0;
     double sumCost = 0;
     int city = 0;
     
     for (city = 0; city < this->getNumberOfVariables() - 1; city++) {
-        int origen = solution->getVariable(city);
-        int destino = solution->getVariable(city + 1);
+        int origen = solution.getVariable(city);
+        int destino = solution.getVariable(city + 1);
         
         sumDist += this->euclideanDistance[origen][destino];
         sumCost += this->costs[origen][destino];
         
     }
     
-    int last = solution->getVariable(this->getNumberOfVariables() - 1);
-    int first = solution->getVariable(0);
+    int last = solution.getVariable(this->getNumberOfVariables() - 1);
+    int first = solution.getVariable(0);
     
     sumDist += this->euclideanDistance[last][first];
     sumCost += this->costs[last][first];
     
-    solution->setObjective(0, sumDist);
-    solution->setObjective(1, sumCost);
+    solution.setObjective(0, sumDist);
+    solution.setObjective(1, sumCost);
     
     return sumDist;
 }
