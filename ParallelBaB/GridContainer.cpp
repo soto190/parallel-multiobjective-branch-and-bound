@@ -81,7 +81,6 @@ int HandlerContainer::set(Solution & solution, int x, int y){
     int nRow = 0;
     int updated = 0;
     BucketState state = this->getStateOf(x, y);
-    Solution * copyOfSolution = nullptr;
     
     switch (state) {
             
@@ -100,8 +99,7 @@ int HandlerContainer::set(Solution & solution, int x, int y){
                     else
                         this->clearContainer(nCol, nRow);
             
-            copyOfSolution = new Solution(solution);
-            this->grid.set(copyOfSolution, x, y);
+            this->updateBucket(solution, x, y);
             this->setStateOf(BucketState::nondominated, x, y);
             this->totalElements++;
             this->activeBuckets++;
@@ -111,8 +109,7 @@ int HandlerContainer::set(Solution & solution, int x, int y){
             break;
             
         case BucketState::nondominated:
-            copyOfSolution = new Solution(solution);
-            updated  = this->updateBucket(*copyOfSolution, x, y);
+            updated  = this->updateBucket(solution, x, y);
             break;
             
         case BucketState::dominated:
@@ -219,6 +216,7 @@ int HandlerContainer::updateBucket(Solution & solution, int x, int y){
         
         /** else the size doesnt change**/
     }
+    
     return updated;
 }
 
@@ -363,8 +361,7 @@ int HandlerContainer3D::set(Solution & solution, int x, int y, int z){
                     else
                         this->clearContainer(nCol, nRow, nDeep);
         
-        //Solution * copyOfSolution = new Solution(solution);
-        this->grid.set(&solution, x, y, z);
+        this->updateBucket(new Solution(solution), x, y, z); /** Sends a copy. **/
         this->setStateOf(BucketState::nondominated, x, y, z);
         this->totalElements++;
         this->activeBuckets++;
@@ -374,7 +371,7 @@ int HandlerContainer3D::set(Solution & solution, int x, int y, int z){
         
     }
     else if(this->getStateOf(x, y, z) == BucketState::nondominated)
-        return this->updateBucket(&solution, x, y, z);
+        return this->updateBucket(new Solution(solution), x, y, z); /** Sends a copy. **/
     
     /**If the bucket is dominated (State = 2) the element is not added.**/
     return 0;

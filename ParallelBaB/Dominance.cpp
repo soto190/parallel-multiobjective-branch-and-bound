@@ -95,6 +95,9 @@ unsigned int * dominationStatus(Solution * solution, std::vector<Solution *>& fr
     return status;
 }
 
+/**
+ * Stores a copy of the received solution.
+ */
 int updateFront(Solution & solution, std::vector<Solution *>& paretoFront){
     unsigned int status[4];
     status[0] = 0;
@@ -142,7 +145,7 @@ int updateFront(Solution & solution, std::vector<Solution *>& paretoFront){
     //if(status[0] > 0 || status[1] == this->paretoFront.size() || status[2] == 0){
     int wasAdded = 0;
     if((status[3] == 0) && (paretoFront.size() == 0 || status[0] > 0 || status[1] == paretoFront.size() || status[2] == 0)){
-        paretoFront.push_back(&solution);
+        paretoFront.push_back(new Solution(solution));
         wasAdded = 1;
     }
     
