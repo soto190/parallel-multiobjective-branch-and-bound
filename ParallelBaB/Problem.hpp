@@ -57,9 +57,9 @@ public:
     
     void setNumberOfVariables(int numberOfVariables);
     
-    int getNumberOfVariables();
-    int getNumberOfObjectives();
-    int getNumberOfConstraints();
+    int getNumberOfVariables() const;
+    int getNumberOfObjectives() const;
+    int getNumberOfConstraints() const;
     
     virtual int getTotalElements() = 0;
     virtual int * getElemensToRepeat() = 0;

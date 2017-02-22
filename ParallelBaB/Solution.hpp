@@ -33,22 +33,27 @@ public:
     void setVariable(int index, int value);
     void setObjective(int index, double value);
     
-    int getVariable(int index);
-    double getObjective(int nObjective);
+    int getVariable(int index) const;
+    double getObjective(int nObjective) const;
+    
+    int getNumberOfVariables() const;
+    int getNumberOfObjectives() const;
+    
+    int getBuildUpTo() const;
     
     double makespan;
     double energy;
     double * execTime;
     int machineWithMakespan;
     
-    int dominates(const Solution &solution);
+    int dominates(const Solution &solution) const;
     
     /*overloading operators*/
     Solution& operator=(const Solution &solution);
     Solution& operator()(int numberOfObjectives, int numberOfVariables);
-    void print();
-    void printObjectives();
-    void printVariables();
+    void print() const;
+    void printObjectives() const;
+    void printVariables() const;
     
 };
 

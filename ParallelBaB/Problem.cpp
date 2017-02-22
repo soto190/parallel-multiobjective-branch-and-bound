@@ -34,15 +34,15 @@ void Problem::setNumberOfVariables(int numberOfVariables){
     this->totalVariables = numberOfVariables;
 }
 
-int Problem::getNumberOfObjectives(){
+int Problem::getNumberOfObjectives() const{
     return this->totalObjectives;
 }
 
-int Problem::getNumberOfVariables(){
+int Problem::getNumberOfVariables() const{
     return this->totalVariables;
 }
 
-int Problem::getNumberOfConstraints(){
+int Problem::getNumberOfConstraints() const{
     return this->totalConstraints;
 }
 

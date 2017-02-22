@@ -91,15 +91,27 @@ void Solution::setVariable(int index, int value){
     this->variable[index] = value;
 }
 
-int Solution::getVariable(int index){
+int Solution::getVariable(int index) const{
     return this->variable[index];
 }
 
-double Solution::getObjective(int index){
+double Solution::getObjective(int index) const{
     return this->objective[index];
 }
 
-int Solution::dominates(const Solution & solution){
+int Solution::getNumberOfVariables() const{
+    return this->totalVariables;
+}
+
+int Solution::getNumberOfObjectives() const{
+    return this->totalObjectives;
+}
+
+int Solution::getBuildUpTo() const{
+    return this->build_up_to;
+}
+
+int Solution::dominates(const Solution & solution) const{
     int nObj = 0;
     int localSolIsBetterIn = 0;
     int exterSolIsBetterIn = 0;
@@ -111,7 +123,7 @@ int Solution::dominates(const Solution & solution){
      **/
     for (nObj = 0; nObj < this->totalObjectives; nObj++) {
         double objA = this->getObjective(nObj);
-        double objB = solution.objective[nObj];
+        double objB = solution.getObjective(nObj);
         
         if(objA < objB){
             localSolIsBetterIn++;
@@ -193,7 +205,7 @@ Solution& Solution::operator=(const Solution &solution){
     return *this;
 }
 
-void Solution::print(){
+void Solution::print() const{
     int nObj, nVar;
     for (nObj = 0; nObj < this->totalObjectives; nObj++)
         printf("%f ", this->getObjective(nObj));
@@ -206,7 +218,7 @@ void Solution::print(){
     printf("|\n");
 }
 
-void Solution::printObjectives(){
+void Solution::printObjectives() const{
     int nObj;
     for (nObj = 0; nObj < this->totalObjectives; nObj++)
         printf("%f ", this->getObjective(nObj));
@@ -214,7 +226,7 @@ void Solution::printObjectives(){
     printf("\n");
 }
 
-void Solution::printVariables(){
+void Solution::printVariables() const{
     int nVar;
     for (nVar = 0; nVar < this->totalVariables; nVar++)
         printf("%d ", this->getVariable(nVar));
