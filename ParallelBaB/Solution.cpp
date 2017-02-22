@@ -29,46 +29,46 @@ Solution::Solution(int numberOfObjectives, int numberOfVariables){
     this->execTime = new double[16];
     this->partialObjective = new double * [numberOfVariables];
     
-    int index = 0, index_in = 0;
-    for (index = 0; index < numberOfObjectives; index++)
-        this->objective[index] = 0;
+    int var = 0, obj = 0;
+    for (obj = 0; obj < numberOfObjectives; obj++)
+        this->objective[obj] = 0;
     
-    for (index = 0; index < numberOfVariables; index++){
-        this->variable[index] = 0;
-        this->partialObjective[index] = new double[numberOfObjectives];
-        for (index_in = 0; index_in < numberOfObjectives; index_in++)
-            this->partialObjective[index][index_in] = 0;
+    for (var = 0; var < numberOfVariables; var++){
+        this->variable[var] = 0;
+        this->partialObjective[var] = new double[numberOfObjectives];
+        for (obj = 0; obj < numberOfObjectives; obj++)
+            this->partialObjective[var][obj] = 0;
     }
     
-    for (index = 0; index < 16; index++)
-        this->execTime[index] = 0;
+    for (var = 0; var < 16; var++)
+        this->execTime[var] = 0;
 }
 
 Solution::Solution(const Solution &solution){
     
-    this->build_up_to = solution.build_up_to;
-    this->totalObjectives = solution.totalObjectives;
-    this->totalVariables = solution.totalVariables;
+    this->build_up_to = solution.getBuildUpTo();
+    this->totalObjectives = solution.getNumberOfObjectives();
+    this->totalVariables = solution.getNumberOfVariables();
     
     this->objective = new double[this->totalObjectives];
     this->variable = new int[this->totalVariables];
-    this->partialObjective = new double * [solution.totalVariables];
+    this->partialObjective = new double * [this->totalVariables];
     this->execTime = new double[16];
     
-    int index = 0, index_in = 0;
+    int var = 0, obj = 0;
     
-    for (index = 0; index < this->totalObjectives; index++)
-        this->objective[index] = solution.objective[index];
+    for (obj = 0; obj < this->totalObjectives; obj++)
+        this->objective[obj] = solution.getObjective(obj);
     
-    for (index = 0; index < this->totalVariables; index++){
-        this->variable[index] = solution.variable[index];
-        this->partialObjective[index] = new double[solution.totalObjectives];
-        for (index_in = 0; index_in < solution.totalObjectives; index_in++)
-            this->partialObjective[index][index_in] = solution.partialObjective[index][index_in];
+    for (var = 0; var < this->totalVariables; var++){
+        this->variable[var] = solution.getVariable(var);
+        this->partialObjective[var] = new double[this->totalObjectives];
+        for (obj = 0; obj < this->totalObjectives; obj++)
+            this->partialObjective[var][obj] = solution.partialObjective[var][obj];
     }
     
-    for (index = 0; index < 16; index++)
-        this->execTime[index] = solution.execTime[index];
+    for (var = 0; var < 16; var++)
+        this->execTime[var] = solution.execTime[var];
     
 }
 
@@ -157,50 +157,49 @@ Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables){
     this->execTime = new double[16];
     this->partialObjective = new double * [numberOfVariables];
     
-    int index = 0, index_in = 0;
-    for (index = 0; index < numberOfObjectives; index++)
-        this->objective[index] = 0;
+    int var = 0, obj = 0;
+    for (obj = 0; obj < numberOfObjectives; obj++)
+        this->objective[obj] = 0;
     
-    for (index = 0; index < numberOfVariables; index++){
-        this->variable[index] = 0;
-        this->partialObjective[index] = new double[numberOfObjectives];
-        for (index_in = 0; index_in < numberOfObjectives; index_in++)
-            this->partialObjective[index][index_in] = 0;
+    for (var = 0; var < numberOfVariables; var++){
+        this->variable[var] = 0;
+        this->partialObjective[var] = new double[numberOfObjectives];
+        for (obj = 0; obj < numberOfObjectives; obj++)
+            this->partialObjective[var][obj] = 0;
     }
     
-    for (index = 0; index < 16; index++)
-        this->execTime[index] = 0;
+    for (var = 0; var < 16; var++)
+        this->execTime[var] = 0;
     
     return *this;
 }
 
 Solution& Solution::operator=(const Solution &solution){
     
-    this->build_up_to = solution.build_up_to;
-
-    this->totalObjectives = solution.totalObjectives;
-    this->totalVariables = solution.totalVariables;
+    this->build_up_to = solution.getBuildUpTo();
+    this->totalObjectives = solution.getNumberOfObjectives();
+    this->totalVariables = solution.getNumberOfVariables();
     
-    this->objective = new double[solution.totalObjectives];
-    this->variable = new int[solution.totalVariables];
+    this->objective = new double[this->totalObjectives];
+    this->variable = new int[this->totalVariables];
+    this->execTime = new double[16];
+    this->partialObjective = new double * [this->totalVariables];
     
-    int index = 0, index_in = 0;
+    int var = 0, obj = 0;
     
-    for (index = 0; index < this->totalObjectives; index++)
-        this->objective[index] = solution.objective[index];
+    for (obj = 0; obj < this->totalObjectives; obj++)
+        this->objective[obj] = solution.getObjective(obj);
     
-    
-    for (index = 0; index < this->totalVariables; index++){
-        this->variable[index] = solution.variable[index];
-        this->partialObjective[index] = new double[solution.totalObjectives];
-        for (index_in = 0; index_in < solution.totalObjectives; index_in++)
-            this->partialObjective[index][index_in] = solution.partialObjective[index][index_in];
+    for (var = 0; var < this->totalVariables; var++){
+        this->variable[var] = solution.getVariable(var);
+        this->partialObjective[var] = new double[this->totalObjectives];
+        for (obj = 0; obj < this->totalObjectives; obj++)
+            this->partialObjective[var][obj] = solution.partialObjective[var][obj];
     }
     
     /**Section for the HCSP problem**/
-    this->execTime = new double[16];
-    for (index = 0; index < 16; index++)
-        this->execTime[index] = solution.execTime[index];
+    for (var = 0; var < 16; var++)
+        this->execTime[var] = solution.execTime[var];
     
     return *this;
 }
