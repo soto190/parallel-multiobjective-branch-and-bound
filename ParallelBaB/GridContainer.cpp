@@ -21,6 +21,8 @@ HandlerContainer::~HandlerContainer(){
     delete [] rangeinx;
     delete [] rangeiny;
     delete [] gridState;
+    
+    paretoFront.clear();
 }
 
 HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double maxValY){
@@ -36,7 +38,7 @@ HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double ma
     activeBuckets = 0;
     disabledBuckets = 0;
     
-    grid = GridContainer<Solution * >(cols, rows);
+    grid = GridContainer<Solution>(cols, rows);
     gridState = new BucketState[cols * rows];
     
     rangeinx = new double [cols];
@@ -109,7 +111,7 @@ int HandlerContainer::set(Solution & solution, int x, int y){
             break;
             
         case BucketState::nondominated:
-            updated  = this->updateBucket(solution, x, y);
+            updated = this->updateBucket(solution, x, y);
             break;
             
         case BucketState::dominated:
@@ -143,8 +145,8 @@ void HandlerContainer::clearContainer(int x, int y){
     }
 }
 
-std::vector<Solution *> HandlerContainer::get(int x, int y){
-    return grid(x, y);
+std::vector<Solution>& HandlerContainer::get(int x, int y){
+    return grid.get(x, y);
 }
 
 unsigned int HandlerContainer::getRows(){
@@ -201,17 +203,16 @@ void HandlerContainer::setStateOf(BucketState state, int x, int y){
 
 int HandlerContainer::updateBucket(Solution & solution, int x, int y){
     
-    std::vector<Solution *> *paretoFront = &grid.get(x, y);
-    unsigned long sizeBeforeUpdate = paretoFront->size();
+    unsigned long sizeBeforeUpdate = this->grid.get(x, y).size();
     
-    int updated = updateFront(solution, *paretoFront);
+    int updated = updateFront(solution, grid.get(x, y));
     if(updated == 1){
-        if(paretoFront->size() < sizeBeforeUpdate){ /** Some solutions were removed. **/
-            unsigned long int removedElements = sizeBeforeUpdate - (paretoFront->size() - 1);
+        if(this->grid.getSizeOf(x, y) < sizeBeforeUpdate){ /** Some solutions were removed. **/
+            unsigned long int removedElements = sizeBeforeUpdate - (this->grid.getSizeOf(x, y) - 1);
             this->totalElements -= removedElements;
             this->totalElements++;
         }
-        else if(paretoFront->size() == sizeBeforeUpdate + 1) /** No solutions were removed and the new solution was added. **/
+        else if(this->grid.getSizeOf(x, y) == sizeBeforeUpdate + 1) /** No solutions were removed and the new solution was added. **/
             this->totalElements++;
         
         /** else the size doesnt change**/
@@ -220,10 +221,10 @@ int HandlerContainer::updateBucket(Solution & solution, int x, int y){
     return updated;
 }
 
-std::vector<Solution *> HandlerContainer::getParetoFront(){
+std::vector<Solution>& HandlerContainer::getParetoFront(){
     
-    std::vector<Solution *> paretoFront;
-    paretoFront.reserve(this->totalElements);
+    
+    this->paretoFront.reserve(this->totalElements);
     
     int bucketX = 0;
     int bucketY = 0;
@@ -232,8 +233,7 @@ std::vector<Solution *> HandlerContainer::getParetoFront(){
         for (bucketX = 0; bucketX < this->getCols(); bucketX++) {
             BucketState state = this->getStateOf(bucketX, bucketY);
             if (state == BucketState::nondominated) {
-                std::vector<Solution * > bucket = this->get(bucketX, bucketY);
-                paretoFront.insert(paretoFront.begin(), bucket.begin() , bucket.end());
+                this->paretoFront.insert(this->paretoFront.begin(),  this->get(bucketX, bucketY).begin() ,  this->get(bucketX, bucketY).end());
             }
             else if (state == BucketState::dominated)
                 bucketX = this->getCols();
@@ -277,7 +277,7 @@ HandlerContainer3D::HandlerContainer3D(int rows, int cols, int depth, double max
     activeBuckets = 0;
     disabledBuckets = 0;
     
-    grid = GridContainer3D<Solution * >(rows, cols, depth);
+    grid = GridContainer3D<Solution>(rows, cols, depth);
     gridState = new BucketState[rows * cols * depth];
     
     rangeinx = new double [rows];
@@ -397,7 +397,7 @@ void HandlerContainer3D::clearContainer(int x, int y, int z){
     }
 }
 
-std::vector<Solution *>& HandlerContainer3D::get(int x, int y, int z){
+std::vector<Solution>& HandlerContainer3D::get(int x, int y, int z){
     return grid(x, y, z);
 }
 
@@ -472,7 +472,7 @@ void HandlerContainer3D::setStateOf(BucketState state, int x, int y, int z){
 
 int HandlerContainer3D::updateBucket(Solution * solution, int x, int y, int z){
     
-    std::vector<Solution *> paretoFront = grid.get(x, y, z);
+    std::vector<Solution> paretoFront = grid.get(x, y, z);
     unsigned long sizeBeforeUpdate = paretoFront.size();
     
     int updated = updateFront(*solution, paretoFront);
@@ -491,14 +491,15 @@ int HandlerContainer3D::updateBucket(Solution * solution, int x, int y, int z){
     return updated;
 }
 
-std::vector<Solution *> HandlerContainer3D::getParetoFront(){
+std::vector<Solution> HandlerContainer3D::getParetoFront(){
     
-    std::vector<Solution *> paretoFront;
+    std::vector<Solution> paretoFront;
     paretoFront.reserve(this->totalElements);
     
     int bucketX = 0;
     int bucketY = 0;
     int bucketZ = 0;
+    int index = 0;
     
     for (bucketY = 0; bucketY < this->getRows(); bucketY++)
         for (bucketX = 0; bucketX < this->getCols(); bucketX++)
@@ -506,8 +507,11 @@ std::vector<Solution *> HandlerContainer3D::getParetoFront(){
                 
                 BucketState state = this->getStateOf(bucketX, bucketY, bucketZ);
                 if (state == BucketState::nondominated) {
-                    std::vector<Solution * > bucket = this->get(bucketX, bucketY, bucketZ);
-                    paretoFront.insert(paretoFront.begin(), bucket.begin() , bucket.end());
+                    std::vector<Solution> bucket = this->get(bucketX, bucketY, bucketZ);
+//                    paretoFront.insert(paretoFront.begin(), bucket.begin() , bucket.end());
+                    for (index = 0; index < bucket.size(); index++) {
+                        paretoFront.push_back(bucket.at(index));
+                    }
                 }
                 else if (state == BucketState::dominated){
                     bucketZ = this->getDepth();

@@ -59,14 +59,6 @@ public:
     }
     
     void clear(size_t x, size_t y){
-        /*
-        Solution * pd;
-        for(std::vector<Solution *>::iterator it = m_Data[y * cols + x].begin(); it != m_Data[y * cols + x].end(); ++it) {
-            pd = * it;
-            delete pd;
-        }
-
-        */
         m_Data[y * cols + x].clear();
         m_Data[y * cols + x].resize(0);
     }
@@ -122,13 +114,6 @@ public:
     }
     
     void clear(size_t x, size_t y, size_t z){
-        /*
-        Solution * pd;
-        for(std::vector<Solution *>::iterator it = m_Data[(x * cols) + y + (cols * rows * z)].begin(); it != m_Data[(x * cols) + y + (cols * rows * z)].end(); ++it) {
-            pd = * it;
-            delete pd;
-        }
-        */
         m_Data[(x * cols) + y + (cols * rows * z)].clear();
         m_Data[(x * cols) + y + (cols * rows * z)].resize(1);
     }
@@ -148,7 +133,8 @@ class HandlerContainer{
     
     unsigned long totalElements;
     
-    GridContainer<Solution *> grid;
+    GridContainer<Solution> grid;
+    std::vector<Solution> paretoFront;
     BucketState * gridState;
     
     unsigned long debug_counter = 0;
@@ -167,7 +153,7 @@ public:
     int set(Solution & solution, int x, int y);
     
     
-    std::vector<Solution *> get(int x, int y);
+    std::vector<Solution>& get(int x, int y);
     void clearContainer(int x, int y);
     unsigned int getRows();
     unsigned int getCols();
@@ -183,7 +169,7 @@ public:
     
     double getMaxIn(int dimension);
     
-    std::vector<Solution *> getParetoFront();
+    std::vector<Solution>& getParetoFront();
 };
 
 class HandlerContainer3D{
@@ -200,7 +186,7 @@ class HandlerContainer3D{
     
     unsigned long totalElements;
     
-    GridContainer3D<Solution *> grid;
+    GridContainer3D<Solution> grid;
     BucketState * gridState;
     
     unsigned long debug_counter = 0;
@@ -220,7 +206,7 @@ public:
     int set(Solution & solution, int x, int y, int z);
     
     
-    std::vector<Solution *>& get(int x, int y, int z);
+    std::vector<Solution>& get(int x, int y, int z);
     void clearContainer(int x, int y, int z);
     
     unsigned int getRows();
@@ -241,7 +227,7 @@ public:
     unsigned int getSizeOfDimension(int dimension);
     unsigned int getNumberOfDimension();
     
-    std::vector<Solution *> getParetoFront();
+    std::vector<Solution> getParetoFront();
 };
 
 #endif /* Grid_hpp */

@@ -89,7 +89,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
     this->problem->createDefaultSolution(&this->currentSolution);
     
     Solution bestInObj1 = *this->problem->getSolutionWithLowerBoundInObj(1);
-    //Solution * bestInObj2 = this->problem->getSolutionWithLowerBoundInObj(2);
+    //Solution bestInObj2 = this->problem->getSolutionWithLowerBoundInObj(2);
     
     int nObj = 0;
     for (nObj = 0; nObj < numberOfObjectives; nObj++)
@@ -108,13 +108,7 @@ BranchAndBound::~BranchAndBound(){
     
     delete [] this->outputFile;
     delete [] this->summarizeFile;
-    
-    Solution * pd;
-    for(std::vector<Solution *>::iterator it = paretoFront.begin(); it != paretoFront.end(); ++it) {
-        pd = * it;
-        delete pd;
-    }
-    
+
     this->paretoFront.clear();
 }
 
@@ -156,22 +150,7 @@ void BranchAndBound::initialize(int starts_tree){
     this->updateParetoGrid(bestInObj1);
     this->updateParetoGrid(bestInObj2);
     this->updateParetoGrid(this->currentSolution);
-
-    /*
-    double obj1 = this->currentSolution.getObjective(0);
-    double obj2 = this->currentSolution.getObjective(1);
-
-    // this->paretoContainer = new HandlerContainer(100, 100, obj1, obj2);
-    printf("Ranges: %f %f \n Initial solution:\n", obj1, obj2);
-    this->problem->printSolution(this->currentSolution);
-    printf("\n");
     
-    printf("Best max workload:\n");
-    this->problem->printSolution(bestInObj1);
-    printf("\nBest total workload:\n");
-    this->problem->printSolution(bestInObj2);
-    printf("\n");
-    */
 }
 
 /**
@@ -372,7 +351,6 @@ int BranchAndBound::explore(Solution & solution){
  *
  *
  */
- 
 void BranchAndBound::branch(Solution& solution, int currentLevel){
     
     this->callsToBranch++;
@@ -548,15 +526,15 @@ int BranchAndBound::improvesTheGrid(Solution & solution){
             break;
             
         case BucketState::nondominated:
-            std::vector<Solution *> bucketFront = this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]);
-            improveIt = this->improvesTheBucket(solution, bucketFront);
+//            std::vector<Solution> bucketFront = ;
+            improveIt = this->improvesTheBucket(solution, this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]));
             break;
     }
     
     return improveIt;
 }
 
-int BranchAndBound::improvesTheBucket(Solution& solution, std::vector<Solution *> bucketFront){
+int BranchAndBound::improvesTheBucket(Solution& solution, std::vector<Solution>& bucketFront){
     
     unsigned long paretoFrontSize = bucketFront.size();
     DominanceRelation domination;
@@ -577,7 +555,7 @@ int BranchAndBound::improvesTheBucket(Solution& solution, std::vector<Solution *
     */
     
         for (index = 0; index < paretoFrontSize; index++) {
-            domination = dominanceOperator(solution, *bucketFront.at(index));
+            domination = dominanceOperator(solution, bucketFront.at(index));
             if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
                 improves = 0;
                 index = paretoFrontSize + 1;
@@ -799,11 +777,11 @@ void BranchAndBound::printCurrentSolution(int withVariables){
 void BranchAndBound::printParetoFront(int withVariables){
     
     int counterSolutions = 0;
-    std::vector<Solution* >::iterator it;
+    std::vector<Solution>::iterator it;
     
     for (it = this->paretoFront.begin(); it != this->paretoFront.end(); it++) {
         printf("[%6d] ", ++counterSolutions);
-        this->problem->printSolution((*it));
+        this->problem->printSolution(&*it);
         printf("\n");
     }
 }
@@ -887,19 +865,19 @@ int BranchAndBound::saveSummarize(){
         
         int counterSolutions = 0;
 
-        std::vector<Solution* >::iterator it;
+        std::vector<Solution>::iterator it;
         
         for (it = this->paretoFront.begin(); it != this->paretoFront.end(); it++) {
            
             myfile << std::fixed << std::setw(6) << std::setfill(' ') << ++counterSolutions << " ";
  
             for (nObj = 0; nObj < numberOfObjectives; nObj++)
-                myfile << std::fixed << std::setw(26) << std::setprecision(16) << std::setfill(' ') << (*it)->getObjective(nObj) << " ";
+                myfile << std::fixed << std::setw(26) << std::setprecision(16) << std::setfill(' ') << (*it).getObjective(nObj) << " ";
             
             myfile << " | ";
             
             for (nVar = 0; nVar < numberOfVariables; nVar++)
-                myfile << std::fixed << std::setw(4) << std::setfill(' ') << (*it)->getVariable(nVar) << " "; //printf("%3d ", (*it)->getVariable(nVar));
+                myfile << std::fixed << std::setw(4) << std::setfill(' ') << (*it).getVariable(nVar) << " "; //printf("%3d ", (*it)->getVariable(nVar));
             
             myfile << " |\n";
         }
@@ -912,9 +890,8 @@ int BranchAndBound::saveSummarize(){
 }
 
 int BranchAndBound::saveParetoFront(){
-    this->MutexToUpdateGrid.lock();
+
     this->paretoFront = this->paretoContainer->getParetoFront();
-    this->MutexToUpdateGrid.unlock();
     
     std::ofstream myfile(this->outputFile);
     if (myfile.is_open()){
@@ -922,12 +899,12 @@ int BranchAndBound::saveParetoFront(){
         int numberOfObjectives = this->problem->getNumberOfObjectives();
         int nObj = 0;
         
-        std::vector<Solution* >::iterator it;
+        std::vector<Solution>::iterator it;
         
         for (it = this->paretoFront.begin(); it != this->paretoFront.end(); it++) {
             for (nObj = 0; nObj < numberOfObjectives - 1; nObj++)
-                myfile << std::fixed << std::setw(26) << std::setprecision(16) << std::setfill(' ') << (*it)->getObjective(nObj) << ", ";
-            myfile << std::fixed << std::setw(26) << std::setprecision(16) << std::setfill(' ') << (*it)->getObjective(numberOfObjectives - 1) << "\n";
+                myfile << std::fixed << std::setw(26) << std::setprecision(16) << std::setfill(' ') << (*it).getObjective(nObj) << ", ";
+            myfile << std::fixed << std::setw(26) << std::setprecision(16) << std::setfill(' ') << (*it).getObjective(numberOfObjectives - 1) << "\n";
         }
         myfile.close();
     }

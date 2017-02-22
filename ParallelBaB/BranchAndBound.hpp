@@ -53,7 +53,7 @@ public:
     std::shared_ptr<std::queue<Interval>> globalPool;
     std::shared_ptr<std::queue<Interval>> localPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
     
-    std::vector<Solution *> paretoFront; /** paretofFront. **/
+    std::vector<Solution> paretoFront; /** paretofFront. **/
     
     std::shared_ptr<HandlerContainer> paretoContainer; /** Global Pareto container. **/
     
@@ -118,7 +118,7 @@ private:
     /** Grid functions. **/
     int improvesTheGrid(Solution & solution);
     int updateParetoGrid(Solution & solution);
-    int improvesTheBucket(Solution & solution, vector<Solution *> bucketFront);
+    int improvesTheBucket(Solution & solution, std::vector<Solution>& bucketFront);
     /** End Grid functions. **/
     
     /** IVM functions. **/
