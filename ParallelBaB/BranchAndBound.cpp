@@ -287,7 +287,7 @@ void BranchAndBound::solve(const Interval& branch){
             while(theTreeHasMoreBranches() == 1 && timeUp == 0){
                 
                 this->explore(this->currentSolution);
-                this->problem->evaluatePartial(&this->currentSolution, this->currentLevel);
+                this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
                 
                 
                 if (aLeafHasBeenReached() == 0){
@@ -416,7 +416,7 @@ void BranchAndBound::branch(Solution& solution, int currentLevel){
                         toAdd = this->problem->getMappingOf(jobToCheck, machine);
                         
                         solution.setVariable(currentLevel + 1, toAdd);
-                        this->problem->evaluatePartial(&solution, currentLevel + 1);
+                        this->problem->evaluatePartial(solution, currentLevel + 1);
                        
                         if (this->improvesTheGrid(solution)) {
                           /*  double element[3];
@@ -489,9 +489,7 @@ int BranchAndBound::updateParetoGrid(Solution & solution){
 
     
     MutexToUpdateGrid.lock();
-    int bucketCoord [2];
-    this->paretoContainer->checkCoordinate(solution, bucketCoord);
-    int updated = this->paretoContainer->set(solution, bucketCoord[0], bucketCoord[1]);
+    int updated = this->paretoContainer->add(solution);
     MutexToUpdateGrid.unlock();
     
     return updated;
@@ -537,28 +535,18 @@ int BranchAndBound::improvesTheGrid(Solution & solution){
 int BranchAndBound::improvesTheBucket(Solution& solution, std::vector<Solution>& bucketFront){
     
     unsigned long paretoFrontSize = bucketFront.size();
-    DominanceRelation domination;
+    int domination;
     int improves = 1;
-    unsigned long index = 0;
     if (paretoFrontSize > 0){
-      /*
-        std::vector<Solution* >::iterator it = bucketFront.begin();
+      
+        std::vector<Solution>::iterator it = bucketFront.begin();
         while (it != bucketFront.end()) {
             
-            domination = dominanceOperator(solution, (*it));
+            domination = solution.dominates((*it));//dominanceOperator(solution, (*it));
             it++;
             if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
                 improves = 0;
                 it = bucketFront.end();
-            }
-        }
-    */
-    
-        for (index = 0; index < paretoFrontSize; index++) {
-            domination = dominanceOperator(solution, bucketFront.at(index));
-            if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
-                improves = 0;
-                index = paretoFrontSize + 1;
             }
         }
     }
@@ -688,7 +676,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
                 branch.build_up_to = level_to_split;
                 
                 sol_test.setVariable(level_to_split, toAdd);
-                this->problem->evaluatePartial(&sol_test, level_to_split);
+                this->problem->evaluatePartial(sol_test, level_to_split);
                 
                 if(this->improvesTheGrid(sol_test) == 1){
                     /**Add it to Intervals. **/

@@ -36,7 +36,7 @@ public:
     ~ProblemFJSSP();
     
     double evaluate(Solution & solution);
-    double evaluatePartial(Solution * solution, int levelEvaluation);
+    double evaluatePartial(Solution & solution, int levelEvaluation);
     double evaluateLastLevel(Solution * solution);
     double removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel);
     double removeLastLevelEvaluation(Solution * solution, int newLevel);
@@ -125,7 +125,7 @@ public:
     void printProblemInfo();
     void printSchedule(Solution * solution);
     
-    double evaluatePartialTest4(Solution * solution, int currentLevel);
+    double evaluatePartialTest4(Solution & solution, int currentLevel);
     int getLowerBoundInObj(int nObj);
     void buildSolutionWithGoodMaxWorkload(Solution * solution);
     void buildSolutionWithGoodMaxWorkloadv2(Solution * solution);

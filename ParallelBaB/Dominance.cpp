@@ -57,11 +57,11 @@ int updateFront(Solution & solution, std::vector<Solution>& paretoFront){
     int wasAdded = 0;
 
     unsigned long nSol = 0;
-    DominanceRelation domination;
+    int domination;
     
     for(nSol = 0; nSol < paretoFront.size(); nSol++){
         
-        domination = dominanceOperator(solution, paretoFront.at(nSol));
+        domination = solution.dominates(paretoFront.at(nSol));//dominanceOperator(solution, paretoFront.at(nSol));
         
         switch (domination) {
                 

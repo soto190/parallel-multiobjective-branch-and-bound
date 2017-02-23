@@ -32,7 +32,7 @@ public:
     ~ProblemHCSP();
     
     double evaluate(Solution & solution);
-    double evaluatePartial(Solution * solution, int levelEvaluation);
+    double evaluatePartial(Solution & solution, int levelEvaluation);
     double evaluateLastLevel(Solution * solution);
     double removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel);
     double removeLastLevelEvaluation(Solution * solution, int newLevel);

@@ -15,6 +15,8 @@
 #include "Solution.hpp"
 #include "Dominance.hpp"
 #include "myutils.hpp"
+#include "tbb/mutex.h"
+
 
 enum BucketState {unexplored = 0, nondominated = 1, dominated = 2};
 
@@ -136,6 +138,7 @@ class HandlerContainer{
     GridContainer<Solution> grid;
     std::vector<Solution> paretoFront;
     BucketState * gridState;
+    tbb::mutex Mutex_Up;
     
     unsigned long debug_counter = 0;
 
@@ -148,7 +151,7 @@ public:
     HandlerContainer();
     ~HandlerContainer();
     HandlerContainer(int width, int height, double maxValX, double maxValY);
-    void add(Solution & solution);
+    int add(Solution & solution);
     void checkCoordinate(Solution & solution, int * coordinate); /** TODO: Choose an appropiate name method.**/
     int set(Solution & solution, int x, int y);
     
@@ -166,6 +169,7 @@ public:
     void printStates();
     
     int updateBucket(Solution & solution, int x, int y);
+    int updateFront(Solution & solution, std::vector<Solution>& front);
     
     double getMaxIn(int dimension);
     

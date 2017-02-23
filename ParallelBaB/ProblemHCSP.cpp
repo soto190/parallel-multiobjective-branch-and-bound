@@ -153,7 +153,7 @@ double ProblemHCSP::evaluatePartial(Solution * solution, int levelEvaluation){
 */
 
 
-double ProblemHCSP::evaluatePartial(Solution * solution, int levelEvaluation){
+double ProblemHCSP::evaluatePartial(Solution & solution, int levelEvaluation){
     
     int mapping = 0;
     int machine = 0;
@@ -166,24 +166,24 @@ double ProblemHCSP::evaluatePartial(Solution * solution, int levelEvaluation){
     int i_task = 0;
     
     for (i_machine = 0; i_machine < this->totalMachines; i_machine++)
-        solution->execTime[i_machine] = 0;
+        solution.execTime[i_machine] = 0;
     
     for (i_task = 0; i_task <= levelEvaluation; i_task++) {
-        mapping = solution->getVariable(i_task);
+        mapping = solution.getVariable(i_task);
         machine = this->mappingConfig[mapping][0];
         config = this->mappingConfig[mapping][1];
         
         proc_prime = this->computeProcessingTime(i_task, machine, config);// this->processingTime[i_task][machine] / this->speed[config][machine];
-        solution->execTime[machine] += proc_prime;
+        solution.execTime[machine] += proc_prime;
         energy += this->computeEnergy(i_task, machine, config, proc_prime);
-        if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){
-            solution->machineWithMakespan = machine;
-            makespan = solution->execTime[machine];
+        if(solution.execTime[machine] >= solution.execTime[solution.machineWithMakespan]){
+            solution.machineWithMakespan = machine;
+            makespan = solution.execTime[machine];
         }
     }
     
-    solution->setObjective(0, makespan);
-    solution->setObjective(1, energy);
+    solution.setObjective(0, makespan);
+    solution.setObjective(1, energy);
     return 0;
 }
 

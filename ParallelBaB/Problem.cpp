@@ -87,7 +87,7 @@ double Problem::evaluate(Solution & solution){
     return 0;
 }
 
-double Problem::evaluatePartial(Solution * solution, int levelEvaluation){
+double Problem::evaluatePartial(Solution & solution, int levelEvaluation){
     return 0;
 }
 

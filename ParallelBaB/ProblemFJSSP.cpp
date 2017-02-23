@@ -41,13 +41,14 @@ ProblemFJSSP::~ProblemFJSSP(){
  */
 double ProblemFJSSP::evaluate(Solution & solution){
     
-    evaluatePartial(&solution, this->getFinalLevel());
+    this->evaluatePartial(solution, this->getFinalLevel());
     
     return 0.0;
 }
 
-double ProblemFJSSP::evaluatePartial(Solution * solution, int levelEvaluation){
-    evaluatePartialTest4(solution, levelEvaluation);
+double ProblemFJSSP::evaluatePartial(Solution & solution, int levelEvaluation){
+    
+    this->evaluatePartialTest4(solution, levelEvaluation);
     return 0.0;
 }
 
@@ -70,7 +71,7 @@ double ProblemFJSSP::evaluatePartial(Solution * solution, int levelEvaluation){
  * 7  ->  2     1
  * 8  ->  2     2
  **/
-double ProblemFJSSP::evaluatePartialTest4(Solution * solution, int levelEvaluation){
+double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluation){
     
     int makespan = 0;
     int maxWorkload = 0;
@@ -107,7 +108,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution * solution, int levelEvaluati
     
     int map = 0;
     for (operationInPosition = 0; operationInPosition <= levelEvaluation; operationInPosition++) {
-        map = solution->getVariable(operationInPosition);
+        map = solution.getVariable(operationInPosition);
         job = this->mapToJobMachine[map][0];
         machine = this->mapToJobMachine[map][1];
         
@@ -156,11 +157,11 @@ double ProblemFJSSP::evaluatePartialTest4(Solution * solution, int levelEvaluati
         
         if (timeInMachine[machine] > makespan){
             makespan = timeInMachine[machine];
-            solution->partialObjective[operationInPosition][0] = makespan;
+            solution.partialObjective[operationInPosition][0] = makespan;
         }
         if(workload[machine] > maxWorkload){
             maxWorkload = workload[machine];
-            solution->partialObjective[operationInPosition][1] = maxWorkload;
+            solution.partialObjective[operationInPosition][1] = maxWorkload;
         }
     }
     
@@ -168,8 +169,8 @@ double ProblemFJSSP::evaluatePartialTest4(Solution * solution, int levelEvaluati
         if(workload[machine] + bestWL[machine] > maxWorkload)
             maxWorkload = workload[machine] + bestWL[machine];
     
-    solution->setObjective(0, makespan);
-    solution->setObjective(1, maxWorkload);
+    solution.setObjective(0, makespan);
+    solution.setObjective(1, maxWorkload);
     //solution->setObjective(2, totalWorkload + minPij);
     
     /** Updates the best workloads and the assignation. **/
@@ -182,7 +183,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution * solution, int levelEvaluati
             this->bestWorkloads[machine] = workload[machine];
         
         for (operation = 0; operation < this->totalOperations; operation++)
-            this->assignationBestWorkload[operation] = this->mapToJobMachine[solution->getVariable(operation)][1];
+            this->assignationBestWorkload[operation] = this->mapToJobMachine[solution.getVariable(operation)][1];
         this->MutexToUpdate.unlock();
     }
     

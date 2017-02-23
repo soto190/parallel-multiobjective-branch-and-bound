@@ -49,7 +49,6 @@ Interval& Interval::operator=(const Interval &toCopy){
     for (index = 0; index < toCopy.max_size; index++)
         this->interval[index] = toCopy.interval[index];
     
-    
     return *this;
 }
 

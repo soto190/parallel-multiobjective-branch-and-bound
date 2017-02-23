@@ -101,7 +101,7 @@ double ProblemTSP::evaluate(Solution & solution){
  *
  **/
 
-double ProblemTSP::evaluatePartial(Solution* solution, int levelEvaluation){
+double ProblemTSP::evaluatePartial(Solution& solution, int levelEvaluation){
     /*
     
     int origin = solution->getVariable(levelEvaluation - 1);
@@ -118,16 +118,16 @@ double ProblemTSP::evaluatePartial(Solution* solution, int levelEvaluation){
     int city = 0;
     
     for (city = 1; city <= levelEvaluation; city++) {
-        int origen = solution->getVariable(city - 1);
-        int destino = solution->getVariable(city);
+        int origen = solution.getVariable(city - 1);
+        int destino = solution.getVariable(city);
         
         sumDist += this->euclideanDistance[origen][destino];
         sumCost += this->costs[origen][destino];
         
     }
     
-    solution->setObjective(0, sumDist);
-    solution->setObjective(1, sumCost);
+    solution.setObjective(0, sumDist);
+    solution.setObjective(1, sumCost);
     
     return sumDist;
 

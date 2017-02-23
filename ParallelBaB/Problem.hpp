@@ -37,7 +37,7 @@ public:
 
     
     virtual double evaluate(Solution & solution) = 0;
-    virtual double evaluatePartial(Solution * solution, int levelEvaluation) = 0;
+    virtual double evaluatePartial(Solution & solution, int levelEvaluation) = 0;
     virtual double evaluateLastLevel(Solution * solution) = 0;
     virtual double removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel) = 0;
     virtual double removeLastLevelEvaluation(Solution * solution, int newLevel) = 0;

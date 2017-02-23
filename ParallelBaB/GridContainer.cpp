@@ -125,13 +125,11 @@ int HandlerContainer::set(Solution & solution, int x, int y){
 /**
  * It uses a binary search tree locate the bucket which will contain the new solution.
  **/
-void HandlerContainer::add(Solution & solution){
+int HandlerContainer::add(Solution & solution){
 
-    
     int coordinate [2];
     checkCoordinate(solution, coordinate);
-    
-    this->set(solution, coordinate[0], coordinate[1]);
+    return this->set(solution, coordinate[0], coordinate[1]);
 }
 
 void HandlerContainer::clearContainer(int x, int y){
@@ -141,7 +139,7 @@ void HandlerContainer::clearContainer(int x, int y){
         this->totalElements -= this->grid.getSizeOf(x, y);
         this->disabledBuckets++;
         this->activeBuckets--;
-        this->grid.clear(x, y);
+        //this->grid.clear(x, y);
     }
 }
 
@@ -205,7 +203,7 @@ int HandlerContainer::updateBucket(Solution & solution, int x, int y){
     
     unsigned long sizeBeforeUpdate = this->grid.get(x, y).size();
     
-    int updated = updateFront(solution, grid.get(x, y));
+    int updated = this->updateFront(solution, grid.get(x, y));
     if(updated == 1){
         if(this->grid.getSizeOf(x, y) < sizeBeforeUpdate){ /** Some solutions were removed. **/
             unsigned long int removedElements = sizeBeforeUpdate - (this->grid.getSizeOf(x, y) - 1);
@@ -219,6 +217,66 @@ int HandlerContainer::updateBucket(Solution & solution, int x, int y){
     }
     
     return updated;
+}
+
+/**
+ * Stores a copy of the received solution.
+ */
+int HandlerContainer::updateFront(Solution & solution, std::vector<Solution>& paretoFront){
+    unsigned int status[4];
+    status[0] = 0;
+    status[1] = 0;
+    status[2] = 0;
+    status[3] = 0;
+    
+    Mutex_Up.lock();
+    std::vector<Solution>::iterator begin = paretoFront.begin();
+    int wasAdded = 0;
+    
+    unsigned long nSol = 0;
+    int domination;
+    
+    for(nSol = 0; nSol < paretoFront.size(); nSol++){
+        
+        domination = solution.dominates(paretoFront.at(nSol));//dominanceOperator(solution, paretoFront.at(nSol));
+        
+        switch (domination) {
+                
+            case DominanceRelation::Dominates:
+                
+                paretoFront.erase(begin + nSol);
+                status[0]++;
+                nSol--;
+                break;
+                
+            case DominanceRelation::Nondominated:
+                status[1]++;
+                break;
+                
+            case DominanceRelation::Dominated:
+                status[2]++;
+                nSol = paretoFront.size();
+                break;
+                
+            case DominanceRelation::Equals:
+                status[3] = 1;
+                nSol = paretoFront.size();
+                break;
+        }
+    }
+    
+    /**
+     * status[3] is to avoid to add solutions with the same objective values in the front, remove it if repeated objective values are requiered.
+     */
+    //if(status[0] > 0 || status[1] == this->paretoFront.size() || status[2] == 0){
+    if((status[3] == 0) && (paretoFront.size() == 0 || status[0] > 0 || status[1] == paretoFront.size() || status[2] == 0)){
+        paretoFront.push_back(solution); /** Creates a new copy. **/
+        wasAdded = 1;
+    }
+    
+    Mutex_Up.unlock();
+    
+    return  wasAdded;
 }
 
 std::vector<Solution>& HandlerContainer::getParetoFront(){
