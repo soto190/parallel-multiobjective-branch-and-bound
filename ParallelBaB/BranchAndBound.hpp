@@ -107,7 +107,7 @@ public:
 private:
     int rank; /** identifies the number of thread-B&B**/
     void printCurrentSolution(int withVariables = 0);
-    int aLeafHasBeenReached();
+    int aLeafHasBeenReached() const;
     int theTreeHasMoreBranches();
     int getLowerBoundInObj(int nObj);
 
@@ -116,9 +116,9 @@ private:
     int getUpperBound(int objective);
     
     /** Grid functions. **/
-    int improvesTheGrid(Solution & solution);
+    int improvesTheGrid(Solution & solution) const;
     int updateParetoGrid(Solution & solution);
-    int improvesTheBucket(Solution & solution, std::vector<Solution>& bucketFront);
+    int improvesTheBucket(Solution & solution, std::vector<Solution>& bucketFront) const;
     /** End Grid functions. **/
     
     /** IVM functions. **/

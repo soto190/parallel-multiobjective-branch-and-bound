@@ -91,6 +91,10 @@ void Solution::setVariable(int index, int value){
     this->variable[index] = value;
 }
 
+void Solution::setPartialObjective(int var, int objective, double value){
+    this->partialObjective[var][objective] = value;
+}
+
 int Solution::getVariable(int index) const{
     return this->variable[index];
 }

@@ -112,28 +112,30 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
         job = this->mapToJobMachine[map][0];
         machine = this->mapToJobMachine[map][1];
         
-        numberOp = this->operationInJobIsNumber[job][operationOfJob[job]];
+        numberOp = this->getOperationInJobIsNumber(job, operationOfJob[job]);// this->operationInJobIsNumber[job][operationOfJob[job]];
         
         /** The minimun total workload is reduced. **/
-        minPij -= this->processingTime[numberOp][this->assignationMinPij[machine]];
+        minPij -= this->getProccessingTime(numberOp, this->getAssignationMinPij(numberOp)); // this->processingTime[numberOp][this->assignationMinPij[machine]];
         
         /** With the number of operation and the machine we can continue. **/
-        workload[machine] += this->processingTime[numberOp][machine];
-        totalWorkload += this->processingTime[numberOp][machine];
+        int proccesingTime = this->getProccessingTime(numberOp, machine);
+        workload[machine] += proccesingTime;// this->processingTime[numberOp][machine];
+        totalWorkload += proccesingTime;// this->processingTime[numberOp][machine];
         
-        bestWL[this->assignationBestWorkload[numberOp]] -= this->processingTime[numberOp][this->assignationBestWorkload[numberOp]];
+        bestWL[this->getAssignatioBestWorkload(numberOp)] -= this->getProccessingTime(numberOp, this->getAssignatioBestWorkload(numberOp));
+//        bestWL[this->assignationBestWorkload[numberOp]] -= this->processingTime[numberOp][this->assignationBestWorkload[numberOp]];
         
         if (operationOfJob[job] == 0) { /** If it is the first operation of the job.**/
-            if(timeInMachine[machine] >= this->releaseTime[job]){
+            if(timeInMachine[machine] >= this->getReleaseTimeOfJob(job)){
              
                 startingTime[numberOp] = timeInMachine[machine];
-                timeInMachine[machine] += this->processingTime[numberOp][machine];
+                timeInMachine[machine] += proccesingTime;
                 endingTime[numberOp] = timeInMachine[machine];
             
             }else{ /** If the job has to wait for the release time.**/
                 
-                startingTime[numberOp] = this->releaseTime[job];
-                timeInMachine[machine] = this->releaseTime[job] + this->processingTime[numberOp][machine];
+                startingTime[numberOp] = this->getReleaseTimeOfJob(job);// releaseTime[job];
+                timeInMachine[machine] = this->getReleaseTimeOfJob(job) + proccesingTime;
                 endingTime[numberOp] = timeInMachine[machine];
             
             }
@@ -141,13 +143,13 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
             if(endingTime[numberOp - 1] > timeInMachine[machine]){ /** The operation starts inmediatly after their precedent operation.**/
                 
                 startingTime[numberOp] = endingTime[numberOp - 1];
-                timeInMachine[machine] = endingTime[numberOp - 1] + this->processingTime[numberOp][machine];
+                timeInMachine[machine] = endingTime[numberOp - 1] + proccesingTime;
                 endingTime[numberOp] = timeInMachine[machine];
                 
             }else{ /**The operation starts when the machine is avaliable.**/
                 
                 startingTime[numberOp] = timeInMachine[machine];
-                timeInMachine[machine] += this->processingTime[numberOp][machine];
+                timeInMachine[machine] += proccesingTime;
                 endingTime[numberOp] = timeInMachine[machine];
                 
             }
@@ -157,11 +159,11 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
         
         if (timeInMachine[machine] > makespan){
             makespan = timeInMachine[machine];
-            solution.partialObjective[operationInPosition][0] = makespan;
+            solution.setPartialObjective(operationInPosition, 0, makespan);
         }
         if(workload[machine] > maxWorkload){
             maxWorkload = workload[machine];
-            solution.partialObjective[operationInPosition][1] = maxWorkload;
+            solution.setPartialObjective(operationInPosition, 1, maxWorkload);
         }
     }
     
@@ -516,6 +518,24 @@ void ProblemFJSSP::loadInstance(char* filePath[]){
     buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
 
 }
+
+int ProblemFJSSP::getNumberOfJobs() const{ return this->totalJobs;}
+int ProblemFJSSP::getNumberOfOperations() const{ return this->totalOperations;}
+int ProblemFJSSP::getNumberOfMachines() const{ return this->totalMachines;}
+int ProblemFJSSP::getSumOfMinPij() const{ return this->sumOfMinPij;}
+int ProblemFJSSP::getBestWorkloadFound() const{ return this->bestWorkloadFound;}
+int ProblemFJSSP::getAssignationMinPij(int n_operation) const{ return this->assignationMinPij[n_operation];}
+int ProblemFJSSP::getAssignatioBestWorkload(int n_operation) const{ return this->assignationBestWorkload[n_operation];}
+int ProblemFJSSP::getBestWorkload(int n_operation) const{ return this->bestWorkloads[n_operation];}
+int ProblemFJSSP::getMinWorkload(int n_operation) const{ return this->minWorkload[n_operation];}
+int ProblemFJSSP::getMapOfJobMachine(int job, int machine) const{ return this->mapToJobMachine[job][machine];}
+int ProblemFJSSP::getJobMachineToMap(int job, int machine) const{ return this->jobMachineToMap[job][machine];}
+int ProblemFJSSP::getOperationInJobIsNumber(int job, int operation) const{ return this->operationInJobIsNumber[job][operation];}
+int ProblemFJSSP::getJobOfOperation(int n_operation) const{ return this->operationIsFromJob[n_operation];}
+int ProblemFJSSP::getProccessingTime(int operation, int machine) const{ return this->processingTime[operation][machine];}
+int ProblemFJSSP::getNumberOfOperationsInJob(int job) const{return this->jobHasNoperations[job];}
+int ProblemFJSSP::getReleaseTimeOfJob(int job) const{ return this->releaseTime[job];}
+
 
 void ProblemFJSSP::printInstance(){}
 

@@ -139,7 +139,7 @@ void HandlerContainer::clearContainer(int x, int y){
         this->totalElements -= this->grid.getSizeOf(x, y);
         this->disabledBuckets++;
         this->activeBuckets--;
-        //this->grid.clear(x, y);
+        this->grid.clear(x, y);
     }
 }
 

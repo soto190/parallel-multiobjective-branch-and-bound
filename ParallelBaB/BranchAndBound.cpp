@@ -467,7 +467,7 @@ void BranchAndBound::prune(Solution & solution, int currentLevel){
     
 }
 
-int BranchAndBound::aLeafHasBeenReached(){
+int BranchAndBound::aLeafHasBeenReached() const{
     if (this->currentLevel == this->totalLevels)
             return 1;
     return 0;
@@ -506,7 +506,7 @@ int BranchAndBound::updateParetoGrid(Solution & solution){
  *
  *  NOTE: This doesnt modifies the solution. Can be const & solution.
  */
-int BranchAndBound::improvesTheGrid(Solution & solution){
+int BranchAndBound::improvesTheGrid(Solution & solution) const{
 
     int bucketCoordinate[2];
     this->paretoContainer->checkCoordinate(solution, bucketCoordinate);
@@ -532,7 +532,7 @@ int BranchAndBound::improvesTheGrid(Solution & solution){
     return improveIt;
 }
 
-int BranchAndBound::improvesTheBucket(Solution& solution, std::vector<Solution>& bucketFront){
+int BranchAndBound::improvesTheBucket(Solution& solution, std::vector<Solution>& bucketFront) const{
     
     unsigned long paretoFrontSize = bucketFront.size();
     int domination;
@@ -877,7 +877,7 @@ int BranchAndBound::saveSummarize(){
     return 0;
 }
 
-int BranchAndBound::saveParetoFront(){
+int BranchAndBound::saveParetoFront() {
 
     this->paretoFront = this->paretoContainer->getParetoFront();
     

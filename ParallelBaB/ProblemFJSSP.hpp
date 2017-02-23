@@ -77,6 +77,23 @@ public:
     
     int ** mapToJobMachine;
     int ** jobMachineToMap;
+    
+    int getNumberOfJobs() const;
+    int getNumberOfOperations() const;
+    int getNumberOfMachines() const;
+    int getSumOfMinPij() const;
+    int getBestWorkloadFound() const;
+    int getAssignationMinPij(int n_operation) const;
+    int getAssignatioBestWorkload(int n_operation) const;
+    int getBestWorkload(int n_operation) const;
+    int getMinWorkload(int n_operation) const;
+    int getMapOfJobMachine(int job, int machine) const;
+    int getJobMachineToMap(int job, int machine) const;
+    int getOperationInJobIsNumber(int n_operation, int job) const;
+    int getJobOfOperation(int n_operation) const;
+    int getProccessingTime(int operation, int machine) const;
+    int getNumberOfOperationsInJob(int job) const;
+    int getReleaseTimeOfJob(int job) const;
 
     /** jobaHasNoperations saids how many operations have each job.
      if we have 2 jobs with 3 operations and 1 job with 2 operations.

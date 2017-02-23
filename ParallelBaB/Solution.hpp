@@ -32,6 +32,7 @@ public:
     
     void setVariable(int index, int value);
     void setObjective(int index, double value);
+    void setPartialObjective(int var, int objective, double value);
     
     int getVariable(int index) const;
     double getObjective(int nObjective) const;
