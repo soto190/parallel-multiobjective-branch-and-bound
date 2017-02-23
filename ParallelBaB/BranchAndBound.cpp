@@ -507,51 +507,7 @@ int BranchAndBound::updateParetoGrid(Solution & solution){
  *  NOTE: This doesnt modifies the solution. Can be const & solution.
  */
 int BranchAndBound::improvesTheGrid(Solution & solution) const{
-
-    int bucketCoordinate[2];
-    this->paretoContainer->checkCoordinate(solution, bucketCoordinate);
-    BucketState stateOfBucket = this->paretoContainer->getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
-    int improveIt = 0;
-    
-    switch (stateOfBucket) {
-            
-        case BucketState::dominated:
-            //improveIt = 0;
-            break;
-            
-        case BucketState::unexplored:
-            improveIt = 1;
-            break;
-            
-        case BucketState::nondominated:
-//            std::vector<Solution> bucketFront = ;
-            improveIt = this->improvesTheBucket(solution, this->paretoContainer->get(bucketCoordinate[0], bucketCoordinate[1]));
-            break;
-    }
-    
-    return improveIt;
-}
-
-int BranchAndBound::improvesTheBucket(Solution& solution, std::vector<Solution>& bucketFront) const{
-    
-    unsigned long paretoFrontSize = bucketFront.size();
-    int domination;
-    int improves = 1;
-    if (paretoFrontSize > 0){
-      
-        std::vector<Solution>::iterator it = bucketFront.begin();
-        while (it != bucketFront.end()) {
-            
-            domination = solution.dominates((*it));//dominanceOperator(solution, (*it));
-            it++;
-            if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
-                improves = 0;
-                it = bucketFront.end();
-            }
-        }
-    }
-    
-    return improves;
+    return this->paretoContainer->improvesTheGrid(solution);
 }
 
 /**

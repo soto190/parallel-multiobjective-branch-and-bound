@@ -66,7 +66,7 @@ HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double ma
     
 }
 
-void HandlerContainer::checkCoordinate(Solution &solution, int * coordinate){
+void HandlerContainer::checkCoordinate(const Solution &solution, int * coordinate) const{
     
     coordinate[0] = binarySearch(solution.getObjective(0), this->rangeinx, this->getCols());
     coordinate[1] = binarySearch(solution.getObjective(1), this->rangeiny, this->getRows());
@@ -147,19 +147,19 @@ std::vector<Solution>& HandlerContainer::get(int x, int y){
     return grid.get(x, y);
 }
 
-unsigned int HandlerContainer::getRows(){
+unsigned int HandlerContainer::getRows() const{
     return grid.getRows();
 }
 
-unsigned int HandlerContainer::getCols(){
+unsigned int HandlerContainer::getCols() const{
     return grid.getCols();
 }
 
-unsigned long HandlerContainer::getSize(){
+unsigned long HandlerContainer::getSize() const{
     return totalElements;
 }
 
-unsigned long HandlerContainer::getSizeOf(int x, int y){
+unsigned long HandlerContainer::getSizeOf(int x, int y) const{
     return this->grid.getSizeOf(x, y);
 }
 
@@ -191,7 +191,7 @@ void HandlerContainer::printStates(){
  * 1: non-Dominated (Pareto front).
  * 2: Dominated.
  */
-BucketState HandlerContainer::getStateOf(int x, int y){
+BucketState HandlerContainer::getStateOf(int x, int y) const{
     return this->gridState[y * this->getCols() + x];
 }
 
@@ -278,6 +278,53 @@ int HandlerContainer::updateFront(Solution & solution, std::vector<Solution>& pa
     
     return  wasAdded;
 }
+
+int HandlerContainer::improvesTheGrid(const Solution &solution){
+    int bucketCoordinate[2];
+    this->checkCoordinate(solution, bucketCoordinate);
+    BucketState stateOfBucket = this->getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
+    int improveIt = 0;
+    
+    switch (stateOfBucket) {
+            
+        case BucketState::dominated:
+            break;
+            
+        case BucketState::unexplored:
+            improveIt = 1;
+            break;
+            
+        case BucketState::nondominated:
+            improveIt = this->improvesTheBucket(solution, bucketCoordinate[0], bucketCoordinate[1]);
+            break;
+    }
+    
+    return improveIt;
+}
+
+int HandlerContainer::improvesTheBucket(const Solution &solution, int x, int y){
+    Mutex_Up.lock();
+    unsigned long paretoFrontSize = this->getSizeOf(x, y);
+    int domination;
+    int improves = 1;
+    if (paretoFrontSize > 0){
+        std::vector<Solution> bucketFront = this->grid.get(x, y);
+        std::vector<Solution>::iterator it = bucketFront.begin();// this->grid->get(x, y);
+        
+        while (it != bucketFront.end()) {
+            
+            domination = solution.dominates((*it));//dominanceOperator(solution, (*it));
+            it++;
+            if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
+                improves = 0;
+                it = bucketFront.end();
+            }
+        }
+    }
+    Mutex_Up.unlock();
+    return improves;
+}
+
 
 std::vector<Solution>& HandlerContainer::getParetoFront(){
     

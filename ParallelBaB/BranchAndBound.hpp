@@ -118,7 +118,6 @@ private:
     /** Grid functions. **/
     int improvesTheGrid(Solution & solution) const;
     int updateParetoGrid(Solution & solution);
-    int improvesTheBucket(Solution & solution, std::vector<Solution>& bucketFront) const;
     /** End Grid functions. **/
     
     /** IVM functions. **/

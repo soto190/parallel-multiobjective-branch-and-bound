@@ -48,15 +48,15 @@ public:
         return m_Data[y * cols + x];
     }
     
-    int getCols(){
+    int getCols() const{
         return this->cols;
     }
     
-    int getRows(){
+    int getRows() const{
         return this->rows;
     }
     
-    unsigned long getSizeOf(size_t x, size_t y){
+    unsigned long getSizeOf(size_t x, size_t y) const{
         return m_Data[y * cols + x].size();
     }
     
@@ -99,19 +99,19 @@ public:
         return m_Data[(x * cols) + y + (cols * rows * z)];
     }
     
-    int getCols(){
+    int getCols() const{
         return this->cols;
     }
     
-    int getRows(){
+    int getRows() const{
         return this->rows;
     }
     
-    int getDepth(){
+    int getDepth() const{
         return this->deep;
     }
     
-    unsigned long getSizeOf(size_t x, size_t y, size_t z){
+    unsigned long getSizeOf(size_t x, size_t y, size_t z) const{
         return m_Data[(x * cols) + y + (cols * rows * z)].size();
     }
     
@@ -152,18 +152,19 @@ public:
     ~HandlerContainer();
     HandlerContainer(int width, int height, double maxValX, double maxValY);
     int add(Solution & solution);
-    void checkCoordinate(Solution & solution, int * coordinate); /** TODO: Choose an appropiate name method.**/
+    void checkCoordinate(const Solution & solution, int * coordinate) const; /** TODO: Choose an appropiate name method.**/
     int set(Solution & solution, int x, int y);
-    
+    int improvesTheGrid(const Solution & solution);
+    int improvesTheBucket(const Solution & solution, int x, int y);
     
     std::vector<Solution>& get(int x, int y);
     void clearContainer(int x, int y);
-    unsigned int getRows();
-    unsigned int getCols();
-    unsigned long getSize();
-    unsigned long getSizeOf(int x, int y);
+    unsigned int getRows() const;
+    unsigned int getCols() const;
+    unsigned long getSize() const;
+    unsigned long getSizeOf(int x, int y) const;
 
-    BucketState getStateOf(int x, int y);
+    BucketState getStateOf(int x, int y) const;
     void setStateOf(BucketState state, int x, int y);
     void printGridSize();
     void printStates();
