@@ -45,7 +45,7 @@ public:
     
     std::shared_ptr<Problem> problem;
     
-    tbb::mutex MutexToUpdateGrid;
+    tbb::mutex MutexToUpdateGlobalPool;
     
     Solution currentSolution;
     Solution bestObjectivesFound;

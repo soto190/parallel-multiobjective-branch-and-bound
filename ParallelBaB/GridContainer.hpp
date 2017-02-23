@@ -19,6 +19,12 @@
 
 
 enum BucketState {unexplored = 0, nondominated = 1, dominated = 2};
+/*
+template<class T>
+class Bucket{
+    std::vector<T> m_vec;
+};
+*/
 
 template<class T>
 class GridContainer{

@@ -79,6 +79,8 @@ void HandlerContainer::checkCoordinate(const Solution &solution, int * coordinat
  */
  
 int HandlerContainer::set(Solution & solution, int x, int y){
+    
+    Mutex_Up.lock();
     int nCol = 0;
     int nRow = 0;
     int updated = 0;
@@ -118,7 +120,7 @@ int HandlerContainer::set(Solution & solution, int x, int y){
             /**If the bucket is dominated (State = 2) the element is not added. Then do nothing**/
             break;
     }
-    
+    Mutex_Up.unlock();
     return updated;
 }
 
@@ -229,7 +231,7 @@ int HandlerContainer::updateFront(Solution & solution, std::vector<Solution>& pa
     status[2] = 0;
     status[3] = 0;
     
-    Mutex_Up.lock();
+//    Mutex_Up.lock();
     std::vector<Solution>::iterator begin = paretoFront.begin();
     int wasAdded = 0;
     
@@ -274,7 +276,7 @@ int HandlerContainer::updateFront(Solution & solution, std::vector<Solution>& pa
         wasAdded = 1;
     }
     
-    Mutex_Up.unlock();
+//    Mutex_Up.unlock();
     
     return  wasAdded;
 }
@@ -308,16 +310,15 @@ int HandlerContainer::improvesTheBucket(const Solution &solution, int x, int y){
     int domination;
     int improves = 1;
     if (paretoFrontSize > 0){
-        std::vector<Solution> bucketFront = this->grid.get(x, y);
-        std::vector<Solution>::iterator it = bucketFront.begin();// this->grid->get(x, y);
+//        std::vector<Solution> bucketFront = this->grid.get(x, y);
+        std::vector<Solution>::iterator it = this->grid.get(x, y).begin();// this->grid->get(x, y);
+        for(it = this->grid.get(x, y).begin(); it != this->grid.get(x, y).end(); it++){
+//        while (it != this->grid.get(x, y).end()) {
         
-        while (it != bucketFront.end()) {
-            
             domination = solution.dominates((*it));//dominanceOperator(solution, (*it));
-            it++;
             if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
                 improves = 0;
-                it = bucketFront.end();
+//                it = this->grid.get(x, y).end();
             }
         }
     }

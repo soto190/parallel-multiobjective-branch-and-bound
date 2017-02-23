@@ -257,7 +257,7 @@ void BranchAndBound::solve(const Interval& branch){
     while (working > 0) {
         
         
-        MutexToUpdateGrid.lock();
+        MutexToUpdateGlobalPool.lock();
         if (this->globalPool->size() > 0) {
             branchFromGlobal = this->globalPool->front();
             this->globalPool->pop();
@@ -270,7 +270,7 @@ void BranchAndBound::solve(const Interval& branch){
             working = 0;
             printf("[BB%d] No more intervals in global pool, going to sleep.\n", this->rank);
         }
-        MutexToUpdateGrid.unlock();
+        MutexToUpdateGlobalPool.unlock();
         
         if(working > 0){
             this->splitInterval(branchFromGlobal);
@@ -488,9 +488,9 @@ int BranchAndBound::updateParetoGrid(Solution & solution){
             this->bestObjectivesFound.objective[nObj] = solution.getObjective(nObj);
 
     
-    MutexToUpdateGrid.lock();
+    //MutexToUpdateGlobalPool.lock();
     int updated = this->paretoContainer->add(solution);
-    MutexToUpdateGrid.unlock();
+    //MutexToUpdateGlobalPool.unlock();
     
     return updated;
 }
@@ -652,9 +652,9 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
         Interval B = this->localPool->front();
         this->localPool->pop();
         
-        MutexToUpdateGrid.lock();
+        MutexToUpdateGlobalPool.lock();
         this->globalPool->push(B);
-        MutexToUpdateGrid.unlock();
+        MutexToUpdateGlobalPool.unlock();
     }
 }
 
