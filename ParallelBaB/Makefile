@@ -17,4 +17,4 @@ branchAndBound: $(obj)
 .BOOM: clean
 
 clean:
-    rm -f branchAndBound
+   rm -f branchAndBound

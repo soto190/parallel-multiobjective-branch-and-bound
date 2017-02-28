@@ -84,18 +84,21 @@ int main(int argc, const char * argv[]) {
     
     
     try{
-    
-    int number_of_threads = tbb::task_scheduler_init::default_num_threads();
-    tbb::task_scheduler_init init(number_of_threads);
-    
-    ParallelBranchAndBound * pbb = new(tbb::task::allocate_root()) ParallelBranchAndBound();
-    pbb->setNumberOfThreads(number_of_threads);
-    pbb->setInstanceFile(files);
-    pbb->setParetoFrontFile(outputFile.c_str());
-    pbb->setSummarizeFile(summarizeFile.c_str());
-    pbb->setProblem(problem);
-    
-    tbb::task::spawn_root_and_wait(*pbb);
+        
+        int number_of_threads = tbb::task_scheduler_init::default_num_threads();
+        tbb::task_scheduler_init init(number_of_threads);
+        
+        ParallelBranchAndBound * pbb = new(tbb::task::allocate_root()) ParallelBranchAndBound();
+        pbb->setNumberOfThreads(number_of_threads);
+        pbb->setInstanceFile(files);
+        pbb->setParetoFrontFile(outputFile.c_str());
+        pbb->setSummarizeFile(summarizeFile.c_str());
+        pbb->setProblem(problem);
+        
+        printf("Spawning root...\n");
+        tbb::task::spawn_root_and_wait(*pbb);
+        
+        
     }   catch ( tbb::tbb_exception& e ) {
         
         std::cerr << "Intercepted exception\n" << e.name();

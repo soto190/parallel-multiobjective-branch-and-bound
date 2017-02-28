@@ -34,8 +34,9 @@ tbb::task * ParallelBranchAndBound::execute(){
         tl.push_back( * BaB_task);
     }
     
+    printf("Spawning the swarm...\n");
     tbb::task::spawn_and_wait_for_all(tl);
-    
+    printf("Job done...\n");
 
     /** Recollects the data. **/
     BaB_master->getTotalTime();
@@ -61,6 +62,8 @@ tbb::task * ParallelBranchAndBound::execute(){
     BaB_master->saveSummarize();
     
     bb_threads.clear();
+    
+    printf("Parallel Branch And Bound ended.\n");
 
     return NULL;
 }
