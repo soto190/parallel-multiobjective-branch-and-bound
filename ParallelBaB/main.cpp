@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <exception>
 #include "Solution.hpp"
 #include "Problem.hpp"
 #include "ProblemHCSP.hpp"
@@ -82,6 +83,8 @@ int main(int argc, const char * argv[]) {
     std::string summarizeFile = argv[4] + splited[0] + ".txt";
     
     
+    try{
+    
     int number_of_threads = tbb::task_scheduler_init::default_num_threads();
     tbb::task_scheduler_init init(number_of_threads);
     
@@ -93,6 +96,13 @@ int main(int argc, const char * argv[]) {
     pbb->setProblem(problem);
     
     tbb::task::spawn_root_and_wait(*pbb);
+    }   catch ( tbb::tbb_exception& e ) {
+        
+        std::cerr << "Intercepted exception\n" << e.name();
+        
+        std::cerr << "Reason is\n" << e.what();
+        
+    }
 
     return 0;
 }

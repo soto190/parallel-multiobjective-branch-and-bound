@@ -36,7 +36,7 @@ tbb::task * ParallelBranchAndBound::execute(){
     
     tbb::task::spawn_and_wait_for_all(tl);
     
-    
+
     /** Recollects the data. **/
     BaB_master->getTotalTime();
     BranchAndBound * bb_in;

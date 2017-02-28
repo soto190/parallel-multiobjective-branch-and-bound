@@ -10,6 +10,7 @@
 #define ParallelBranchAndBound_hpp
 
 #include <stdio.h>
+#include <exception>
 #include "BranchAndBound.hpp"
 #include "Interval.hpp"
 #include "ProblemFJSSP.hpp"

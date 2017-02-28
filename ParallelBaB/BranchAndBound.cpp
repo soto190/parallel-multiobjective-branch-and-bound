@@ -27,16 +27,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem){
     
     this->rank = rank;
     this->problem = problem;
-    
-    this->paretoContainer = std::make_shared<HandlerContainer>();
-    
-    this->ivm_tree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
-    this->localPool = std::make_shared<std::queue<Interval>>();
-    
-    //this->localPool->reserve(100);
-    this->globalPool = std::make_shared<std::queue<Interval>>();
 
-    this->currentSolution(this->problem->getNumberOfObjectives(), this->problem->getNumberOfVariables());
     this->currentLevel = 0;
     this->totalLevels = 0;
     this->totalNodes = 0;
@@ -50,6 +41,17 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem){
     this->totalUpdatesInLowerBound = 0;
     this->totalTime = 0;
     
+    this->globalPool = std::make_shared<std::queue<Interval>>();
+
+    this->currentSolution(this->problem->getNumberOfObjectives(), this->problem->getNumberOfVariables());
+    this->problem->createDefaultSolution(&this->currentSolution);
+    this->problem->evaluate(this->currentSolution);
+    
+    this->ivm_tree(this->problem->getNumberOfVariables(), this->problem->getUpperBound(0) + 1);
+    this->localPool = std::make_shared<std::queue<Interval>>();
+    this->paretoContainer = std::make_shared<HandlerContainer>(100, 100, this->currentSolution.getObjective(0), this->currentSolution.getObjective(1));
+    
+    
 }
 
 BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const Interval & branch){
@@ -60,11 +62,6 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
     this->rank = rank;
     this->problem = problem;
     
-    
-    this->ivm_tree(this->problem->totalVariables, this->problem->getUpperBound(0) + 1);
-    this->localPool = std::make_shared<std::queue<Interval>>();
-    this->globalPool = std::make_shared<std::queue<Interval>>();
-
     this->currentLevel = 0;
     this->totalLevels = 0;
     this->totalNodes = 0;
@@ -100,6 +97,11 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
     double obj1 = this->currentSolution.getObjective(0);
     double obj2 = this->currentSolution.getObjective(1);
     
+    
+    this->ivm_tree(this->problem->getNumberOfVariables(), this->problem->getUpperBound(0) + 1);
+    this->localPool = std::make_shared<std::queue<Interval>>();
+    this->globalPool = std::make_shared<std::queue<Interval>>();
+
     this->paretoContainer = std::make_shared<HandlerContainer> (100, 100, obj1, obj2);
         
 }
