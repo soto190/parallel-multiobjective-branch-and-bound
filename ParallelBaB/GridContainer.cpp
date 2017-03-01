@@ -130,7 +130,7 @@ int HandlerContainer::set(Solution & solution, int x, int y){
 int HandlerContainer::add(Solution & solution){
 
     int coordinate [2];
-    checkCoordinate(solution, coordinate);
+    this->checkCoordinate(solution, coordinate);
     return this->set(solution, coordinate[0], coordinate[1]);
 }
 
@@ -310,15 +310,12 @@ int HandlerContainer::improvesTheBucket(const Solution &solution, int x, int y){
     int domination;
     int improves = 1;
     if (paretoFrontSize > 0){
-//        std::vector<Solution> bucketFront = this->grid.get(x, y);
         std::vector<Solution>::iterator it = this->grid.get(x, y).begin();// this->grid->get(x, y);
         for(it = this->grid.get(x, y).begin(); it != this->grid.get(x, y).end(); it++){
-//        while (it != this->grid.get(x, y).end()) {
         
             domination = solution.dominates((*it));//dominanceOperator(solution, (*it));
             if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
                 improves = 0;
-//                it = this->grid.get(x, y).end();
             }
         }
     }

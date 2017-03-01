@@ -98,7 +98,6 @@ int main(int argc, const char * argv[]) {
         printf("Spawning root...\n");
         tbb::task::spawn_root_and_wait(*pbb);
         
-        
     }   catch ( tbb::tbb_exception& e ) {
         
         std::cerr << "Intercepted exception\n" << e.name();
@@ -106,6 +105,8 @@ int main(int argc, const char * argv[]) {
         std::cerr << "Reason is\n" << e.what();
         
     }
+    
+    printf("Done\n");
 
     return 0;
 }

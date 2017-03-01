@@ -286,13 +286,15 @@ void BranchAndBound::solve(const Interval& branch){
             
             this->initializeExplorationInterval(activeBranch, this->ivm_tree);
             
-            while(theTreeHasMoreBranches() == 1 && timeUp == 0){
+            while(this->theTreeHasMoreBranches() == 1 && timeUp == 0){
                 
                 this->explore(this->currentSolution);
-                this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
+                
+                if(this->currentSolution.getVariable(this->currentLevel) != -1)
+                    this->problem->evaluatePartial(this->currentSolution, this->currentLevel);
                 
                 
-                if (aLeafHasBeenReached() == 0){
+                if (this->aLeafHasBeenReached() == 0 && this->theTreeHasMoreBranches()){
                     if(this->improvesTheGrid(this->currentSolution) == 1)
                         this->branch(this->currentSolution, this->currentLevel);
                     else
@@ -309,7 +311,7 @@ void BranchAndBound::solve(const Interval& branch){
                         this->printCurrentSolution();
                         printf(" + [%6lu] \n", this->paretoContainer->getSize());
                     }
-                }
+               }
                 //this->saveEvery(3600);
             }
         }
@@ -345,6 +347,7 @@ int BranchAndBound::explore(Solution & solution){
     solution.setVariable(level, element);
     this->currentLevel = level;
     this->currentSolution.build_up_to = level;
+    
     return 0;
 }
 
@@ -483,13 +486,13 @@ int BranchAndBound::theTreeHasMoreBranches(){
 }
 
 int BranchAndBound::updateParetoGrid(Solution & solution){
-
+/*
     int nObj = 0;
     for (nObj = 0; nObj < this->problem->totalObjectives; nObj++)
         if (solution.getObjective(nObj) < this->bestObjectivesFound.getObjective(nObj))
             this->bestObjectivesFound.objective[nObj] = solution.getObjective(nObj);
 
-    
+  */
     //MutexToUpdateGlobalPool.lock();
     int updated = this->paretoContainer->add(solution);
     //MutexToUpdateGlobalPool.unlock();
@@ -623,7 +626,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
                 
                 toAdd = this->problem->getMappingOf(jobToCheck, machine);
                 
-                Interval branch (branch_to_split); /** Creates a new Interval form the given branch. **/
+                Interval branch (branch_to_split); /** Creates a new Interval from given branch. **/
                 
                 /** From level + 1 to last position are initialized with -1. **/
                 for (index_var = level_to_split + 1; index_var < number_of_variables; index_var++)
@@ -752,7 +755,7 @@ std::shared_ptr<HandlerContainer> BranchAndBound::getParetoContainer(){
     return this->paretoContainer;
 }
 
-void BranchAndBound::setGlobalPool(std::shared_ptr<std::queue<Interval> > globalPool){
+void BranchAndBound::setGlobalPool(std::shared_ptr<std::queue<Interval>> globalPool){
     this->globalPool = globalPool;
 }
 

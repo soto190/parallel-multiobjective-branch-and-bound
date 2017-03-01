@@ -113,21 +113,22 @@ void extractParetoFront(std::vector<Solution>& front){
     unsigned long nextSol = 0;
     unsigned long currentSol = 0;
     DominanceRelation domination;
-    
-    for (currentSol = 0; currentSol < front.size() - 1; currentSol++) {
-        Solution solution = front.at(currentSol);
-        for(nextSol = currentSol + 1; nextSol < front.size(); nextSol++){
-            
-            domination = dominanceOperator(solution, front.at(nextSol));
-            
-            if(domination == DominanceRelation::Dominates){
-                front.erase(begin + nextSol); /** Removes the nextSolution. **/
-                nextSol--; /** Moves the pointer one position back. **/
-            }
-            else if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
-                front.erase(begin + currentSol); /** Removes the currentSolution. **/
-                currentSol--; /** Moves the pointer one position back. **/
-                nextSol = front.size(); /** Ends the loop. **/
+    if (front.size() > 0) {
+        for (currentSol = 0; currentSol < front.size() - 1; currentSol++) {
+            Solution solution = front.at(currentSol);
+            for(nextSol = currentSol + 1; nextSol < front.size(); nextSol++){
+                
+                domination = dominanceOperator(solution, front.at(nextSol));
+                
+                if(domination == DominanceRelation::Dominates){
+                    front.erase(begin + nextSol); /** Removes the nextSolution. **/
+                    nextSol--; /** Moves the pointer one position back. **/
+                }
+                else if(domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
+                    front.erase(begin + currentSol); /** Removes the currentSolution. **/
+                    currentSol--; /** Moves the pointer one position back. **/
+                    nextSol = front.size(); /** Ends the loop. **/
+                }
             }
         }
     }

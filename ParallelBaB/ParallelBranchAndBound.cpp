@@ -28,7 +28,7 @@ tbb::task * ParallelBranchAndBound::execute(){
         
         BranchAndBound * BaB_task = new(tbb::task::allocate_child()) BranchAndBound(counter_threads, this->problem, branch_init);
         BaB_task->setParetoContainer(BaB_master->getParetoContainer());
-        BaB_task->setGlobalPool(BaB_master->globalPool);
+        BaB_task->setGlobalPool(BaB_master->globalPool); /** TODO: Fix this. Using this cause a segmentation fault in Xeon Phi when spliting the local intervals. **/
         
         bb_threads.push_back(BaB_task);
         tl.push_back( * BaB_task);
@@ -55,6 +55,7 @@ tbb::task * ParallelBranchAndBound::execute(){
         BaB_master->totalUpdatesInLowerBound += bb_in->totalUpdatesInLowerBound;
         
     }
+    printf("Data recollected.\n");
     
     BaB_master->paretoFront = BaB_master->paretoContainer->getParetoFront();
     BaB_master->printParetoFront();
