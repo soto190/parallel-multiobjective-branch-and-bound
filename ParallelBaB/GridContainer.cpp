@@ -76,11 +76,10 @@ void HandlerContainer::checkCoordinate(const Solution &solution, int * coordinat
 /**
  *
  * Sets a copy of the solution.
+ * This could requiere a Mutex.
  */
- 
 int HandlerContainer::set(Solution & solution, int x, int y){
     
-    Mutex_Up.lock();
     int nCol = 0;
     int nRow = 0;
     int updated = 0;
@@ -120,7 +119,7 @@ int HandlerContainer::set(Solution & solution, int x, int y){
             /**If the bucket is dominated (State = 2) the element is not added. Then do nothing**/
             break;
     }
-    Mutex_Up.unlock();
+
     return updated;
 }
 
@@ -223,6 +222,7 @@ int HandlerContainer::updateBucket(Solution & solution, int x, int y){
 
 /**
  * Stores a copy of the received solution.
+ * This function requires a Mutex.
  */
 int HandlerContainer::updateFront(Solution & solution, std::vector<Solution>& paretoFront){
     unsigned int status[4];
@@ -231,7 +231,7 @@ int HandlerContainer::updateFront(Solution & solution, std::vector<Solution>& pa
     status[2] = 0;
     status[3] = 0;
     
-//    Mutex_Up.lock();
+    Mutex_Up.lock();
     std::vector<Solution>::iterator begin = paretoFront.begin();
     int wasAdded = 0;
     
@@ -240,7 +240,7 @@ int HandlerContainer::updateFront(Solution & solution, std::vector<Solution>& pa
     
     for(nSol = 0; nSol < paretoFront.size(); nSol++){
         
-        domination = solution.dominates(paretoFront.at(nSol));//dominanceOperator(solution, paretoFront.at(nSol));
+        domination = solution.dominates(paretoFront.at(nSol));
         
         switch (domination) {
                 
@@ -276,7 +276,7 @@ int HandlerContainer::updateFront(Solution & solution, std::vector<Solution>& pa
         wasAdded = 1;
     }
     
-//    Mutex_Up.unlock();
+    Mutex_Up.unlock();
     
     return  wasAdded;
 }
@@ -304,8 +304,13 @@ int HandlerContainer::improvesTheGrid(const Solution &solution){
     return improveIt;
 }
 
+/**
+ *
+ * This requiere a Mutex.
+ *
+ */
 int HandlerContainer::improvesTheBucket(const Solution &solution, int x, int y){
-    Mutex_Up.lock();
+    Mutex_Up.lock(); /** This is necessary to avoid segmentation fault. **/
     unsigned long paretoFrontSize = this->getSizeOf(x, y);
     int domination;
     int improves = 1;

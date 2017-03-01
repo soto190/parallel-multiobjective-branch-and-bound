@@ -493,9 +493,9 @@ int BranchAndBound::updateParetoGrid(Solution & solution){
             this->bestObjectivesFound.objective[nObj] = solution.getObjective(nObj);
 
   */
-    //MutexToUpdateGlobalPool.lock();
+    MutexToUpdateGlobalPool.lock();
     int updated = this->paretoContainer->add(solution);
-    //MutexToUpdateGlobalPool.unlock();
+    MutexToUpdateGlobalPool.unlock();
     
     return updated;
 }
@@ -653,14 +653,14 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
     }
 
     /** TODO: Design something to decide where to add something to the global pool. **/
-    if(this->rank > 0 && branches_created > (this->problem->getUpperBound(0) / 2) && branch_to_split.build_up_to < (this->totalLevels - (this->totalLevels / 4))){
+   /* if(this->rank > 0 && branches_created > (this->problem->getUpperBound(0) / 2) && branch_to_split.build_up_to < (this->totalLevels - (this->totalLevels / 4))){
         Interval B = this->localPool->front();
         this->localPool->pop();
         
         MutexToUpdateGlobalPool.lock();
         this->globalPool->push(B);
         MutexToUpdateGlobalPool.unlock();
-    }
+    }*/
 }
 
 long BranchAndBound::permut(int n, int i) {
