@@ -359,13 +359,13 @@ double HandlerContainer::getMaxIn(int dimension){
     else
         return -1;
 }
+
 /********************************************/
 /*
  * Handler container for 3 Dimensions.
  *
  */
 /********************************************/
-
 HandlerContainer3D::HandlerContainer3D(){
 }
 
