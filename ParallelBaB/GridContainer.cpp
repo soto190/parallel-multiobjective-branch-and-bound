@@ -127,10 +127,12 @@ int HandlerContainer::set(Solution & solution, int x, int y){
  * It uses a binary search tree locate the bucket which will contain the new solution.
  **/
 int HandlerContainer::add(Solution & solution){
-
+    Mutex_Up.lock();
     int coordinate [2];
     this->checkCoordinate(solution, coordinate);
-    return this->set(solution, coordinate[0], coordinate[1]);
+    int result = this->set(solution, coordinate[0], coordinate[1]);
+    Mutex_Up.unlock();
+    return result;
 }
 
 void HandlerContainer::clearContainer(int x, int y){
@@ -231,7 +233,7 @@ int HandlerContainer::updateFront(Solution & solution, std::vector<Solution>& pa
     status[2] = 0;
     status[3] = 0;
     
-    Mutex_Up.lock();
+    //Mutex_Up.lock();
     std::vector<Solution>::iterator begin = paretoFront.begin();
     int wasAdded = 0;
     
@@ -276,12 +278,13 @@ int HandlerContainer::updateFront(Solution & solution, std::vector<Solution>& pa
         wasAdded = 1;
     }
     
-    Mutex_Up.unlock();
+    //Mutex_Up.unlock();
     
     return  wasAdded;
 }
 
 int HandlerContainer::improvesTheGrid(const Solution &solution){
+    
     int bucketCoordinate[2];
     this->checkCoordinate(solution, bucketCoordinate);
     BucketState stateOfBucket = this->getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
@@ -310,7 +313,7 @@ int HandlerContainer::improvesTheGrid(const Solution &solution){
  *
  */
 int HandlerContainer::improvesTheBucket(const Solution &solution, int x, int y){
-    Mutex_Up.lock(); /** This is necessary to avoid segmentation fault. **/
+    Mutex_Up.lock();
     unsigned long paretoFrontSize = this->getSizeOf(x, y);
     int domination;
     int improves = 1;
