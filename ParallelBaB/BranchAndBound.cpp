@@ -17,7 +17,31 @@
 
 
 BranchAndBound::BranchAndBound(){
-
+    this->t1 = std::chrono::high_resolution_clock::now();
+    this->t2 = std::chrono::high_resolution_clock::now();
+    
+    this->rank = -1;
+    this->problem = problem;
+    
+    this->currentLevel = 0;
+    this->totalLevels = 0;
+    this->totalNodes = 0;
+    this->branches = 0;
+    this->exploredNodes = 0;
+    this->reachedLeaves = 0;
+    this->unexploredNodes = 0;
+    this->prunedNodes = 0;
+    this->callsToPrune = 0;
+    this->callsToBranch = 0;
+    this->totalUpdatesInLowerBound = 0;
+    this->totalTime = 0;
+    
+    this->starting_interval(this->problem->getNumberOfVariables());
+    this->currentSolution(1, 1);
+    this->ivm_tree(1, 1);
+    this->localPool = std::make_shared<std::queue<Interval>>();
+    this->globalPool = new tbb::concurrent_queue<Interval>;
+    this->paretoContainer = std::make_shared<HandlerContainer> (10, 10, 10, 10);
 }
 
 BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem){
@@ -46,6 +70,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem){
     this->problem->evaluate(this->currentSolution);
     
     this->ivm_tree(this->problem->getNumberOfVariables(), this->problem->getUpperBound(0) + 1);
+    this->ivm_tree.setOwner(rank);
     this->localPool = std::make_shared<std::queue<Interval>>();
     this->globalPool = new tbb::concurrent_queue<Interval>;
     this->paretoContainer = std::make_shared<HandlerContainer>(100, 100, this->currentSolution.getObjective(0), this->currentSolution.getObjective(1));
@@ -98,6 +123,8 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
     
     
     this->ivm_tree(this->problem->getNumberOfVariables(), this->problem->getUpperBound(0) + 1);
+    this->ivm_tree.setOwner(rank);
+
     this->localPool = std::make_shared<std::queue<Interval>>();
     this->globalPool = new tbb::concurrent_queue<Interval>;
 
@@ -107,9 +134,10 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
 
 BranchAndBound::~BranchAndBound(){
     
+    printf("BB%3d\n", this->rank);
+    
     delete [] this->outputFile;
     delete [] this->summarizeFile;
-
 
     this->paretoFront.clear();
 }

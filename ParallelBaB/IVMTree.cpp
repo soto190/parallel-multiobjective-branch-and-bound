@@ -10,6 +10,28 @@
 
 
 IVMTree::IVMTree(){
+    this->whoIam = -1;
+    this->rows = 1;
+    this->cols = 1;
+    this->hasBranches = 0;
+    this->active_node = new int[rows];
+    this->max_nodes_in_level = new int[rows];
+    this->ivm = new int * [rows];
+    
+    int r = 0, c = 0;
+    
+    for (r = 0; r < rows; r++){
+        this->ivm[r] = new int[cols];
+        this->active_node[r] = -1;
+        this->max_nodes_in_level[r] = 0;
+        for (c = 0; c < cols; c++)
+            this->ivm[r][c] = -1;
+    }
+    
+    this->starting_level = 0;
+    this->active_level = 0;
+    this->start_exploration = new int[rows];
+    this->end_exploration = new int[rows];
 }
 
 IVMTree::IVMTree(int rows, int cols){
@@ -38,7 +60,8 @@ IVMTree::IVMTree(int rows, int cols){
 }
 
 IVMTree::~IVMTree(){
-    
+    printf("IVM%3d\n", this->whoIam);
+
     int r = 0;
     for (r = 0; r < rows; r++)
         delete [] this->ivm[r];
@@ -50,16 +73,24 @@ IVMTree::~IVMTree(){
     delete [] end_exploration;
 }
 
-int IVMTree::getNumberOfRows(){
+int IVMTree::getNumberOfRows() const{
     return this->rows;
 }
 
-int IVMTree::getNumberOfCols(){
+int IVMTree::getNumberOfCols() const{
     return this->cols;
 }
 
-int IVMTree::getTreeDeep(){
+int IVMTree::getTreeDeep() const{
     return this->rows;
+}
+
+void IVMTree::setOwner(int idBB){
+    this->whoIam = idBB;
+}
+
+int IVMTree::getOwner() const{
+    return this->whoIam;
 }
 
 void IVMTree::setActiveLevel(int level){
@@ -85,11 +116,11 @@ void IVMTree::setExplorationInterval(int starting_level, int *starts, int *ends)
     
 }
 
-int IVMTree::hasPendingBranches(){
+int IVMTree::hasPendingBranches() const{
     return this->hasBranches;
 }
 
-int IVMTree::getCurrentLevel(){
+int IVMTree::getCurrentLevel() const{
     return this->active_level;
 }
 
@@ -106,11 +137,11 @@ int IVMTree::moveToNextNode(){
     return this->ivm[active_level][active_node[active_level]];
 }
 
-int IVMTree::getActiveNode(){
+int IVMTree::getActiveNode() const{
     return this->ivm[active_level][active_node[active_level]];
 }
 
-int IVMTree::getFatherNode(){
+int IVMTree::getFatherNode() const{
     return this->ivm[active_level - 1][active_node[active_level - 1]];
 }
 

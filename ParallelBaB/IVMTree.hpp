@@ -16,6 +16,7 @@ class IVMTree{
 
     int rows;
     int cols;
+    int whoIam = -1;
     
 public:
     IVMTree();
@@ -33,19 +34,21 @@ public:
     int root_node = 0;
     int * max_nodes_in_level;
     
-    int getNumberOfRows();
-    int getNumberOfCols();
+    int getNumberOfRows() const;
+    int getNumberOfCols() const;
     void setActiveLevel(int level);
     void setExplorationInterval(int starting_level, int * starts, int * ends);
-    int getTreeDeep();
+    int getTreeDeep() const;
+    void setOwner(int idBB);
+    int getOwner() const;
     
-    int hasPendingBranches();
+    int hasPendingBranches() const;
     void setNode(int level, int value);
-    int getActiveNode();
-    int getFatherNode();
+    int getActiveNode() const;
+    int getFatherNode() const;
     int pruneActiveNode();
 
-    int getCurrentLevel();
+    int getCurrentLevel() const;
     
     int moveToNextLevel();
     int moveToNextNode();
