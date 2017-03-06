@@ -16,7 +16,7 @@ tbb::task * ParallelBranchAndBound::execute(){
     BranchAndBound * BaB_master = new(tbb::task::allocate_root()) BranchAndBound(counter_threads, problem, branch_init);
     BaB_master->setParetoFrontFile(this->outputParetoFile);
     BaB_master->setSummarizeFile(this->summarizeFile);
-    BaB_master->setGlobalPool(BaB_master->localPool);
+    //BaB_master->setGlobalPool(BaB_master->globalPool);
     BaB_master->splitInterval(branch_init);
     
     this->set_ref_count(this->number_of_threads + 1);

@@ -41,14 +41,13 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem){
     this->totalUpdatesInLowerBound = 0;
     this->totalTime = 0;
     
-    this->globalPool = std::make_shared<std::queue<Interval>>();
-
     this->currentSolution(this->problem->getNumberOfObjectives(), this->problem->getNumberOfVariables());
     this->problem->createDefaultSolution(&this->currentSolution);
     this->problem->evaluate(this->currentSolution);
     
     this->ivm_tree(this->problem->getNumberOfVariables(), this->problem->getUpperBound(0) + 1);
     this->localPool = std::make_shared<std::queue<Interval>>();
+    this->globalPool = new tbb::concurrent_queue<Interval>;
     this->paretoContainer = std::make_shared<HandlerContainer>(100, 100, this->currentSolution.getObjective(0), this->currentSolution.getObjective(1));
     
     
@@ -100,7 +99,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem, const
     
     this->ivm_tree(this->problem->getNumberOfVariables(), this->problem->getUpperBound(0) + 1);
     this->localPool = std::make_shared<std::queue<Interval>>();
-    this->globalPool = std::make_shared<std::queue<Interval>>();
+    this->globalPool = new tbb::concurrent_queue<Interval>;
 
     this->paretoContainer = std::make_shared<HandlerContainer> (100, 100, obj1, obj2);
         
@@ -110,6 +109,7 @@ BranchAndBound::~BranchAndBound(){
     
     delete [] this->outputFile;
     delete [] this->summarizeFile;
+
 
     this->paretoFront.clear();
 }
@@ -259,20 +259,16 @@ void BranchAndBound::solve(const Interval& branch){
     while (working > 0) {
         
         
-        MutexToUpdateGlobalPool.lock();
-        if (this->globalPool->size() > 0) {
-            branchFromGlobal = this->globalPool->front();
-            this->globalPool->pop();
+        if (!this->globalPool->empty()) {
+            this->globalPool->try_pop(branchFromGlobal);
             working++;
-            
-            printf("[BB%d] Picking from global pool. Pool size is %lu\n", this->rank, this->globalPool->size());
+            printf("[BB%3d] Picking from global pool. Pool size is %lu\n", this->rank, this->globalPool->unsafe_size());
             branchFromGlobal.showInterval();
         }
         else{
             working = 0;
-            printf("[BB%d] No more intervals in global pool, going to sleep.\n", this->rank);
+            printf("[BB%3d] No more intervals in global pool, going to sleep.\n", this->rank);
         }
-        MutexToUpdateGlobalPool.unlock();
         
         if(working > 0){
             this->splitInterval(branchFromGlobal);
@@ -307,7 +303,7 @@ void BranchAndBound::solve(const Interval& branch){
                     this->totalUpdatesInLowerBound += updated;
                     
                     if (updated == 1){
-                        printf("[BB%d] ", this->rank);
+                        printf("[BB%3d] ", this->rank);
                         this->printCurrentSolution();
                         printf(" + [%6lu] \n", this->paretoContainer->getSize());
                     }
@@ -641,7 +637,14 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
                 
                 if(this->improvesTheGrid(sol_test) == 1){
                     /**Add it to Intervals. **/
-                    this->localPool->push(branch);
+                    if(this->rank == 0){
+                        if(branch.max_size == 1)
+                            printf("DEBUG\n");
+                        this->globalPool->push(branch);
+                    
+                        
+                    }else
+                        this->localPool->push(branch);
                     this->branches++;
                     branches_created++;
                 }
@@ -658,10 +661,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split){
       && branch_to_split.build_up_to < (this->totalLevels - (this->totalLevels / 4))){
         Interval B = this->localPool->front();
         this->localPool->pop();
-        
-        MutexToUpdateGlobalPool.lock();
         this->globalPool->push(B);
-        MutexToUpdateGlobalPool.unlock();
     }
 }
 
@@ -757,7 +757,7 @@ std::shared_ptr<HandlerContainer> BranchAndBound::getParetoContainer(){
     return this->paretoContainer;
 }
 
-void BranchAndBound::setGlobalPool(std::shared_ptr<std::queue<Interval>> globalPool){
+void BranchAndBound::setGlobalPool(tbb::concurrent_queue<Interval>* globalPool){
     this->globalPool = globalPool;
 }
 

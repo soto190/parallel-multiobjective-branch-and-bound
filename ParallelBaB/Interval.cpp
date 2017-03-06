@@ -15,7 +15,6 @@
  * size is equals to the number of variables.
  *
  **/
-
 Interval::Interval(){
 }
 
@@ -23,6 +22,10 @@ Interval::Interval(int max_size){
     this->interval = new int[max_size];
     this->build_up_to = -1;
     this->max_size = max_size;
+    
+    int index = 0;
+    for (index = 0; index < max_size; index++)
+        this->interval[index] = -1;
 }
 
 Interval::Interval(const Interval &toCopy){
@@ -37,7 +40,7 @@ Interval::Interval(const Interval &toCopy){
 }
 
 Interval::~Interval(){
-    //delete [] interval;
+    delete [] interval;
 }
 
 Interval& Interval::operator=(const Interval &toCopy){
@@ -73,6 +76,11 @@ Interval& Interval::operator()(int size){
     this->interval = new int[size];
     this->build_up_to = -1;
     this->max_size = size;
+    
+    int index = 0;
+    for (index = 0; index < max_size; index++)
+        this->interval[index] = -1;
+
     
     return *this;
 }

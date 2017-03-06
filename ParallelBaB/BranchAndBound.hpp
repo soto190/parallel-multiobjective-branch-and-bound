@@ -29,6 +29,7 @@
 #include "tbb/task.h"
 #include "tbb/mutex.h"
 #include "tbb/cache_aligned_allocator.h"
+#include "tbb/concurrent_queue.h"
 //#include <memory.h> /** For the Ehecatl wich uses GCC 4.4.7, this activates the shared_ptr. **/
 
 class BranchAndBound:public tbb::task{
@@ -50,7 +51,7 @@ public:
     Solution currentSolution;
     Solution bestObjectivesFound;
     
-    std::shared_ptr<std::queue<Interval>> globalPool;
+    tbb::concurrent_queue<Interval>* globalPool;
     std::shared_ptr<std::queue<Interval>> localPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
     
     std::vector<Solution> paretoFront; /** paretofFront. **/
@@ -133,7 +134,7 @@ private:
 
 public:
     task* execute(); 
-    void setGlobalPool(std::shared_ptr<std::queue<Interval>> globalPool);
+    void setGlobalPool(tbb::concurrent_queue<Interval>* globalPool);
     void operator()(const Interval& branch){
         this->solve(branch);
     };
