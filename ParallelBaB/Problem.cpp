@@ -13,6 +13,10 @@ Problem::Problem(int totalObjectives, int totalVariables){
     this->totalVariables = totalVariables;
     this->lowerBound = new int[totalVariables];
     this->upperBound = new int[totalVariables];
+    this->name = new char[255];
+    this->type = ProblemType::XD;
+    this->startingLevel = 0;
+    this->totalConstraints = 0;
 }
 
 Problem::~Problem(){

@@ -16,6 +16,13 @@
  *
  **/
 Interval::Interval(){
+	this->interval = new int[1];
+	this->build_up_to = -1;
+	this->max_size = 1;
+
+	int index = 0;
+	for (index = 0; index < 1; index++)
+		this->interval[index] = -1;
 }
 
 Interval::Interval(int max_size){

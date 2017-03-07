@@ -14,7 +14,6 @@
 #include <vector>
 #include <cmath>
 
-
 using namespace std;
 /*
  long split(const std::string &txt, std::vector<std::string> &vector, char ch){
@@ -37,16 +36,11 @@ using namespace std;
  }
  */
 
-
 vector<string> &split(const string &s, char delim, vector<string> &elems);
 vector<string> split(const string &s, char delim);
 
 double roundToNearest(double value);
 double round_double(double value);
 int binarySearch(double value, double * vector, int size);
-
-
-
-
 
 #endif /* myutils_hpp */

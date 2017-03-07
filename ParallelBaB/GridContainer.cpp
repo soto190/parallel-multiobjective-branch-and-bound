@@ -9,12 +9,56 @@
 #include "GridContainer.hpp"
 
 template <class T> GridContainer<T>::GridContainer(){
+	cols = 1;
+	rows = 1;
+	m_Data.resize(cols * rows);
 }
 
 template <class T> GridContainer3D<T>::GridContainer3D(){
+	cols = 1;
+	rows = 1;
+	deep = 1;
+	dimensions = 1;
+	m_Data.resize(cols * rows * deep);
 }
 
 HandlerContainer::HandlerContainer(){
+	int rows = 1;
+	int cols = 1;
+	int maxValX = 10;
+	int maxValY = 10;
+
+	totalElements = 0;
+	    unexploredBuckets = rows * cols;
+	    activeBuckets = 0;
+	    disabledBuckets = 0;
+
+	    grid = GridContainer<Solution>(cols, rows);
+	    gridState = new BucketState[cols * rows];
+
+	    rangeinx = new double [cols];
+	    rangeiny = new double [rows];
+	    maxinx = maxValX;
+	    maxiny = maxValY;
+	    int divs = 0;
+
+
+	    double rx = maxValX / cols;
+	    double ry = maxValY / rows;
+
+	    rangeinx[divs] = 0;
+	    rangeiny[divs] = 0;
+
+	    for (divs = 1; divs < cols; divs++)
+	        rangeinx[divs] = rangeinx[divs - 1] + rx;
+
+	    for (divs = 1; divs < rows; divs++)
+	        rangeiny[divs] = rangeiny[divs - 1] + ry;
+
+	    int r = 0;
+	    for (r = 0; r < rows * cols; r++)
+	        gridState[r] = BucketState::unexplored;
+
 }
 
 HandlerContainer::~HandlerContainer(){
@@ -370,6 +414,59 @@ double HandlerContainer::getMaxIn(int dimension){
  */
 /********************************************/
 HandlerContainer3D::HandlerContainer3D(){
+	int rows = 1, cols = 1, depth = 1, maxValX = 10, maxValY = 10, maxValZ = 10;
+
+    totalElements = 0;
+    unexploredBuckets = rows * cols * depth;
+    activeBuckets = 0;
+    disabledBuckets = 0;
+
+    grid = GridContainer3D<Solution>(rows, cols, depth);
+    gridState = new BucketState[rows * cols * depth];
+
+    rangeinx = new double [rows];
+    rangeiny = new double [cols];
+    rangeinz = new double [depth];
+
+    maxinx = maxValX;
+    maxiny = maxValY;
+    maxinz = maxValZ;
+
+    int divs = 0;
+    double rx = maxValX / cols;
+    double ry = maxValY / rows;
+    double rz = maxValZ / depth;
+
+
+    rangeinx[divs] = 0;
+    rangeiny[divs] = 0;
+    rangeinz[divs] = 0;
+
+
+    for (divs = 1; divs < cols; divs++)
+        rangeinx[divs] = rangeinx[divs - 1] + rx;
+
+    for (divs = 1; divs < rows; divs++)
+        rangeiny[divs] = rangeiny[divs - 1] + ry;
+
+    for (divs = 1; divs < depth; divs++)
+        rangeinz[divs] = rangeinz[divs - 1] + rz;
+
+    int r = 0;
+    for (r = 0; r < rows * cols * depth; r++)
+        gridState[r] = BucketState::unexplored;
+
+    dimensionSize = new int[3];
+
+    dimensionSize[0] = rows;
+    dimensionSize[1] = cols;
+    dimensionSize[2] = depth;
+
+    maxin = new double[3];
+
+    maxin[0] = maxValX;
+    maxin[1] = maxValY;
+    maxin[2] = maxValZ;
 }
 
 HandlerContainer3D::~HandlerContainer3D(){

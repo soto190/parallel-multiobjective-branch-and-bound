@@ -28,6 +28,17 @@ public:
         this->totalMachines = 0;
         this->totalConfig = 0;
         this->totalMappings = 0;
+
+        this->mappingConfig = new int * [1];
+        this->maxConfigIn = new int[1];
+        this->processingTime = new double * [1];
+        this->voltage = new double * [1];
+        this->speed = new double * [1];
+
+        this->totalTasks = 0;
+        this->totalMachines = 0;
+        this->totalConfig = 0;
+        this->totalMappings = 0;
     };
     ~ProblemHCSP();
     

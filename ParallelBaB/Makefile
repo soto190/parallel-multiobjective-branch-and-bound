@@ -12,10 +12,12 @@ LDDEBUG = -O0 -g -traceback -std=c++11
 src = $(wildcard *.cpp)
 obj = $(src:.cpp = .o)
 
+all: 
+
 branchAndBound: $(obj)
-$(CXX) $(LIB_DIR) -o $@ $^ $(LDDEBUG) $(INC_DIR) $(LIBS_TO_LOAD)
+	$(CXX) $(LIB_DIR) -o $@ $^ $(LDDEBUG) $(INC_DIR) $(LIBS_TO_LOAD)
 
 .BOOM: clean
 
 clean:
-   rm -f branchAndBound
+	rm -f branchAndBound

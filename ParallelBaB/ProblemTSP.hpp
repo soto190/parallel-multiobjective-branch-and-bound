@@ -28,7 +28,13 @@ enum TSPObj {DISTANCE = 0, COST = 1};
 class ProblemTSP: public Problem {
 public:
     
-    ProblemTSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){};
+    ProblemTSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
+    	this->costCoord = new int * [1];
+    	this->costs = new double * [1];
+    	this->cityCoord = new int * [1];
+    	this->euclideanDistance = new double * [1];
+
+    };
     ~ProblemTSP();
     
     double evaluate(Solution & solution);
