@@ -46,6 +46,19 @@ Interval::Interval(const Interval &toCopy){
     
 }
 
+Interval& Interval::operator()(int size){
+    
+    this->interval = new int[size];
+    this->build_up_to = -1;
+    this->max_size = size;
+    
+    int index = 0;
+    for (index = 0; index < max_size; index++)
+        this->interval[index] = -1;
+    
+    return *this;
+}
+
 Interval::~Interval(){
     delete [] interval;
 }
@@ -76,18 +89,4 @@ void Interval::showInterval() const{
     
     printf("]\n");
     
-}
-
-Interval& Interval::operator()(int size){
-    
-    this->interval = new int[size];
-    this->build_up_to = -1;
-    this->max_size = size;
-    
-    int index = 0;
-    for (index = 0; index < max_size; index++)
-        this->interval[index] = -1;
-
-    
-    return *this;
 }

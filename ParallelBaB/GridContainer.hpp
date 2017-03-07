@@ -42,6 +42,9 @@ public:
 		rows = height;
 		m_Data.resize(cols * rows);
 	}
+    
+    ~GridContainer(){
+    }
 
 	std::vector<T>& operator()(size_t x, size_t y) {
 		return m_Data[y * cols + x];

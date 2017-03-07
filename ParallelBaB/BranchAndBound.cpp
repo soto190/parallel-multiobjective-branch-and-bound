@@ -186,7 +186,7 @@ BranchAndBound::~BranchAndBound() {
 	delete[] this->outputFile;
 	delete[] this->summarizeFile;
 
-	this->paretoFront.clear();
+    this->paretoFront.clear();
 }
 
 void BranchAndBound::initialize(int starts_tree) {
@@ -239,15 +239,6 @@ void BranchAndBound::initialize(int starts_tree) {
 int BranchAndBound::initializeExplorationInterval(const Interval & branch,
 		IVMTree& tree) {
 
-	/** This is only for the FJSSP. **/
-	/*int job = 0;
-	 int isIn = 0;
-	 int * numberOfRepetitionsAllowed = problem->getElemensToRepeat();
-	 int timesRepeated [problem->getTotalElements()];
-	 int map = 0;
-	 int jobToCheck = 0;
-	 int jobAllocated = 0;
-	 */
 	int varInPos = 0;
 	int cl = 0; /** Counter level.**/
 	tree.root_node = branch.build_up_to; /** root node of this tree**/
@@ -268,47 +259,21 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch,
 
 		/** TODO: Check this part. The interval is equivalent to the solution?. **/
 		this->currentSolution.setVariable(cl,
-				this->ivm_tree.start_exploration[cl]);
+				tree.start_exploration[cl]);
 	}
 
 	for (cl = branch.build_up_to + 1; cl <= this->totalLevels; cl++) {
 		tree.start_exploration[cl] = 0;
 		tree.max_nodes_in_level[cl] = 0;
-
-		/* This part can be removed.*/
-		/** For each level search the last mapping to allocate.**/
-		/*for (job = problem->getTotalElements() - 1; job >= 0; job--) {
-		 isIn = 0;
-		 jobToCheck = job;
-		 timesRepeated[jobToCheck] = 0;
-
-		 for (varInPos = 0; varInPos < cl; varInPos++){
-		 map = tree.end_exploration[varInPos];
-		 jobAllocated = this->problem->getMapping(map, 0);
-		 if (jobToCheck == jobAllocated) {
-		 timesRepeated[jobToCheck]++;
-		 if(timesRepeated[jobToCheck] == numberOfRepetitionsAllowed[jobToCheck]){
-		 isIn = 1;
-		 varInPos = cl;
-		 }
-		 }
-		 }
-
-		 if (isIn == 0){
-		 tree.end_exploration[cl] = this->problem->getMappingOf(jobToCheck, this->problem->getTimesValueIsRepeated(0) - 1);
-		 */
-		/** To finish the loop. **/
-		//      job = -1;
-		// }
-		//}
 	}
+    
 	this->currentSolution.build_up_to = branch.build_up_to;
 	this->branch(this->currentSolution, branch.build_up_to);
-	this->ivm_tree.active_level--;
-	this->ivm_tree.active_node[this->ivm_tree.active_level] = 0;
+	tree.active_level--;
+	tree.active_node[tree.active_level] = 0;
 	tree.active_node[tree.active_level] =
 			tree.start_exploration[tree.active_level];
-	this->ivm_tree.hasBranches = 1;
+	tree.hasBranches = 1;
 
 	return 0;
 }
@@ -727,10 +692,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 				if (this->improvesTheGrid(sol_test) == 1) {
 					/**Add it to Intervals. **/
 					if (this->rank == 0) {
-						if (branch.max_size == 1)
-							printf("DEBUG\n");
-						this->globalPool->push(branch);
-
+                        this->globalPool->push(branch);
 					} else
 						this->localPool->push(branch);
 					this->branches++;
