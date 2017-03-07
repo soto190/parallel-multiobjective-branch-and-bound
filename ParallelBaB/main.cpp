@@ -82,7 +82,7 @@ int main(int argc, const char * argv[]) {
 
 	try {
 
-		int number_of_threads = tbb::task_scheduler_init::default_num_threads();
+        int number_of_threads = 4;//tbb::task_scheduler_init::default_num_threads();
 		tbb::task_scheduler_init init(number_of_threads);
 
 		ParallelBranchAndBound * pbb =

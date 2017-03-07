@@ -34,28 +34,64 @@ IVMTree::IVMTree() {
 }
 
 IVMTree::IVMTree(int rows, int cols) {
+    
+    this->rows = rows;
+    this->cols = cols;
+    this->hasBranches = 1;
+    this->active_node = new int[rows];
+    this->max_nodes_in_level = new int[rows];
+    this->ivm = new int *[rows];
+    
+    int r = 0, c = 0;
+    
+    for (r = 0; r < rows; r++) {
+        this->ivm[r] = new int[cols];
+        this->active_node[r] = -1;
+        this->max_nodes_in_level[r] = 0;
+        for (c = 0; c < cols; c++)
+            this->ivm[r][c] = -1;
+    }
+    
+    this->starting_level = 0;
+    this->active_level = 0;
+    this->start_exploration = new int[rows];
+    this->end_exploration = new int[rows];
+}
 
-	this->rows = rows;
-	this->cols = cols;
-	this->hasBranches = 1;
+
+
+IVMTree::IVMTree(const IVMTree& toCopy) {
+
+	this->rows = toCopy.rows;
+	this->cols = toCopy.cols;
+	this->hasBranches = toCopy.hasBranches;
+    this->root_node = toCopy.root_node;
+    this->starting_level = toCopy.starting_level;
+    this->active_level = toCopy.active_level;
+    this->whoIam = toCopy.whoIam;
+    
 	this->active_node = new int[rows];
 	this->max_nodes_in_level = new int[rows];
-	this->ivm = new int *[rows];
+    this->start_exploration = new int[rows];
+    this->end_exploration = new int[rows];
+    
+    this->ivm = new int *[rows];
 
 	int r = 0, c = 0;
 
 	for (r = 0; r < rows; r++) {
-		this->ivm[r] = new int[cols];
-		this->active_node[r] = -1;
-		this->max_nodes_in_level[r] = 0;
+		this->active_node[r] = toCopy.active_node[r];
+		this->max_nodes_in_level[r] = toCopy.max_nodes_in_level[r];
+        this->start_exploration[r] = toCopy.start_exploration[r];
+        this->end_exploration[r] = toCopy.end_exploration[r];
+        
+        this->ivm[r] = new int[cols];
+
 		for (c = 0; c < cols; c++)
-			this->ivm[r][c] = -1;
+			this->ivm[r][c] = toCopy.ivm[r][c];
 	}
 
-	this->starting_level = 0;
-	this->active_level = 0;
-	this->start_exploration = new int[rows];
-	this->end_exploration = new int[rows];
+	
 }
 
 IVMTree::~IVMTree() {

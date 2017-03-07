@@ -19,6 +19,7 @@ class IVMTree {
 
 public:
 	IVMTree();
+    IVMTree(const IVMTree& toCopy);
 	IVMTree(int rows, int cols);
 
 	~IVMTree();

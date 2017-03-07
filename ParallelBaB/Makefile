@@ -12,7 +12,7 @@ LDDEBUG = -O0 -g -traceback -std=c++11
 src = $(wildcard *.cpp)
 obj = $(src:.cpp = .o)
 
-all: 
+all: branchAndBound
 
 branchAndBound: $(obj)
 	$(CXX) $(LIB_DIR) -o $@ $^ $(LDDEBUG) $(INC_DIR) $(LIBS_TO_LOAD)

@@ -42,8 +42,8 @@ BranchAndBound::BranchAndBound() {
 	this->globalPool = new tbb::concurrent_queue<Interval>;
 	this->paretoContainer = std::make_shared<HandlerContainer>(10, 10, 10, 10);
 
-	delete[] outputFile;
-	delete[] summarizeFile;
+    this->outputFile = new char[255];
+    this->summarizeFile = new char[255];
 }
 
 BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem) {
