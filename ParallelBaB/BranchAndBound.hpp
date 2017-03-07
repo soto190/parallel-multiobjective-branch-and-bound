@@ -40,6 +40,7 @@ public:
 	 * The constructor should receives the parameters to start at some point of the tree.
 	 **/
 	BranchAndBound();
+    BranchAndBound(const BranchAndBound& branchAndBound);
 	BranchAndBound(int rank, std::shared_ptr<Problem> problem);
 	BranchAndBound(int rank, std::shared_ptr<Problem> problem,
 			const Interval & branch);

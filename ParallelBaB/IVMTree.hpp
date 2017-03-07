@@ -55,6 +55,7 @@ public:
 
 	void showIVM();
 	IVMTree& operator()(int rows, int cols);
+    IVMTree& operator=(const IVMTree& toCopy);
 
 };
 

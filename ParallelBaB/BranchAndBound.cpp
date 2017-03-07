@@ -46,6 +46,37 @@ BranchAndBound::BranchAndBound() {
     this->summarizeFile = new char[255];
 }
 
+BranchAndBound::BranchAndBound(const BranchAndBound& toCopy){
+    this->levels_completed = toCopy.levels_completed;
+    this->start = toCopy.start;
+    
+    this->rank = toCopy.rank;
+    this->problem = toCopy.problem;
+    
+    this->currentLevel = toCopy.currentLevel;
+    this->totalLevels = toCopy.totalLevels;
+    this->totalNodes = toCopy.totalNodes;
+    this->branches = toCopy.branches;
+    this->exploredNodes = toCopy.exploredNodes;
+    this->reachedLeaves = toCopy.reachedLeaves;
+    this->unexploredNodes = toCopy.unexploredNodes;
+    this->prunedNodes = toCopy.prunedNodes;
+    this->callsToPrune = toCopy.callsToPrune;
+    this->callsToBranch = toCopy.callsToBranch;
+    this->totalUpdatesInLowerBound = toCopy.totalUpdatesInLowerBound;
+    this->totalTime = toCopy.totalTime;
+    
+    this->currentSolution = toCopy.currentSolution;
+    
+    this->ivm_tree = toCopy.ivm_tree;
+    this->localPool = toCopy.localPool;
+    this->globalPool = toCopy.globalPool;
+    this->paretoContainer = toCopy.paretoContainer;
+    this->outputFile = new char[255];
+    this->summarizeFile = new char[255];
+    
+}
+
 BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem) {
 
 	this->t1 = std::chrono::high_resolution_clock::now();
@@ -53,8 +84,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem) {
 
 	this->levels_completed = 0;
 	this->start = std::clock();
-	;
-
+	
 	this->rank = rank;
 	this->problem = problem;
 
@@ -152,8 +182,6 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem,
 }
 
 BranchAndBound::~BranchAndBound() {
-
-	printf("BB%3d\n", this->rank);
 
 	delete[] this->outputFile;
 	delete[] this->summarizeFile;
@@ -308,13 +336,13 @@ void BranchAndBound::solve(const Interval& branch) {
 		if (!this->globalPool->empty()) {
 			this->globalPool->try_pop(branchFromGlobal);
 			working++;
-			printf("[BB%3d] Picking from global pool. Pool size is %lu\n",
+			printf("[B&B%04d] Picking from global pool. Pool size is %lu\n",
 					this->rank, this->globalPool->unsafe_size());
 			branchFromGlobal.showInterval();
 		} else {
 			working = 0;
 			printf(
-					"[BB%3d] No more intervals in global pool, going to sleep.\n",
+					"[B&B%04d] No more intervals in global pool, going to sleep.\n",
 					this->rank);
 		}
 
@@ -351,7 +379,7 @@ void BranchAndBound::solve(const Interval& branch) {
 					this->totalUpdatesInLowerBound += updated;
 
 					if (updated == 1) {
-						printf("[BB%3d] ", this->rank);
+						printf("[B&B%04d] ", this->rank);
 						this->printCurrentSolution();
 						printf(" + [%6lu] \n",
 								this->paretoContainer->getSize());
@@ -928,7 +956,7 @@ int BranchAndBound::saveParetoFront() {
 
 	std::ofstream myfile(this->outputFile);
 	if (myfile.is_open()) {
-		printf("[BB%d] Saving in file...\n", this->rank);
+		printf("[B&B%04d] Saving in file...\n", this->rank);
 		int numberOfObjectives = this->problem->getNumberOfObjectives();
 		int nObj = 0;
 
@@ -946,7 +974,7 @@ int BranchAndBound::saveParetoFront() {
 		}
 		myfile.close();
 	} else
-		printf("[BB%d] Unable to open file...\n", this->rank);
+		printf("[B&B%04d] Unable to open file...\n", this->rank);
 	return 0;
 }
 
