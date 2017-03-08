@@ -24,7 +24,7 @@ tbb::task * ParallelBranchAndBound::execute() {
 	this->set_ref_count(this->number_of_threads + 1);
 
 	tbb::task_list tl;
-	vector<BranchAndBound *> bb_threads;
+    //vector<BranchAndBound *> bb_threads;
 	while (counter_threads++ < this->number_of_threads) {
 
 		BranchAndBound * BaB_task =
@@ -33,7 +33,7 @@ tbb::task * ParallelBranchAndBound::execute() {
 		BaB_task->setParetoContainer(BaB_master->getParetoContainer());
 		BaB_task->setGlobalPool(BaB_master->globalPool); /** TODO: Fix this. Using this cause a segmentation fault in Xeon Phi when spliting the local intervals. **/
 
-		bb_threads.push_back(BaB_task);
+        //	bb_threads.push_back(BaB_task);
 		tl.push_back(*BaB_task);
 	}
 
@@ -43,12 +43,12 @@ tbb::task * ParallelBranchAndBound::execute() {
 
 	/** Recollects the data. **/
 	BaB_master->getTotalTime();
-	BranchAndBound * bb_in;
-	while (bb_threads.size() > 0) {
+	BranchAndBound* bb_in;
+	while (!tl.empty()) {
 
-		bb_in = bb_threads.back();
-		bb_threads.pop_back();
-
+        bb_in = &((BranchAndBound&)tl.pop_front());//tl.pop_front();
+        //bb_threads.pop_back();
+    
 		BaB_master->exploredNodes += bb_in->exploredNodes;
 		BaB_master->callsToBranch += bb_in->callsToBranch;
 		BaB_master->branches += bb_in->branches;
@@ -65,7 +65,8 @@ tbb::task * ParallelBranchAndBound::execute() {
 	BaB_master->saveParetoFront();
 	BaB_master->saveSummarize();
 
-	bb_threads.clear();
+    
+    //bb_threads.clear();
 
 	printf("Parallel Branch And Bound ended.\n");
 
