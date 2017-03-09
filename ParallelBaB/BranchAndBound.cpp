@@ -15,6 +15,7 @@
 #include "BranchAndBound.hpp"
 
 BranchAndBound::BranchAndBound() {
+    
 	this->t1 = std::chrono::high_resolution_clock::now();
 	this->t2 = std::chrono::high_resolution_clock::now();
 	this->levels_completed = 0;
@@ -47,6 +48,7 @@ BranchAndBound::BranchAndBound() {
 }
 
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy){
+    
     this->levels_completed = toCopy.levels_completed;
     this->start = toCopy.start;
     
@@ -119,6 +121,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem) {
 	this->summarizeFile = new char[255];
 	this->levels_completed = 0;
 	this->start = 0;
+    
 }
 
 BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem,
@@ -179,10 +182,11 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem,
 			obj2);
 	this->outputFile = new char[255];
 	this->summarizeFile = new char[255];
+    
 }
 
 BranchAndBound::~BranchAndBound() {
-
+    printf("[B&B%d] Calling B&B destructor..\n", this->rank);
 	delete[] this->outputFile;
 	delete[] this->summarizeFile;
 
@@ -304,16 +308,10 @@ void BranchAndBound::solve(const Interval& branch) {
 			printf("[B&B%04d] Picking from global pool. Pool size is %lu\n",
 					this->rank, this->globalPool->unsafe_size());
 			branchFromGlobal.showInterval();
-		} else {
-			working = 0;
-			printf(
-					"[B&B%04d] No more intervals in global pool, going to sleep.\n",
-					this->rank);
-		}
+            this->splitInterval(branchFromGlobal);
 
-		if (working > 0) {
-			this->splitInterval(branchFromGlobal);
-		}
+		} else
+            working = 0;
 
 		while (this->localPool->size() > 0) {
 
@@ -350,6 +348,7 @@ void BranchAndBound::solve(const Interval& branch) {
 								this->paretoContainer->getSize());
 					}
 				}
+                
 				//this->saveEvery(3600);
 			}
 		}
@@ -359,6 +358,12 @@ void BranchAndBound::solve(const Interval& branch) {
 				std::chrono::milliseconds>(t2 - t1);
 		this->totalTime = time_span.count();
 	}
+    
+    printf(
+           "[B&B%04d] No more intervals in global pool, going to sleep.\n",
+           this->rank);
+    printf("%d\n", this->ivm_tree.ivm[0][0]);
+
 }
 
 double BranchAndBound::getTotalTime() {
@@ -646,7 +651,6 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 		sol_test.setVariable(index_var, branch_to_split.interval[index_var]);
 	}
 
-//    for (jobToCheck = problem->getTotalElements() - 1; jobToCheck >= 0; jobToCheck--) {
 	for (jobToCheck = 0; jobToCheck < problem->getTotalElements();
 			jobToCheck++) {
 

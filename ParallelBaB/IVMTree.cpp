@@ -9,10 +9,13 @@
 #include "IVMTree.hpp"
 
 IVMTree::IVMTree() {
+    
+    printf("Calling constructor by default.\n");
     this->whoIam = -1;
     this->rows = 1;
     this->cols = 1;
     this->hasBranches = 0;
+    this->root_node = 0;
     this->active_node = new int[rows];
     this->max_nodes_in_level = new int[rows];
     this->ivm = new int *[rows];
@@ -34,10 +37,12 @@ IVMTree::IVMTree() {
 }
 
 IVMTree::IVMTree(int rows, int cols) {
-    
+    printf("Calling constructor by rows and cols.\n");
+
     this->rows = rows;
     this->cols = cols;
     this->hasBranches = 1;
+    this->root_node = 0;
     this->active_node = new int[rows];
     this->max_nodes_in_level = new int[rows];
     this->ivm = new int *[rows];
@@ -61,7 +66,8 @@ IVMTree::IVMTree(int rows, int cols) {
 
 
 IVMTree::IVMTree(const IVMTree& toCopy) {
-    
+    printf("Calling constructor by copy.\n");
+
     this->rows = toCopy.rows;
     this->cols = toCopy.cols;
     this->hasBranches = toCopy.hasBranches;
@@ -93,7 +99,8 @@ IVMTree::IVMTree(const IVMTree& toCopy) {
 }
 
 IVMTree& IVMTree::operator=(const IVMTree &toCopy){
-    
+    printf("Calling assignation operator by copy.\n");
+
     this->rows = toCopy.rows;
     this->cols = toCopy.cols;
     this->hasBranches = toCopy.hasBranches;
@@ -127,9 +134,12 @@ IVMTree& IVMTree::operator=(const IVMTree &toCopy){
 }
 
 IVMTree& IVMTree::operator()(int rows, int cols) {
+    printf("Calling call operator by rows and cols.\n");
+
     this->rows = rows;
     this->cols = cols;
     this->hasBranches = 1;
+    this->root_node = 0;
     this->starting_level = 0;
     this->active_level = 0;
     this->active_node = new int[rows];
@@ -152,6 +162,8 @@ IVMTree& IVMTree::operator()(int rows, int cols) {
 }
 
 IVMTree::~IVMTree() {
+    
+    printf("[IVM%3d]Calling IVM descructor.\n", this->whoIam);
     
     delete[] active_node;
     delete[] max_nodes_in_level;
@@ -293,9 +305,6 @@ void IVMTree::showIVM() {
             printf(" %3d ", this->ivm[r][this->active_node[r]]);
         
         /** Max nodes in level. **/
-        //if (this->active_nodes[r] == -1 || this->ivm[r][this->active_nodes[r]] == -1)
-        //  printf(" %3c | ", sep);
-        //else
         printf(" %3d | ", this->max_nodes_in_level[r]);
         
         /** The matrix. **/
