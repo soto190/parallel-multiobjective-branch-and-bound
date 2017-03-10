@@ -9,6 +9,36 @@
 #include "ProblemTSP.hpp"
 
 
+ProblemTSP::ProblemTSP(const ProblemTSP& toCopy):Problem(toCopy){
+    this->costCoord = new int * [toCopy.totalVariables];
+    this->costs = new double * [toCopy.totalVariables];
+    this->cityCoord = new int * [toCopy.totalVariables];
+    this->euclideanDistance = new double * [toCopy.totalVariables];
+    
+    int origin = 0, dest = 0;
+    for (origin = 0; origin < this->totalVariables; origin++) {
+        this->costCoord[origin] = new int [toCopy.totalVariables];
+        this->costs[origin] = new double [toCopy.totalVariables];
+        this->cityCoord[origin] = new int [toCopy.totalVariables];
+        this->euclideanDistance[origin] = new double [toCopy.totalVariables];
+        
+        for (dest = 0; dest < this->totalVariables; ++dest) {
+            this->costCoord[origin][dest] = toCopy.costCoord[origin][dest];
+            this->costs[origin][dest] = toCopy.costs[origin][dest];
+            this->cityCoord[origin][dest] = toCopy.cityCoord[origin][dest];
+            this->euclideanDistance[origin][dest] = toCopy.euclideanDistance[origin][dest];
+            
+        }
+    }
+}
+
+ProblemTSP::ProblemTSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
+    this->costCoord = new int * [1];
+    this->costs = new double * [1];
+    this->cityCoord = new int * [1];
+    this->euclideanDistance = new double * [1];
+    
+}
 
 ProblemTSP::~ProblemTSP(){
     int city = 0;
@@ -26,7 +56,32 @@ ProblemTSP::~ProblemTSP(){
     
 }
 
-ProblemType ProblemTSP::getType(){
+ProblemTSP& ProblemTSP::operator=(const ProblemTSP& toCopy){
+    
+    this->costCoord = new int * [toCopy.totalVariables];
+    this->costs = new double * [toCopy.totalVariables];
+    this->cityCoord = new int * [toCopy.totalVariables];
+    this->euclideanDistance = new double * [toCopy.totalVariables];
+    
+    int origin = 0, dest = 0;
+    for (origin = 0; origin < this->totalVariables; origin++) {
+        this->costCoord[origin] = new int [toCopy.totalVariables];
+        this->costs[origin] = new double [toCopy.totalVariables];
+        this->cityCoord[origin] = new int [toCopy.totalVariables];
+        this->euclideanDistance[origin] = new double [toCopy.totalVariables];
+        
+        for (dest = 0; dest < this->totalVariables; ++dest) {
+            this->costCoord[origin][dest] = toCopy.costCoord[origin][dest];
+            this->costs[origin][dest] = toCopy.costs[origin][dest];
+            this->cityCoord[origin][dest] = toCopy.cityCoord[origin][dest];
+            this->euclideanDistance[origin][dest] = toCopy.euclideanDistance[origin][dest];
+            
+        }
+    }
+    return *this;
+}
+
+ProblemType ProblemTSP::getType() const{
     return ProblemType::permutation;
 }
 

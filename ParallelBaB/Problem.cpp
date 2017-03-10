@@ -8,6 +8,17 @@
 
 #include "Problem.hpp"
 
+Problem::Problem(const Problem& toCopy){
+    this->totalObjectives = 1;
+    this->totalVariables = 1;
+    this->lowerBound = new int[1];
+    this->upperBound = new int[1];
+    this->name = new char[255];
+    this->type = ProblemType::XD;
+    this->startingLevel = 0;
+    this->totalConstraints = 0;
+}
+
 Problem::Problem(int totalObjectives, int totalVariables){
     this->totalObjectives = totalObjectives;
     this->totalVariables = totalVariables;
@@ -23,6 +34,20 @@ Problem::~Problem(){
     delete [] this->lowerBound;
     delete [] this->upperBound;
     delete [] this->name;
+}
+
+Problem& Problem::operator=(const Problem &toCopy){
+    
+    this->totalObjectives = toCopy.getNumberOfObjectives();
+    this->totalVariables = toCopy.getNumberOfVariables();
+    this->lowerBound = new int[toCopy.getNumberOfVariables()];
+    this->upperBound = new int[toCopy.getNumberOfVariables()];
+    this->name = new char[255];
+    this->type = toCopy.getType();
+    this->startingLevel = toCopy.startingLevel;
+    this->totalConstraints = toCopy.getNumberOfConstraints();
+    
+    return *this;
 }
 
 void Problem::setName(const char* name){

@@ -7,10 +7,17 @@
 
 #include "ProblemVRP.hpp"
 
+ProblemVRP::ProblemVRP(const ProblemVRP& toCopy):Problem(toCopy){
+}
+
+ProblemVRP::ProblemVRP(int totalObjectives, int totalVariables ):Problem(totalObjectives, totalVariables){}
+
 ProblemVRP::~ProblemVRP(){
 }
 
-
+ProblemVRP& ProblemVRP::operator=(const ProblemVRP &toCopy){
+    return *this;
+}
 double ProblemVRP::evaluate(Solution & solution){return 0.0;}
 double ProblemVRP::evaluatePartial(Solution & solution, int levelEvaluation){return 0.0;}
 double ProblemVRP::evaluateLastLevel(Solution * solution){return 0.0;}
@@ -29,7 +36,7 @@ int ProblemVRP::getLowerBoundInObj(int nObj){
     return INT_MAX;
 }
 
-ProblemType ProblemVRP::getType(){return ProblemType::combination;}
+ProblemType ProblemVRP::getType() const {return ProblemType::combination;}
 int ProblemVRP::getStartingLevel(){return 0;}
 int ProblemVRP::getFinalLevel(){return 0;}
 

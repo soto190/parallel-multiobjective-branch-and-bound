@@ -27,28 +27,13 @@
 class ProblemFJSSP: public Problem {
 public:
     
-    ProblemFJSSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
-        this->totalJobs = 0;
-        this->totalOperations = 0;
-        this->totalMachines = 0;
-        this->sumOfMinPij = 0;
-        this->releaseTime = new int[1];
-        this->assignationMinPij = new int[1];
-        this-> operationInJobIsNumber = new int * [1];
-        this->operationIsFromJob = new int[1];
-        this->bestWorkloadFound = 0;
-        this->goodSolutionWithMaxWorkload = 0;
-        this->assignationBestWorkload = new int [1];
-        this->minWorkload = 0;
-        this->jobHasNoperations = new int[1];
-        this->jobMachineToMap = new int * [1];
-        this->mapToJobMachine = new int * [1];
-        this->processingTime = new int * [1];
-        this->bestWorkloads = new int[1];
-
-    };
+    
+    ProblemFJSSP(const ProblemFJSSP& toCopy);
+    ProblemFJSSP(int totalObjectives, int totalVariables);
    
     ~ProblemFJSSP();
+    
+    ProblemFJSSP& operator=(const ProblemFJSSP& toCopy);
     
     double evaluate(Solution & solution);
     double evaluatePartial(Solution & solution, int levelEvaluation);
@@ -64,7 +49,7 @@ public:
     
     int getLowerBound(int indexVar);
     int getUpperBound(int indexVar);
-    ProblemType getType();
+    ProblemType getType() const;
     int getStartingLevel();
     int getFinalLevel();
     
@@ -161,8 +146,6 @@ public:
     int getLowerBoundInObj(int nObj);
     void buildSolutionWithGoodMaxWorkload(Solution * solution);
     void buildSolutionWithGoodMaxWorkloadv2(Solution * solution);
-
-    ProblemFJSSP& operator=(const ProblemFJSSP& toCopy);
     
 };
 

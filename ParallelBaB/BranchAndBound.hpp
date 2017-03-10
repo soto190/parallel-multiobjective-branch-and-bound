@@ -54,7 +54,7 @@ public:
 	Solution bestObjectivesFound;
 
 	tbb::concurrent_queue<Interval>* globalPool;
-	std::shared_ptr<std::queue<Interval>> localPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
+	std::queue<Interval> localPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 
 	std::vector<Solution> paretoFront; /** paretofFront. **/
 

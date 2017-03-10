@@ -23,6 +23,8 @@
 class ProblemHCSP: public Problem {
 public:
     
+    
+    ProblemHCSP(const ProblemHCSP& toCopy);
     ProblemHCSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
         this->totalTasks = 0;
         this->totalMachines = 0;
@@ -42,6 +44,8 @@ public:
     };
     ~ProblemHCSP();
     
+    ProblemHCSP& operator=(const ProblemHCSP& toCopy);
+    
     double evaluate(Solution & solution);
     double evaluatePartial(Solution & solution, int levelEvaluation);
     double evaluateLastLevel(Solution * solution);
@@ -58,7 +62,7 @@ public:
     int getUpperBound(int indexVar);
     int getLowerBoundInObj(int nObj);
 
-    ProblemType getType();
+    ProblemType getType() const;
     int getStartingLevel();
     int getFinalLevel();
     

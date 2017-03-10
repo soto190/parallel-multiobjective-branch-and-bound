@@ -39,7 +39,7 @@ BranchAndBound::BranchAndBound() {
 	this->starting_interval(this->problem->getNumberOfVariables());
 	this->currentSolution(1, 1);
 	this->ivm_tree(1, 1);
-	this->localPool = std::make_shared<std::queue<Interval>>();
+//	this->localPool = std::make_shared<std::queue<Interval>>();
 	this->globalPool = new tbb::concurrent_queue<Interval>;
 	this->paretoContainer = std::make_shared<HandlerContainer>(10, 10, 10, 10);
 
@@ -111,7 +111,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem) {
 	this->ivm_tree(this->problem->getNumberOfVariables(),
 			this->problem->getUpperBound(0) + 1);
 	this->ivm_tree.setOwner(rank);
-	this->localPool = std::make_shared<std::queue<Interval>>();
+    //this->localPool = std::make_shared<std::queue<Interval>>();
 	this->globalPool = new tbb::concurrent_queue<Interval>;
 	this->paretoContainer = std::make_shared<HandlerContainer>(100, 100,
 			this->currentSolution.getObjective(0),
@@ -175,7 +175,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem,
 			this->problem->getUpperBound(0) + 1);
 	this->ivm_tree.setOwner(rank);
 
-	this->localPool = std::make_shared<std::queue<Interval>>();
+    //this->localPool = std::make_shared<std::queue<Interval>>();
 	this->globalPool = new tbb::concurrent_queue<Interval>;
 
 	this->paretoContainer = std::make_shared<HandlerContainer>(100, 100, obj1,
@@ -313,10 +313,10 @@ void BranchAndBound::solve(const Interval& branch) {
 		} else
             working = 0;
 
-		while (this->localPool->size() > 0) {
+		while (this->localPool.size() > 0) {
 
-			activeBranch = this->localPool->front();
-			this->localPool->pop();
+			activeBranch = this->localPool.front();
+			this->localPool.pop();
 
 			this->initializeExplorationInterval(activeBranch, this->ivm_tree);
 
@@ -698,7 +698,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 					if (this->rank == 0) {
                         this->globalPool->push(branch);
 					} else
-						this->localPool->push(branch);
+						this->localPool.push(branch);
 					this->branches++;
 					branches_created++;
 				} else
@@ -713,8 +713,8 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 			&& branches_created > (this->problem->getUpperBound(0) / 2)
 			&& branch_to_split.build_up_to
 					< (this->totalLevels - (this->totalLevels / 4))) {
-		Interval B = this->localPool->front();
-		this->localPool->pop();
+		Interval B = this->localPool.front();
+		this->localPool.pop();
 		this->globalPool->push(B);
 	}
 }

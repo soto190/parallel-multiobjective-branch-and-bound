@@ -16,9 +16,12 @@
 class ProblemVRP: public Problem {
 public:
     
-    ProblemVRP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){}
+    ProblemVRP(const ProblemVRP& toCopy);
+    ProblemVRP(int totalObjectives, int totalVariables);
     ~ProblemVRP();
     
+    ProblemVRP& operator=(const ProblemVRP& toCopy);
+
     double evaluate(Solution & solution);
     double evaluatePartial(Solution & solution, int levelEvaluation);
     double evaluateLastLevel(Solution * solution);
@@ -36,7 +39,7 @@ public:
     int getLowerBound(int indexVar);
     int getUpperBound(int indexVar);
     int getLowerBoundInObj(int nObj);
-    ProblemType getType();
+    ProblemType getType() const;
     int getStartingLevel();
     int getFinalLevel();
     

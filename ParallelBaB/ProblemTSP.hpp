@@ -26,17 +26,14 @@
 
 enum TSPObj {DISTANCE = 0, COST = 1};
 class ProblemTSP: public Problem {
+
 public:
     
-    ProblemTSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
-    	this->costCoord = new int * [1];
-    	this->costs = new double * [1];
-    	this->cityCoord = new int * [1];
-    	this->euclideanDistance = new double * [1];
-
-    };
+    ProblemTSP(const ProblemTSP& toCopy);
+    ProblemTSP(int totalObjectives, int totalVariables);
     ~ProblemTSP();
-    
+
+    ProblemTSP& operator=(const ProblemTSP& toCopy);
     double evaluate(Solution & solution);
     
     /**
@@ -60,7 +57,7 @@ public:
     int getLowerBoundInObj(int nObj);
 
     
-    ProblemType getType();
+    ProblemType getType() const;
     int getStartingLevel();
     int getFinalLevel();
     

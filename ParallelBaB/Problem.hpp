@@ -19,13 +19,16 @@
 enum ProblemType{combination = 0, permutation = 1, permutation_with_repetition_and_combination = 2, XD=190};
 
 class Problem{
+
 public:
     
+    Problem(const Problem& toCopy);
     Problem (int totalObjectives, int totalVariables);
     virtual ~Problem();
+    Problem& operator=(const Problem& toCopy);
     
     char * name;
-    int type;
+    ProblemType type;
     int startingLevel;
     int totalObjectives;
     int totalVariables;
@@ -45,7 +48,7 @@ public:
     virtual void printSolution(Solution * solution);
     virtual void printPartialSolution(Solution * solution, int level);
     
-    virtual ProblemType getType() = 0;
+    virtual ProblemType getType() const = 0;
     virtual int getStartingLevel() = 0;
     virtual int getFinalLevel() = 0;
     

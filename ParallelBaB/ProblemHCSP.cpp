@@ -9,8 +9,52 @@
 #include "ProblemHCSP.hpp"
 
 
-//this->ProblemHCSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
-//}
+ProblemHCSP::ProblemHCSP(const ProblemHCSP& toCopy):Problem(toCopy){
+    
+    this->totalTasks = toCopy.totalTasks;
+    this->totalMachines = toCopy.totalMachines;
+    this->totalConfig = toCopy.totalConfig;
+    this->totalMappings = toCopy.totalMappings;
+    
+    this->mappingConfig = new int * [this->totalMappings];
+    this->maxConfigIn = new int[this->totalConfig];
+    this->processingTime = new double * [this->totalTasks];
+    this->voltage = new double * [this->totalConfig];
+    this->speed = new double * [this->totalConfig];
+    
+    this->totalTasks = 0;
+    this->totalMachines = 0;
+    this->totalConfig = 0;
+    this->totalMappings = 0;
+    
+    int config = 0, machine = 0, task;
+    
+    for (task = 0 ; task < this->totalTasks; task++) {
+        this->processingTime[task] = new double[this->totalMachines];
+        
+        for (machine = 0; machine < this->totalMachines; machine++)
+            this->processingTime[task][machine] = toCopy.processingTime[task][machine];
+    }
+    
+    for (config = 0; config < this->totalConfig; config++){
+        
+        this->maxConfigIn[config] = toCopy.maxConfigIn[config];
+        
+        this->voltage[config] = new double[this->totalMachines];
+        this->speed[config] = new double[this->totalMachines];
+        
+        for (machine = 0; machine < this->totalMachines; machine++) {
+            this->speed[config][machine] = toCopy.speed[config][machine];
+        }
+    }
+    
+    for (config = 0; config < this->totalConfig; config++) {
+        this->mappingConfig[config] = new int[2];
+        this->mappingConfig[config][0] = toCopy.mappingConfig[config][0];
+        this->mappingConfig[config][1] = toCopy.mappingConfig[config][1];
+    }
+    
+}
 
 ProblemHCSP::~ProblemHCSP(){
     int task = 0;
@@ -38,7 +82,55 @@ ProblemHCSP::~ProblemHCSP(){
     delete[] maxConfigIn;
 }
 
-ProblemType ProblemHCSP::getType(){
+ProblemHCSP& ProblemHCSP::operator=(const ProblemHCSP &toCopy){
+    this->totalTasks = toCopy.totalTasks;
+    this->totalMachines = toCopy.totalMachines;
+    this->totalConfig = toCopy.totalConfig;
+    this->totalMappings = toCopy.totalMappings;
+    
+    this->mappingConfig = new int * [this->totalMappings];
+    this->maxConfigIn = new int[this->totalConfig];
+    this->processingTime = new double * [this->totalTasks];
+    this->voltage = new double * [this->totalConfig];
+    this->speed = new double * [this->totalConfig];
+    
+    this->totalTasks = 0;
+    this->totalMachines = 0;
+    this->totalConfig = 0;
+    this->totalMappings = 0;
+    
+    int config = 0, machine = 0, task;
+    
+    for (task = 0 ; task < this->totalTasks; task++) {
+        this->processingTime[task] = new double[this->totalMachines];
+        
+        for (machine = 0; machine < this->totalMachines; machine++)
+            this->processingTime[task][machine] = toCopy.processingTime[task][machine];
+        
+    }
+    
+    for (config = 0; config < this->totalConfig; config++){
+        
+        this->maxConfigIn[config] = toCopy.maxConfigIn[config];
+        
+        this->voltage[config] = new double[this->totalMachines];
+        this->speed[config] = new double[this->totalMachines];
+        
+        for (machine = 0; machine < this->totalMachines; machine++) {
+            this->speed[config][machine] = toCopy.speed[config][machine];
+        }
+    }
+    
+    for (config = 0; config < this->totalConfig; config++) {
+        this->mappingConfig[config] = new int[2];
+        this->mappingConfig[config][0] = toCopy.mappingConfig[config][0];
+        this->mappingConfig[config][1] = toCopy.mappingConfig[config][1];
+    }
+    
+    return *this;
+}
+
+ProblemType ProblemHCSP::getType() const{
     return ProblemType::combination;
 }
 
