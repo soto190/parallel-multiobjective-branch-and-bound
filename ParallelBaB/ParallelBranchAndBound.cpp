@@ -10,8 +10,10 @@
 
 tbb::task * ParallelBranchAndBound::execute() {
 
-	int counter_threads = 0;
+    int counter_threads = 0;
 	Interval branch_init(problem->getNumberOfVariables());
+    
+    printf("From parallel B&B %d\n", this->problem->getType());
     
     BranchAndBound BB_container (0, problem, branch_init);
 	BB_container.setParetoFrontFile(this->outputParetoFile);

@@ -133,7 +133,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem,
 	this->levels_completed = 0;
 	this->start = std::clock();
 	this->rank = rank;
-	this->problem = problem;
+    this->problem = problem;
 
 	this->currentLevel = 0;
 	this->totalLevels = 0;
