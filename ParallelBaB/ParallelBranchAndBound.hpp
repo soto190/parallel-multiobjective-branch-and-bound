@@ -26,13 +26,13 @@ public:
     char * summarizeFile;
     char * path[2];
         
-    std::shared_ptr<Problem> problem;
+    tbb::atomic<Problem *> problem;
     
     tbb::task* execute();
     
     void setNumberOfThreads(int number_of_threads);
     void setInstanceFile(char * path[]);
-    void setProblem(std::shared_ptr<Problem> problem);
+    void setProblem(tbb::atomic<Problem *>  problem);
     void setParetoFrontFile(const char * outputFile);
     void setSummarizeFile(const char * outputFile);
 };

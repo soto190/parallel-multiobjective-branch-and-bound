@@ -79,7 +79,7 @@ BranchAndBound::BranchAndBound(const BranchAndBound& toCopy){
     
 }
 
-BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem) {
+BranchAndBound::BranchAndBound(int rank,tbb::atomic<Problem * > problem) {
 
 	this->t1 = std::chrono::high_resolution_clock::now();
 	this->t2 = std::chrono::high_resolution_clock::now();
@@ -124,7 +124,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem) {
     
 }
 
-BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem,
+BranchAndBound::BranchAndBound(int rank, tbb::atomic<Problem *> problem,
 		const Interval & branch) {
 
 	this->t1 = std::chrono::high_resolution_clock::now();
@@ -134,7 +134,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem,
 	this->start = std::clock();
 	this->rank = rank;
     this->problem = problem;
-
+    
 	this->currentLevel = 0;
 	this->totalLevels = 0;
 	this->totalNodes = 0;
@@ -148,6 +148,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem,
 	this->totalUpdatesInLowerBound = 0;
 	this->totalTime = 0;
 
+    
 	this->starting_interval(this->problem->getNumberOfVariables());
 	this->starting_interval = branch; /** Copy the branch. **/
 
@@ -158,7 +159,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem,
 	this->bestObjectivesFound(numberOfObjectives, numberOfVariables);
 	this->problem->createDefaultSolution(&this->currentSolution);
 
-	Solution bestInObj1 = *this->problem->getSolutionWithLowerBoundInObj(1);
+    //Solution bestInObj1 = *this->problem->getSolutionWithLowerBoundInObj(1);
 	//Solution bestInObj2 = this->problem->getSolutionWithLowerBoundInObj(2);
 
 	int nObj = 0;
@@ -166,7 +167,7 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem,
 		this->bestObjectivesFound.setObjective(nObj,
 				this->currentSolution.getObjective(nObj));
 
-	this->bestObjectivesFound.setObjective(1, bestInObj1.getObjective(1));
+    //this->bestObjectivesFound.setObjective(1, bestInObj1.getObjective(1));
 
 	double obj1 = this->currentSolution.getObjective(0);
 	double obj2 = this->currentSolution.getObjective(1);
@@ -175,7 +176,6 @@ BranchAndBound::BranchAndBound(int rank, std::shared_ptr<Problem> problem,
 			this->problem->getUpperBound(0) + 1);
 	this->ivm_tree.setOwner(rank);
 
-    //this->localPool = std::make_shared<std::queue<Interval>>();
 	this->globalPool = new tbb::concurrent_queue<Interval>;
 
 	this->paretoContainer = std::make_shared<HandlerContainer>(100, 100, obj1,
@@ -358,12 +358,6 @@ void BranchAndBound::solve(const Interval& branch) {
 				std::chrono::milliseconds>(t2 - t1);
 		this->totalTime = time_span.count();
 	}
-    
-    printf(
-           "[B&B%04d] No more intervals in global pool, going to sleep.\n",
-           this->rank);
-    printf("%d\n", this->ivm_tree.ivm[0][0]);
-
 }
 
 double BranchAndBound::getTotalTime() {

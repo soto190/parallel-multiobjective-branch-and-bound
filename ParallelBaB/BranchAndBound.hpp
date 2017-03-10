@@ -41,13 +41,13 @@ public:
 	 **/
 	BranchAndBound();
     BranchAndBound(const BranchAndBound& branchAndBound);
-	BranchAndBound(int rank, std::shared_ptr<Problem> problem);
-	BranchAndBound(int rank, std::shared_ptr<Problem> problem,
+    BranchAndBound(int rank, tbb::atomic<Problem *> problem);
+    BranchAndBound(int rank, tbb::atomic<Problem *> problem,
 			const Interval & branch);
 	~BranchAndBound();
 
-	std::shared_ptr<Problem> problem;
-
+//	std::shared_ptr<Problem> problem;
+    tbb::atomic<Problem *> problem;
 	tbb::mutex MutexToUpdateGlobalPool;
 
 	Solution currentSolution;

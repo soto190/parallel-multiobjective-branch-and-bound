@@ -33,20 +33,20 @@
 
 int main(int argc, const char * argv[]) {
 
-	std::shared_ptr<Problem> problem;
+	tbb::atomic<Problem *>  problem;
 
 	if (strcmp(argv[1], "TSP") == 0) {
 		printf("Problem: TSP\n");
-		problem = std::make_shared<ProblemTSP>(2, 1);
+        problem = new ProblemTSP(2, 1);
 	} else if (strcmp(argv[1], "HCSP") == 0) {
 		printf("Problem: HCSP\n");
-		problem = std::make_shared<ProblemHCSP>(2, 1);
+		problem = new ProblemHCSP(2, 1);
 	} else if (strcmp(argv[1], "VRP") == 0) {
 		printf("Problem: VRP\n");
-		problem = std::make_shared<ProblemVRP>(2, 1);
+		problem = new ProblemVRP(2, 1);
 	} else if (strcmp(argv[1], "FJSSP") == 0) {
 		printf("Problem: FJSSP\n");
-		problem = std::make_shared<ProblemFJSSP>(2, 1);
+		problem = new ProblemFJSSP(2, 1);
 	} else {
 		printf("Problem no found.\n");
 		return 0;

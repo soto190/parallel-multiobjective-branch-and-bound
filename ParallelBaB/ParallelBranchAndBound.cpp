@@ -29,6 +29,7 @@ tbb::task * ParallelBranchAndBound::execute() {
 		BranchAndBound * BaB_task =
 				new (tbb::task::allocate_child()) BranchAndBound(
 						counter_threads, this->problem, branch_init);
+
 		BaB_task->setParetoContainer(BB_container.getParetoContainer());
 		BaB_task->setGlobalPool(BB_container.globalPool);
         
@@ -67,9 +68,7 @@ tbb::task * ParallelBranchAndBound::execute() {
 	BB_container.printParetoFront();
 	BB_container.saveParetoFront();
 	BB_container.saveSummarize();
-
     
-    //bb_threads.clear();
 	printf("Parallel Branch And Bound ended.\n");
 	return NULL;
 }
@@ -86,7 +85,7 @@ void ParallelBranchAndBound::setInstanceFile(char *path[]) {
 	std::strcpy(this->path[1], path[1]);
 }
 
-void ParallelBranchAndBound::setProblem(std::shared_ptr<Problem> problem) {
+void ParallelBranchAndBound::setProblem(tbb::atomic<Problem *>  problem) {
 	this->problem = problem;
 }
 
