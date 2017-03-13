@@ -11,9 +11,9 @@
 tbb::task * ParallelBranchAndBound::execute() {
 
     int counter_threads = 0;
-	Interval branch_init(problem->getNumberOfVariables());
+	Interval branch_init(this->problem.getNumberOfVariables());
         
-    BranchAndBound BB_container (0, problem, branch_init);
+    BranchAndBound BB_container (0, this->problem, branch_init);
 	BB_container.setParetoFrontFile(this->outputParetoFile);
 	BB_container.setSummarizeFile(this->summarizeFile);
 	BB_container.splitInterval(branch_init);
@@ -83,7 +83,7 @@ void ParallelBranchAndBound::setInstanceFile(char *path[]) {
 	std::strcpy(this->path[1], path[1]);
 }
 
-void ParallelBranchAndBound::setProblem(tbb::atomic<Problem *>  problem) {
+void ParallelBranchAndBound::setProblem(const ProblemFJSSP&  problem) {
 	this->problem = problem;
 }
 

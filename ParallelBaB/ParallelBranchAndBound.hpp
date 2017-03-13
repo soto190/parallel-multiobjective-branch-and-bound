@@ -26,13 +26,13 @@ public:
     char * summarizeFile;
     char * path[2];
         
-    tbb::atomic<Problem *> problem;
+    ProblemFJSSP problem;
     
     tbb::task* execute();
     
     void setNumberOfThreads(int number_of_threads);
     void setInstanceFile(char * path[]);
-    void setProblem(tbb::atomic<Problem *>  problem);
+    void setProblem(const ProblemFJSSP&  problem);
     void setParetoFrontFile(const char * outputFile);
     void setSummarizeFile(const char * outputFile);
 };

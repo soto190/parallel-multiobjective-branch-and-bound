@@ -22,6 +22,7 @@ class Problem{
 
 public:
     
+    Problem();
     Problem(const Problem& toCopy);
     Problem (int totalObjectives, int totalVariables);
     virtual ~Problem();

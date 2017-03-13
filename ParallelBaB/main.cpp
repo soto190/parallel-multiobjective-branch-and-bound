@@ -33,24 +33,24 @@
 
 int main(int argc, const char * argv[]) {
 
-	tbb::atomic<Problem *>  problem;
+	ProblemFJSSP  problem (2, 1);;
 
-	if (strcmp(argv[1], "TSP") == 0) {
-		printf("Problem: TSP\n");
-        problem = new ProblemTSP(2, 1);
-	} else if (strcmp(argv[1], "HCSP") == 0) {
-		printf("Problem: HCSP\n");
-		problem = new ProblemHCSP(2, 1);
-	} else if (strcmp(argv[1], "VRP") == 0) {
-		printf("Problem: VRP\n");
-		problem = new ProblemVRP(2, 1);
-	} else if (strcmp(argv[1], "FJSSP") == 0) {
-		printf("Problem: FJSSP\n");
-		problem = new ProblemFJSSP(2, 1);
-	} else {
-		printf("Problem no found.\n");
-		return 0;
-	}
+//    if (strcmp(argv[1], "TSP") == 0) {
+//		printf("Problem: TSP\n");
+//        problem = new ProblemTSP(2, 1);
+//	} else if (strcmp(argv[1], "HCSP") == 0) {
+//		printf("Problem: HCSP\n");
+//		problem = new ProblemHCSP(2, 1);
+//	} else if (strcmp(argv[1], "VRP") == 0) {
+//		printf("Problem: VRP\n");
+//		problem = new ProblemVRP(2, 1);
+//	} else if (strcmp(argv[1], "FJSSP") == 0) {
+//		printf("Problem: FJSSP\n");
+//		problem = new ProblemFJSSP(2, 1);
+//	} else {
+//		printf("Problem no found.\n");
+//		return 0;
+//	}
 
 	char *files[2];
 	files[0] = new char[255];
@@ -68,9 +68,9 @@ int main(int argc, const char * argv[]) {
 	printf("Name: %s\n", splited[0].c_str());
 
 	printf("Files:\n\t%s\n\t%s\n", files[0], files[1]);
-	problem->setName(splited[0].c_str());
-	problem->loadInstance(files);
-	problem->printProblemInfo();
+	problem.setName(splited[0].c_str());
+	problem.loadInstance(files);
+	problem.printProblemInfo();
 	/** End **/
 
 	/** Preparing output files:

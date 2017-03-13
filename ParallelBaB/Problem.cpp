@@ -8,6 +8,17 @@
 
 #include "Problem.hpp"
 
+Problem::Problem(){
+    this->totalObjectives = 1;
+    this->totalVariables = 1;
+    this->lowerBound = new int[totalVariables];
+    this->upperBound = new int[totalVariables];
+    this->name = new char[255];
+    this->type = ProblemType::XD;
+    this->startingLevel = 0;
+    this->totalConstraints = 1;
+}
+
 Problem::Problem(const Problem& toCopy){
     this->totalObjectives = toCopy.getNumberOfObjectives();
     this->totalVariables = toCopy.getNumberOfVariables();

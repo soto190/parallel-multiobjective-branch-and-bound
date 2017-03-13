@@ -8,6 +8,10 @@
 
 #include "ProblemFJSSP.hpp"
 
+ProblemFJSSP::ProblemFJSSP():Problem(){
+    
+}
+
 ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy){
     
     printf("Calling ProblemFJSSP copy constructor.\n");
@@ -34,6 +38,11 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy){
     
     this->jobHasNoperations = new int[totalJobs];
     this->releaseTime = new int[totalJobs];
+    this->operationIsFromJob = new int[this->totalOperations];
+    this->assignationMinPij = new int[totalOperations];
+    this->assignationBestWorkload = new int[totalOperations];
+    this->bestWorkloads = new int[totalMachines];
+    this->minWorkload = new int[totalOperations];
     
     int job = 0, map = 0, machine = 0, operation = 0, operationCounter = 0;
     
@@ -57,13 +66,6 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy){
     }
     
     this->operationInJobIsNumber = new int * [this->totalOperations];
-    
-    this->operationIsFromJob = new int[this->totalOperations];
-    this->assignationMinPij = new int[totalOperations];
-    this->assignationBestWorkload = new int[totalOperations];
-    this->minWorkload = new int[totalOperations];
-    this->bestWorkloads = new int[totalMachines];
-    
     
     this->processingTime = new int * [totalOperations];
     
@@ -136,6 +138,8 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
     
     this->jobHasNoperations = new int[totalJobs];
     this->releaseTime = new int[totalJobs];
+    this->minWorkload = new int[totalMachines];
+    this->bestWorkloads = new int[totalMachines];
     
     int job = 0, map = 0, machine = 0, operation = 0, operationCounter = 0;
     

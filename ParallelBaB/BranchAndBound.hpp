@@ -19,6 +19,7 @@
 #include <fstream>
 #include <iomanip>
 #include "Problem.hpp"
+#include "ProblemFJSSP.hpp"
 #include "Solution.hpp"
 #include "myutils.hpp"
 #include "GridContainer.hpp"
@@ -41,13 +42,13 @@ public:
 	 **/
 	BranchAndBound();
     BranchAndBound(const BranchAndBound& branchAndBound);
-    BranchAndBound(int rank, tbb::atomic<Problem *> problem);
-    BranchAndBound(int rank, tbb::atomic<Problem *> problem,
+    BranchAndBound(int rank, const ProblemFJSSP& problem);
+    BranchAndBound(int rank, const ProblemFJSSP& problem,
 			const Interval & branch);
 	~BranchAndBound();
 
 //	std::shared_ptr<Problem> problem;
-    tbb::atomic<Problem *> problem;
+    ProblemFJSSP problem;
 	tbb::mutex MutexToUpdateGlobalPool;
 
 	Solution currentSolution;

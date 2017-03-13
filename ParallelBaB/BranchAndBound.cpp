@@ -36,7 +36,7 @@ BranchAndBound::BranchAndBound() {
 	this->totalUpdatesInLowerBound = 0;
 	this->totalTime = 0;
 
-	this->starting_interval(this->problem->getNumberOfVariables());
+	this->starting_interval(this->problem.getNumberOfVariables());
 	this->currentSolution(1, 1);
 	this->ivm_tree(1, 1);
 //	this->localPool = std::make_shared<std::queue<Interval>>();
@@ -79,7 +79,7 @@ BranchAndBound::BranchAndBound(const BranchAndBound& toCopy){
     
 }
 
-BranchAndBound::BranchAndBound(int rank,tbb::atomic<Problem * > problem) {
+BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem) {
 
 	this->t1 = std::chrono::high_resolution_clock::now();
 	this->t2 = std::chrono::high_resolution_clock::now();
@@ -103,13 +103,13 @@ BranchAndBound::BranchAndBound(int rank,tbb::atomic<Problem * > problem) {
 	this->totalUpdatesInLowerBound = 0;
 	this->totalTime = 0;
 
-	this->currentSolution(this->problem->getNumberOfObjectives(),
-			this->problem->getNumberOfVariables());
-	this->problem->createDefaultSolution(&this->currentSolution);
-	this->problem->evaluate(this->currentSolution);
+	this->currentSolution(this->problem.getNumberOfObjectives(),
+			this->problem.getNumberOfVariables());
+	this->problem.createDefaultSolution(&this->currentSolution);
+	this->problem.evaluate(this->currentSolution);
 
-	this->ivm_tree(this->problem->getNumberOfVariables(),
-			this->problem->getUpperBound(0) + 1);
+	this->ivm_tree(this->problem.getNumberOfVariables(),
+			this->problem.getUpperBound(0) + 1);
 	this->ivm_tree.setOwner(rank);
     //this->localPool = std::make_shared<std::queue<Interval>>();
 	this->globalPool = new tbb::concurrent_queue<Interval>;
@@ -124,7 +124,7 @@ BranchAndBound::BranchAndBound(int rank,tbb::atomic<Problem * > problem) {
     
 }
 
-BranchAndBound::BranchAndBound(int rank, tbb::atomic<Problem *> problem,
+BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem,
 		const Interval & branch) {
 
 	this->t1 = std::chrono::high_resolution_clock::now();
@@ -149,18 +149,18 @@ BranchAndBound::BranchAndBound(int rank, tbb::atomic<Problem *> problem,
 	this->totalTime = 0;
 
     
-	this->starting_interval(this->problem->getNumberOfVariables());
+	this->starting_interval(this->problem.getNumberOfVariables());
 	this->starting_interval = branch; /** Copy the branch. **/
 
-	int numberOfObjectives = this->problem->getNumberOfObjectives();
-	int numberOfVariables = this->problem->getNumberOfVariables();
+	int numberOfObjectives = this->problem.getNumberOfObjectives();
+	int numberOfVariables = this->problem.getNumberOfVariables();
 
 	this->currentSolution(numberOfObjectives, numberOfVariables);
 	this->bestObjectivesFound(numberOfObjectives, numberOfVariables);
-	this->problem->createDefaultSolution(&this->currentSolution);
+	this->problem.createDefaultSolution(&this->currentSolution);
 
-    //Solution bestInObj1 = *this->problem->getSolutionWithLowerBoundInObj(1);
-	//Solution bestInObj2 = this->problem->getSolutionWithLowerBoundInObj(2);
+    //Solution bestInObj1 = *this->problem.getSolutionWithLowerBoundInObj(1);
+	//Solution bestInObj2 = this->problem.getSolutionWithLowerBoundInObj(2);
 
 	int nObj = 0;
 	for (nObj = 0; nObj < numberOfObjectives; nObj++)
@@ -172,8 +172,8 @@ BranchAndBound::BranchAndBound(int rank, tbb::atomic<Problem *> problem,
 	double obj1 = this->currentSolution.getObjective(0);
 	double obj2 = this->currentSolution.getObjective(1);
 
-	this->ivm_tree(this->problem->getNumberOfVariables(),
-			this->problem->getUpperBound(0) + 1);
+	this->ivm_tree(this->problem.getNumberOfVariables(),
+			this->problem.getUpperBound(0) + 1);
 	this->ivm_tree.setOwner(rank);
 
 	this->globalPool = new tbb::concurrent_queue<Interval>;
@@ -197,14 +197,14 @@ void BranchAndBound::initialize(int starts_tree) {
 
 	this->start = std::clock();
 
-	int numberOfObjectives = this->problem->getNumberOfObjectives();
-	int numberOfVariables = this->problem->getNumberOfVariables();
+	int numberOfObjectives = this->problem.getNumberOfObjectives();
+	int numberOfVariables = this->problem.getNumberOfVariables();
 
 	if (starts_tree == -1)
 		this->currentLevel = 0;
 	else
 		this->currentLevel = starts_tree;
-	this->totalLevels = this->problem->getFinalLevel();
+	this->totalLevels = this->problem.getFinalLevel();
 	this->branches = 0;
 	this->exploredNodes = 0;
 	this->unexploredNodes = 0;
@@ -216,10 +216,10 @@ void BranchAndBound::initialize(int starts_tree) {
 
 	this->currentSolution(numberOfObjectives, numberOfVariables);
 	this->bestObjectivesFound(numberOfObjectives, numberOfVariables);
-	this->problem->createDefaultSolution(&this->currentSolution);
+	this->problem.createDefaultSolution(&this->currentSolution);
 
-	Solution bestInObj1 = *this->problem->getSolutionWithLowerBoundInObj(1);
-	Solution bestInObj2 = *this->problem->getSolutionWithLowerBoundInObj(2);
+	Solution bestInObj1 = *this->problem.getSolutionWithLowerBoundInObj(1);
+	Solution bestInObj2 = *this->problem.getSolutionWithLowerBoundInObj(2);
 
 	int nObj = 0;
 	for (nObj = 0; nObj < numberOfObjectives; nObj++)
@@ -297,7 +297,7 @@ void BranchAndBound::solve(const Interval& branch) {
 	int working = 1;
 
 	Interval branchFromGlobal = branch;
-	Interval activeBranch(this->problem->getNumberOfVariables());
+	Interval activeBranch(this->problem.getNumberOfVariables());
 
 	this->initialize(branchFromGlobal.build_up_to);
 
@@ -326,7 +326,7 @@ void BranchAndBound::solve(const Interval& branch) {
 				this->explore(this->currentSolution);
 
 				if (this->currentSolution.getVariable(this->currentLevel) != -1)
-					this->problem->evaluatePartial(this->currentSolution,
+					this->problem.evaluatePartial(this->currentSolution,
 							this->currentLevel);
 
 				if (this->aLeafHasBeenReached() == 0
@@ -401,29 +401,30 @@ int BranchAndBound::explore(Solution & solution) {
 void BranchAndBound::branch(Solution& solution, int currentLevel) {
 
 	this->callsToBranch++;
-	int variable = 0;
-	int isInPermut = 0;
-	int level = 0;
-	int levelStarting = 0;
-	int varInPos = 0;
-	int * numberOfRepetitionsAllowed = problem->getElemensToRepeat();
-	int timesRepeated[problem->getTotalElements()];
-	int map = 0;
-	int jobToCheck = 0;
-	int jobAllocated = 0;
-	int toAdd = 0;
-	int machine = 0;
-
-	int branched = 0;
+    
+    int variable = 0;
+    int isInPermut = 0;
+    int level = 0;
+    int levelStarting= 0;
+    int varInPos = 0;
+    int * numberOfRepetitionsAllowed = this->problem.getElemensToRepeat();
+    int timesRepeated [this->problem.getTotalElements()];
+    int map = 0;
+    int jobToCheck = 0;
+    int jobAllocated = 0;
+    int toAdd = 0;
+    int machine = 0;
+    
+    int branched = 0;
 	//vector<double [3]> elements_sorted;
 
-	switch (this->problem->getType()) {
+	switch (this->problem.getType()) {
 
 	case ProblemType::permutation:
-		levelStarting = this->problem->getStartingLevel();
+		levelStarting = this->problem.getStartingLevel();
 
-		for (variable = this->problem->getUpperBound(0);
-				variable >= this->problem->getLowerBound(0); variable--) {
+		for (variable = this->problem.getUpperBound(0);
+				variable >= this->problem.getLowerBound(0); variable--) {
 			isInPermut = 0;
 			for (level = levelStarting; level <= currentLevel; level++)
 				if (solution.getVariable(level) == variable) {
@@ -441,14 +442,14 @@ void BranchAndBound::branch(Solution& solution, int currentLevel) {
 
 	case ProblemType::permutation_with_repetition_and_combination:
 
-		for (variable = 0; variable < problem->getTotalElements(); variable++) {
+		for (variable = 0; variable < this->problem.getTotalElements(); variable++) {
 			isInPermut = 0;
 			jobToCheck = variable;
 			timesRepeated[jobToCheck] = 0;
 
 			for (varInPos = 0; varInPos <= currentLevel; varInPos++) {
 				map = solution.getVariable(varInPos);
-				jobAllocated = this->problem->getMapping(map, 0);
+				jobAllocated = this->problem.getMapping(map, 0);
 				if (jobToCheck == jobAllocated) {
 					timesRepeated[jobToCheck]++;
 					if (timesRepeated[jobToCheck]
@@ -462,12 +463,12 @@ void BranchAndBound::branch(Solution& solution, int currentLevel) {
 			if (isInPermut == 0) {
 				/** TODO: sort the branches. **/
 				for (machine = 0;
-						machine < this->problem->getTimesValueIsRepeated(0);
+						machine < this->problem.getTimesValueIsRepeated(0);
 						machine++) {
-					toAdd = this->problem->getMappingOf(jobToCheck, machine);
+					toAdd = this->problem.getMappingOf(jobToCheck, machine);
 
 					solution.setVariable(currentLevel + 1, toAdd);
-					this->problem->evaluatePartial(solution, currentLevel + 1);
+					this->problem.evaluatePartial(solution, currentLevel + 1);
 
 					if (this->improvesTheGrid(solution)) {
 						/*  double element[3];
@@ -497,8 +498,8 @@ void BranchAndBound::branch(Solution& solution, int currentLevel) {
 		break;
 
 	case ProblemType::combination:
-		for (variable = this->problem->getUpperBound(0);
-				variable >= this->problem->getLowerBound(0); variable--) {
+		for (variable = this->problem.getUpperBound(0);
+				variable >= this->problem.getLowerBound(0); variable--) {
 			this->ivm_tree.setNode(currentLevel + 1, variable);
 			this->branches++;
 		}
@@ -532,7 +533,7 @@ int BranchAndBound::theTreeHasMoreBranches() {
 int BranchAndBound::updateParetoGrid(Solution & solution) {
 	/*
 	 int nObj = 0;
-	 for (nObj = 0; nObj < this->problem->totalObjectives; nObj++)
+	 for (nObj = 0; nObj < this->problem.totalObjectives; nObj++)
 	 if (solution.getObjective(nObj) < this->bestObjectivesFound.getObjective(nObj))
 	 this->bestObjectivesFound.objective[nObj] = solution.getObjective(nObj);
 
@@ -569,29 +570,29 @@ int BranchAndBound::improvesTheGrid(Solution & solution) const {
 void BranchAndBound::computeLastBranch(Interval & branch) {
 	/** This is only for the FJSSP. **/
 	int level = branch.build_up_to;
-	int totalLevels = branch.build_up_to + 1;  //this->problem->getFinalLevel();
+	int totalLevels = branch.build_up_to + 1;  //this->problem.getFinalLevel();
 	int job = 0;
 	int isIn = 0;
 	int varInPos = 0;
-	int * numberOfRepetitionsAllowed = problem->getElemensToRepeat();
-	int timesRepeated[problem->getTotalElements()];
+	int * numberOfRepetitionsAllowed = this->problem.getElemensToRepeat();
+	int timesRepeated[this->problem.getTotalElements()];
 	int map = 0;
 	int jobToCheck = 0;
 	int jobAllocated = 0;
 
 	if (level == -1) {
-		branch.interval[0] = this->problem->getUpperBound(0);
+		branch.interval[0] = this->problem.getUpperBound(0);
 		branch.build_up_to = 0;
 	} else
 		/** For each level search the job to allocate.**/
-		for (job = problem->getTotalElements() - 1; job >= 0; job--) {
+		for (job = this->problem.getTotalElements() - 1; job >= 0; job--) {
 			isIn = 0;
 			jobToCheck = job;
 			timesRepeated[jobToCheck] = 0;
 
 			for (varInPos = 0; varInPos < totalLevels; varInPos++) {
 				map = branch.interval[varInPos];
-				jobAllocated = this->problem->getMapping(map, 0);
+				jobAllocated = this->problem.getMapping(map, 0);
 				if (jobToCheck == jobAllocated) {
 					timesRepeated[jobToCheck]++;
 					if (timesRepeated[jobToCheck]
@@ -603,9 +604,9 @@ void BranchAndBound::computeLastBranch(Interval & branch) {
 			}
 
 			if (isIn == 0) {
-				branch.interval[totalLevels] = this->problem->getMappingOf(
+				branch.interval[totalLevels] = this->problem.getMappingOf(
 						jobToCheck,
-						this->problem->getTimesValueIsRepeated(0) - 1);
+						this->problem.getTimesValueIsRepeated(0) - 1);
 
 				branch.build_up_to++;
 				/** To finish the loop. **/
@@ -631,13 +632,13 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 
 	int index_var = 0;
 	int level_to_split = branch_to_split.build_up_to + 1;
-	int number_of_variables = this->problem->totalVariables;
+	int number_of_variables = this->problem.totalVariables;
 	int branches_created = 0;
 
 	int isIn = 0;
 	int varInPos = 0;
-	int * numberOfRepetitionsAllowed = problem->getElemensToRepeat();
-	int timesRepeated[problem->getTotalElements()];
+	int * numberOfRepetitionsAllowed = this->problem.getElemensToRepeat();
+	int timesRepeated[this->problem.getTotalElements()];
 	int map = 0;
 	int jobToCheck = 0;
 	int jobAllocated = 0;
@@ -648,7 +649,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 		sol_test.setVariable(index_var, branch_to_split.interval[index_var]);
 	}
 
-	for (jobToCheck = 0; jobToCheck < problem->getTotalElements();
+	for (jobToCheck = 0; jobToCheck < this->problem.getTotalElements();
 			jobToCheck++) {
 
 		isIn = 0;
@@ -656,7 +657,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 
 		for (varInPos = 0; varInPos < level_to_split; varInPos++) {
 			map = branch_to_split.interval[varInPos];
-			jobAllocated = this->problem->getMapping(map, 0);
+			jobAllocated = this->problem.getMapping(map, 0);
 			if (jobToCheck == jobAllocated) {
 				timesRepeated[jobToCheck]++;
 				if (timesRepeated[jobToCheck]
@@ -671,10 +672,10 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 			int toAdd = 0;
 			int machine = 0;
 			for (machine = 0;
-					machine < this->problem->getTimesValueIsRepeated(0);
+					machine < this->problem.getTimesValueIsRepeated(0);
 					machine++) {
 
-				toAdd = this->problem->getMappingOf(jobToCheck, machine);
+				toAdd = this->problem.getMappingOf(jobToCheck, machine);
 
 				Interval branch(branch_to_split); /** Creates a new Interval from given branch. **/
 
@@ -688,7 +689,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 				branch.build_up_to = level_to_split;
 
 				sol_test.setVariable(level_to_split, toAdd);
-				this->problem->evaluatePartial(sol_test, level_to_split);
+				this->problem.evaluatePartial(sol_test, level_to_split);
 
 				if (this->improvesTheGrid(sol_test) == 1) {
 					/**Add it to Intervals. **/
@@ -707,7 +708,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 
 	/** TODO: Design something to decide where to add something to the global pool. **/
 	if (this->rank > 0
-			&& branches_created > (this->problem->getUpperBound(0) / 2)
+			&& branches_created > (this->problem.getUpperBound(0) / 2)
 			&& branch_to_split.build_up_to
 					< (this->totalLevels - (this->totalLevels / 4))) {
 		Interval B = this->localPool.front();
@@ -728,7 +729,7 @@ int BranchAndBound::getUpperBound(int objective) {
 }
 
 int BranchAndBound::getLowerBoundInObj(int nObj) {
-	return this->problem->getLowerBoundInObj(nObj);
+	return this->problem.getLowerBoundInObj(nObj);
 }
 
 /**
@@ -737,10 +738,10 @@ int BranchAndBound::getLowerBoundInObj(int nObj) {
  */
 unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
 	long totalNodes = 0;
-	long nodes_per_branch = 0;
-	long deepest_level;
+    long nodes_per_branch = 0;
+    long deepest_level;
 
-	switch (this->problem->getType()) {
+	switch (this->problem.getType()) {
 
 	case ProblemType::permutation:
 		for (int i = 0; i < totalVariables; i++)
@@ -748,8 +749,8 @@ unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
 		break;
 
 	case ProblemType::combination:
-		nodes_per_branch = (this->problem->getUpperBound(0) + 1)
-				- this->problem->getLowerBound(0);
+		nodes_per_branch = (this->problem.getUpperBound(0) + 1)
+				- this->problem.getLowerBound(0);
 		deepest_level = this->totalLevels + 1;
 		totalNodes = (pow(nodes_per_branch, deepest_level + 1) - 1)
 				/ (nodes_per_branch - 1);
@@ -757,8 +758,8 @@ unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
 
 	case ProblemType::permutation_with_repetition_and_combination:
 		/** TODO: Design the correct computaiton of the number of nodes. **/
-		nodes_per_branch = (this->problem->getUpperBound(0) + 1)
-				- this->problem->getLowerBound(0);
+		nodes_per_branch = (this->problem.getUpperBound(0) + 1)
+				- this->problem.getLowerBound(0);
 		deepest_level = this->totalLevels + 1;
 		totalNodes = (pow(nodes_per_branch, deepest_level + 1) - 1)
 				/ (nodes_per_branch - 1);
@@ -774,7 +775,7 @@ unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
 }
 
 void BranchAndBound::printCurrentSolution(int withVariables) {
-	this->problem->printPartialSolution(&this->currentSolution,
+	this->problem.printPartialSolution(&this->currentSolution,
 			this->currentLevel);
 }
 
@@ -788,7 +789,7 @@ void BranchAndBound::printParetoFront(int withVariables) {
 
 	for (it = this->paretoFront.begin(); it != this->paretoFront.end(); it++) {
 		printf("[%6d] ", ++counterSolutions);
-		this->problem->printSolution(&*it);
+		this->problem.printSolution(&*it);
 		printf("\n");
 	}
 }
@@ -877,8 +878,8 @@ int BranchAndBound::saveSummarize() {
 
 		myfile << "The pareto front found is: \n";
 
-		int numberOfObjectives = this->problem->getNumberOfObjectives();
-		int numberOfVariables = this->problem->getNumberOfVariables();
+		int numberOfObjectives = this->problem.getNumberOfObjectives();
+		int numberOfVariables = this->problem.getNumberOfVariables();
 
 		int nObj = 0;
 		int nVar = 0;
@@ -920,7 +921,7 @@ int BranchAndBound::saveParetoFront() {
 	std::ofstream myfile(this->outputFile);
 	if (myfile.is_open()) {
 		printf("[B&B%04d] Saving in file...\n", this->rank);
-		int numberOfObjectives = this->problem->getNumberOfObjectives();
+		int numberOfObjectives = this->problem.getNumberOfObjectives();
 		int nObj = 0;
 
 		std::vector<Solution>::iterator it;
