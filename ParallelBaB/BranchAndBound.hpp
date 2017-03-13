@@ -45,6 +45,8 @@ public:
     BranchAndBound(int rank, const ProblemFJSSP& problem);
     BranchAndBound(int rank, const ProblemFJSSP& problem,
 			const Interval & branch);
+    
+    BranchAndBound& operator()(int rank, const ProblemFJSSP& problem, const Interval & branch);
 	~BranchAndBound();
 
 //	std::shared_ptr<Problem> problem;

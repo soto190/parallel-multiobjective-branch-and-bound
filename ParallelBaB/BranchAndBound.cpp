@@ -183,6 +183,64 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem,
     
 }
 
+BranchAndBound& BranchAndBound::operator()(int rank, const ProblemFJSSP &problem, const Interval &branch){
+    this->t1 = std::chrono::high_resolution_clock::now();
+    this->t2 = std::chrono::high_resolution_clock::now();
+    
+    this->levels_completed = 0;
+    this->start = std::clock();
+    this->rank = rank;
+    this->problem = problem;
+    
+    this->currentLevel = 0;
+    this->totalLevels = 0;
+    this->totalNodes = 0;
+    this->branches = 0;
+    this->exploredNodes = 0;
+    this->reachedLeaves = 0;
+    this->unexploredNodes = 0;
+    this->prunedNodes = 0;
+    this->callsToPrune = 0;
+    this->callsToBranch = 0;
+    this->totalUpdatesInLowerBound = 0;
+    this->totalTime = 0;
+    
+    this->starting_interval = branch; /** Copy the branch. **/
+    
+    int numberOfObjectives = this->problem.getNumberOfObjectives();
+    int numberOfVariables = this->problem.getNumberOfVariables();
+    
+    this->currentSolution(numberOfObjectives, numberOfVariables);
+    this->bestObjectivesFound(numberOfObjectives, numberOfVariables);
+    this->problem.createDefaultSolution(&this->currentSolution);
+    
+    //Solution bestInObj1 = *this->problem.getSolutionWithLowerBoundInObj(1);
+    //Solution bestInObj2 = this->problem.getSolutionWithLowerBoundInObj(2);
+    
+    int nObj = 0;
+    for (nObj = 0; nObj < numberOfObjectives; nObj++)
+        this->bestObjectivesFound.setObjective(nObj,
+                                               this->currentSolution.getObjective(nObj));
+    
+    //this->bestObjectivesFound.setObjective(1, bestInObj1.getObjective(1));
+    
+    double obj1 = this->currentSolution.getObjective(0);
+    double obj2 = this->currentSolution.getObjective(1);
+    
+    this->ivm_tree(this->problem.getNumberOfVariables(),
+                   this->problem.getUpperBound(0) + 1);
+    this->ivm_tree.setOwner(rank);
+    
+    this->globalPool = new tbb::concurrent_queue<Interval>;
+    
+    this->paretoContainer = std::make_shared<HandlerContainer>(100, 100, obj1,
+                                                               obj2);
+    this->outputFile = new char[255];
+    this->summarizeFile = new char[255];
+    
+    return *this;
+}
+
 BranchAndBound::~BranchAndBound() {
     printf("[B&B%d] Calling B&B destructor..\n", this->rank);
 	delete[] this->outputFile;

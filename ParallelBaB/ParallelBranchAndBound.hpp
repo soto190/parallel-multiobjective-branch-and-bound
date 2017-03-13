@@ -27,6 +27,8 @@ public:
     char * path[2];
         
     ProblemFJSSP problem;
+    Interval branch_init;
+    BranchAndBound BB_container;
     
     tbb::task* execute();
     

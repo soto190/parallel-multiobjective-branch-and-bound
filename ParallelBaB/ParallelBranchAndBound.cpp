@@ -11,13 +11,12 @@
 tbb::task * ParallelBranchAndBound::execute() {
 
     int counter_threads = 0;
-	Interval branch_init(this->problem.getNumberOfVariables());
-        
-    BranchAndBound BB_container (0, this->problem, branch_init);
-	BB_container.setParetoFrontFile(this->outputParetoFile);
-	BB_container.setSummarizeFile(this->summarizeFile);
-	BB_container.splitInterval(branch_init);
-
+	branch_init(this->problem.getNumberOfVariables());
+    BB_container(0, this->problem, this->branch_init);
+    BB_container.setParetoFrontFile(this->outputParetoFile);
+    BB_container.setSummarizeFile(this->summarizeFile);
+    BB_container.splitInterval(branch_init);
+    
 	this->set_ref_count(this->number_of_threads + 1);
 
 	tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
