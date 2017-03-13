@@ -264,24 +264,21 @@ int IVMTree::pruneActiveNode() {
         return this->ivm[active_level][active_node[active_level]];
     }
     
-    /** If the active level doesnt have more nodes then move to the father node while there are pending nodes **/
-    while (max_nodes_in_level[active_level] < 1) { /** TODO: Check, why max_nodes_in_level reach -1, the minimun should be 0. **/
+    /** If the active level doesn't have more nodes then move to the father node while there are pending nodes **/
+    while (max_nodes_in_level[active_level] == 0 && active_level > root_node) { /** TODO: Check, why max_nodes_in_level reach -1, the minimun should be 0. **/
         
-        this->active_node[active_level] = -1; /** Mark the level. **/
+        this->active_node[active_level] = -1; /** Mark the level to indicate that there are no more pending nodes. **/
         this->active_level--; /** Go to father node. **/
+        
         this->ivm[active_level][active_node[active_level]] = -1; /** Prune the father node. **/
         this->max_nodes_in_level[active_level]--; /** Reduce the number of nodes. **/
         
-        if (active_level == root_node) { /** Verify if it is the root level of the tree. */
-            this->hasBranches = 0; /** Mark it as there are no more branches. **/
-            return this->ivm[active_level][active_node[root_node]]; /** Return the active node. **/
-        }
         if (max_nodes_in_level[active_level] > 0) {
             this->active_node[active_level]++; /** Move to the next node. **/
             return this->ivm[active_level][active_node[active_level]]; /** Return the active node. **/
         }
     }
-    
+    this->hasBranches = 0; /** There are no more branches. **/
     return this->ivm[active_level][active_node[active_level]];
 }
 

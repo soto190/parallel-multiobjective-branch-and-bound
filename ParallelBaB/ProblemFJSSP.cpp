@@ -78,6 +78,8 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy){
         }
         
         this->assignationMinPij[operation] = toCopy.assignationMinPij[operation];
+        this->assignationBestWorkload[operation] = toCopy.assignationBestWorkload[operation];
+
     }
     
     for (job = 0; job < this->totalJobs; job++) {
@@ -167,9 +169,6 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
     this->operationIsFromJob = new int[this->totalOperations];
     this->assignationMinPij = new int[totalOperations];
     this->assignationBestWorkload = new int[totalOperations];
-    this->minWorkload = new int[totalOperations];
-    this->bestWorkloads = new int[totalMachines];
-    
     
     this->processingTime = new int * [totalOperations];
     
@@ -182,6 +181,8 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
         }
         
         this->assignationMinPij[operation] = toCopy.assignationMinPij[operation];
+        this->assignationBestWorkload[operation] = toCopy.assignationBestWorkload[operation];
+
     }
     
     for (job = 0; job < this->totalJobs; job++) {

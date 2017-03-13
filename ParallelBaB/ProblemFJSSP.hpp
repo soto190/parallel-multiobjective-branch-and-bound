@@ -70,8 +70,8 @@ public:
     int totalMachines;
     int sumOfMinPij;
     int bestWorkloadFound;
-    int * assignationMinPij;
-    int * assignationBestWorkload;
+    int * assignationMinPij; /** lenght equals to NumberOfOperations. **/
+    int * assignationBestWorkload; /** lenght equals to NumberOfOperations. */
     int * bestWorkloads;
     int * minWorkload;
     
