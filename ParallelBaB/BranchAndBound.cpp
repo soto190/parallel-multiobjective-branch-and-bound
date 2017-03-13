@@ -285,7 +285,8 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch,
 tbb::task* BranchAndBound::execute() {
 
 	this->solve(starting_interval);
-	return NULL;
+    printf("[DEBUG B&B%4d] %d\n", this->rank, this->ivm_tree.ivm[0][0]);
+    return NULL;
 
 }
 
@@ -358,6 +359,8 @@ void BranchAndBound::solve(const Interval& branch) {
 				std::chrono::milliseconds>(t2 - t1);
 		this->totalTime = time_span.count();
 	}
+    
+    printf("[DEBUG B&B%4d] %d\n", this->rank, this->ivm_tree.ivm[0][0]);
 }
 
 double BranchAndBound::getTotalTime() {
