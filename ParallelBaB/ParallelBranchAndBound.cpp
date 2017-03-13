@@ -8,11 +8,17 @@
 
 #include "ParallelBranchAndBound.hpp"
 
+ParallelBranchAndBound::ParallelBranchAndBound(const ProblemFJSSP& problem){
+    this->problem = problem;
+
+}
+
 tbb::task * ParallelBranchAndBound::execute() {
 
     int counter_threads = 0;
-	branch_init(this->problem.getNumberOfVariables());
-    BB_container(0, this->problem, this->branch_init);
+	Interval branch_init(this->problem.getNumberOfVariables());
+    GlobalPool global_pool;
+    BranchAndBound BB_container(0, this->problem, branch_init, global_pool);
     BB_container.setParetoFrontFile(this->outputParetoFile);
     BB_container.setSummarizeFile(this->summarizeFile);
     BB_container.splitInterval(branch_init);
@@ -25,10 +31,9 @@ tbb::task * ParallelBranchAndBound::execute() {
 
 		BranchAndBound * BaB_task =
 				new (tbb::task::allocate_child()) BranchAndBound(
-						counter_threads, this->problem, branch_init);
+						counter_threads, this->problem, branch_init, global_pool);
 
 		BaB_task->setParetoContainer(BB_container.getParetoContainer());
-		BaB_task->setGlobalPool(BB_container.globalPool);
         
 
         bb_threads.push_back(BaB_task);
@@ -74,13 +79,6 @@ void ParallelBranchAndBound::setNumberOfThreads(int number_of_threads) {
 	this->number_of_threads = number_of_threads;
 }
 
-void ParallelBranchAndBound::setInstanceFile(char *path[]) {
-	this->path[0] = new char[255];
-	this->path[1] = new char[255];
-
-	std::strcpy(this->path[0], path[0]);
-	std::strcpy(this->path[1], path[1]);
-}
 
 void ParallelBranchAndBound::setProblem(const ProblemFJSSP&  problem) {
 	this->problem = problem;

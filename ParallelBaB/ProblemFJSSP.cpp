@@ -99,9 +99,9 @@ ProblemFJSSP::ProblemFJSSP(int totalObjectives, int totalVariables):Problem(tota
     this->totalOperations = 0;
     this->totalMachines = 0;
     this->sumOfMinPij = 0;
-    this->releaseTime = new int[1];
-    this->assignationMinPij = new int[1];
-    this-> operationInJobIsNumber = new int * [1];
+    this->releaseTime = new int[1]();
+    this->assignationMinPij = new int[1]();
+    this-> operationInJobIsNumber = new int * [1]();
     this->operationIsFromJob = new int[1];
     this->bestWorkloadFound = 0;
     this->goodSolutionWithMaxWorkload = 0;

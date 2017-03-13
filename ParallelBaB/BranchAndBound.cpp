@@ -13,7 +13,7 @@
  *
  **/
 #include "BranchAndBound.hpp"
-
+/*
 BranchAndBound::BranchAndBound() {
     
 	this->t1 = std::chrono::high_resolution_clock::now();
@@ -39,15 +39,13 @@ BranchAndBound::BranchAndBound() {
 	this->starting_interval(this->problem.getNumberOfVariables());
 	this->currentSolution(1, 1);
 	this->ivm_tree(1, 1);
-//	this->localPool = std::make_shared<std::queue<Interval>>();
-	this->globalPool = new tbb::concurrent_queue<Interval>;
-	this->paretoContainer = std::make_shared<HandlerContainer>(10, 10, 10, 10);
+    this->paretoContainer = std::make_shared<HandlerContainer>(10, 10, 10, 10);
 
     this->outputFile = new char[255];
     this->summarizeFile = new char[255];
 }
-
-BranchAndBound::BranchAndBound(const BranchAndBound& toCopy){
+*/
+BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):globalPool(toCopy.globalPool){
     
     this->levels_completed = toCopy.levels_completed;
     this->start = toCopy.start;
@@ -72,13 +70,13 @@ BranchAndBound::BranchAndBound(const BranchAndBound& toCopy){
     
     this->ivm_tree = toCopy.ivm_tree;
     this->localPool = toCopy.localPool;
-    this->globalPool = toCopy.globalPool;
+
     this->paretoContainer = toCopy.paretoContainer;
     this->outputFile = new char[255];
     this->summarizeFile = new char[255];
     
 }
-
+/*
 BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem) {
 
 	this->t1 = std::chrono::high_resolution_clock::now();
@@ -111,9 +109,7 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem) {
 	this->ivm_tree(this->problem.getNumberOfVariables(),
 			this->problem.getUpperBound(0) + 1);
 	this->ivm_tree.setOwner(rank);
-    //this->localPool = std::make_shared<std::queue<Interval>>();
-	this->globalPool = new tbb::concurrent_queue<Interval>;
-	this->paretoContainer = std::make_shared<HandlerContainer>(100, 100,
+    this->paretoContainer = std::make_shared<HandlerContainer>(100, 100,
 			this->currentSolution.getObjective(0),
 			this->currentSolution.getObjective(1));
 
@@ -123,9 +119,9 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem) {
 	this->start = 0;
     
 }
-
+*/
 BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem,
-		const Interval & branch) {
+                               const Interval & branch, GlobalPool &globa_pool): globalPool(globa_pool) {
 
 	this->t1 = std::chrono::high_resolution_clock::now();
 	this->t2 = std::chrono::high_resolution_clock::now();
@@ -169,16 +165,10 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem,
 	this->ivm_tree(this->problem.getNumberOfVariables(),
 			this->problem.getUpperBound(0) + 1);
 	this->ivm_tree.setOwner(rank);
-    
-    delete this->globalPool;
-	this->globalPool = new tbb::concurrent_queue<Interval>;
 
 	this->paretoContainer = std::make_shared<HandlerContainer>(100, 100, obj1,
 			obj2);
-    
-    delete[] this->outputFile;
-    delete[] this->summarizeFile;
-	this->outputFile = new char[255];
+    this->outputFile = new char[255];
 	this->summarizeFile = new char[255];
     
 }
@@ -225,8 +215,6 @@ BranchAndBound& BranchAndBound::operator()(int rank, const ProblemFJSSP &problem
     this->ivm_tree(this->problem.getNumberOfVariables(),
                    this->problem.getUpperBound(0) + 1);
     this->ivm_tree.setOwner(rank);
-    
-    this->globalPool = new tbb::concurrent_queue<Interval>;
     
     this->paretoContainer = std::make_shared<HandlerContainer>(100, 100, obj1,
                                                                obj2);
@@ -354,11 +342,11 @@ void BranchAndBound::solve(const Interval& branch) {
 
 	while (working > 0) {
 
-		if (!this->globalPool->empty()) {
-			this->globalPool->try_pop(branchFromGlobal);
+		if (!this->globalPool.empty()) {
+			this->globalPool.try_pop(branchFromGlobal);
 			working++;
 			printf("[B&B%04d] Picking from global pool. Pool size is %lu\n",
-					this->rank, this->globalPool->unsafe_size());
+					this->rank, this->globalPool.unsafe_size());
 			branchFromGlobal.showInterval();
             this->splitInterval(branchFromGlobal);
 
@@ -745,7 +733,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 				if (this->improvesTheGrid(sol_test) == 1) {
 					/**Add it to Intervals. **/
 					if (this->rank == 0) {
-                        this->globalPool->push(branch);
+                        this->globalPool.push(branch);
 					} else
 						this->localPool.push(branch);
 					this->branches++;
@@ -764,7 +752,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 					< (this->totalLevels - (this->totalLevels / 4))) {
 		Interval B = this->localPool.front();
 		this->localPool.pop();
-		this->globalPool->push(B);
+		this->globalPool.push(B);
 	}
 }
 
@@ -866,10 +854,6 @@ std::shared_ptr<HandlerContainer> BranchAndBound::getParetoContainer() {
 	return this->paretoContainer;
 }
 
-void BranchAndBound::setGlobalPool(
-		tbb::concurrent_queue<Interval>* globalPool) {
-	this->globalPool = globalPool;
-}
 
 int BranchAndBound::saveSummarize() {
 

@@ -33,6 +33,31 @@
 #include "tbb/concurrent_queue.h"
 //#include <memory.h> /** For the Ehecatl wich uses GCC 4.4.7, this activates the shared_ptr. **/
 
+struct GlobalPool{
+    tbb::concurrent_queue<Interval> Queue;
+    
+    bool pop_if_present(Interval& interval){
+        if(!Queue.try_pop(interval)) return false;
+        return true;
+    }
+    
+    void push(const Interval & interval){
+        Queue.push(interval);
+    }
+    
+    bool try_pop(Interval& interval){
+        return Queue.try_pop(interval);
+    }
+    
+    bool empty(){
+        return Queue.empty();
+    }
+    
+    unsigned long unsafe_size(){
+        return Queue.unsafe_size();
+    }
+};
+
 class BranchAndBound: public tbb::task {
 
 public:
@@ -40,11 +65,11 @@ public:
 	/**
 	 * The constructor should receives the parameters to start at some point of the tree.
 	 **/
-	BranchAndBound();
+    //BranchAndBound();
     BranchAndBound(const BranchAndBound& branchAndBound);
-    BranchAndBound(int rank, const ProblemFJSSP& problem);
+    //BranchAndBound(int rank, const ProblemFJSSP& problem);
     BranchAndBound(int rank, const ProblemFJSSP& problem,
-			const Interval & branch);
+			const Interval & branch, GlobalPool& globa_pool);
     
     BranchAndBound& operator()(int rank, const ProblemFJSSP& problem, const Interval & branch);
 	~BranchAndBound();
@@ -56,7 +81,7 @@ public:
 	Solution currentSolution;
 	Solution bestObjectivesFound;
 
-	tbb::concurrent_queue<Interval>* globalPool;
+	GlobalPool& globalPool;
 	std::queue<Interval> localPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 
 	std::vector<Solution> paretoFront; /** paretofFront. **/
@@ -137,7 +162,7 @@ private:
 
 public:
 	task* execute();
-	void setGlobalPool(tbb::concurrent_queue<Interval>* globalPool);
+	void setGlobalPool(tbb::concurrent_queue<Interval>& globalPool);
 	void operator()(const Interval& branch) {
 		this->solve(branch);
 	}

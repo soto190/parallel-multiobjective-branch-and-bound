@@ -24,16 +24,15 @@ public:
     int number_of_threads;
     char * outputParetoFile;
     char * summarizeFile;
-    char * path[2];
         
     ProblemFJSSP problem;
-    Interval branch_init;
-    BranchAndBound BB_container;
+//    Interval branch_init;
+    //BranchAndBound BB_container;
     
+    ParallelBranchAndBound(const ProblemFJSSP& problem);
     tbb::task* execute();
     
     void setNumberOfThreads(int number_of_threads);
-    void setInstanceFile(char * path[]);
     void setProblem(const ProblemFJSSP&  problem);
     void setParetoFrontFile(const char * outputFile);
     void setSummarizeFile(const char * outputFile);
