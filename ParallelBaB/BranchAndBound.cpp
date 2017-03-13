@@ -156,16 +156,12 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem,
 	this->currentSolution(numberOfObjectives, numberOfVariables);
 	this->bestObjectivesFound(numberOfObjectives, numberOfVariables);
 	this->problem.createDefaultSolution(&this->currentSolution);
-
-    //Solution bestInObj1 = *this->problem.getSolutionWithLowerBoundInObj(1);
-	//Solution bestInObj2 = this->problem.getSolutionWithLowerBoundInObj(2);
-
+    
 	int nObj = 0;
 	for (nObj = 0; nObj < numberOfObjectives; nObj++)
 		this->bestObjectivesFound.setObjective(nObj,
 				this->currentSolution.getObjective(nObj));
 
-    //this->bestObjectivesFound.setObjective(1, bestInObj1.getObjective(1));
 
 	double obj1 = this->currentSolution.getObjective(0);
 	double obj2 = this->currentSolution.getObjective(1);
@@ -173,11 +169,15 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem,
 	this->ivm_tree(this->problem.getNumberOfVariables(),
 			this->problem.getUpperBound(0) + 1);
 	this->ivm_tree.setOwner(rank);
-
+    
+    delete this->globalPool;
 	this->globalPool = new tbb::concurrent_queue<Interval>;
 
 	this->paretoContainer = std::make_shared<HandlerContainer>(100, 100, obj1,
 			obj2);
+    
+    delete[] this->outputFile;
+    delete[] this->summarizeFile;
 	this->outputFile = new char[255];
 	this->summarizeFile = new char[255];
     
@@ -214,15 +214,10 @@ BranchAndBound& BranchAndBound::operator()(int rank, const ProblemFJSSP &problem
     this->bestObjectivesFound(numberOfObjectives, numberOfVariables);
     this->problem.createDefaultSolution(&this->currentSolution);
     
-    //Solution bestInObj1 = *this->problem.getSolutionWithLowerBoundInObj(1);
-    //Solution bestInObj2 = this->problem.getSolutionWithLowerBoundInObj(2);
-    
     int nObj = 0;
     for (nObj = 0; nObj < numberOfObjectives; nObj++)
         this->bestObjectivesFound.setObjective(nObj,
                                                this->currentSolution.getObjective(nObj));
-    
-    //this->bestObjectivesFound.setObjective(1, bestInObj1.getObjective(1));
     
     double obj1 = this->currentSolution.getObjective(0);
     double obj2 = this->currentSolution.getObjective(1);

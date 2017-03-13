@@ -253,6 +253,7 @@ int IVMTree::getFatherNode() const {
 /** Prune the active node and set the active_level pointing a new active node. **/
 int IVMTree::pruneActiveNode() {
     
+    
     this->ivm[active_level][active_node[active_level]] = -1; /** Marks the node as removed. **/
     this->max_nodes_in_level[active_level]--; /** Reduces the number of nodes in the active level. **/
     
