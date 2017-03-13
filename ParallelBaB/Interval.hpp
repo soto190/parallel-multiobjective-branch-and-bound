@@ -33,6 +33,10 @@ public:
 
 	Interval& operator=(const Interval& toCopy);
 	Interval& operator()(int size);
+    
+    int getSize() const;
+    int getBuidUpTo() const;
+    int getValueAt(int position) const;
 
 	void showInterval() const;
 };

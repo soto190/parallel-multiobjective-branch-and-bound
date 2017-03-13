@@ -148,8 +148,6 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem,
 	this->totalUpdatesInLowerBound = 0;
 	this->totalTime = 0;
 
-    
-	this->starting_interval(this->problem.getNumberOfVariables());
 	this->starting_interval = branch; /** Copy the branch. **/
 
 	int numberOfObjectives = this->problem.getNumberOfObjectives();
