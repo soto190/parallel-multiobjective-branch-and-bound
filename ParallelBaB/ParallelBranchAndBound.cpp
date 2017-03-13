@@ -8,7 +8,7 @@
 
 #include "ParallelBranchAndBound.hpp"
 
-ParallelBranchAndBound::ParallelBranchAndBound(const ProblemFJSSP& problem){
+ParallelBranchAndBound::ParallelBranchAndBound(const ProblemFJSSP& problem, GlobalPool& global_pool):global_pool(global_pool){
     this->problem = problem;
 
 }
@@ -17,7 +17,6 @@ tbb::task * ParallelBranchAndBound::execute() {
 
     int counter_threads = 0;
 	Interval branch_init(this->problem.getNumberOfVariables());
-    GlobalPool global_pool;
     BranchAndBound BB_container(0, this->problem, branch_init, global_pool);
     BB_container.setParetoFrontFile(this->outputParetoFile);
     BB_container.setSummarizeFile(this->summarizeFile);

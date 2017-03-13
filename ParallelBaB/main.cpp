@@ -81,12 +81,13 @@ int main(int argc, const char * argv[]) {
 	std::string summarizeFile = argv[4] + splited[0] + ".txt";
 
 	try {
-
+        GlobalPool global_pool;
+        
         int number_of_threads = 4;//tbb::task_scheduler_init::default_num_threads();
 		tbb::task_scheduler_init init(number_of_threads);
 
 		ParallelBranchAndBound * pbb =
-				new (tbb::task::allocate_root()) ParallelBranchAndBound(problem);
+				new (tbb::task::allocate_root()) ParallelBranchAndBound(problem, global_pool);
 		pbb->setNumberOfThreads(number_of_threads);
 		pbb->setParetoFrontFile(outputFile.c_str());
 		pbb->setSummarizeFile(summarizeFile.c_str());

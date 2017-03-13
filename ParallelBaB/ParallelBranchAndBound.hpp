@@ -26,10 +26,11 @@ public:
     char * summarizeFile;
         
     ProblemFJSSP problem;
+    GlobalPool& global_pool;
 //    Interval branch_init;
     //BranchAndBound BB_container;
     
-    ParallelBranchAndBound(const ProblemFJSSP& problem);
+    ParallelBranchAndBound(const ProblemFJSSP& problem, GlobalPool& global_pool);
     tbb::task* execute();
     
     void setNumberOfThreads(int number_of_threads);
