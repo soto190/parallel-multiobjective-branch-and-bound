@@ -64,6 +64,7 @@ public:
     Solution* createSolution();
     Solution* goodSolutionWithMaxWorkload;
 
+private:
     /**FJSSP functions**/
     int totalJobs;
     int totalOperations;
@@ -77,7 +78,8 @@ public:
     
     int ** mapToJobMachine;
     int ** jobMachineToMap;
-    
+
+public:
     int getNumberOfJobs() const;
     int getNumberOfOperations() const;
     int getNumberOfMachines() const;

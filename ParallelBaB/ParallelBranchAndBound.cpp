@@ -38,7 +38,7 @@ tbb::task * ParallelBranchAndBound::execute() {
 		tl.push_back(*BaB_task);
 	}
 
-    printf("Spawning the swarm...\n Waiting for all...\n");
+    printf("Spawning the swarm...\nWaiting for all...\n");
     tbb::task::spawn_and_wait_for_all(tl);
     printf("Job done...\n");
     

@@ -171,9 +171,10 @@ int HandlerContainer::set(Solution & solution, int x, int y) {
  * It uses a binary search tree locate the bucket which will contain the new solution.
  **/
 int HandlerContainer::add(Solution & solution) {
-    Mutex_Up.lock();
     int coordinate[2];
     this->checkCoordinate(solution, coordinate);
+    
+    Mutex_Up.lock();
     int result = this->set(solution, coordinate[0], coordinate[1]);
     Mutex_Up.unlock();
     return result;

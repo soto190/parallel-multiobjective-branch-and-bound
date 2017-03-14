@@ -385,7 +385,6 @@ void BranchAndBound::solve(const Interval& branch) {
 								this->paretoContainer->getSize());
 					}
 				}
-				//this->saveEvery(3600);
 			}
 		}
 
@@ -395,7 +394,6 @@ void BranchAndBound::solve(const Interval& branch) {
 		this->totalTime = time_span.count();
 	}
     printf("[B&B-%03d] No more intervals in global pool. Going to sleep.\n", this->rank);
-    
 }
 
 double BranchAndBound::getTotalTime() {
@@ -517,9 +515,8 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 						this->ivm_tree.setNode(currentLevel + 1, toAdd);
 						this->branches++;
 						branches_created++;
-					} else {
+					} else
 						this->prunedNodes++;
-					}
 				}
 			}
 		}
@@ -527,7 +524,6 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 		if (branches_created > 0) { /** If a branched was created. **/
 			this->ivm_tree.moveToNextLevel();
             this->ivm_tree.setActiveNodeAt(this->ivm_tree.getActiveLevel(), 0);
-//			this->ivm_tree.active_node[this->ivm_tree.active_level] = 0;
 		} else { /** If no branches were created then move to the next node. **/
 			this->ivm_tree.pruneActiveNode();
 			this->prunedNodes++;
@@ -546,6 +542,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 	case ProblemType::XD:
 		break;
 	}
+    
     return branches_created;
 }
 

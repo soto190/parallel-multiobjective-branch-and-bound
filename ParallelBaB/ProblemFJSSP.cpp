@@ -298,21 +298,19 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
     int map = 0;
     for (operationInPosition = 0; operationInPosition <= levelEvaluation; operationInPosition++) {
         map = solution.getVariable(operationInPosition);
-        job = this->mapToJobMachine[map][0];
-        machine = this->mapToJobMachine[map][1];
+        job = this->getMapOfJobMachine(map, 0);
+        machine = this->getMapOfJobMachine(map, 1);
         
-        numberOp = this->getOperationInJobIsNumber(job, operationOfJob[job]);// this->operationInJobIsNumber[job][operationOfJob[job]];
-        
+        numberOp = this->getOperationInJobIsNumber(job, operationOfJob[job]);
         /** The minimun total workload is reduced. **/
-        minPij -= this->getProccessingTime(numberOp, this->getAssignationMinPij(numberOp)); // this->processingTime[numberOp][this->assignationMinPij[machine]];
+        minPij -= this->getProccessingTime(numberOp, this->getAssignationMinPij(numberOp));
         
         /** With the number of operation and the machine we can continue. **/
         int proccesingTime = this->getProccessingTime(numberOp, machine);
-        workload[machine] += proccesingTime;// this->processingTime[numberOp][machine];
-        totalWorkload += proccesingTime;// this->processingTime[numberOp][machine];
+        workload[machine] += proccesingTime;
+        totalWorkload += proccesingTime;
         
         bestWL[this->getAssignatioBestWorkload(numberOp)] -= this->getProccessingTime(numberOp, this->getAssignatioBestWorkload(numberOp));
-//        bestWL[this->assignationBestWorkload[numberOp]] -= this->processingTime[numberOp][this->assignationBestWorkload[numberOp]];
         
         if (operationOfJob[job] == 0) { /** If it is the first operation of the job.**/
             if(timeInMachine[machine] >= this->getReleaseTimeOfJob(job)){
@@ -323,7 +321,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
             
             }else{ /** If the job has to wait for the release time.**/
                 
-                startingTime[numberOp] = this->getReleaseTimeOfJob(job);// releaseTime[job];
+                startingTime[numberOp] = this->getReleaseTimeOfJob(job);
                 timeInMachine[machine] = this->getReleaseTimeOfJob(job) + proccesingTime;
                 endingTime[numberOp] = timeInMachine[machine];
             
@@ -717,7 +715,7 @@ int ProblemFJSSP::getAssignationMinPij(int n_operation) const{ return this->assi
 int ProblemFJSSP::getAssignatioBestWorkload(int n_operation) const{ return this->assignationBestWorkload[n_operation];}
 int ProblemFJSSP::getBestWorkload(int n_operation) const{ return this->bestWorkloads[n_operation];}
 int ProblemFJSSP::getMinWorkload(int n_operation) const{ return this->minWorkload[n_operation];}
-int ProblemFJSSP::getMapOfJobMachine(int job, int machine) const{ return this->mapToJobMachine[job][machine];}
+int ProblemFJSSP::getMapOfJobMachine(int map, int machine_or_job) const{ return this->mapToJobMachine[map][machine_or_job];}
 int ProblemFJSSP::getJobMachineToMap(int job, int machine) const{ return this->jobMachineToMap[job][machine];}
 int ProblemFJSSP::getOperationInJobIsNumber(int job, int operation) const{ return this->operationInJobIsNumber[job][operation];}
 int ProblemFJSSP::getJobOfOperation(int n_operation) const{ return this->operationIsFromJob[n_operation];}
