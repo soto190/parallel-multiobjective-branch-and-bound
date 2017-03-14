@@ -171,7 +171,7 @@ IVMTree& IVMTree::operator()(int rows, int cols) {
 
 IVMTree::~IVMTree() {
     
-    printf("[IVM%3d]Calling IVM descructor.\n", this->whoIam);
+    printf("[IVM%3d]Calling IVM destructor.\n", this->whoIam);
     
     delete[] active_node;
     delete[] max_nodes_in_level;
@@ -184,6 +184,27 @@ IVMTree::~IVMTree() {
     
     delete[] ivm;
 }
+
+void IVMTree::setRootNode(int node){ this->root_node = node; }
+void IVMTree::setIVMValueAt(int row, int col, int value){ this->ivm[row][col] = value; }
+void IVMTree::setActiveNodeAt(int row, int value){ this->active_node[row] = value; }
+void IVMTree::setStartingLevel(int row){ this->starting_level = row; }
+void IVMTree::setStartExploration(int row, int value){ this->start_exploration[row] = value; }
+void IVMTree::setEndExploration(int row, int value){ this->end_exploration[row] = value; }
+void IVMTree::setNumberOfNodesAt(int row, int value){ this->max_nodes_in_level[row] = value; }
+int IVMTree::increaseNodesAt(int row){ return this->max_nodes_in_level[row]++; }
+int IVMTree::decreaseNodesAt(int row){ return this->max_nodes_in_level[row]--; }
+void IVMTree::resetNumberOfNodesAt(int row) { this->max_nodes_in_level[row] = 0;}
+void IVMTree::setHasBranches(int itHas){ this->hasBranches = itHas;}
+int IVMTree::getRootNode() const{ return this->root_node; }
+int IVMTree::getNumberOfNodesAt(int row) const{ return this->max_nodes_in_level[row]; }
+int IVMTree::getIVMValue(int row, int col) const{ return this->ivm[row][col]; }
+int IVMTree::getActiveNode(int row) const{ return this->active_node[row]; }
+int IVMTree::getActiveLevel() const{ return this->active_level; }
+int IVMTree::getStartingLevel() const{ return this->starting_level; }
+int IVMTree::getStartExploration(int row)const{ return this->start_exploration[row]; }
+int IVMTree::getEndExploration(int row) const{ return this->end_exploration[row]; }
+
 
 int IVMTree::getNumberOfRows() const {
     return this->rows;
@@ -296,8 +317,14 @@ void IVMTree::showIVM() {
     int r = 0, c = 0;
     
     char sep = '-';
+    /**
+     * AC: Active column.
+     * AN: Active node.
+     * NN: Number of nodes.
+     */
+    printf("[Row]\tAC\tAN\tNN\n");
     for (r = 0; r < this->rows; r++) {
-        /** The integer verctor. **/
+        /** The integer vector. **/
         if (this->active_node[r] == -1)
             printf("[%3d] %3c ", r, sep);
         else

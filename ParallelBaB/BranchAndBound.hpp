@@ -119,7 +119,7 @@ public:
 	void solve(const Interval & interval);
 	void initialize(int starting_level);
 	int explore(Solution & solution);
-	void branch(Solution & solution, int currentLevel);
+	int branch(Solution & solution, int currentLevel);
 	void prune(Solution & solution, int currentLevel);
 	void printParetoFront(int withVariables = 0);
 

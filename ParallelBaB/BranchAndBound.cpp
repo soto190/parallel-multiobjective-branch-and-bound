@@ -282,41 +282,43 @@ void BranchAndBound::initialize(int starts_tree) {
 int BranchAndBound::initializeExplorationInterval(const Interval & branch,
 		IVMTree& tree) {
 
-	int varInPos = 0;
-	int cl = 0; /** Counter level.**/
-	tree.root_node = branch.build_up_to; /** root node of this tree**/
-	tree.starting_level = branch.build_up_to + 1; /** Level with the first branches of the tree. **/
-	tree.active_level = branch.build_up_to + 1;
+	int col = 0;
+	int row = 0; /** Counter level.**/
+    int builded_value = 0;
+    int builded_up_to = branch.getBuidUpTo();
+    tree.setRootNode(builded_up_to);/** root node of this tree**/
+    tree.setStartingLevel(builded_up_to); /** Level with the first branches of the tree. **/
+    tree.setActiveLevel(builded_up_to);
 
-	/** Copy the built part. TODO: Probably this part can be removed, considering the root node.**/
-	for (cl = 0; cl <= branch.build_up_to; cl++) {
-
-		for (varInPos = 0; varInPos < tree.getNumberOfCols(); varInPos++) {
-			tree.ivm[cl][varInPos] = -1;
-		}
-		tree.start_exploration[cl] = branch.interval[cl];
-		tree.end_exploration[cl] = branch.interval[cl];
-		tree.max_nodes_in_level[cl] = 1;
-		tree.active_node[cl] = branch.interval[cl];
-		tree.ivm[cl][branch.interval[cl]] = branch.interval[cl];
+    /** Copy the built part. TODO: Probably this part can be removed, considering the root node.**/
+	for (row = 0; row <= builded_up_to; row++) {
+		for (col = 0; col < tree.getNumberOfCols(); col++)
+            tree.setIVMValueAt(row, col, -1);
+        builded_value = branch.getValueAt(row);
+        tree.setStartExploration(row, builded_value);
+        tree.setEndExploration(row, builded_value);
+        tree.setNumberOfNodesAt(row, 1);
+        tree.setActiveNodeAt(row, builded_value);
+        tree.setIVMValueAt(row, builded_value, builded_value);
 
 		/** TODO: Check this part. The interval is equivalent to the solution?. **/
-		this->currentSolution.setVariable(cl,
-				tree.start_exploration[cl]);
+		this->currentSolution.setVariable(row, builded_value);
 	}
 
-	for (cl = branch.build_up_to + 1; cl <= this->totalLevels; cl++) {
-		tree.start_exploration[cl] = 0;
-		tree.max_nodes_in_level[cl] = 0;
+    for (row = builded_up_to + 1; row <= this->totalLevels; row++) {
+        tree.setStartExploration(row, 0);
+        tree.resetNumberOfNodesAt(row);
 	}
     
-	this->currentSolution.build_up_to = branch.build_up_to;
-	this->branch(this->currentSolution, branch.build_up_to);
-	tree.active_level--;
-	tree.active_node[tree.active_level] = 0;
-	tree.active_node[tree.active_level] =
-			tree.start_exploration[tree.active_level];
-	tree.hasBranches = 1;
+	this->currentSolution.build_up_to = builded_up_to;
+	int branches_created = this->branch(this->currentSolution, builded_up_to);
+    tree.setActiveNodeAt(tree.getActiveLevel(), 0);
+    tree.setActiveNodeAt(tree.getActiveLevel(), tree.getStartExploration(tree.getActiveLevel()));
+
+    if (branches_created > 0)
+        tree.setHasBranches(1);
+    else
+        tree.setHasBranches(0);
 
 	return 0;
 }
@@ -324,7 +326,7 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch,
 tbb::task* BranchAndBound::execute() {
 
 	this->solve(starting_interval);
-    printf("[DEBUG B&B%4d] %d\n", this->rank, this->ivm_tree.ivm[0][0]);
+    printf("[DEBUG B&B%4d] %d\n", this->rank, this->ivm_tree.getIVMValue(0, 0));
     return NULL;
 
 }
@@ -357,16 +359,13 @@ void BranchAndBound::solve(const Interval& branch) {
 
 			activeBranch = this->localPool.front();
 			this->localPool.pop();
-
-			this->initializeExplorationInterval(activeBranch, this->ivm_tree);
-
+            
+            this->initializeExplorationInterval(activeBranch, this->ivm_tree);
+            
 			while (this->theTreeHasMoreBranches() == 1 && timeUp == 0) {
-
-				this->explore(this->currentSolution);
-
-				if (this->currentSolution.getVariable(this->currentLevel) != -1)
-					this->problem.evaluatePartial(this->currentSolution,
-							this->currentLevel);
+				
+                this->explore(this->currentSolution);
+                this->problem.evaluatePartial(this->currentSolution, this->currentLevel);
 
 				if (this->aLeafHasBeenReached() == 0
 						&& this->theTreeHasMoreBranches()) {
@@ -388,7 +387,6 @@ void BranchAndBound::solve(const Interval& branch) {
 								this->paretoContainer->getSize());
 					}
 				}
-                
 				//this->saveEvery(3600);
 			}
 		}
@@ -399,7 +397,7 @@ void BranchAndBound::solve(const Interval& branch) {
 		this->totalTime = time_span.count();
 	}
     
-    printf("[DEBUG B&B%4d] %d\n", this->rank, this->ivm_tree.ivm[0][0]);
+    printf("[DEBUG B&B%4d] %d\n", this->rank, this->ivm_tree.getIVMValue(0, 0));
 }
 
 double BranchAndBound::getTotalTime() {
@@ -437,7 +435,7 @@ int BranchAndBound::explore(Solution & solution) {
  *
  *
  */
-void BranchAndBound::branch(Solution& solution, int currentLevel) {
+int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
 	this->callsToBranch++;
     
@@ -454,7 +452,7 @@ void BranchAndBound::branch(Solution& solution, int currentLevel) {
     int toAdd = 0;
     int machine = 0;
     
-    int branched = 0;
+    int branches_created = 0;
 	//vector<double [3]> elements_sorted;
 
 	switch (this->problem.getType()) {
@@ -474,6 +472,7 @@ void BranchAndBound::branch(Solution& solution, int currentLevel) {
 			if (isInPermut == 0) {
 				this->ivm_tree.setNode(currentLevel + 1, variable);
 				this->branches++;
+                branches_created++;
 			}
 		}
 
@@ -519,7 +518,7 @@ void BranchAndBound::branch(Solution& solution, int currentLevel) {
 						 */
 						this->ivm_tree.setNode(currentLevel + 1, toAdd);
 						this->branches++;
-						branched++;
+						branches_created++;
 					} else {
 						this->prunedNodes++;
 					}
@@ -527,9 +526,10 @@ void BranchAndBound::branch(Solution& solution, int currentLevel) {
 			}
 		}
 
-		if (branched > 0) { /** If a branched was created. **/
+		if (branches_created > 0) { /** If a branched was created. **/
 			this->ivm_tree.moveToNextLevel();
-			this->ivm_tree.active_node[this->ivm_tree.active_level] = 0;
+            this->ivm_tree.setActiveNodeAt(this->ivm_tree.getActiveLevel(), 0);
+//			this->ivm_tree.active_node[this->ivm_tree.active_level] = 0;
 		} else { /** If no branches were created then move to the next node. **/
 			this->ivm_tree.pruneActiveNode();
 			this->prunedNodes++;
@@ -541,12 +541,14 @@ void BranchAndBound::branch(Solution& solution, int currentLevel) {
 				variable >= this->problem.getLowerBound(0); variable--) {
 			this->ivm_tree.setNode(currentLevel + 1, variable);
 			this->branches++;
+            branches_created++;
 		}
 		break;
 
 	case ProblemType::XD:
 		break;
 	}
+    return branches_created;
 }
 
 void BranchAndBound::prune(Solution & solution, int currentLevel) {

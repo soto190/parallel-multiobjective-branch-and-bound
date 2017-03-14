@@ -7,7 +7,7 @@ DEBUGGER = gdb-ia
 #LIB_DIR = -L/opt/intel/compilers_and_libraries_2017/linux/tbb/lib/intel64_lin/gcc4.7
 #LIBS_TO_LOAD = -ltbb -ltbbmalloc
 LDFLAGS = -O0 -std=c++11
-LDDEBUG = -O0 -g -traceback -std=c++11
+LDDEBUG = -O0 -g -traceback -shared-intel -std=c++11
 
 src = $(wildcard *.cpp)
 obj = $(src:.cpp = .o)
