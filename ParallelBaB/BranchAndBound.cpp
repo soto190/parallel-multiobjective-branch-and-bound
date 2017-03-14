@@ -284,7 +284,7 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch,
 	int col = 0;
 	int row = 0; /** Counter level.**/
     int builded_value = 0;
-    int builded_up_to = branch.getBuidUpTo();
+    int builded_up_to = branch.getBuildUpTo();
     tree.setRootNode(builded_up_to);/** root node of this tree**/
     tree.setStartingLevel(builded_up_to); /** Level with the first branches of the tree. **/
     tree.setActiveLevel(builded_up_to);
@@ -338,7 +338,7 @@ void BranchAndBound::solve(const Interval& branch) {
 	Interval branchFromGlobal = branch;
 	Interval activeBranch(this->problem.getNumberOfVariables());
 
-	this->initialize(branchFromGlobal.build_up_to);
+	this->initialize(branchFromGlobal.getBuildUpTo());
 
 	while (working > 0) {
 
@@ -608,8 +608,8 @@ int BranchAndBound::improvesTheGrid(Solution & solution) const {
  **/
 void BranchAndBound::computeLastBranch(Interval & branch) {
 	/** This is only for the FJSSP. **/
-	int level = branch.build_up_to;
-	int totalLevels = branch.build_up_to + 1;  //this->problem.getFinalLevel();
+	int level = branch.getBuildUpTo();
+	int totalLevels = branch.getBuildUpTo() + 1;
 	int job = 0;
 	int isIn = 0;
 	int varInPos = 0;
@@ -620,8 +620,8 @@ void BranchAndBound::computeLastBranch(Interval & branch) {
 	int jobAllocated = 0;
 
 	if (level == -1) {
-		branch.interval[0] = this->problem.getUpperBound(0);
-		branch.build_up_to = 0;
+        branch.setValueAt(0, this->problem.getUpperBound(0));
+        branch.setBuildUpTo(0);
 	} else
 		/** For each level search the job to allocate.**/
 		for (job = this->problem.getTotalElements() - 1; job >= 0; job--) {
@@ -630,7 +630,7 @@ void BranchAndBound::computeLastBranch(Interval & branch) {
 			timesRepeated[jobToCheck] = 0;
 
 			for (varInPos = 0; varInPos < totalLevels; varInPos++) {
-				map = branch.interval[varInPos];
+                map = branch.getValueAt(varInPos);// branch.interval[varInPos];
 				jobAllocated = this->problem.getMapping(map, 0);
 				if (jobToCheck == jobAllocated) {
 					timesRepeated[jobToCheck]++;
@@ -643,12 +643,11 @@ void BranchAndBound::computeLastBranch(Interval & branch) {
 			}
 
 			if (isIn == 0) {
-				branch.interval[totalLevels] = this->problem.getMappingOf(
-						jobToCheck,
-						this->problem.getTimesValueIsRepeated(0) - 1);
+                branch.setValueAt(totalLevels, this->problem.getMappingOf(jobToCheck, this->problem.getTimesValueIsRepeated(0) - 1));
 
-				branch.build_up_to++;
-				/** To finish the loop. **/
+                branch.increaseBuildUpTo();
+
+                /** To finish the loop. **/
 				job = 0;
 			}
 		}
@@ -670,8 +669,7 @@ void BranchAndBound::computeLastBranch(Interval & branch) {
 void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 
 	int index_var = 0;
-	int level_to_split = branch_to_split.build_up_to + 1;
-	int number_of_variables = this->problem.totalVariables;
+	int level_to_split = branch_to_split.getBuildUpTo() + 1;
 	int branches_created = 0;
 
 	int isIn = 0;
@@ -682,10 +680,10 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 	int jobToCheck = 0;
 	int jobAllocated = 0;
 
-	Solution sol_test(2, branch_to_split.max_size);
+	Solution sol_test(2, branch_to_split.getSize());
 
-	for (index_var = 0; index_var <= branch_to_split.build_up_to; index_var++) {
-		sol_test.setVariable(index_var, branch_to_split.interval[index_var]);
+	for (index_var = 0; index_var <= branch_to_split.getBuildUpTo(); index_var++) {
+		sol_test.setVariable(index_var, branch_to_split.getValueAt(index_var));
 	}
 
 	for (jobToCheck = 0; jobToCheck < this->problem.getTotalElements();
@@ -695,7 +693,7 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 		timesRepeated[jobToCheck] = 0;
 
 		for (varInPos = 0; varInPos < level_to_split; varInPos++) {
-			map = branch_to_split.interval[varInPos];
+            map = branch_to_split.getValueAt(varInPos);
 			jobAllocated = this->problem.getMapping(map, 0);
 			if (jobToCheck == jobAllocated) {
 				timesRepeated[jobToCheck]++;
@@ -710,47 +708,42 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 		if (isIn == 0) {
 			int toAdd = 0;
 			int machine = 0;
+            
 			for (machine = 0;
 					machine < this->problem.getTimesValueIsRepeated(0);
 					machine++) {
 
 				toAdd = this->problem.getMappingOf(jobToCheck, machine);
-
-				Interval branch(branch_to_split); /** Creates a new Interval from given branch. **/
-
-				/** From level + 1 to last position are initialized with -1. **/
-				for (index_var = level_to_split + 1;
-						index_var < number_of_variables; index_var++)
-					branch.interval[index_var] = -1;
+				Interval branch(branch_to_split); /** Creates a new Interval from a given branch. **/
 
 				/** Gets the branch to add. */
-				branch.interval[level_to_split] = toAdd;
-				branch.build_up_to = level_to_split;
+                branch.setValueAt(level_to_split, toAdd);
+                branch.setBuildUpTo(level_to_split);
 
 				sol_test.setVariable(level_to_split, toAdd);
 				this->problem.evaluatePartial(sol_test, level_to_split);
 
 				if (this->improvesTheGrid(sol_test) == 1) {
 					/**Add it to Intervals. **/
-					if (this->rank == 0) {
+					if (this->rank == 0)
                         this->globalPool.push(branch);
-					} else
+                    else
 						this->localPool.push(branch);
-					this->branches++;
 					branches_created++;
 				} else
 					this->prunedNodes++;
-
 			}
 		}
 	}
-
-	/** TODO: Design something to decide where to add something to the global pool. **/
+    this->branches += branches_created;
+    
+	/** TODO: Design something to decide when to add something to the global pool. **/
 	if (this->rank > 0
-			&& branches_created > (this->problem.getUpperBound(0) / 2)
-			&& branch_to_split.build_up_to < (this->totalLevels - (this->totalLevels / 4))) {
+			&& branches_created > (this->problem.getUpperBound(0) * 0.5)
+			&& branch_to_split.getBuildUpTo() < (this->totalLevels * 0.7)) {
         int moved = 0;
-        for (moved = (this->problem.getUpperBound(0) / 2); moved < branches_created; moved++) {
+        int branches_to_move = (int) branches_created * 0.3;
+        for (moved = 0; moved < branches_to_move; moved++) {
             this->globalPool.push(this->localPool.front());
             this->localPool.pop();
         }

@@ -20,12 +20,13 @@
  **/
 
 class Interval {
+private:
+    int build_up_to = -1;
+    int * interval;
+    int max_size = 0;
 
 public:
-	int build_up_to = -1;
-	int * interval;
-	int max_size = 0;
-
+	
 	Interval();
 	Interval(int max_size);
 	Interval(const Interval &toCopy);
@@ -34,9 +35,14 @@ public:
 	Interval& operator=(const Interval& toCopy);
 	Interval& operator()(int size);
     
+    int increaseBuildUpTo();
     int getSize() const;
-    int getBuidUpTo() const;
+    int getBuildUpTo() const;
     int getValueAt(int position) const;
+    
+    void setBuildUpTo(int newBuild);
+    void setSize(int size);
+    void setValueAt(int index, int value);
 
 	void showInterval() const;
 };

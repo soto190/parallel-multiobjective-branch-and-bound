@@ -365,7 +365,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
     //solution->setObjective(2, totalWorkload + minPij);
     
     /** Updates the best workloads and the assignation. **/
-    
+    /*
     if(maxWorkload < this->bestWorkloadFound){
         this->MutexToUpdate.lock();
         this->bestWorkloadFound = maxWorkload;
@@ -377,7 +377,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
             this->assignationBestWorkload[operation] = this->mapToJobMachine[solution.getVariable(operation)][1];
         this->MutexToUpdate.unlock();
     }
-    
+    */
     return 0.0;
 }
 

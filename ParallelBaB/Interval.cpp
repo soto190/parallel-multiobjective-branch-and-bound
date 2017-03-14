@@ -37,7 +37,7 @@ Interval::Interval(int max_size){
 
 Interval::Interval(const Interval &toCopy){
     this->max_size = toCopy.getSize();
-    this->build_up_to = toCopy.getBuidUpTo();
+    this->build_up_to = toCopy.getBuildUpTo();
     this->interval = new int[max_size];
     int index = 0;
     
@@ -65,7 +65,7 @@ Interval::~Interval(){
 
 Interval& Interval::operator=(const Interval &toCopy){
     this->max_size = toCopy.getSize();
-    this->build_up_to = toCopy.getBuidUpTo();
+    this->build_up_to = toCopy.getBuildUpTo();
     this->interval = new int[max_size];
     int index = 0;
     
@@ -76,8 +76,13 @@ Interval& Interval::operator=(const Interval &toCopy){
 }
 
 int Interval::getSize() const{ return  this->max_size;}
-int Interval::getBuidUpTo() const{ return this->build_up_to;}
+int Interval::getBuildUpTo() const{ return this->build_up_to;}
 int Interval::getValueAt(int position) const{ return  this->interval[position];}
+
+void Interval::setSize(int size){ this->max_size = size; }
+void Interval::setValueAt(int index, int value){ this->interval[index] = value; }
+void Interval::setBuildUpTo(int newBuild){ this->build_up_to = newBuild; }
+int Interval::increaseBuildUpTo(){ return this->build_up_to++; }
 
 void Interval::showInterval() const{
     

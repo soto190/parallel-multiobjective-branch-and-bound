@@ -38,14 +38,10 @@ tbb::task * ParallelBranchAndBound::execute() {
 		tl.push_back(*BaB_task);
 	}
 
-	printf("Spawning the swarm...\n");
-    tbb::task::spawn(tl);
-    printf("Waiting for all...\n");
-    tbb::task::wait_for_all();
+    printf("Spawning the swarm...\n Waiting for all...\n");
+    tbb::task::spawn_and_wait_for_all(tl);
     printf("Job done...\n");
-
-    //tbb::task::spawn_and_wait_for_all(tl);
-	
+    
 	/** Recollects the data. **/
 	BB_container.getTotalTime();
 	BranchAndBound* bb_in;
@@ -76,7 +72,6 @@ tbb::task * ParallelBranchAndBound::execute() {
 void ParallelBranchAndBound::setNumberOfThreads(int number_of_threads) {
 	this->number_of_threads = number_of_threads;
 }
-
 
 void ParallelBranchAndBound::setProblem(const ProblemFJSSP&  problem) {
 	this->problem = problem;
