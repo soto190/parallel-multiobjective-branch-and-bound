@@ -225,7 +225,6 @@ BranchAndBound& BranchAndBound::operator()(int rank, const ProblemFJSSP &problem
 }
 
 BranchAndBound::~BranchAndBound() {
-    printf("[B&B%d] Calling B&B destructor..\n", this->rank);
 	delete[] this->outputFile;
 	delete[] this->summarizeFile;
 
@@ -326,7 +325,6 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch,
 tbb::task* BranchAndBound::execute() {
 
 	this->solve(starting_interval);
-    printf("[DEBUG B&B%4d] %d\n", this->rank, this->ivm_tree.getIVMValue(0, 0));
     return NULL;
 
 }
@@ -397,7 +395,6 @@ void BranchAndBound::solve(const Interval& branch) {
 		this->totalTime = time_span.count();
 	}
     
-    printf("[DEBUG B&B%4d] %d\n", this->rank, this->ivm_tree.getIVMValue(0, 0));
 }
 
 double BranchAndBound::getTotalTime() {
@@ -855,7 +852,6 @@ void BranchAndBound::setParetoContainer(
 std::shared_ptr<HandlerContainer> BranchAndBound::getParetoContainer() {
 	return this->paretoContainer;
 }
-
 
 int BranchAndBound::saveSummarize() {
 

@@ -10,7 +10,6 @@
 
 IVMTree::IVMTree() {
     
-    printf("[IVM-TRee] Calling constructor by default.\n");
     this->whoIam = -1;
     this->rows = 1;
     this->cols = 1;
@@ -41,7 +40,6 @@ IVMTree::IVMTree() {
 }
 
 IVMTree::IVMTree(int rows, int cols) {
-    printf("[IVM-TRee] Calling constructor by rows and cols.\n");
 
     this->rows = rows;
     this->cols = cols;
@@ -74,7 +72,6 @@ IVMTree::IVMTree(int rows, int cols) {
 
 
 IVMTree::IVMTree(const IVMTree& toCopy) {
-    printf("[IVM-TRee] Calling constructor by copy.\n");
     
     this->whoIam = toCopy.whoIam;
     this->rows = toCopy.rows;
@@ -107,7 +104,6 @@ IVMTree::IVMTree(const IVMTree& toCopy) {
 }
 
 IVMTree& IVMTree::operator=(const IVMTree &toCopy){
-    printf("[IVM-TRee] Calling assignation operator by copy.\n");
 
     this->rows = toCopy.rows;
     this->cols = toCopy.cols;
@@ -142,7 +138,6 @@ IVMTree& IVMTree::operator=(const IVMTree &toCopy){
 }
 
 IVMTree& IVMTree::operator()(int rows, int cols) {
-    printf("Calling call operator by rows and cols.\n");
 
     this->rows = rows;
     this->cols = cols;
@@ -170,9 +165,7 @@ IVMTree& IVMTree::operator()(int rows, int cols) {
 }
 
 IVMTree::~IVMTree() {
-    
-    printf("[IVM%3d]Calling IVM destructor.\n", this->whoIam);
-    
+        
     delete[] active_node;
     delete[] max_nodes_in_level;
     delete[] start_exploration;
