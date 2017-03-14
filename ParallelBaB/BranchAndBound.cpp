@@ -345,7 +345,7 @@ void BranchAndBound::solve(const Interval& branch) {
 		if (!this->globalPool.empty()) {
 			this->globalPool.try_pop(branchFromGlobal);
 			working++;
-			printf("[B&B%04d] Picking from global pool. Pool size is %lu\n",
+			printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n",
 					this->rank, this->globalPool.unsafe_size());
 			branchFromGlobal.showInterval();
             this->splitInterval(branchFromGlobal);
@@ -379,7 +379,7 @@ void BranchAndBound::solve(const Interval& branch) {
 					this->totalUpdatesInLowerBound += updated;
 
 					if (updated == 1) {
-						printf("[B&B%04d] ", this->rank);
+						printf("[B&B-%03d] ", this->rank);
 						this->printCurrentSolution();
 						printf(" + [%6lu] \n",
 								this->paretoContainer->getSize());
@@ -394,6 +394,7 @@ void BranchAndBound::solve(const Interval& branch) {
 				std::chrono::milliseconds>(t2 - t1);
 		this->totalTime = time_span.count();
 	}
+    printf("[B&B-%03d] No more intervals in global pool. Going to sleep.\n", this->rank);
     
 }
 
@@ -747,11 +748,12 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 	/** TODO: Design something to decide where to add something to the global pool. **/
 	if (this->rank > 0
 			&& branches_created > (this->problem.getUpperBound(0) / 2)
-			&& branch_to_split.build_up_to
-					< (this->totalLevels - (this->totalLevels / 4))) {
-		Interval B = this->localPool.front();
-		this->localPool.pop();
-		this->globalPool.push(B);
+			&& branch_to_split.build_up_to < (this->totalLevels - (this->totalLevels / 4))) {
+        int moved = 0;
+        for (moved = (this->problem.getUpperBound(0) / 2); moved < branches_created; moved++) {
+            this->globalPool.push(this->localPool.front());
+            this->localPool.pop();
+        }
 	}
 }
 
@@ -953,7 +955,7 @@ int BranchAndBound::saveParetoFront() {
 
 	std::ofstream myfile(this->outputFile);
 	if (myfile.is_open()) {
-		printf("[B&B%04d] Saving in file...\n", this->rank);
+		printf("[B&B-%03d] Saving in file...\n", this->rank);
 		int numberOfObjectives = this->problem.getNumberOfObjectives();
 		int nObj = 0;
 
@@ -971,7 +973,7 @@ int BranchAndBound::saveParetoFront() {
 		}
 		myfile.close();
 	} else
-		printf("[B&B%04d] Unable to open file...\n", this->rank);
+		printf("[B&B-%03d] Unable to open file...\n", this->rank);
 	return 0;
 }
 
