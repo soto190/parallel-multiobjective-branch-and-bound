@@ -50,13 +50,13 @@ tbb::task * ParallelBranchAndBound::execute() {
         bb_in = bb_threads.back();
         bb_threads.pop_back();
     
-		BB_container.exploredNodes += bb_in->exploredNodes;
-		BB_container.callsToBranch += bb_in->callsToBranch;
-		BB_container.branches += bb_in->branches;
-		BB_container.callsToPrune += bb_in->callsToPrune;
-		BB_container.prunedNodes += bb_in->prunedNodes;
-		BB_container.reachedLeaves += bb_in->reachedLeaves;
-		BB_container.totalUpdatesInLowerBound += bb_in->totalUpdatesInLowerBound;
+		BB_container.exploredNodes += bb_in->getNumberOfExploredNodes();
+		BB_container.callsToBranch += bb_in->getNumberOfCallsToBranch();
+		BB_container.branches += bb_in->getNumberOfBranches();
+		BB_container.callsToPrune += bb_in->getNumberOfCallsToPrune();
+		BB_container.prunedNodes += bb_in->getNumberOfPrunedNodes();
+		BB_container.reachedLeaves += bb_in->getNumberOfReachedLeaves();
+		BB_container.totalUpdatesInLowerBound += bb_in->getNumberOfUpdatesInLowerBound();
 	}
 	printf("Data recollected.\n");
 
@@ -65,6 +65,7 @@ tbb::task * ParallelBranchAndBound::execute() {
 	BB_container.saveParetoFront();
 	BB_container.saveSummarize();
     
+    bb_threads.clear();
 	printf("Parallel Branch And Bound ended.\n");
 	return NULL;
 }

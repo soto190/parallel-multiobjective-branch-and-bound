@@ -52,7 +52,7 @@ int main(int argc, const char * argv[]) {
 //		return 0;
 //	}
 
-	char *files[2];
+	char **files = new char*[2];
 	files[0] = new char[255];
 	files[1] = new char[255];
 	std::strcpy(files[0], argv[2]);
@@ -102,10 +102,12 @@ int main(int argc, const char * argv[]) {
 		std::cerr << "Reason is\n" << e.what();
 
 	}
-    delete files[0];
-    delete files[1];
     
     printf("Done\n");
+    
+    delete [] files[0];
+    delete [] files[1];
+    delete [] files;
 
 	return 0;
 }

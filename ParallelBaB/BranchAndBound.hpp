@@ -114,7 +114,8 @@ public:
 	std::clock_t start;
 	std::chrono::high_resolution_clock::time_point t1;
 	std::chrono::high_resolution_clock::time_point t2;
-	double getTotalTime();
+
+    double getTotalTime();
 
 	void solve(const Interval & interval);
 	void initialize(int starting_level);
@@ -123,6 +124,16 @@ public:
 	void prune(Solution & solution, int currentLevel);
 	void printParetoFront(int withVariables = 0);
 
+    unsigned long getNumberOfNodes() const;
+    unsigned long getNumberOfBranches() const;
+    unsigned long getNumberOfExploredNodes() const;
+    unsigned long getNumberOfCallsToBranch() const;
+    unsigned long getNumberOfReachedLeaves() const;
+    unsigned long getNumberOfUnexploredNodes() const;
+    unsigned long getNumberOfPrunedNodes() const;
+    unsigned long getNumberOfCallsToPrune() const;
+    unsigned long getNumberOfUpdatesInLowerBound() const;
+    
 	int setParetoFrontFile(const char * outputFile);
 	int saveParetoFront();
 	int setSummarizeFile(const char * outputFile);

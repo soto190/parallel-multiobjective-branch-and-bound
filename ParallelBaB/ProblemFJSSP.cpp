@@ -606,7 +606,7 @@ Solution* ProblemFJSSP::createSolution(){
     return solution;
 }
 
-void ProblemFJSSP::loadInstance(char* filePath[]){
+void ProblemFJSSP::loadInstance(char** filePath){
     
     std::ifstream infile(filePath[0]);
     std::string line;

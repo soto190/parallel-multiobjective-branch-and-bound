@@ -25,6 +25,7 @@ Problem::Problem(const Problem& toCopy){
     this->lowerBound = new int[toCopy.getNumberOfVariables()];
     this->upperBound = new int[toCopy.getNumberOfVariables()];
     this->name = new char[255];
+    std::strcpy(this->name, toCopy.name);
     this->type = toCopy.getType();
     this->startingLevel = toCopy.startingLevel;
     this->totalConstraints = toCopy.getNumberOfConstraints();
@@ -54,6 +55,7 @@ Problem& Problem::operator=(const Problem &toCopy){
     this->lowerBound = new int[toCopy.getNumberOfVariables()];
     this->upperBound = new int[toCopy.getNumberOfVariables()];
     this->name = new char[255];
+    std::strcpy(this->name, toCopy.name);
     this->type = toCopy.getType();
     this->startingLevel = toCopy.startingLevel;
     this->totalConstraints = toCopy.getNumberOfConstraints();

@@ -845,6 +845,17 @@ std::shared_ptr<HandlerContainer> BranchAndBound::getParetoContainer() {
 	return this->paretoContainer;
 }
 
+unsigned long BranchAndBound::getNumberOfNodes( ) const{ return totalNodes; }
+unsigned long BranchAndBound::getNumberOfBranches( ) const{ return branches; }
+unsigned long BranchAndBound::getNumberOfExploredNodes( ) const{ return exploredNodes; }
+unsigned long BranchAndBound::getNumberOfCallsToBranch( ) const{ return callsToBranch; }
+unsigned long BranchAndBound::getNumberOfReachedLeaves( ) const{ return totalLevels; }
+unsigned long BranchAndBound::getNumberOfUnexploredNodes( ) const{ return unexploredNodes; }
+unsigned long BranchAndBound::getNumberOfPrunedNodes( ) const{ return prunedNodes; }
+unsigned long BranchAndBound::getNumberOfCallsToPrune( ) const{ return callsToPrune; }
+unsigned long BranchAndBound::getNumberOfUpdatesInLowerBound( ) const{ return totalUpdatesInLowerBound; }
+
+
 int BranchAndBound::saveSummarize() {
 
 	printf("---Summarize---\n");

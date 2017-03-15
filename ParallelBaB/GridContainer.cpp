@@ -148,7 +148,6 @@ int HandlerContainer::set(Solution & solution, int x, int y) {
             
             this->updateBucket(solution, x, y);
             this->setStateOf(BucketState::nondominated, x, y);
-            this->totalElements++;
             this->activeBuckets++;
             this->unexploredBuckets--;
             
@@ -261,7 +260,7 @@ int HandlerContainer::updateBucket(Solution & solution, int x, int y) {
         } else if (this->grid.getSizeOf(x, y) == sizeBeforeUpdate + 1) /** No solutions were removed and the new solution was added. **/
             this->totalElements++;
         
-        /** else the size doesnt change**/
+        /** else the size doesn't change**/
     }
     
     return updated;

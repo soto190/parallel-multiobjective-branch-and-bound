@@ -138,7 +138,7 @@ public:
     int * operationIsFromJob;
     
     int ** processingTime;
-    void loadInstance(char* path[]);
+    void loadInstance(char** path);
 
     void printInstance();
     void printProblemInfo();
