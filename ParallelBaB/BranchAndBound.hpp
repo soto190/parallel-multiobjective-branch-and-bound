@@ -176,8 +176,7 @@ public:
 	void setGlobalPool(tbb::concurrent_queue<Interval>& globalPool);
 	void operator()(const Interval& branch) {
 		this->solve(branch);
-	}
-	;
+	};
 
 };
 

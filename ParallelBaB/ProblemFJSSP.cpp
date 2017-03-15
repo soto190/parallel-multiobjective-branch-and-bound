@@ -14,8 +14,6 @@ ProblemFJSSP::ProblemFJSSP():Problem(){
 
 ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy){
     
-    printf("Calling ProblemFJSSP copy constructor.\n");
-    
     this->totalJobs = toCopy.getNumberOfJobs();
     this->totalOperations = toCopy.getNumberOfOperations();
     this->totalMachines = toCopy.getNumberOfMachines();

@@ -45,13 +45,12 @@ BranchAndBound::BranchAndBound() {
     this->summarizeFile = new char[255];
 }
 */
-BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):globalPool(toCopy.globalPool){
+BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):globalPool(toCopy.globalPool), problem(toCopy.problem){
     
     this->levels_completed = toCopy.levels_completed;
     this->start = toCopy.start;
     
     this->rank = toCopy.rank;
-    this->problem = toCopy.problem;
     
     this->currentLevel = toCopy.currentLevel;
     this->totalLevels = toCopy.totalLevels;
@@ -120,8 +119,7 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem) {
     
 }
 */
-BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem,
-                               const Interval & branch, GlobalPool &globa_pool): globalPool(globa_pool) {
+BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem, const Interval & branch, GlobalPool &globa_pool):problem(problem), globalPool(globa_pool),starting_interval(branch) {
 
 	this->t1 = std::chrono::high_resolution_clock::now();
 	this->t2 = std::chrono::high_resolution_clock::now();
@@ -129,7 +127,7 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem,
 	this->levels_completed = 0;
 	this->start = std::clock();
 	this->rank = rank;
-    this->problem = problem;
+    //this->problem = problem;
     
 	this->currentLevel = 0;
 	this->totalLevels = 0;
@@ -143,8 +141,6 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem,
 	this->callsToBranch = 0;
 	this->totalUpdatesInLowerBound = 0;
 	this->totalTime = 0;
-
-	this->starting_interval = branch; /** Copy the branch. **/
 
 	int numberOfObjectives = this->problem.getNumberOfObjectives();
 	int numberOfVariables = this->problem.getNumberOfVariables();

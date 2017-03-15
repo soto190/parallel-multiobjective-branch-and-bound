@@ -15,33 +15,25 @@
  * size is equals to the number of variables.
  *
  **/
-Interval::Interval(){
-    int default_size = 1;
-    this->interval = new int[default_size];
-	this->build_up_to = -1;
-	this->max_size = default_size;
-
-	int index = 0;
-	for (index = 0; index < default_size; index++)
-		this->interval[index] = -1;
+Interval::Interval():
+                    max_size(1),
+                    build_up_to(-1),
+                    interval(new int{-1}){
 }
 
-Interval::Interval(int max_size){
-    this->interval = new int[max_size];
-    this->build_up_to = -1;
-    this->max_size = max_size;
-    
-    int index = 0;
-    for (index = 0; index < max_size; index++)
-        this->interval[index] = -1;
+Interval::Interval(int max_size):
+                                max_size(max_size),
+                                build_up_to(-1),
+                                interval(new int[max_size]){
+
 }
 
-Interval::Interval(const Interval &toCopy){
-    this->max_size = toCopy.getSize();
-    this->build_up_to = toCopy.getBuildUpTo();
+Interval::Interval(const Interval &toCopy):
+                                            max_size(toCopy.getSize()),
+                                            build_up_to(toCopy.getBuildUpTo()){
+
     this->interval = new int[toCopy.getSize()];
     int index = 0;
-    
     for (index = 0; index < this->max_size; index++)
         this->interval[index] = toCopy.getValueAt(index);
 
@@ -49,31 +41,39 @@ Interval::Interval(const Interval &toCopy){
 
 Interval& Interval::operator()(int size){
     
-    this->interval = new int[size];
     this->build_up_to = -1;
     this->max_size = size;
     
     int index = 0;
+    
+    delete [] interval; /** Freeing previously used memory. **/
+    this->interval = new int[size];
     for (index = 0; index < max_size; index++)
         this->interval[index] = -1;
     
     return *this;
 }
 
-Interval::~Interval(){
-    delete [] interval;
-}
-
 Interval& Interval::operator=(const Interval &toCopy){
+    
+    if (this == &toCopy) return *this;
+    
+    
     this->max_size = toCopy.getSize();
     this->build_up_to = toCopy.getBuildUpTo();
-    this->interval = new int[max_size];
+    
+    delete [] interval; /** Freeing previously used memory. **/
+    this->interval = new int[toCopy.getSize()];
     int index = 0;
     
     for (index = 0; index < this->max_size; index++)
         this->interval[index] = toCopy.getValueAt(index);
     
     return *this;
+}
+
+Interval::~Interval(){
+    delete [] interval;
 }
 
 int Interval::getSize() const{ return  this->max_size;}

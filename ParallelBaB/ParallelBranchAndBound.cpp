@@ -8,9 +8,10 @@
 
 #include "ParallelBranchAndBound.hpp"
 
-ParallelBranchAndBound::ParallelBranchAndBound(const ProblemFJSSP& problem, GlobalPool& global_pool):global_pool(global_pool){
-    this->problem = problem;
-    this->branch_init(this->problem.getNumberOfVariables());
+ParallelBranchAndBound::ParallelBranchAndBound(const ProblemFJSSP& problem, GlobalPool& global_pool):
+    problem(problem),
+    global_pool(global_pool),
+    branch_init(problem.getNumberOfVariables()){
 }
 
 tbb::task * ParallelBranchAndBound::execute() {
