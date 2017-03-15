@@ -22,27 +22,6 @@ Solution::Solution():totalObjectives(0), totalVariables(0) {
     this->execTime = nullptr;
     this->partialObjective = nullptr;
 
-   
-    /*
-	this->objective = new double[numberOfObjectives];
-	this->variable = new int[numberOfVariables];
-	this->execTime = new double[16];
-	this->partialObjective = new double *[numberOfVariables];
-
-	int var = 0, obj = 0;
-	for (obj = 0; obj < numberOfObjectives; obj++)
-		this->objective[obj] = 0;
-
-	for (var = 0; var < numberOfVariables; var++) {
-		this->variable[var] = 0;
-		this->partialObjective[var] = new double[numberOfObjectives];
-		for (obj = 0; obj < numberOfObjectives; obj++)
-			this->partialObjective[var][obj] = 0;
-	}
-
-	for (var = 0; var < 16; var++)
-		this->execTime[var] = 0;
-     */
 }
 
 Solution::Solution(int numberOfObjectives, int numberOfVariables):totalObjectives(numberOfObjectives),totalVariables(numberOfVariables) {

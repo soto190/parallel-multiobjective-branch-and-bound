@@ -75,16 +75,14 @@ void ParallelBranchAndBound::setNumberOfThreads(int number_of_threads) {
 	this->number_of_threads = number_of_threads;
 }
 
-void ParallelBranchAndBound::setProblem(const ProblemFJSSP&  problem) {
-	this->problem = problem;
-}
-
 void ParallelBranchAndBound::setParetoFrontFile(const char * outputFile) {
-	this->outputParetoFile = new char[255];
+    delete [] outputParetoFile;
+    this->outputParetoFile = new char[255];
 	std::strcpy(this->outputParetoFile, outputFile);
 }
 
 void ParallelBranchAndBound::setSummarizeFile(const char * outputFile) {
+    delete [] summarizeFile;
 	this->summarizeFile = new char[255];
 	std::strcpy(this->summarizeFile, outputFile);
 }

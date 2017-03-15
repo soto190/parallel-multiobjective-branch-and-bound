@@ -34,7 +34,6 @@ public:
     tbb::task* execute();
     
     void setNumberOfThreads(int number_of_threads);
-    void setProblem(const ProblemFJSSP&  problem);
     void setParetoFrontFile(const char * outputFile);
     void setSummarizeFile(const char * outputFile);
 };

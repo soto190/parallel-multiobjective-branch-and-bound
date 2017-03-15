@@ -50,6 +50,8 @@ Problem::~Problem(){
 
 Problem& Problem::operator=(const Problem &toCopy){
     
+    if (this == &toCopy) return *this;
+    
     this->totalObjectives = toCopy.getNumberOfObjectives();
     this->totalVariables = toCopy.getNumberOfVariables();
     this->lowerBound = new int[toCopy.getNumberOfVariables()];

@@ -15,10 +15,11 @@
  * size is equals to the number of variables.
  *
  **/
+
 Interval::Interval():
                     max_size(1),
                     build_up_to(-1),
-                    interval(new int{-1}){
+                    interval(new int[1]{-1}){
 }
 
 Interval::Interval(int max_size):
@@ -58,7 +59,6 @@ Interval& Interval::operator=(const Interval &toCopy){
     
     if (this == &toCopy) return *this;
     
-    
     this->max_size = toCopy.getSize();
     this->build_up_to = toCopy.getBuildUpTo();
     
@@ -73,7 +73,8 @@ Interval& Interval::operator=(const Interval &toCopy){
 }
 
 Interval::~Interval(){
-    delete [] interval;
+    if (interval != nullptr)
+        delete [] interval;
 }
 
 int Interval::getSize() const{ return  this->max_size;}

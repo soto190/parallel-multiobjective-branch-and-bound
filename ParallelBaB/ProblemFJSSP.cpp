@@ -114,6 +114,8 @@ ProblemFJSSP::ProblemFJSSP(int totalObjectives, int totalVariables):Problem(tota
 
 ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
     
+    if (this == &toCopy) return *this;
+    
     this->totalJobs = toCopy.totalJobs;
     this->totalOperations = toCopy.totalOperations;
     this->totalMachines = toCopy.totalMachines;

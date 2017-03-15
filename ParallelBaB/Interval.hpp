@@ -27,7 +27,7 @@ private:
 
 public:
 	
-	Interval();
+    Interval();
 	Interval(int max_size);
 	Interval(const Interval &toCopy);
 	~Interval();
