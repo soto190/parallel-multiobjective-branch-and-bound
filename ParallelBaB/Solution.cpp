@@ -90,8 +90,8 @@ Solution::Solution(const Solution &solution) {
 		this->variable[var] = solution.getVariable(var);
 		this->partialObjective[var] = new double[this->totalObjectives];
 		for (obj = 0; obj < this->totalObjectives; obj++)
-			this->partialObjective[var][obj] =
-					solution.partialObjective[var][obj];
+            this->partialObjective[var][obj] = solution.getPartialObjective(var, obj);
+        //					solution.partialObjective[var][obj];
 	}
 
 	for (var = 0; var < 16; var++)
@@ -137,6 +137,11 @@ int Solution::getNumberOfVariables() const {
 int Solution::getNumberOfObjectives() const {
 	return this->totalObjectives;
 }
+
+int Solution::getPartialObjective(int var, int objective) const{
+    return this->partialObjective[var][objective];
+}
+
 
 int Solution::getBuildUpTo() const {
 	return this->build_up_to;

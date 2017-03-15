@@ -17,7 +17,8 @@ IVMTree::IVMTree() {
     this->root_node = 0;
     this->starting_level = 0;
     this->active_level = 0;
-    this->active_node = new int[rows];
+    
+    /*this->active_node = new int[rows];
     this->max_nodes_in_level = new int[rows];
     this->start_exploration = new int[rows];
     this->end_exploration = new int[rows];
@@ -36,7 +37,8 @@ IVMTree::IVMTree() {
         
         for (c = 0; c < cols; c++)
             this->ivm[r][c] = -1;
-    }
+    }*/
+    
 }
 
 IVMTree::IVMTree(int rows, int cols) {

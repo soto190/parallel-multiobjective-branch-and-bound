@@ -93,15 +93,14 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy){
 }
 
 ProblemFJSSP::ProblemFJSSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
-    printf("Calling ProblemFJSSP constructor with totalObjectives and totalVariables.\n");
 
     this->totalJobs = 0;
     this->totalOperations = 0;
     this->totalMachines = 0;
     this->sumOfMinPij = 0;
-    this->releaseTime = new int[1]();
+/*    this->releaseTime = new int[1]();
     this->assignationMinPij = new int[1]();
-    this-> operationInJobIsNumber = new int * [1]();
+    this->operationInJobIsNumber = new int * [1]();
     this->operationIsFromJob = new int[1];
     this->bestWorkloadFound = 0;
     this->goodSolutionWithMaxWorkload = 0;
@@ -112,7 +111,7 @@ ProblemFJSSP::ProblemFJSSP(int totalObjectives, int totalVariables):Problem(tota
     this->mapToJobMachine = new int * [1];
     this->processingTime = new int * [1];
     this->bestWorkloads = new int[1];
-    
+  */
 }
 
 ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
@@ -703,6 +702,8 @@ void ProblemFJSSP::loadInstance(char* filePath[]){
     }
     goodSolutionWithMaxWorkload = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
     buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
+    
+    infile.close();
 
 }
 

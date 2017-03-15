@@ -37,6 +37,7 @@ public:
     int getVariable(int index) const;
     double getObjective(int nObjective) const;
     
+    int getPartialObjective(int var, int objective) const;
     int getNumberOfVariables() const;
     int getNumberOfObjectives() const;
     

@@ -16,12 +16,13 @@
  *
  **/
 Interval::Interval(){
-	this->interval = new int[1];
+    int default_size = 1;
+    this->interval = new int[default_size];
 	this->build_up_to = -1;
-	this->max_size = 1;
+	this->max_size = default_size;
 
 	int index = 0;
-	for (index = 0; index < this->max_size; index++)
+	for (index = 0; index < default_size; index++)
 		this->interval[index] = -1;
 }
 
@@ -38,7 +39,7 @@ Interval::Interval(int max_size){
 Interval::Interval(const Interval &toCopy){
     this->max_size = toCopy.getSize();
     this->build_up_to = toCopy.getBuildUpTo();
-    this->interval = new int[max_size];
+    this->interval = new int[toCopy.getSize()];
     int index = 0;
     
     for (index = 0; index < this->max_size; index++)

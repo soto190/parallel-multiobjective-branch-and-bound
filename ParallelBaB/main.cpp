@@ -102,8 +102,10 @@ int main(int argc, const char * argv[]) {
 		std::cerr << "Reason is\n" << e.what();
 
 	}
-
-	printf("Done\n");
+    delete files[0];
+    delete files[1];
+    
+    printf("Done\n");
 
 	return 0;
 }

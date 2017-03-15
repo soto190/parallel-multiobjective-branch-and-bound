@@ -168,8 +168,8 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem,
 
 	this->paretoContainer = std::make_shared<HandlerContainer>(100, 100, obj1,
 			obj2);
-    this->outputFile = new char[255];
-	this->summarizeFile = new char[255];
+    //this->outputFile = new char[255];
+    //this->summarizeFile = new char[255];
     
 }
 
