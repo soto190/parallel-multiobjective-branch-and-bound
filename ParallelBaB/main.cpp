@@ -33,7 +33,7 @@
 
 int main(int argc, const char * argv[]) {
 
-	ProblemFJSSP  problem (2, 1);;
+	ProblemFJSSP  problem (2, 1);
 
 //    if (strcmp(argv[1], "TSP") == 0) {
 //		printf("Problem: TSP\n");
@@ -80,14 +80,17 @@ int main(int argc, const char * argv[]) {
 	std::string outputFile = argv[4] + splited[0] + ".csv";
 	std::string summarizeFile = argv[4] + splited[0] + ".txt";
 
-	try {
+    try {
+        Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+        problem.createDefaultSolution(&solution);
         GlobalPool global_pool;
+        HandlerContainer global_grid(100, 100, solution.getObjective(0), solution.getObjective(1));
         
         int number_of_threads = 4;//tbb::task_scheduler_init::default_num_threads();
 		tbb::task_scheduler_init init(number_of_threads);
 
 		ParallelBranchAndBound * pbb =
-				new (tbb::task::allocate_root()) ParallelBranchAndBound(problem, global_pool);
+				new (tbb::task::allocate_root()) ParallelBranchAndBound(problem, global_pool, global_grid);
 		pbb->setNumberOfThreads(number_of_threads);
 		pbb->setParetoFrontFile(outputFile.c_str());
 		pbb->setSummarizeFile(summarizeFile.c_str());

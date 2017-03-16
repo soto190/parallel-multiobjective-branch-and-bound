@@ -13,44 +13,15 @@
  *
  **/
 #include "BranchAndBound.hpp"
-/*
-BranchAndBound::BranchAndBound() {
-    
-	this->t1 = std::chrono::high_resolution_clock::now();
-	this->t2 = std::chrono::high_resolution_clock::now();
-	this->levels_completed = 0;
-	this->start = std::clock();
-	this->rank = -1;
-	this->problem = problem;
 
-	this->currentLevel = 0;
-	this->totalLevels = 0;
-	this->totalNodes = 0;
-	this->branches = 0;
-	this->exploredNodes = 0;
-	this->reachedLeaves = 0;
-	this->unexploredNodes = 0;
-	this->prunedNodes = 0;
-	this->callsToPrune = 0;
-	this->callsToBranch = 0;
-	this->totalUpdatesInLowerBound = 0;
-	this->totalTime = 0;
-
-	this->starting_interval(this->problem.getNumberOfVariables());
-	this->currentSolution(1, 1);
-	this->ivm_tree(1, 1);
-    this->paretoContainer = std::make_shared<HandlerContainer>(10, 10, 10, 10);
-
-    this->outputFile = new char[255];
-    this->summarizeFile = new char[255];
-}
-*/
-BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):globalPool(toCopy.globalPool), problem(toCopy.problem){
-    
+BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
+    globalPool(toCopy.globalPool),
+    problem(toCopy.problem),
+    paretoContainer(toCopy.paretoContainer){
+        
+    this->rank = toCopy.rank;
     this->levels_completed = toCopy.levels_completed;
     this->start = toCopy.start;
-    
-    this->rank = toCopy.rank;
     
     this->currentLevel = toCopy.currentLevel;
     this->totalLevels = toCopy.totalLevels;
@@ -64,70 +35,26 @@ BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):globalPool(toCopy.g
     this->callsToBranch = toCopy.callsToBranch;
     this->totalUpdatesInLowerBound = toCopy.totalUpdatesInLowerBound;
     this->totalTime = toCopy.totalTime;
-    
     this->currentSolution = toCopy.currentSolution;
-    
     this->ivm_tree = toCopy.ivm_tree;
     this->localPool = toCopy.localPool;
 
-    this->paretoContainer = toCopy.paretoContainer;
     this->outputFile = new char[255];
     this->summarizeFile = new char[255];
+
+    std::strcpy(outputFile, toCopy.outputFile);
+    std::strcpy(summarizeFile, toCopy.summarizeFile);
     
 }
-/*
-BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem) {
+
+BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem, const Interval & branch, GlobalPool &globa_pool, HandlerContainer& pareto_container):
+    rank(rank), problem(problem), globalPool(globa_pool), starting_interval(branch), paretoContainer(pareto_container) {
 
 	this->t1 = std::chrono::high_resolution_clock::now();
 	this->t2 = std::chrono::high_resolution_clock::now();
 
 	this->levels_completed = 0;
 	this->start = std::clock();
-	
-	this->rank = rank;
-	this->problem = problem;
-
-	this->currentLevel = 0;
-	this->totalLevels = 0;
-	this->totalNodes = 0;
-	this->branches = 0;
-	this->exploredNodes = 0;
-	this->reachedLeaves = 0;
-	this->unexploredNodes = 0;
-	this->prunedNodes = 0;
-	this->callsToPrune = 0;
-	this->callsToBranch = 0;
-	this->totalUpdatesInLowerBound = 0;
-	this->totalTime = 0;
-
-	this->currentSolution(this->problem.getNumberOfObjectives(),
-			this->problem.getNumberOfVariables());
-	this->problem.createDefaultSolution(&this->currentSolution);
-	this->problem.evaluate(this->currentSolution);
-
-	this->ivm_tree(this->problem.getNumberOfVariables(),
-			this->problem.getUpperBound(0) + 1);
-	this->ivm_tree.setOwner(rank);
-    this->paretoContainer = std::make_shared<HandlerContainer>(100, 100,
-			this->currentSolution.getObjective(0),
-			this->currentSolution.getObjective(1));
-
-	this->outputFile = new char[255];
-	this->summarizeFile = new char[255];
-	this->levels_completed = 0;
-	this->start = 0;
-    
-}
-*/
-BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem, const Interval & branch, GlobalPool &globa_pool):problem(problem), globalPool(globa_pool),starting_interval(branch) {
-
-	this->t1 = std::chrono::high_resolution_clock::now();
-	this->t2 = std::chrono::high_resolution_clock::now();
-
-	this->levels_completed = 0;
-	this->start = std::clock();
-	this->rank = rank;
-    //this->problem = problem;
     
 	this->currentLevel = 0;
 	this->totalLevels = 0;
@@ -154,19 +81,9 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem, const Inte
 		this->bestObjectivesFound.setObjective(nObj,
 				this->currentSolution.getObjective(nObj));
 
-
-	double obj1 = this->currentSolution.getObjective(0);
-	double obj2 = this->currentSolution.getObjective(1);
-
 	this->ivm_tree(this->problem.getNumberOfVariables(),
 			this->problem.getUpperBound(0) + 1);
 	this->ivm_tree.setOwner(rank);
-
-	this->paretoContainer = std::make_shared<HandlerContainer>(100, 100, obj1,
-			obj2);
-    //this->outputFile = new char[255];
-    //this->summarizeFile = new char[255];
-    
 }
 
 BranchAndBound& BranchAndBound::operator()(int rank, const ProblemFJSSP &problem, const Interval &branch){
@@ -204,16 +121,11 @@ BranchAndBound& BranchAndBound::operator()(int rank, const ProblemFJSSP &problem
     for (nObj = 0; nObj < numberOfObjectives; nObj++)
         this->bestObjectivesFound.setObjective(nObj,
                                                this->currentSolution.getObjective(nObj));
-    
-    double obj1 = this->currentSolution.getObjective(0);
-    double obj2 = this->currentSolution.getObjective(1);
-    
+
     this->ivm_tree(this->problem.getNumberOfVariables(),
                    this->problem.getUpperBound(0) + 1);
     this->ivm_tree.setOwner(rank);
     
-    this->paretoContainer = std::make_shared<HandlerContainer>(100, 100, obj1,
-                                                               obj2);
     this->outputFile = new char[255];
     this->summarizeFile = new char[255];
     
@@ -378,7 +290,7 @@ void BranchAndBound::solve(const Interval& branch) {
 						printf("[B&B-%03d] ", this->rank);
 						this->printCurrentSolution();
 						printf(" + [%6lu] \n",
-								this->paretoContainer->getSize());
+								this->paretoContainer.getSize());
 					}
 				}
 			}
@@ -563,15 +475,8 @@ int BranchAndBound::theTreeHasMoreBranches() {
 }
 
 int BranchAndBound::updateParetoGrid(Solution & solution) {
-	/*
-	 int nObj = 0;
-	 for (nObj = 0; nObj < this->problem.totalObjectives; nObj++)
-	 if (solution.getObjective(nObj) < this->bestObjectivesFound.getObjective(nObj))
-	 this->bestObjectivesFound.objective[nObj] = solution.getObjective(nObj);
 
-	 */
-	/** The add function has a Mutex. **/
-	int updated = this->paretoContainer->add(solution);
+    int updated = this->paretoContainer.add(solution);
 
 	return updated;
 }
@@ -589,7 +494,7 @@ int BranchAndBound::updateParetoGrid(Solution & solution) {
  */
 int BranchAndBound::improvesTheGrid(Solution & solution) const {
 	/** The improvesTheGrid calls a improvesTheBucket which has a Mutex. **/
-	return this->paretoContainer->improvesTheGrid(solution);
+	return this->paretoContainer.improvesTheGrid(solution);
 }
 
 /**
@@ -831,14 +736,18 @@ int BranchAndBound::setSummarizeFile(const char * outputFile) {
 	std::strcpy(this->summarizeFile, outputFile);
 	return 0;
 }
-
+/*
 void BranchAndBound::setParetoContainer(
-		std::shared_ptr<HandlerContainer> paretoContainer) {
+		std::shared_ptr<HandlerContainer> paretoContainer&) {
 	this->paretoContainer = paretoContainer;
 }
-
-std::shared_ptr<HandlerContainer> BranchAndBound::getParetoContainer() {
+*/
+/*std::shared_ptr<HandlerContainer> BranchAndBound::getParetoContainer() {
 	return this->paretoContainer;
+}
+*/
+HandlerContainer& BranchAndBound::getParetoContainer() {
+    return this->paretoContainer;
 }
 
 unsigned long BranchAndBound::getNumberOfNodes( ) const{ return totalNodes; }
@@ -868,15 +777,15 @@ int BranchAndBound::saveSummarize() {
 	printf("Updates in PF:       %ld\n", this->totalUpdatesInLowerBound);
 	printf("Total time:          %f\n", this->totalTime);
 	printf("Grid data:\n");
-	printf("\tGrid dimension:    %d x %d\n", this->paretoContainer->getCols(),
-			this->paretoContainer->getRows());
+	printf("\tGrid dimension:    %d x %d\n", this->paretoContainer.getCols(),
+			this->paretoContainer.getRows());
 	printf("\tnon-dominated buckets:    %ld\n",
-			this->paretoContainer->activeBuckets);
+			this->paretoContainer.activeBuckets);
 	printf("\tdominated buckets:  %ld\n",
-			this->paretoContainer->disabledBuckets);
+			this->paretoContainer.disabledBuckets);
 	printf("\tunexplored buckets:%ld\n",
-			this->paretoContainer->unexploredBuckets);
-	printf("\tTotal elements in: %ld\n", this->paretoContainer->getSize());
+			this->paretoContainer.unexploredBuckets);
+	printf("\tTotal elements in: %ld\n", this->paretoContainer.getSize());
 
 	std::ofstream myfile(this->summarizeFile);
 	if (myfile.is_open()) {
@@ -897,15 +806,15 @@ int BranchAndBound::saveSummarize() {
 		myfile << "Total time:          " << this->totalTime << "\n";
 
 		myfile << "Grid data:\n";
-		myfile << "\tdimension:         \t" << this->paretoContainer->getCols()
-				<< " x " << this->paretoContainer->getRows() << "\n";
+		myfile << "\tdimension:         \t" << this->paretoContainer.getCols()
+				<< " x " << this->paretoContainer.getRows() << "\n";
 		myfile << "\tnon-dominated:     \t"
-				<< this->paretoContainer->activeBuckets << "\n";
+				<< this->paretoContainer.activeBuckets << "\n";
 		myfile << "\tdominated:         \t"
-				<< this->paretoContainer->disabledBuckets << "\n";
+				<< this->paretoContainer.disabledBuckets << "\n";
 		myfile << "\tunexplored:        \t"
-				<< this->paretoContainer->unexploredBuckets << "\n";
-		myfile << "\tnumber of elements:\t" << this->paretoContainer->getSize()
+				<< this->paretoContainer.unexploredBuckets << "\n";
+		myfile << "\tnumber of elements:\t" << this->paretoContainer.getSize()
 				<< "\n";
 
 		myfile << "The pareto front found is: \n";
@@ -948,7 +857,7 @@ int BranchAndBound::saveSummarize() {
 
 int BranchAndBound::saveParetoFront() {
 
-	this->paretoFront = this->paretoContainer->getParetoFront();
+	this->paretoFront = this->paretoContainer.getParetoFront();
 
 	std::ofstream myfile(this->outputFile);
 	if (myfile.is_open()) {
@@ -980,7 +889,7 @@ void BranchAndBound::saveEvery(double timeInSeconds) {
 			> timeInSeconds) {
 		this->start = std::clock();
 
-		this->paretoFront = paretoContainer->getParetoFront();
+		this->paretoFront = paretoContainer.getParetoFront();
 
 		this->t2 = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<float> time_span = std::chrono::duration_cast<

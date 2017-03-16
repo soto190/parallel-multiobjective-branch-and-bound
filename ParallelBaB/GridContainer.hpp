@@ -17,8 +17,6 @@
 #include "myutils.hpp"
 #include "tbb/mutex.h"
 #include "tbb/concurrent_vector.h"
-#include "tbb/mutex.h"
-
 
 enum BucketState {
 	unexplored = 0, nondominated = 1, dominated = 2
@@ -44,21 +42,25 @@ enum BucketState {
         posx(posx),
         posy(posy),
         size(0){
+            
             m_vec.reserve(100);
+            
      };
      
      ParetoBucket(const ParetoBucket& toCopy):
         state(toCopy.getState()),
         posx(toCopy.getPosx()),
         posy(toCopy.getPosy()),
+        size(toCopy.getSize()),
         m_vec(toCopy.m_vec){
-            size.fetch_and_store(toCopy.size);
+            
      };
      
      void setState(BucketState new_state){ state = new_state; }
      void setUnexplored(){ state = BucketState::unexplored; }
      void setNonDominated(){ state = BucketState::nondominated; }
      void setDominated(){ state = BucketState::dominated; }
+     void resetSize(){size = 0;}
      
      BucketState getState() const{ return state; }
      unsigned long getPosx() const{ return posx; }
@@ -79,53 +81,50 @@ enum BucketState {
          
          return improves;
      }
+     
      /** 
       * Returns 1 if the solution was added.
       * The solution is added if the ParetoBucket is improved.
       *
       ***/
-     int push_back(const Solution& t){
+     int push_back(const Solution& obj){
 
          mutex_update.lock();
-         
-         unsigned int status[4];
-         status[0] = 0;
-         status[1] = 0;
-         status[2] = 0;
-         status[3] = 0;
+         unsigned int dominates = 0;
+         unsigned int nondominated = 0;
+         unsigned int dominated = 0;
+         unsigned int equals = 0;
          
          std::vector<Solution>::iterator begin = m_vec.begin();
          int wasAdded = 0;
-         int toAdd = 0;
          unsigned long nSol = 0;
          int domination;
          
          for (nSol = 0; nSol < size; nSol++) {
              
-             domination = t.dominates(m_vec.at(nSol));
+             domination = obj.dominates(m_vec.at(nSol));
              
              switch (domination) {
                      
                  case DominanceRelation::Dominates:
                      
                      m_vec.erase(begin + nSol);
-                     size.fetch_and_store(size - 1);
-                     status[0]++;
+                     size.fetch_and_decrement();
+                     dominates++;
                      nSol--;
-                     toAdd = 1;
                      break;
                      
                  case DominanceRelation::Nondominated:
-                     status[1]++;
+                     nondominated++;
                      break;
                      
                  case DominanceRelation::Dominated:
-                     status[2]++;
+                     dominated++;
                      nSol = m_vec.size();
                      break;
                      
                  case DominanceRelation::Equals:
-                     status[3] = 1;
+                     equals = 1;
                      nSol = m_vec.size();
                      break;
              }
@@ -134,20 +133,20 @@ enum BucketState {
          /**
           * status[3] is to avoid to add solutions with the same objective values in the front, remove it if repeated objective values are requiered.
           */
-         if ((status[3] == 0)
+         if ((equals == 0)
              && (m_vec.size() == 0
-                 || status[0] > 0
-                 || status[1] == size
-                 || status[2] == 0)) {
-                 m_vec.push_back(t); /** Creates a new copy. **/
+                 || dominates > 0
+                 || nondominated == size
+                 || dominated == 0)) {
+                 m_vec.push_back(obj); /** Creates a new copy. **/
                  wasAdded = 1;
-                 size.fetch_and_store(size + 1);
+                 size.fetch_and_increment();
              }
          
          mutex_update.unlock();
          
          return wasAdded;
-     };
+     }
      
      /*
       //Join two buckets;
@@ -164,25 +163,28 @@ enum BucketState {
 //template<class T>
 class GridContainer {
 
-    //std::vector<std::vector<T>> m_Data;
     tbb::concurrent_vector<ParetoBucket> m_Data;
 	unsigned int cols;
 	unsigned int rows;
+    unsigned long numberOfElements;
 
 public:
-	GridContainer();
 
-	GridContainer(int width, int height) {
-		cols = width;
-		rows = height;
+    GridContainer(int width, int height):cols(width), rows(height), numberOfElements(0) {
+
 		m_Data.reserve(cols * rows);
-        int index_c = 0, index_r = 0;
+        int index = 0, indey = 0;
 
-        for (index_r = 0; index_r < rows; index_r++)
-            for (index_c = 0; index_c < cols; index_c++)
-                m_Data.push_back(*new ParetoBucket(index_r, index_c));
-        
+        for (indey = 0; indey < rows; indey++)
+            for (index = 0; index < cols; index++)
+                m_Data.push_back(*new ParetoBucket(index, indey));
 	}
+    
+    GridContainer(const GridContainer& toCopy):
+        cols(toCopy.cols),
+        rows(toCopy.rows),
+        m_Data(toCopy.m_Data), numberOfElements(toCopy.getSize()){
+    }
     
     ~GridContainer(){
     }
@@ -192,7 +194,13 @@ public:
 	}
 
 	int set(Solution obj, size_t x, size_t y) {
-		return m_Data[y * cols + x].push_back(obj);
+        unsigned long size_before = m_Data[y * cols + x].getSize();
+        int updated = m_Data[y * cols + x].push_back(obj);
+        unsigned long size_after = m_Data[y * cols + x].getSize();
+        
+        numberOfElements += size_after - size_before;
+
+		return updated;
 	}
 
 	std::vector<Solution>& get(size_t x, size_t y) {
@@ -206,18 +214,35 @@ public:
 	int getRows() const {
 		return this->rows;
 	}
+    
+    unsigned long getSize() const{
+        return this->numberOfElements;
+    }
+    
+    BucketState getStateOf(size_t x, size_t y) const{
+        return m_Data[y * cols + x].getState();
+    }
 
 	unsigned long getSizeOf(size_t x, size_t y) const {
-		return m_Data[y * cols + x].m_vec.size();
+		return m_Data[y * cols + x].getSize();
 	}
     
     int improvesBucket(Solution obj, size_t x, size_t y){
-        return m_Data[y * cols * x].produceImprovement(obj);
+        return m_Data[y * cols + x].produceImprovement(obj);
+    }
+    
+    void setStateOf(BucketState new_state, size_t x, size_t y){
+        m_Data[y * cols + x].setState(new_state);
     }
 
-	void clear(size_t x, size_t y) {
+	unsigned long clear(size_t x, size_t y) {
+        unsigned long size_before = m_Data[y * cols + x].getSize();
+        m_Data[y * cols + x].setDominated();
+        m_Data[y * cols + x].resetSize();
 		m_Data[y * cols + x].m_vec.clear();
-		m_Data[y * cols + x].m_vec.reserve(0);
+		m_Data[y * cols + x].m_vec.resize(0);
+        numberOfElements -= size_before;
+        return size_before;
 	}
 
 };
@@ -287,23 +312,20 @@ class HandlerContainer {
 	double maxinx;
 	double maxiny;
 
-	unsigned long totalElements;
+	unsigned long numberOfElements;
 
 	GridContainer grid;
 	std::vector<Solution> paretoFront;
-	BucketState * gridState;
-	tbb::mutex Mutex_Up;
-
-	unsigned long debug_counter = 0;
 
 public:
 	unsigned long activeBuckets;
 	unsigned long unexploredBuckets;
 	unsigned long disabledBuckets;
 
-	HandlerContainer();
+    HandlerContainer(int width, int height, double maxValX, double maxValY);
+    HandlerContainer(const HandlerContainer& toCopy);
 	~HandlerContainer();
-	HandlerContainer(int width, int height, double maxValX, double maxValY);
+    
 	int add(Solution & solution);
 	void checkCoordinate(const Solution & solution, int * coordinate) const; /** TODO: Choose an appropiate name method.**/
 	int set(Solution & solution, int x, int y);
@@ -316,14 +338,11 @@ public:
 	unsigned int getCols() const;
 	unsigned long getSize() const;
 	unsigned long getSizeOf(int x, int y) const;
-
 	BucketState getStateOf(int x, int y) const;
+    
 	void setStateOf(BucketState state, int x, int y);
 	void printGridSize();
 	void printStates();
-
-	int updateBucket(Solution & solution, int x, int y);
-	int updateFront(Solution & solution, std::vector<Solution>& front);
 
 	double getMaxIn(int dimension);
 

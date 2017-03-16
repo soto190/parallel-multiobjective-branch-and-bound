@@ -17,12 +17,9 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy){
     this->totalJobs = toCopy.getNumberOfJobs();
     this->totalOperations = toCopy.getNumberOfOperations();
     this->totalMachines = toCopy.getNumberOfMachines();
-    this->totalVariables = toCopy.getNumberOfVariables();
-    this->totalObjectives = toCopy.getNumberOfObjectives();
+  
     this->totalConstraints = toCopy.getNumberOfConstraints();
     
-    this->lowerBound = new int[totalVariables];
-    this->upperBound = new int[totalVariables];
     
     std::strcpy(this->name, toCopy.name);
     
@@ -96,20 +93,6 @@ ProblemFJSSP::ProblemFJSSP(int totalObjectives, int totalVariables):Problem(tota
     this->totalOperations = 0;
     this->totalMachines = 0;
     this->sumOfMinPij = 0;
-/*    this->releaseTime = new int[1]();
-    this->assignationMinPij = new int[1]();
-    this->operationInJobIsNumber = new int * [1]();
-    this->operationIsFromJob = new int[1];
-    this->bestWorkloadFound = 0;
-    this->goodSolutionWithMaxWorkload = 0;
-    this->assignationBestWorkload = new int [1];
-    this->minWorkload = 0;
-    this->jobHasNoperations = new int[1];
-    this->jobMachineToMap = new int * [1];
-    this->mapToJobMachine = new int * [1];
-    this->processingTime = new int * [1];
-    this->bestWorkloads = new int[1];
-  */
 }
 
 ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){

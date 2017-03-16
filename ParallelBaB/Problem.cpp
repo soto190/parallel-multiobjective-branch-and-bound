@@ -9,37 +9,48 @@
 #include "Problem.hpp"
 
 Problem::Problem(){
-    this->totalObjectives = 1;
-    this->totalVariables = 1;
-    this->lowerBound = new int[totalVariables];
-    this->upperBound = new int[totalVariables];
-    this->name = new char[255];
+    
+    this->totalObjectives = 0;
+    this->totalVariables = 0;
     this->type = ProblemType::XD;
     this->startingLevel = 0;
-    this->totalConstraints = 1;
+    this->totalConstraints = 0;
+    
+    this->lowerBound = nullptr;
+    this->upperBound = nullptr;
+    this->name = nullptr;
 }
 
 Problem::Problem(const Problem& toCopy){
     this->totalObjectives = toCopy.getNumberOfObjectives();
     this->totalVariables = toCopy.getNumberOfVariables();
-    this->lowerBound = new int[toCopy.getNumberOfVariables()];
-    this->upperBound = new int[toCopy.getNumberOfVariables()];
-    this->name = new char[255];
-    std::strcpy(this->name, toCopy.name);
     this->type = toCopy.getType();
     this->startingLevel = toCopy.startingLevel;
     this->totalConstraints = toCopy.getNumberOfConstraints();
+    this->name = new char[255];
+    std::strcpy(this->name, toCopy.name);
+    this->lowerBound = new int[toCopy.getNumberOfVariables()];
+    this->upperBound = new int[toCopy.getNumberOfVariables()];
+    
+    int index = 0;
+    for (index = 0; index < totalVariables; index++) {
+        this->lowerBound[index] = toCopy.lowerBound[index];
+        this->upperBound[index] = toCopy.upperBound[index];
+    }
+    
 }
 
 Problem::Problem(int totalObjectives, int totalVariables){
     this->totalObjectives = totalObjectives;
     this->totalVariables = totalVariables;
-    this->lowerBound = new int[totalVariables];
-    this->upperBound = new int[totalVariables];
-    this->name = new char[255];
     this->type = ProblemType::XD;
     this->startingLevel = 0;
     this->totalConstraints = 0;
+   
+    this->name = new char[255];
+    this->lowerBound = new int[totalVariables];
+    this->upperBound = new int[totalVariables];
+    
 }
 
 Problem::~Problem(){
@@ -54,19 +65,33 @@ Problem& Problem::operator=(const Problem &toCopy){
     
     this->totalObjectives = toCopy.getNumberOfObjectives();
     this->totalVariables = toCopy.getNumberOfVariables();
-    this->lowerBound = new int[toCopy.getNumberOfVariables()];
-    this->upperBound = new int[toCopy.getNumberOfVariables()];
-    this->name = new char[255];
-    std::strcpy(this->name, toCopy.name);
     this->type = toCopy.getType();
     this->startingLevel = toCopy.startingLevel;
     this->totalConstraints = toCopy.getNumberOfConstraints();
+    
+    if (name != nullptr) {
+        delete[] lowerBound;
+        delete[] upperBound;
+        delete[] name;
+    }
+    
+    this->name = new char[255];
+    std::strcpy(this->name, toCopy.name);
+    
+    this->lowerBound = new int[toCopy.getNumberOfVariables()];
+    this->upperBound = new int[toCopy.getNumberOfVariables()];
+    
+    int index = 0;
+    for (index = 0; index < totalVariables; index++) {
+        this->lowerBound[index] = toCopy.lowerBound[index];
+        this->upperBound[index] = toCopy.upperBound[index];
+    }
     
     return *this;
 }
 
 void Problem::setName(const char* name){
-    this->name = new char[255];
+    
     std::strcpy(this->name, name);
 }
 

@@ -27,10 +27,10 @@ public:
         
     ProblemFJSSP problem;
     GlobalPool& global_pool;
+    HandlerContainer& global_grid;
     Interval branch_init;
-    //BranchAndBound BB_container;
     
-    ParallelBranchAndBound(const ProblemFJSSP& problem, GlobalPool& global_pool);
+    ParallelBranchAndBound(const ProblemFJSSP& problem, GlobalPool& global_pool, HandlerContainer& global_grid);
     ~ParallelBranchAndBound();
     tbb::task* execute();
     

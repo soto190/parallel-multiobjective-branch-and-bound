@@ -65,29 +65,27 @@ public:
 	/**
 	 * The constructor should receives the parameters to start at some point of the tree.
 	 **/
-    //BranchAndBound();
     BranchAndBound(const BranchAndBound& branchAndBound);
-    //BranchAndBound(int rank, const ProblemFJSSP& problem);
     BranchAndBound(int rank, const ProblemFJSSP& problem,
-			const Interval & branch, GlobalPool& globa_pool);
+			const Interval & branch, GlobalPool& globa_pool, HandlerContainer& pareto_container);
     
     BranchAndBound& operator()(int rank, const ProblemFJSSP& problem, const Interval & branch);
 	~BranchAndBound();
 
 //	std::shared_ptr<Problem> problem;
     ProblemFJSSP problem;
-	tbb::mutex MutexToUpdateGlobalPool;
 
 	Solution currentSolution;
 	Solution bestObjectivesFound;
 
 	GlobalPool& globalPool;
+    HandlerContainer& paretoContainer;
+
 	std::queue<Interval> localPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 
 	std::vector<Solution> paretoFront; /** paretofFront. **/
 
-	std::shared_ptr<HandlerContainer> paretoContainer; /** Global Pareto container. **/
-
+    //std::shared_ptr<HandlerContainer> paretoContainer; /** Global Pareto container. **/
 	IVMTree ivm_tree;
 	Interval starting_interval;
 
@@ -140,9 +138,13 @@ public:
 	int saveSummarize();
 	void saveEvery(double timeInSeconds);
 
-	void setParetoContainer(std::shared_ptr<HandlerContainer> paretoContainer);
-	std::shared_ptr<HandlerContainer> getParetoContainer();
+    //void setParetoContainer(std::shared_ptr<HandlerContainer> paretoContainer);
+    //std::shared_ptr<HandlerContainer> getParetoContainer();
 
+    void setParetoContainer(HandlerContainer & paretoContainer);
+    HandlerContainer& getParetoContainer();
+
+    
 private:
 	int rank; /** identifies the number of thread-B&B**/
 	void printCurrentSolution(int withVariables = 0);
