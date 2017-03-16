@@ -84,7 +84,7 @@ enum BucketState {
      
      /** 
       * Returns 1 if the solution was added.
-      * The solution is added if the ParetoBucket is improved.
+      * The solution is added if the ParetoBucket is improved, also deletes all dominated solutions.
       *
       ***/
      int push_back(const Solution& obj){
@@ -130,14 +130,11 @@ enum BucketState {
              }
          }
          
-         /**
-          * status[3] is to avoid to add solutions with the same objective values in the front, remove it if repeated objective values are requiered.
-          */
-         if ((equals == 0)
-             && (m_vec.size() == 0
-                 || dominates > 0
-                 || nondominated == size
-                 || dominated == 0)) {
+         if (equals == 0
+            && (m_vec.size() == 0
+            || dominates > 0
+            || nondominated == size
+            || dominated == 0)) {
                  m_vec.push_back(obj); /** Creates a new copy. **/
                  wasAdded = 1;
                  size.fetch_and_increment();
@@ -159,14 +156,12 @@ enum BucketState {
      */
  };
  
-
-//template<class T>
 class GridContainer {
 
-    tbb::concurrent_vector<ParetoBucket> m_Data;
 	unsigned int cols;
 	unsigned int rows;
-    unsigned long numberOfElements;
+    tbb::atomic<unsigned long> numberOfElements;
+    tbb::concurrent_vector<ParetoBucket> m_Data;
 
 public:
 
@@ -181,9 +176,10 @@ public:
 	}
     
     GridContainer(const GridContainer& toCopy):
-        cols(toCopy.cols),
-        rows(toCopy.rows),
-        m_Data(toCopy.m_Data), numberOfElements(toCopy.getSize()){
+        cols(toCopy.getCols()),
+        rows(toCopy.getRows()),
+        m_Data(toCopy.m_Data),
+        numberOfElements(toCopy.getSize()){
     }
     
     ~GridContainer(){
@@ -198,7 +194,7 @@ public:
         int updated = m_Data[y * cols + x].push_back(obj);
         unsigned long size_after = m_Data[y * cols + x].getSize();
         
-        numberOfElements += size_after - size_before;
+        numberOfElements.fetch_and_add(size_after - size_before);
 
 		return updated;
 	}
@@ -241,7 +237,7 @@ public:
         m_Data[y * cols + x].resetSize();
 		m_Data[y * cols + x].m_vec.clear();
 		m_Data[y * cols + x].m_vec.resize(0);
-        numberOfElements -= size_before;
+        numberOfElements.fetch_and_add(-size_before);
         return size_before;
 	}
 
@@ -318,9 +314,9 @@ class HandlerContainer {
 	std::vector<Solution> paretoFront;
 
 public:
-	unsigned long activeBuckets;
-	unsigned long unexploredBuckets;
-	unsigned long disabledBuckets;
+    tbb::atomic<unsigned long> activeBuckets;
+	tbb::atomic<unsigned long> unexploredBuckets;
+	tbb::atomic<unsigned long> disabledBuckets;
 
     HandlerContainer(int width, int height, double maxValX, double maxValY);
     HandlerContainer(const HandlerContainer& toCopy);
@@ -334,6 +330,9 @@ public:
 
 	std::vector<Solution>& get(int x, int y);
 	void clearContainer(int x, int y);
+    unsigned long getNumberOfActiveBuckets() const;
+    unsigned long getNumberOfUnexploredBuckets() const;
+    unsigned long getNumberOfDisabledBuckets() const;
 	unsigned int getRows() const;
 	unsigned int getCols() const;
 	unsigned long getSize() const;

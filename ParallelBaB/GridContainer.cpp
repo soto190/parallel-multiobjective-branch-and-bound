@@ -125,16 +125,14 @@ int HandlerContainer::set(Solution & solution, int x, int y) {
             
             this->grid.set(solution, x, y);
             this->grid.setStateOf(BucketState::nondominated, x, y);
-            this->activeBuckets++;
-            this->unexploredBuckets--;
-            this->numberOfElements++;
+            this->activeBuckets.fetch_and_increment();
+            this->unexploredBuckets.fetch_and_decrement();
             
             updated = 1;
             break;
             
         case BucketState::nondominated:
             updated = this->grid.set(solution, x, y);
-            if(updated == 1) numberOfElements++;
             break;
             
         case BucketState::dominated:
@@ -159,11 +157,23 @@ int HandlerContainer::add(Solution & solution) {
 void HandlerContainer::clearContainer(int x, int y) {
     
     if (this->grid.getSizeOf(x, y) > 0) {
-        this->numberOfElements -= this->grid.getSizeOf(x, y);
-        this->disabledBuckets++;
-        this->activeBuckets--;
+        //this->numberOfElements -= this->grid.getSizeOf(x, y);
+        this->disabledBuckets.fetch_and_increment();
+        this->activeBuckets.fetch_and_decrement();
         this->grid.clear(x, y);
     }
+}
+
+unsigned long HandlerContainer::getNumberOfActiveBuckets() const{
+    return activeBuckets;
+}
+
+unsigned long HandlerContainer::getNumberOfUnexploredBuckets() const{
+    return unexploredBuckets;
+}
+
+unsigned long HandlerContainer::getNumberOfDisabledBuckets() const{
+    return disabledBuckets;
 }
 
 std::vector<Solution>& HandlerContainer::get(int x, int y) {

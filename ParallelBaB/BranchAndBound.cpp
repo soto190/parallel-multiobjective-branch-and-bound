@@ -780,11 +780,11 @@ int BranchAndBound::saveSummarize() {
 	printf("\tGrid dimension:    %d x %d\n", this->paretoContainer.getCols(),
 			this->paretoContainer.getRows());
 	printf("\tnon-dominated buckets:    %ld\n",
-			this->paretoContainer.activeBuckets);
+			this->paretoContainer.getNumberOfActiveBuckets());
 	printf("\tdominated buckets:  %ld\n",
-			this->paretoContainer.disabledBuckets);
+			this->paretoContainer.getNumberOfDisabledBuckets());
 	printf("\tunexplored buckets:%ld\n",
-			this->paretoContainer.unexploredBuckets);
+			this->paretoContainer.getNumberOfUnexploredBuckets());
 	printf("\tTotal elements in: %ld\n", this->paretoContainer.getSize());
 
 	std::ofstream myfile(this->summarizeFile);

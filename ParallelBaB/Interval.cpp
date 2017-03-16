@@ -17,21 +17,21 @@
  **/
 
 Interval::Interval():
-                    max_size(1),
-                    build_up_to(-1),
-                    interval(new int[1]{-1}){
+    max_size(1),
+    build_up_to(-1),
+    interval(new int[1]{-1}){
 }
 
 Interval::Interval(int max_size):
-                                max_size(max_size),
-                                build_up_to(-1),
-                                interval(new int[max_size]){
+    max_size(max_size),
+    build_up_to(-1),
+    interval(new int[max_size]){
 
 }
 
 Interval::Interval(const Interval &toCopy):
-                                            max_size(toCopy.getSize()),
-                                            build_up_to(toCopy.getBuildUpTo()){
+    max_size(toCopy.getSize()),
+    build_up_to(toCopy.getBuildUpTo()){
 
     this->interval = new int[toCopy.getSize()];
     int index = 0;
@@ -79,7 +79,7 @@ Interval::~Interval(){
 
 int Interval::getSize() const{ return  this->max_size;}
 int Interval::getBuildUpTo() const{ return this->build_up_to;}
-int Interval::getValueAt(int position) const{ return  this->interval[position];}
+int Interval::getValueAt(int position) const{ return this->interval[position];}
 
 void Interval::setSize(int size){ this->max_size = size; }
 void Interval::setValueAt(int index, int value){ this->interval[index] = value; }
