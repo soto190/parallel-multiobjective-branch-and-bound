@@ -160,6 +160,11 @@ Solution& Solution::operator=(const Solution &solution) {
     return *this;
 }
 
+int Solution::operator==(const Solution &solution){
+
+    return 1;
+}
+
 Solution::~Solution() {
 	delete[] objective;
 	delete[] variable;
@@ -213,14 +218,16 @@ int Solution::dominates(const Solution & solution) const {
 	int localSolIsBetterIn = 0;
 	int exterSolIsBetterIn = 0;
 	int equals = 1;
+    double objA = 0;
+    double objB = 0;
 
 	/**
 	 * For more objectives consider
 	 * if (solAIsBetterIn > 0 and solBIsBetterIn > 0) break the FOR because the solutions are non-dominated.
 	 **/
 	for (nObj = 0; nObj < this->totalObjectives; nObj++) {
-		double objA = this->getObjective(nObj);
-		double objB = solution.getObjective(nObj);
+		objA = this->getObjective(nObj);
+		objB = solution.getObjective(nObj);
 
 		if (objA < objB) {
 			localSolIsBetterIn++;

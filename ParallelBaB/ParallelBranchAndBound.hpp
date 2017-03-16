@@ -31,6 +31,7 @@ public:
     //BranchAndBound BB_container;
     
     ParallelBranchAndBound(const ProblemFJSSP& problem, GlobalPool& global_pool);
+    ~ParallelBranchAndBound();
     tbb::task* execute();
     
     void setNumberOfThreads(int number_of_threads);

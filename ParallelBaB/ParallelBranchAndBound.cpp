@@ -12,6 +12,13 @@ ParallelBranchAndBound::ParallelBranchAndBound(const ProblemFJSSP& problem, Glob
     problem(problem),
     global_pool(global_pool),
     branch_init(problem.getNumberOfVariables()){
+        this->outputParetoFile = new char[255];
+        this->summarizeFile = new char[255];
+}
+
+ParallelBranchAndBound::~ParallelBranchAndBound(){
+    delete [] outputParetoFile;
+    delete [] summarizeFile;
 }
 
 tbb::task * ParallelBranchAndBound::execute() {
@@ -76,13 +83,9 @@ void ParallelBranchAndBound::setNumberOfThreads(int number_of_threads) {
 }
 
 void ParallelBranchAndBound::setParetoFrontFile(const char * outputFile) {
-    delete [] outputParetoFile;
-    this->outputParetoFile = new char[255];
 	std::strcpy(this->outputParetoFile, outputFile);
 }
 
 void ParallelBranchAndBound::setSummarizeFile(const char * outputFile) {
-    delete [] summarizeFile;
-	this->summarizeFile = new char[255];
 	std::strcpy(this->summarizeFile, outputFile);
 }

@@ -53,6 +53,7 @@ public:
     /*overloading operators*/
     Solution& operator=(const Solution &solution);
     Solution& operator()(int numberOfObjectives, int numberOfVariables);
+    int operator==(const Solution & solution);
     void print() const;
     void printObjectives() const;
     void printVariables() const;
