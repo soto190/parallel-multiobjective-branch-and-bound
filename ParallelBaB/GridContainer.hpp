@@ -27,7 +27,7 @@ enum BucketState {
  class ParetoBucket{
  
  private:
-     BucketState state;
+     tbb::atomic<BucketState> state;
      unsigned long posx;
      unsigned long posy;
      tbb::atomic<unsigned long> size;
@@ -56,11 +56,11 @@ enum BucketState {
             
      };
      
-     void setState(BucketState new_state){ state = new_state; }
-     void setUnexplored(){ state = BucketState::unexplored; }
-     void setNonDominated(){ state = BucketState::nondominated; }
-     void setDominated(){ state = BucketState::dominated; }
-     void resetSize(){size = 0;}
+     void setState(BucketState new_state){ state.fetch_and_store(new_state); }
+     void setUnexplored(){ state.fetch_and_store(BucketState::unexplored); }
+     void setNonDominated(){ state.fetch_and_store(BucketState::nondominated); }
+     void setDominated(){ state.fetch_and_store(BucketState::dominated); }
+     void resetSize(){ size.fetch_and_store(0); }
      
      BucketState getState() const{ return state; }
      unsigned long getPosx() const{ return posx; }
