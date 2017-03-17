@@ -172,7 +172,7 @@ public:
 
         for (indey = 0; indey < rows; indey++)
             for (index = 0; index < cols; index++)
-                m_Data.push_back(*new ParetoBucket(index, indey));
+                m_Data.push_back(ParetoBucket(index, indey));
 	}
     
     GridContainer(const GridContainer& toCopy):
@@ -204,15 +204,15 @@ public:
 	}
 
 	int getCols() const {
-		return this->cols;
+		return cols;
 	}
 
 	int getRows() const {
-		return this->rows;
+		return rows;
 	}
     
     unsigned long getSize() const{
-        return this->numberOfElements;
+        return numberOfElements;
     }
     
     BucketState getStateOf(size_t x, size_t y) const{

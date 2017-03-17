@@ -127,13 +127,15 @@ Solution& Solution::operator=(const Solution &solution) {
     this->totalVariables = solution.getNumberOfVariables();
     
     /** Freeing previously used memory. **/
-    delete[] objective;
-    delete[] variable;
-    delete[] execTime;
-    int index = 0;
-    for (index = 0; index < this->totalVariables; index++)
-        delete[] this->partialObjective[index];
-    delete[] this->partialObjective;
+    if (objective != nullptr) {
+        delete[] objective;
+        delete[] variable;
+        delete[] execTime;
+        int index = 0;
+        for (index = 0; index < this->totalVariables; index++)
+            delete[] this->partialObjective[index];
+        delete[] this->partialObjective;
+    }
     
     this->objective = new double[this->totalObjectives];
     this->variable = new int[this->totalVariables];
@@ -161,8 +163,17 @@ Solution& Solution::operator=(const Solution &solution) {
 }
 
 int Solution::operator==(const Solution &solution){
-
-    return 1;
+    int index = 0;
+    int equals = 0;
+    
+    for (index = 0; index < totalObjectives; index++)
+        if (objective[index] == solution.getObjective(index))
+            equals++;
+    
+    if (equals == totalObjectives)
+        return 1;
+    
+    return 0;
 }
 
 Solution::~Solution() {
