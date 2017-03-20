@@ -28,7 +28,6 @@
 #include "Interval.hpp"
 #include "tbb/parallel_for.h"
 #include "tbb/task.h"
-#include "tbb/mutex.h"
 #include "tbb/cache_aligned_allocator.h"
 #include "tbb/concurrent_queue.h"
 //#include <memory.h> /** For the Ehecatl wich uses GCC 4.4.7, this activates the shared_ptr. **/

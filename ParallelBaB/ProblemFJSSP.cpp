@@ -676,7 +676,7 @@ void ProblemFJSSP::loadInstance(char** filePath){
             this->operationIsFromJob[operationCounter++] = job;
         }
     }
-    goodSolutionWithMaxWorkload = *new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
+    goodSolutionWithMaxWorkload (this->getNumberOfObjectives(), this->getNumberOfVariables());
     buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
     
     infile.close();

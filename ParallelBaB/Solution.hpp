@@ -11,6 +11,10 @@
 
 #include <stdio.h>
 
+enum DominanceRelation {
+    Dominates = 1, Dominated = -1, Nondominated = 0, Equals = 11
+};
+
 //template <class TypeVariable>
 class Solution{
     
@@ -48,7 +52,7 @@ public:
     double * execTime;
     int machineWithMakespan;
     
-    int dominates(const Solution &solution) const;
+    DominanceRelation dominates(const Solution &solution) const;
     
     /*overloading operators*/
     Solution& operator=(const Solution &solution);

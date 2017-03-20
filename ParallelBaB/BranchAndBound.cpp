@@ -812,11 +812,11 @@ int BranchAndBound::saveSummarize() {
 		myfile << "\tdimension:         \t" << this->paretoContainer.getCols()
 				<< " x " << this->paretoContainer.getRows() << "\n";
 		myfile << "\tnon-dominated:     \t"
-				<< this->paretoContainer.activeBuckets << "\n";
+				<< this->paretoContainer.getNumberOfActiveBuckets() << "\n";
 		myfile << "\tdominated:         \t"
-				<< this->paretoContainer.disabledBuckets << "\n";
+				<< this->paretoContainer.getNumberOfDisabledBuckets() << "\n";
 		myfile << "\tunexplored:        \t"
-				<< this->paretoContainer.unexploredBuckets << "\n";
+				<< this->paretoContainer.getNumberOfUnexploredBuckets() << "\n";
 		myfile << "\tnumber of elements:\t" << this->paretoContainer.getSize()
 				<< "\n";
 

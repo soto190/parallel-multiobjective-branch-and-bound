@@ -170,16 +170,12 @@ Solution& Solution::operator=(const Solution &solution) {
 
 int Solution::operator==(const Solution &solution){
     int index = 0;
-    int equals = 0;
     
     for (index = 0; index < totalObjectives; index++)
-        if (objective[index] == solution.getObjective(index))
-            equals++;
+        if (objective[index] < solution.getObjective(index))
+            return 0;
     
-    if (equals == totalObjectives)
-        return 1;
-    
-    return 0;
+    return 1;
 }
 
 Solution::~Solution() {
@@ -225,12 +221,11 @@ int Solution::getPartialObjective(int var, int objective) const{
     return this->partialObjective[var][objective];
 }
 
-
 int Solution::getBuildUpTo() const {
 	return this->build_up_to;
 }
 
-int Solution::dominates(const Solution & solution) const {
+DominanceRelation Solution::dominates(const Solution & solution) const {
 	int nObj = 0;
 	int localSolIsBetterIn = 0;
 	int exterSolIsBetterIn = 0;
@@ -256,13 +251,13 @@ int Solution::dominates(const Solution & solution) const {
 	}
 
 	if (equals == 1)
-		return 11;
+        return DominanceRelation::Equals;
 	else if (localSolIsBetterIn > 0 && exterSolIsBetterIn == 0)
-		return 1;
+        return DominanceRelation::Dominates;
 	else if (exterSolIsBetterIn > 0 && localSolIsBetterIn == 0)
-		return -1;
+        return DominanceRelation::Dominated;
 	else
-		return 0;
+        return DominanceRelation::Nondominated;
 }
 
 void Solution::print() const {
