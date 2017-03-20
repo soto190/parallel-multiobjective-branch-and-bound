@@ -360,19 +360,11 @@ double ProblemHCSP::removeLastLevelEvaluation(Solution * solution, int newLevel)
     return 0.0;
 }
 
-Solution* ProblemHCSP::createSolution(){
-    Solution* solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
-    return solution;
-}
-
-void ProblemHCSP::createDefaultSolution(Solution *solution){
+void ProblemHCSP::createDefaultSolution(Solution & solution){
 
 }
 
-Solution * ProblemHCSP::getSolutionWithLowerBoundInObj(int nObj){
-    Solution * solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
-    
-    return solution;
+void ProblemHCSP::getSolutionWithLowerBoundInObj(int nObj, Solution & solution){    
 }
 
 void ProblemHCSP::printInstance(){
@@ -543,14 +535,14 @@ void ProblemHCSP::readMachinesConfigurations(char *filePath){
     infile.close();
 }
 
-void ProblemHCSP::printSolution(Solution * solution){
+void ProblemHCSP::printSolution(Solution & solution){
     printPartialSolution(solution, this->totalVariables);
 }
 
-void ProblemHCSP::printSolutionInfo(Solution *solution){
+void ProblemHCSP::printSolutionInfo(Solution & solution){
     printf("TODO: Implement this function.\n");
 }
 
-void ProblemHCSP::printPartialSolution(Solution * solution, int level){
+void ProblemHCSP::printPartialSolution(Solution & solution, int level){
 
 }

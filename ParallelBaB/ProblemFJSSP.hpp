@@ -41,11 +41,11 @@ public:
     double removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel);
     double removeLastLevelEvaluation(Solution * solution, int newLevel);
     
-    void createDefaultSolution(Solution * solution);
-    Solution * getSolutionWithLowerBoundInObj(int nObj);
-    void printSolution(Solution * solution);
-    void printPartialSolution(Solution * solution, int level);
-    void printSolutionInfo(Solution * solution);
+    void createDefaultSolution(Solution & solution);
+    void getSolutionWithLowerBoundInObj(int nObj, Solution& solution);
+    void printSolution(Solution & solution);
+    void printPartialSolution(Solution & solution, int level);
+    void printSolutionInfo(Solution & solution);
     
     int getLowerBound(int indexVar);
     int getUpperBound(int indexVar);
@@ -61,8 +61,7 @@ public:
     int getTimesValueIsRepeated(int value);
     
     
-    Solution* createSolution();
-    Solution* goodSolutionWithMaxWorkload;
+    Solution goodSolutionWithMaxWorkload;
 
 private:
     /**FJSSP functions**/
@@ -142,12 +141,12 @@ public:
 
     void printInstance();
     void printProblemInfo();
-    void printSchedule(Solution * solution);
+    void printSchedule(Solution & solution);
     
     double evaluatePartialTest4(Solution & solution, int currentLevel);
     int getLowerBoundInObj(int nObj);
-    void buildSolutionWithGoodMaxWorkload(Solution * solution);
-    void buildSolutionWithGoodMaxWorkloadv2(Solution * solution);
+    void buildSolutionWithGoodMaxWorkload(Solution & solution);
+    void buildSolutionWithGoodMaxWorkloadv2(Solution & solution);
     
 };
 

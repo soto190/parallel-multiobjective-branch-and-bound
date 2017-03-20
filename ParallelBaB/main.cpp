@@ -82,7 +82,7 @@ int main(int argc, const char * argv[]) {
 
     try {
         Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-        problem.createDefaultSolution(&solution);
+        problem.createDefaultSolution(solution);
         GlobalPool global_pool;
         HandlerContainer global_grid(100, 100, solution.getObjective(0), solution.getObjective(1));
         

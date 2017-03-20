@@ -74,7 +74,7 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem, const Inte
 
 	this->currentSolution(numberOfObjectives, numberOfVariables);
 	this->bestObjectivesFound(numberOfObjectives, numberOfVariables);
-	this->problem.createDefaultSolution(&this->currentSolution);
+	this->problem.createDefaultSolution(this->currentSolution);
     
 	int nObj = 0;
 	for (nObj = 0; nObj < numberOfObjectives; nObj++)
@@ -115,7 +115,7 @@ BranchAndBound& BranchAndBound::operator()(int rank, const ProblemFJSSP &problem
     
     this->currentSolution(numberOfObjectives, numberOfVariables);
     this->bestObjectivesFound(numberOfObjectives, numberOfVariables);
-    this->problem.createDefaultSolution(&this->currentSolution);
+    this->problem.createDefaultSolution(this->currentSolution);
     
     int nObj = 0;
     for (nObj = 0; nObj < numberOfObjectives; nObj++)
@@ -162,20 +162,23 @@ void BranchAndBound::initialize(int starts_tree) {
 
 	this->currentSolution(numberOfObjectives, numberOfVariables);
 	this->bestObjectivesFound(numberOfObjectives, numberOfVariables);
-	this->problem.createDefaultSolution(&this->currentSolution);
+	this->problem.createDefaultSolution(this->currentSolution);
 
-	Solution bestInObj1 = *this->problem.getSolutionWithLowerBoundInObj(1);
-	Solution bestInObj2 = *this->problem.getSolutionWithLowerBoundInObj(2);
+    
+    //Solution bestInObj1;
+    //this->problem.getSolutionWithLowerBoundInObj(1, bestInObj1);
+    //Solution bestInObj2;
+    //this->problem.getSolutionWithLowerBoundInObj(2, bestInObj2);
 
 	int nObj = 0;
 	for (nObj = 0; nObj < numberOfObjectives; nObj++)
 		this->bestObjectivesFound.setObjective(nObj,
 				this->currentSolution.getObjective(nObj));
 
-	this->bestObjectivesFound.setObjective(1, bestInObj1.getObjective(1));
+    //this->bestObjectivesFound.setObjective(1, bestInObj1.getObjective(1));
 
-	this->updateParetoGrid(bestInObj1);
-	this->updateParetoGrid(bestInObj2);
+    //this->updateParetoGrid(bestInObj1);
+    //this->updateParetoGrid(bestInObj2);
 	this->updateParetoGrid(this->currentSolution);
 
 }
@@ -706,7 +709,7 @@ unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
 }
 
 void BranchAndBound::printCurrentSolution(int withVariables) {
-	this->problem.printPartialSolution(&this->currentSolution,
+	this->problem.printPartialSolution(this->currentSolution,
 			this->currentLevel);
 }
 
@@ -720,7 +723,7 @@ void BranchAndBound::printParetoFront(int withVariables) {
 
 	for (it = this->paretoFront.begin(); it != this->paretoFront.end(); it++) {
 		printf("[%6d] ", ++counterSolutions);
-		this->problem.printSolution(&*it);
+		this->problem.printSolution(*it);
 		printf("\n");
 	}
 }

@@ -28,14 +28,12 @@ public:
     double removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel);
     double removeLastLevelEvaluation(Solution * solution, int newLevel);
     
-    void createDefaultSolution(Solution * solution);
-    Solution * getSolutionWithLowerBoundInObj(int nObj);
+    void createDefaultSolution(Solution & solution);
+    void getSolutionWithLowerBoundInObj(int nObj, Solution& solution);
 
-    void printSolution(Solution * solution);
-    void printPartialSolution(Solution * solution, int level);
-    
-    Solution* createSolution();
-    
+    void printSolution(Solution & solution);
+    void printPartialSolution(Solution & solution, int level);
+        
     int getLowerBound(int indexVar);
     int getUpperBound(int indexVar);
     int getLowerBoundInObj(int nObj);
@@ -51,7 +49,7 @@ public:
     
     void printInstance();
     void printProblemInfo();
-    void printSolutionInfo(Solution * solution);
+    void printSolutionInfo(Solution & solution);
     void loadInstance(char* path[]);
     
     

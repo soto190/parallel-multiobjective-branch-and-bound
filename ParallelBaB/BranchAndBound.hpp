@@ -62,9 +62,6 @@ class BranchAndBound: public tbb::task {
 
 public:
 
-	/**
-	 * The constructor should receives the parameters to start at some point of the tree.
-	 **/
     BranchAndBound(const BranchAndBound& branchAndBound);
     BranchAndBound(int rank, const ProblemFJSSP& problem,
 			const Interval & branch, GlobalPool& globa_pool, HandlerContainer& pareto_container);
@@ -72,7 +69,6 @@ public:
     BranchAndBound& operator()(int rank, const ProblemFJSSP& problem, const Interval & branch);
 	~BranchAndBound();
 
-//	std::shared_ptr<Problem> problem;
     ProblemFJSSP problem;
 
 	Solution currentSolution;
@@ -80,17 +76,13 @@ public:
 
 	GlobalPool& globalPool;
     HandlerContainer& paretoContainer;
-
 	std::queue<Interval> localPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
-
 	std::vector<Solution> paretoFront; /** paretofFront. **/
 
-    //std::shared_ptr<HandlerContainer> paretoContainer; /** Global Pareto container. **/
 	IVMTree ivm_tree;
 	Interval starting_interval;
 
 	int levels_completed;
-
 	int currentLevel; /** Active level **/
 	int totalLevels; /** Number of tree levels **/
 

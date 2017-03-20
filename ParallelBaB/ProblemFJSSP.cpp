@@ -373,7 +373,7 @@ double ProblemFJSSP::removeLastLevelEvaluation(Solution * solution, int newLevel
     return 0.0;
 }
 
-void ProblemFJSSP::createDefaultSolution(Solution * solution){
+void ProblemFJSSP::createDefaultSolution(Solution & solution){
     
     int job = 0;
     int operation = 0;
@@ -384,17 +384,16 @@ void ProblemFJSSP::createDefaultSolution(Solution * solution){
     for (job = 0; job < this->totalJobs; job++)
         for (operation = 0; operation < this->jobHasNoperations[job]; operation++){
             map = this->jobMachineToMap[job][machine];
-            solution->setVariable(countOperations++, map);
+            solution.setVariable(countOperations++, map);
             machine++;
             if (machine == this->totalMachines)
                 machine = 0;
         }
     
-    this->evaluate(*solution);
+    this->evaluate(solution);
 }
 
-Solution * ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj){
-    Solution * solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
+void ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){
     
     if(nObj == 0){
         this->createDefaultSolution(solution);
@@ -404,13 +403,12 @@ Solution * ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj){
     else if(nObj == 2){
         int operation = 0;
         for (operation = 0; operation < this->totalOperations; operation++)
-            solution->setVariable(operation, this->jobMachineToMap[this->operationIsFromJob[operation]][this->assignationMinPij[operation]]);
+            solution.setVariable(operation, this->jobMachineToMap[this->operationIsFromJob[operation]][this->assignationMinPij[operation]]);
     }
-    this->evaluate(*solution);
-    return solution;
+    this->evaluate(solution);
 }
 
-void ProblemFJSSP::buildSolutionWithGoodMaxWorkload(Solution * solution){
+void ProblemFJSSP::buildSolutionWithGoodMaxWorkload(Solution & solution){
 
     /**
      *
@@ -421,7 +419,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkload(Solution * solution){
 
 }
 
-void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution *solution){
+void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
    
     int nJob = 0;
     int nOperation = 0;
@@ -454,7 +452,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution *solution){
             workload[nMachine] += procTiOp;
             totalWorkload += procTiOp;
             
-            solution->setVariable(counterOperations, this->jobMachineToMap[nJob][nMachine]);
+            solution.setVariable(counterOperations, this->jobMachineToMap[nJob][nMachine]);
             counterOperations++;
             
             if(workload[nMachine] > maxWorkload) {
@@ -476,7 +474,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution *solution){
         minWorkload = INT_MAX;
         
         for (nOperation = 0; nOperation < this->totalOperations; nOperation++)
-            if(this->mapToJobMachine[solution->getVariable(nOperation)][1] == maxWorkloadedMachine)
+            if(this->mapToJobMachine[solution.getVariable(nOperation)][1] == maxWorkloadedMachine)
                 for (nMachine = 0; nMachine < this->totalMachines; nMachine++)
                     if(nMachine != maxWorkloadedMachine
                        && (workload[nMachine] + this->processingTime[nOperation][nMachine]) < minWorkload) {
@@ -492,7 +490,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution *solution){
         totalWorkload += this->processingTime[bestOperation][bestMachine];
         workload[bestMachine] += this->processingTime[bestOperation][bestMachine];
         
-        solution->setVariable(bestOperation, this->jobMachineToMap[this->operationIsFromJob[bestOperation]][bestMachine]);        
+        solution.setVariable(bestOperation, this->jobMachineToMap[this->operationIsFromJob[bestOperation]][bestMachine]);
         this->assignationBestWorkload[bestOperation] = bestMachine;
         
         /** Recalculates the maxWorkload and minWorkload for the next iteration. **/
@@ -505,7 +503,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution *solution){
                 maxWorkloadedMachine = nMachine;
             }
         
-        solution->setObjective(1, workload[maxWorkloadedMachine]);
+        solution.setObjective(1, workload[maxWorkloadedMachine]);
 
         if(maxWorkload < maxWorkloadObj)
             maxWorkloadObj = maxWorkload;
@@ -518,8 +516,8 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution *solution){
             totalWorkload -= this->processingTime[bestOperation][lastBestWorkloadMachine];
             
             
-            solution->setVariable(bestOperation, this->jobMachineToMap[this->operationIsFromJob[bestOperation]][lastMaxWorkloadedMachine]);
-            solution->setObjective(1, workload[lastMaxWorkloadedMachine]);
+            solution.setVariable(bestOperation, this->jobMachineToMap[this->operationIsFromJob[bestOperation]][lastMaxWorkloadedMachine]);
+            solution.setObjective(1, workload[lastMaxWorkloadedMachine]);
             
             this->assignationBestWorkload[bestOperation] = lastMaxWorkloadedMachine;
 
@@ -582,11 +580,6 @@ int ProblemFJSSP::getMappingOf(int job, int machine){
 
 int ProblemFJSSP::getTimesValueIsRepeated(int value){
     return this->totalMachines;
-}
-
-Solution* ProblemFJSSP::createSolution(){
-    Solution* solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
-    return solution;
 }
 
 void ProblemFJSSP::loadInstance(char** filePath){
@@ -683,7 +676,7 @@ void ProblemFJSSP::loadInstance(char** filePath){
             this->operationIsFromJob[operationCounter++] = job;
         }
     }
-    goodSolutionWithMaxWorkload = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
+    goodSolutionWithMaxWorkload = *new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
     buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
     
     infile.close();
@@ -741,11 +734,11 @@ void ProblemFJSSP::printProblemInfo(){
     }
 }
 
-void ProblemFJSSP::printSolutionInfo(Solution *solution){
+void ProblemFJSSP::printSolutionInfo(Solution &solution){
     printSchedule(solution);
 }
 
-void ProblemFJSSP::printSchedule(Solution * solution){
+void ProblemFJSSP::printSchedule(Solution & solution){
     
     int makespan = 0;
     int maxWorkload = 0;
@@ -786,7 +779,7 @@ void ProblemFJSSP::printSchedule(Solution * solution){
     int map = 0;
     for (operationInPosition = 0; operationInPosition < this->totalOperations; operationInPosition++) {
         
-        map = solution->getVariable(operationInPosition);
+        map = solution.getVariable(operationInPosition);
         job = this->mapToJobMachine[map][0];
         machine = this->mapToJobMachine[map][1];
         
@@ -835,12 +828,12 @@ void ProblemFJSSP::printSchedule(Solution * solution){
             maxWorkload = workload[machine];
     }
     
-    solution->setObjective(0, makespan);
-    solution->setObjective(1, maxWorkload);
+    solution.setObjective(0, makespan);
+    solution.setObjective(1, maxWorkload);
     
     printf("Op :  M  ti -  tf\n");
     for (operation = 0; operation < this->totalOperations; operation++)
-        printf("%3d: %2d %3d - %3d \n", operation, this->mapToJobMachine[solution->getVariable(operation)][1], startingTime[operation], endingTime[operation]);
+        printf("%3d: %2d %3d - %3d \n", operation, this->mapToJobMachine[solution.getVariable(operation)][1], startingTime[operation], endingTime[operation]);
     
     printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
 
@@ -861,24 +854,24 @@ void ProblemFJSSP::printSchedule(Solution * solution){
     printf("\n");
 }
 
-void ProblemFJSSP::printSolution(Solution * solution){
+void ProblemFJSSP::printSolution(Solution & solution){
     printPartialSolution(solution, this->totalOperations - 1);
 }
 
-void ProblemFJSSP::printPartialSolution(Solution * solution, int level){
+void ProblemFJSSP::printPartialSolution(Solution & solution, int level){
     
     int indexVar = 0;
     int withVariables = 1;
     
     for (indexVar = 0; indexVar < this->getNumberOfObjectives(); indexVar++)
-        printf("%7.0f ", solution->getObjective(indexVar));
+        printf("%7.0f ", solution.getObjective(indexVar));
     
     if (withVariables == 1) {
         
         printf(" | ");
         
         for (indexVar = 0; indexVar <= level; indexVar++)
-            printf("%3d ", solution->getVariable(indexVar));
+            printf("%3d ", solution.getVariable(indexVar));
         
         for (indexVar = level + 1; indexVar < this->totalOperations; indexVar ++)
             printf("  - ");

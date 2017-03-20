@@ -34,6 +34,7 @@ Problem::Problem(const Problem& toCopy){
     
     int index = 0;
     for (index = 0; index < totalVariables; index++) {
+        
         this->lowerBound[index] = toCopy.lowerBound[index];
         this->upperBound[index] = toCopy.upperBound[index];
     }
@@ -147,11 +148,6 @@ int Problem::getTimesValueIsRepeated(int value){
     return 0;
 }
 
-Solution* Problem::createSolution(){
-    Solution* solution = new Solution(this->totalObjectives, this->totalVariables);
-    return solution;
-}
-
 double Problem::evaluate(Solution & solution){
     return 0;
 }
@@ -160,23 +156,21 @@ double Problem::evaluatePartial(Solution & solution, int levelEvaluation){
     return 0;
 }
 
-void Problem::createDefaultSolution(Solution * solution){
+void Problem::createDefaultSolution(Solution & solution){
 }
 
-Solution * Problem::getSolutionWithLowerBoundInObj(int nObj){
-    Solution* solution = new Solution(this->totalObjectives, this->totalVariables);
-    return solution;
+void Problem::getSolutionWithLowerBoundInObj(int nObj, Solution& sol){
 }
 
-void Problem::printSolution(Solution * solution){}
+void Problem::printSolution(Solution & solution){}
 
-void Problem::printPartialSolution(Solution * solution, int level){}
+void Problem::printPartialSolution(Solution & solution, int level){}
 
 void Problem::printInstance(){}
 
 void Problem::printProblemInfo(){}
 
-void Problem::printSolutionInfo(Solution *solution){}
+void Problem::printSolutionInfo(Solution & solution){}
 
 void Problem::loadInstance(char * filePath[]){
 }

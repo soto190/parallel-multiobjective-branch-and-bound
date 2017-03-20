@@ -155,7 +155,6 @@ double ProblemTSP::evaluate(Solution & solution){
  * This functions adds the distance and cost from the actual city and previous city.
  *
  **/
-
 double ProblemTSP::evaluatePartial(Solution& solution, int levelEvaluation){
     /*
     
@@ -189,7 +188,6 @@ double ProblemTSP::evaluatePartial(Solution& solution, int levelEvaluation){
     
     return 0;
 }
-
 
 /**
  * Some problems requieres a different evaluation in the leaf or last variable.
@@ -267,22 +265,14 @@ double ProblemTSP::removeLastLevelEvaluation(Solution * solution, int newLevel){
     return 0.0;
 }
 
-Solution* ProblemTSP::createSolution(){
-    Solution* solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
-    return solution;
-}
-
-void ProblemTSP::createDefaultSolution(Solution *solution){
+void ProblemTSP::createDefaultSolution(Solution& solution){
     int city = 0;
     for (city = 0; city < this->getUpperBound(0); city++)
-        solution->setVariable(city, city);
+        solution.setVariable(city, city);
     
 }
 
-Solution * ProblemTSP::getSolutionWithLowerBoundInObj(int nObj){
-    Solution * solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
-    
-    return solution;
+void ProblemTSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){    
 }
 
 void ProblemTSP::printInstance(){
@@ -480,14 +470,14 @@ void ProblemTSP::readCost(char *filePath){
     infile.close();
 }
 
-void ProblemTSP::printSolution(Solution * solution){
+void ProblemTSP::printSolution(Solution & solution){
     printPartialSolution(solution, this->totalVariables);
 }
 
-void ProblemTSP::printSolutionInfo(Solution *solution){
+void ProblemTSP::printSolutionInfo(Solution & solution){
     printf("TODO: Implement this function.\n");
 }
 
-void ProblemTSP::printPartialSolution(Solution * solution, int level){
+void ProblemTSP::printPartialSolution(Solution & solution, int level){
     
 }

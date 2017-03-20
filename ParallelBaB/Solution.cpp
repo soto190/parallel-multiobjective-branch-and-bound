@@ -17,6 +17,7 @@ Solution::Solution():totalObjectives(0), totalVariables(0) {
     this->makespan = 0;
 	this->energy = 0;
 	this->machineWithMakespan = 0;
+    this->build_up_to = -1;
     this->objective = nullptr;
     this->variable = nullptr;
     this->execTime = nullptr;
@@ -24,16 +25,18 @@ Solution::Solution():totalObjectives(0), totalVariables(0) {
 
 }
 
-Solution::Solution(int numberOfObjectives, int numberOfVariables):totalObjectives(numberOfObjectives),totalVariables(numberOfVariables) {
-	this->makespan = 0;
-	this->energy = 0;
-	this->machineWithMakespan = 0;
-
-	this->objective = new double[numberOfObjectives];
-	this->variable = new int[numberOfVariables];
-	this->execTime = new double[16];
-	this->partialObjective = new double *[numberOfVariables];
-
+Solution::Solution(int numberOfObjectives, int numberOfVariables):
+    totalObjectives(numberOfObjectives),
+    totalVariables(numberOfVariables),
+    build_up_to(-1),
+    makespan(0),
+    energy(0),
+    machineWithMakespan(0),
+    objective(new double[numberOfObjectives]),
+    variable(new int[numberOfVariables]),
+    execTime(new double[16]),
+    partialObjective(new double * [numberOfVariables]){
+    
 	int var = 0, obj = 0;
 	for (obj = 0; obj < numberOfObjectives; obj++)
 		this->objective[obj] = 0;
@@ -49,12 +52,14 @@ Solution::Solution(int numberOfObjectives, int numberOfVariables):totalObjective
 		this->execTime[var] = 0;
 }
 
-Solution::Solution(const Solution &solution):totalObjectives(solution.totalObjectives), totalVariables(solution.totalVariables) {
-	this->makespan = solution.makespan;
-	this->energy = solution.energy;
-	this->machineWithMakespan = solution.machineWithMakespan;
-	this->build_up_to = solution.getBuildUpTo();
-
+Solution::Solution(const Solution &solution):
+    totalObjectives(solution.getNumberOfObjectives()),
+    totalVariables(solution.getNumberOfVariables()),
+    build_up_to(solution.getBuildUpTo()),
+    makespan(solution.makespan),
+    energy(solution.energy),
+    machineWithMakespan(solution.machineWithMakespan){
+    
 	this->objective = new double[this->totalObjectives];
 	this->variable = new int[this->totalVariables];
 	this->partialObjective = new double *[this->totalVariables];
@@ -81,6 +86,7 @@ Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
     this->makespan = 0;
     this->energy = 0;
     this->machineWithMakespan = 0;
+    this->build_up_to = -1;
     this->totalObjectives = numberOfObjectives;
     this->totalVariables = numberOfVariables;
     

@@ -60,19 +60,10 @@ int ProblemVRP::getTimesValueIsRepeated(int value){
     return 0;
 }
 
-Solution* ProblemVRP::createSolution(){
-    Solution * solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
-    return solution;
+void ProblemVRP::createDefaultSolution(Solution& solution){
 }
 
-void ProblemVRP::createDefaultSolution(Solution *solution){
-
-}
-
-Solution * ProblemVRP::getSolutionWithLowerBoundInObj(int nObj){
-    Solution * solution = new Solution(this->getNumberOfObjectives(), this->getNumberOfVariables());
-    
-    return solution;
+void ProblemVRP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){
 }
 
 void ProblemVRP::printInstance(){
@@ -82,17 +73,17 @@ void ProblemVRP::printInstance(){
 void ProblemVRP::printProblemInfo(){
 }
 
-void ProblemVRP::printSolutionInfo(Solution *solution){
-    printf("TODO: Implement this function.\n");
-}
-
 void ProblemVRP::loadInstance(char *path[]){
 }
 
-void ProblemVRP::printSolution(Solution * solution){
+void ProblemVRP::printSolution(Solution & solution){
     printPartialSolution(solution, this->totalVariables);
 }
 
-void ProblemVRP::printPartialSolution(Solution * solution, int level){
+void ProblemVRP::printPartialSolution(Solution & solution, int level){
     
+}
+
+void ProblemVRP::printSolutionInfo(Solution & solution){
+    printf("TODO: Implement this function.\n");
 }
