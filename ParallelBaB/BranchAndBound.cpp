@@ -477,7 +477,7 @@ int BranchAndBound::theTreeHasMoreBranches() {
 	return this->ivm_tree.hasPendingBranches();
 }
 
-int BranchAndBound::updateParetoGrid(Solution & solution) {
+int BranchAndBound::updateParetoGrid(const Solution & solution) {
 
     int updated = this->paretoContainer.add(solution);
 
@@ -495,8 +495,7 @@ int BranchAndBound::updateParetoGrid(Solution & solution) {
  *
  *  NOTE: This doesnt modifies the solution. Can be const & solution.
  */
-int BranchAndBound::improvesTheGrid(Solution & solution) const {
-	/** The improvesTheGrid calls a improvesTheBucket which has a Mutex. **/
+int BranchAndBound::improvesTheGrid(const Solution & solution) const {
 	return this->paretoContainer.improvesTheGrid(solution);
 }
 

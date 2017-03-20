@@ -99,7 +99,7 @@ void HandlerContainer::checkCoordinate(const Solution &solution,
  * Returns 1 if the solution was added 0 in other case.
  *
  */
-int HandlerContainer::set(Solution & solution, int x, int y) {
+int HandlerContainer::set(const Solution & solution, int x, int y) {
     
     int nCol = 0;
     int nRow = 0;
@@ -146,7 +146,7 @@ int HandlerContainer::set(Solution & solution, int x, int y) {
 /**
  * It uses a binary search tree locate the bucket which will contain the new solution.
  **/
-int HandlerContainer::add(Solution & solution) {
+int HandlerContainer::add(const Solution & solution) {
     int coordinate[2];
     this->checkCoordinate(solution, coordinate);
     
@@ -286,9 +286,10 @@ std::vector<Solution>& HandlerContainer::getParetoFront() {
             if (state == BucketState::nondominated) {
                 std::vector<Solution> vec = this->grid.get(bucketX, bucketY);
                 std::vector<Solution>::iterator it = vec.begin();
-                for (it = vec.begin(); it != vec.end(); it++) {
+                
+                for (it = vec.begin(); it != vec.end(); it++)
                     this->paretoFront.push_back(*it);
-                }
+                
             } else if (state == BucketState::dominated)
                 bucketX = this->grid.getCols();
         }

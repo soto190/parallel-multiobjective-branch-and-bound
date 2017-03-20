@@ -148,8 +148,8 @@ private:
 	int getUpperBound(int objective);
 
 	/** Grid functions. **/
-	int improvesTheGrid(Solution & solution) const;
-	int updateParetoGrid(Solution & solution);
+	int improvesTheGrid(const Solution & solution) const;
+	int updateParetoGrid(const Solution & solution);
 	/** End Grid functions. **/
 
 	/** IVM functions. **/

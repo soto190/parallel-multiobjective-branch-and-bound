@@ -27,12 +27,14 @@ enum BucketState {
  class ParetoBucket{
  
  private:
-     tbb::atomic<BucketState> state;
      unsigned long posx;
      unsigned long posy;
      tbb::atomic<unsigned long> size;
+     tbb::atomic<BucketState> state;
      tbb::mutex mutex_update;
+     
      std::vector<Solution> m_vec;
+     
 
  public:
      
@@ -204,7 +206,7 @@ public:
 		return m_Data[y * cols + x].getVector();
 	}
 
-	int set(Solution obj, size_t x, size_t y) {
+	int set(const Solution& obj, size_t x, size_t y) {
         unsigned long size_before = m_Data[y * cols + x].getSize();
         int updated = m_Data[y * cols + x].push_back(obj);
         unsigned long size_after = m_Data[y * cols + x].getSize();
@@ -238,7 +240,7 @@ public:
 		return m_Data[y * cols + x].getSize();
 	}
     
-    int improvesBucket(Solution obj, size_t x, size_t y){
+    int improvesBucket(const Solution& obj, size_t x, size_t y){
         return m_Data[y * cols + x].produceImprovement(obj);
     }
     
@@ -279,9 +281,9 @@ public:
     HandlerContainer(const HandlerContainer& toCopy);
 	~HandlerContainer();
     
-	int add(Solution & solution);
+	int add(const Solution & solution);
+    int set(const Solution & solution, int x, int y);
 	void checkCoordinate(const Solution & solution, int * coordinate) const; /** TODO: Choose an appropiate name method.**/
-	int set(Solution & solution, int x, int y);
 	int improvesTheGrid(const Solution & solution);
 	int improvesTheBucket(const Solution & solution, int x, int y);
 
