@@ -15,36 +15,30 @@
 #include "BranchAndBound.hpp"
 
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
-    globalPool(toCopy.globalPool),
-    problem(toCopy.problem),
-    paretoContainer(toCopy.paretoContainer){
+    rank(toCopy.getRank()),
+    globalPool(toCopy.getGlobalPool()),
+    problem(toCopy.getProblem()),
+    paretoContainer(toCopy.getParetoGrid()),
+    currentSolution(toCopy.getIncumbentSolution()),
+    ivm_tree(toCopy.getIVMTree()),
+    currentLevel(toCopy.getCurrentLevel()),
+    totalLevels(toCopy.getNumberOfLevels()),
+    totalNodes(toCopy.getNumberOfNodes()),
+    branches(toCopy.getNumberOfBranches()),
+    exploredNodes(toCopy.getNumberOfExploredNodes()),
+    reachedLeaves(toCopy.getNumberOfReachedLeaves()),
+    unexploredNodes(toCopy.getNumberOfUnexploredNodes()),
+    prunedNodes(toCopy.getNumberOfPrunedNodes()),
+    callsToPrune(toCopy.getNumberOfCallsToPrune()),
+    callsToBranch(toCopy.getNumberOfCallsToBranch()),
+    totalUpdatesInLowerBound(toCopy.getNumberOfUpdatesInLowerBound()){
         
-    this->rank = toCopy.rank;
-    this->levels_completed = toCopy.levels_completed;
     this->start = toCopy.start;
-    
-    this->currentLevel = toCopy.currentLevel;
-    this->totalLevels = toCopy.totalLevels;
-    this->totalNodes = toCopy.totalNodes;
-    this->branches = toCopy.branches;
-    this->exploredNodes = toCopy.exploredNodes;
-    this->reachedLeaves = toCopy.reachedLeaves;
-    this->unexploredNodes = toCopy.unexploredNodes;
-    this->prunedNodes = toCopy.prunedNodes;
-    this->callsToPrune = toCopy.callsToPrune;
-    this->callsToBranch = toCopy.callsToBranch;
-    this->totalUpdatesInLowerBound = toCopy.totalUpdatesInLowerBound;
-    this->totalTime = toCopy.totalTime;
-    this->currentSolution = toCopy.currentSolution;
-    this->ivm_tree = toCopy.ivm_tree;
-    this->localPool = toCopy.localPool;
-
     this->outputFile = new char[255];
     this->summarizeFile = new char[255];
 
     std::strcpy(outputFile, toCopy.outputFile);
     std::strcpy(summarizeFile, toCopy.summarizeFile);
-    
 }
 
 BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem, const Interval & branch, GlobalPool &globa_pool, HandlerContainer& pareto_container):
@@ -53,7 +47,6 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem, const Inte
 	this->t1 = std::chrono::high_resolution_clock::now();
 	this->t2 = std::chrono::high_resolution_clock::now();
 
-	this->levels_completed = 0;
 	this->start = std::clock();
     
 	this->currentLevel = 0;
@@ -90,7 +83,6 @@ BranchAndBound& BranchAndBound::operator()(int rank, const ProblemFJSSP &problem
     this->t1 = std::chrono::high_resolution_clock::now();
     this->t2 = std::chrono::high_resolution_clock::now();
     
-    this->levels_completed = 0;
     this->start = std::clock();
     this->rank = rank;
     this->problem = problem;
@@ -119,11 +111,9 @@ BranchAndBound& BranchAndBound::operator()(int rank, const ProblemFJSSP &problem
     
     int nObj = 0;
     for (nObj = 0; nObj < numberOfObjectives; nObj++)
-        this->bestObjectivesFound.setObjective(nObj,
-                                               this->currentSolution.getObjective(nObj));
+        this->bestObjectivesFound.setObjective(nObj, this->currentSolution.getObjective(nObj));
 
-    this->ivm_tree(this->problem.getNumberOfVariables(),
-                   this->problem.getUpperBound(0) + 1);
+    this->ivm_tree(this->problem.getNumberOfVariables(), this->problem.getUpperBound(0) + 1);
     this->ivm_tree.setOwner(rank);
     
     this->outputFile = new char[255];
@@ -278,7 +268,7 @@ void BranchAndBound::solve(const Interval& branch) {
 
 				if (this->aLeafHasBeenReached() == 0
 						&& this->theTreeHasMoreBranches()) {
-					if (this->improvesTheGrid(this->currentSolution) == 1)
+					if (this->improvesTheGrid(this->currentSolution))
 						this->branch(this->currentSolution, this->currentLevel);
 					else
 						this->prune(this->currentSolution, this->currentLevel);
@@ -650,9 +640,9 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 	}
 }
 
-long BranchAndBound::permut(int n, int i) {
-	long result = 1;
-	for (int j = n; j > n - i; j--)
+unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) {
+	unsigned long result = 1;
+	for (long j = n; j > n - i; j--)
 		result *= j;
 	return result;
 }
@@ -669,7 +659,7 @@ int BranchAndBound::getLowerBoundInObj(int nObj) {
  * This functions compute the number of nodes.
  *
  */
-unsigned long BranchAndBound::computeTotalNodes(int totalVariables) {
+unsigned long BranchAndBound::computeTotalNodes(unsigned  long totalVariables) {
 	long totalNodes = 0;
     long nodes_per_branch = 0;
     long deepest_level;
@@ -738,20 +728,14 @@ int BranchAndBound::setSummarizeFile(const char * outputFile) {
 	std::strcpy(this->summarizeFile, outputFile);
 	return 0;
 }
-/*
-void BranchAndBound::setParetoContainer(
-		std::shared_ptr<HandlerContainer> paretoContainer&) {
-	this->paretoContainer = paretoContainer;
-}
-*/
-/*std::shared_ptr<HandlerContainer> BranchAndBound::getParetoContainer() {
-	return this->paretoContainer;
-}
-*/
-HandlerContainer& BranchAndBound::getParetoContainer() {
-    return this->paretoContainer;
+
+void BranchAndBound::setParetoFront(const std::vector<Solution> &front){
+    this->paretoFront = front;
 }
 
+int BranchAndBound::getRank() const{ return rank; }
+int BranchAndBound::getCurrentLevel() const{ return currentLevel;}
+unsigned long BranchAndBound::getNumberOfLevels() const{ return totalLevels;}
 unsigned long BranchAndBound::getNumberOfNodes( ) const{ return totalNodes; }
 unsigned long BranchAndBound::getNumberOfBranches( ) const{ return branches; }
 unsigned long BranchAndBound::getNumberOfExploredNodes( ) const{ return exploredNodes; }
@@ -762,6 +746,27 @@ unsigned long BranchAndBound::getNumberOfPrunedNodes( ) const{ return prunedNode
 unsigned long BranchAndBound::getNumberOfCallsToPrune( ) const{ return callsToPrune; }
 unsigned long BranchAndBound::getNumberOfUpdatesInLowerBound( ) const{ return totalUpdatesInLowerBound; }
 
+void BranchAndBound::increaseNumberOfExploredNodes(unsigned long value){ exploredNodes += value; }
+void BranchAndBound::increaseNumberOfCallsToBranch(unsigned long value){ callsToBranch += value;}
+void BranchAndBound::increaseNumberOfBranches(unsigned long value){ branches += value; }
+void BranchAndBound::increaseNumberOfCallsToPrune(unsigned long value){ callsToPrune += value; }
+void BranchAndBound::increaseNumberOfPrunedNodes(unsigned long value){ prunedNodes += value; }
+void BranchAndBound::increaseNumberOfReachedLeaves(unsigned long value){ reachedLeaves += value; }
+void BranchAndBound::increaseNumberOfUpdatesInLowerBound(unsigned long value){ totalUpdatesInLowerBound += value; }
+
+const Solution& BranchAndBound::getIncumbentSolution() const { return currentSolution;}
+const IVMTree& BranchAndBound::getIVMTree() const { return ivm_tree;}
+const Interval& BranchAndBound::getStartingInterval() const { return starting_interval;}
+const ProblemFJSSP& BranchAndBound::getProblem() const { return problem;}
+
+HandlerContainer& BranchAndBound::getParetoGrid() const { return paretoContainer;}
+HandlerContainer& BranchAndBound::getParetoContainer() {return this->paretoContainer;}
+GlobalPool& BranchAndBound::getGlobalPool() const { return globalPool;}
+
+std::vector<Solution>& BranchAndBound::getParetoFront(){
+    paretoFront = paretoContainer.getParetoFront();
+    return paretoFront;
+}
 
 int BranchAndBound::saveSummarize() {
 

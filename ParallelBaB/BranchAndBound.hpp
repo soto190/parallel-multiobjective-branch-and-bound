@@ -59,61 +59,64 @@ struct GlobalPool{
 
 class BranchAndBound: public tbb::task {
 
-public:
+private:
+    
+    int rank; /** identifies the number of thread-B&B**/
 
+    unsigned long totalNodes;
+    unsigned long branches;
+    unsigned long exploredNodes;
+    unsigned long callsToBranch;
+    unsigned long reachedLeaves;
+    unsigned long unexploredNodes;
+    unsigned long prunedNodes;
+    unsigned long callsToPrune;
+    unsigned long totalUpdatesInLowerBound;
+    unsigned long totalLevels; /** Number of tree levels **/
+    
+    int currentLevel; /** Active level **/
+    
+    ProblemFJSSP problem;
+    Solution currentSolution;
+    Solution bestObjectivesFound;
+    IVMTree ivm_tree;
+    Interval starting_interval;
+    GlobalPool& globalPool;
+    HandlerContainer& paretoContainer;
+    std::vector<Solution> paretoFront; /** paretofFront. **/
+    std::queue<Interval> localPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
+    
+    char * outputFile;
+    char * summarizeFile;
+    
+    double totalTime;
+    std::clock_t start;
+    std::chrono::high_resolution_clock::time_point t1;
+    std::chrono::high_resolution_clock::time_point t2;
+    
+public:
     BranchAndBound(const BranchAndBound& branchAndBound);
     BranchAndBound(int rank, const ProblemFJSSP& problem,
 			const Interval & branch, GlobalPool& globa_pool, HandlerContainer& pareto_container);
     
     BranchAndBound& operator()(int rank, const ProblemFJSSP& problem, const Interval & branch);
 	~BranchAndBound();
-
-    ProblemFJSSP problem;
-
-	Solution currentSolution;
-	Solution bestObjectivesFound;
-
-	GlobalPool& globalPool;
-    HandlerContainer& paretoContainer;
-	std::queue<Interval> localPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
-	std::vector<Solution> paretoFront; /** paretofFront. **/
-
-	IVMTree ivm_tree;
-	Interval starting_interval;
-
-	int levels_completed;
-	int currentLevel; /** Active level **/
-	int totalLevels; /** Number of tree levels **/
-
-	unsigned long totalNodes;
-	unsigned long branches;
-	unsigned long exploredNodes;
-	unsigned long callsToBranch;
-	unsigned long reachedLeaves;
-	unsigned long unexploredNodes;
-	unsigned long prunedNodes;
-	unsigned long callsToPrune;
-
-	unsigned long totalUpdatesInLowerBound;
-
-	char * outputFile;
-	char * summarizeFile;
-
-	double totalTime;
-	std::clock_t start;
-	std::chrono::high_resolution_clock::time_point t1;
-	std::chrono::high_resolution_clock::time_point t2;
-
+    
+    int getRank() const;
+    int getCurrentLevel() const;
     double getTotalTime();
-
+    
 	void solve(const Interval & interval);
 	void initialize(int starting_level);
 	int explore(Solution & solution);
 	int branch(Solution & solution, int currentLevel);
 	void prune(Solution & solution, int currentLevel);
+    
+    std::vector<Solution>& getParetoFront();
 	void printParetoFront(int withVariables = 0);
 
     unsigned long getNumberOfNodes() const;
+    unsigned long getNumberOfLevels() const;
     unsigned long getNumberOfBranches() const;
     unsigned long getNumberOfExploredNodes() const;
     unsigned long getNumberOfCallsToBranch() const;
@@ -123,28 +126,39 @@ public:
     unsigned long getNumberOfCallsToPrune() const;
     unsigned long getNumberOfUpdatesInLowerBound() const;
     
+    void increaseNumberOfExploredNodes(unsigned long value);
+    void increaseNumberOfCallsToBranch(unsigned long value);
+    void increaseNumberOfBranches(unsigned long value);
+    void increaseNumberOfCallsToPrune(unsigned long value);
+    void increaseNumberOfPrunedNodes(unsigned long value);
+    void increaseNumberOfReachedLeaves(unsigned long value);
+    void increaseNumberOfUpdatesInLowerBound(unsigned long value);
+
+    const IVMTree& getIVMTree() const;
+    const Interval& getStartingInterval() const;
+    GlobalPool& getGlobalPool() const;
+    const ProblemFJSSP& getProblem() const;
+    HandlerContainer& getParetoGrid() const;
+    const Solution& getIncumbentSolution() const;
+    
+    void setParetoFront(const std::vector<Solution>& front);
 	int setParetoFrontFile(const char * outputFile);
 	int saveParetoFront();
 	int setSummarizeFile(const char * outputFile);
 	int saveSummarize();
 	void saveEvery(double timeInSeconds);
 
-    //void setParetoContainer(std::shared_ptr<HandlerContainer> paretoContainer);
-    //std::shared_ptr<HandlerContainer> getParetoContainer();
-
     void setParetoContainer(HandlerContainer & paretoContainer);
     HandlerContainer& getParetoContainer();
 
-    
 private:
-	int rank; /** identifies the number of thread-B&B**/
 	void printCurrentSolution(int withVariables = 0);
 	int aLeafHasBeenReached() const;
 	int theTreeHasMoreBranches();
 	int getLowerBoundInObj(int nObj);
 
-	unsigned long computeTotalNodes(int totalVariables);
-	long permut(int n, int i);
+	unsigned long computeTotalNodes(unsigned long totalVariables);
+	unsigned long permut(unsigned long n, unsigned long i);
 	int getUpperBound(int objective);
 
 	/** Grid functions. **/
@@ -157,11 +171,11 @@ public:
 	void computeLastBranch(Interval & branch);
 	void splitInterval(const Interval & branch);
 	void splitIntervalSolution(const Solution & solution);
+
 private:
 	int initializeExplorationInterval(const Interval & branch, IVMTree & tree);
 	int initializeExplorationIntervalSolution(const Solution & branch,
 			IVMTree & tree);
-
 	/** End IVM functions **/
 
 public:

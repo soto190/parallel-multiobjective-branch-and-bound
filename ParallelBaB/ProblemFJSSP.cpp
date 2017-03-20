@@ -10,6 +10,18 @@
 
 ProblemFJSSP::ProblemFJSSP():Problem(){
     
+    this->jobMachineToMap = nullptr;
+    this->mapToJobMachine = nullptr;
+    this->jobHasNoperations = nullptr;
+    this->releaseTime = nullptr;
+    this->operationIsFromJob = nullptr;
+    this->assignationMinPij = nullptr;
+    this->assignationBestWorkload = nullptr;
+    this->bestWorkloads = nullptr;
+    this->minWorkload = nullptr;
+    this->operationInJobIsNumber = nullptr;
+    this->processingTime = nullptr;
+
 }
 
 ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy){
@@ -17,7 +29,6 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy){
     this->totalJobs = toCopy.getNumberOfJobs();
     this->totalOperations = toCopy.getNumberOfOperations();
     this->totalMachines = toCopy.getNumberOfMachines();
-  
     this->totalConstraints = toCopy.getNumberOfConstraints();
     
     
@@ -37,51 +48,48 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy){
     this->assignationMinPij = new int[totalOperations];
     this->assignationBestWorkload = new int[totalOperations];
     this->bestWorkloads = new int[totalMachines];
-    this->minWorkload = new int[totalOperations];
+    this->minWorkload = new int[totalMachines];
     
     int job = 0, map = 0, machine = 0, operation = 0, operationCounter = 0;
     
     for (job = 0; job < this->totalJobs; job++) {
-        this->jobHasNoperations[job] = toCopy.jobHasNoperations[job];
-        this->releaseTime[job] = toCopy.releaseTime[job];
+        this->jobHasNoperations[job] = toCopy.getNumberOfOperationsInJob(job); //jobHasNoperations[job];
+        this->releaseTime[job] = toCopy.getReleaseTimeOfJob(job);//releaseTime[job];
+        
         this->jobMachineToMap[job] = new int[this->totalMachines];
         
         for (machine = 0; machine < this->totalMachines; machine++) {
             this->mapToJobMachine[map] = new int[2];
-            this->mapToJobMachine[map][0] = toCopy.mapToJobMachine[map][0];
-            this->mapToJobMachine[map][1] = toCopy.mapToJobMachine[map][1];
-            this->jobMachineToMap[job][machine] = toCopy.jobMachineToMap[job][machine];
+            this->mapToJobMachine[map][0] = toCopy.getMapOfJobMachine(map, 0); //toCopy.mapToJobMachine[map][0];
+            this->mapToJobMachine[map][1] = toCopy.getMapOfJobMachine(map, 1);
+            this->jobMachineToMap[job][machine] = toCopy.getJobMachineToMap(job, machine);// jobMachineToMap[job][machine];
             map++;
         }
     }
     
     for (machine = 0; machine < this->totalMachines; machine++) {
-        this->minWorkload[machine] = toCopy.minWorkload[machine];
-        this->bestWorkloads[machine] = toCopy.bestWorkloads[machine];
+        this->minWorkload[machine] = toCopy.getMinWorkload(machine);// minWorkload[machine];
+        this->bestWorkloads[machine] = toCopy.getBestWorkload(machine);// bestWorkloads[machine];
     }
     
     this->operationInJobIsNumber = new int * [this->totalOperations];
-    
     this->processingTime = new int * [totalOperations];
     
     for (operation = 0; operation < this->totalOperations; operation++){
         
         this->processingTime[operation] = new int[totalMachines];
-        for (machine = 0; machine < this->totalMachines; machine++) {
-            this->processingTime[operation][machine] = toCopy.processingTime[operation][machine];
-            
-        }
+        for (machine = 0; machine < this->totalMachines; machine++)
+            this->processingTime[operation][machine] = toCopy.getProccessingTime(operation, machine);// processingTime[operation][machine];
         
-        this->assignationMinPij[operation] = toCopy.assignationMinPij[operation];
-        this->assignationBestWorkload[operation] = toCopy.assignationBestWorkload[operation];
-
+        this->assignationMinPij[operation] = toCopy.getAssignationMinPij(operation);// assignationMinPij[operation];
+        this->assignationBestWorkload[operation] = toCopy.getAssignatioBestWorkload(operation);//assignationBestWorkload[operation];
     }
     
     for (job = 0; job < this->totalJobs; job++) {
         this->operationInJobIsNumber[job] = new int[this->jobHasNoperations[job]];
         for(operation = 0; operation < this->jobHasNoperations[job]; operation++){
-            this->operationInJobIsNumber[job][operation] = toCopy.operationInJobIsNumber[job][operation];
-            this->operationIsFromJob[operationCounter] = toCopy.operationIsFromJob[operationCounter];
+            this->operationInJobIsNumber[job][operation] = toCopy.getOperationInJobIsNumber(job, operation);//operationInJobIsNumber[job][operation];
+            this->operationIsFromJob[operationCounter] = toCopy.getOperationIsFromJob(operationCounter);// operationIsFromJob[operationCounter];
             operationCounter++;
         }
     }
@@ -690,16 +698,15 @@ int ProblemFJSSP::getSumOfMinPij() const{ return this->sumOfMinPij;}
 int ProblemFJSSP::getBestWorkloadFound() const{ return this->bestWorkloadFound;}
 int ProblemFJSSP::getAssignationMinPij(int n_operation) const{ return this->assignationMinPij[n_operation];}
 int ProblemFJSSP::getAssignatioBestWorkload(int n_operation) const{ return this->assignationBestWorkload[n_operation];}
-int ProblemFJSSP::getBestWorkload(int n_operation) const{ return this->bestWorkloads[n_operation];}
-int ProblemFJSSP::getMinWorkload(int n_operation) const{ return this->minWorkload[n_operation];}
+int ProblemFJSSP::getBestWorkload(int n_machine) const{ return this->bestWorkloads[n_machine];}
+int ProblemFJSSP::getMinWorkload(int n_machine) const{ return this->minWorkload[n_machine];}
 int ProblemFJSSP::getMapOfJobMachine(int map, int machine_or_job) const{ return this->mapToJobMachine[map][machine_or_job];}
 int ProblemFJSSP::getJobMachineToMap(int job, int machine) const{ return this->jobMachineToMap[job][machine];}
 int ProblemFJSSP::getOperationInJobIsNumber(int job, int operation) const{ return this->operationInJobIsNumber[job][operation];}
-int ProblemFJSSP::getJobOfOperation(int n_operation) const{ return this->operationIsFromJob[n_operation];}
+int ProblemFJSSP::getOperationIsFromJob(int n_operation) const{ return this->operationIsFromJob[n_operation];}
 int ProblemFJSSP::getProccessingTime(int operation, int machine) const{ return this->processingTime[operation][machine];}
 int ProblemFJSSP::getNumberOfOperationsInJob(int job) const{return this->jobHasNoperations[job];}
 int ProblemFJSSP::getReleaseTimeOfJob(int job) const{ return this->releaseTime[job];}
-
 
 void ProblemFJSSP::printInstance(){}
 

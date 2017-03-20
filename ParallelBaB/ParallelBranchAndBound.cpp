@@ -56,17 +56,18 @@ tbb::task * ParallelBranchAndBound::execute() {
         bb_in = bb_threads.back();
         bb_threads.pop_back();
     
-		BB_container.exploredNodes += bb_in->getNumberOfExploredNodes();
-		BB_container.callsToBranch += bb_in->getNumberOfCallsToBranch();
-		BB_container.branches += bb_in->getNumberOfBranches();
-		BB_container.callsToPrune += bb_in->getNumberOfCallsToPrune();
-		BB_container.prunedNodes += bb_in->getNumberOfPrunedNodes();
-		BB_container.reachedLeaves += bb_in->getNumberOfReachedLeaves();
-		BB_container.totalUpdatesInLowerBound += bb_in->getNumberOfUpdatesInLowerBound();
+		BB_container.increaseNumberOfExploredNodes(bb_in->getNumberOfExploredNodes());
+        BB_container.increaseNumberOfCallsToBranch(bb_in->getNumberOfCallsToBranch());// callsToBranch += bb_in->getNumberOfCallsToBranch();
+        BB_container.increaseNumberOfBranches(bb_in->getNumberOfBranches()); // branches += bb_in->getNumberOfBranches();
+        BB_container.increaseNumberOfCallsToPrune(bb_in->getNumberOfCallsToPrune());// callsToPrune += bb_in->getNumberOfCallsToPrune();
+        BB_container.increaseNumberOfPrunedNodes(bb_in->getNumberOfPrunedNodes());//prunedNodes += bb_in->getNumberOfPrunedNodes();
+        BB_container.increaseNumberOfReachedLeaves(bb_in->getNumberOfReachedLeaves());// reachedLeaves += bb_in->getNumberOfReachedLeaves();
+        BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());// totalUpdatesInLowerBound += ;
 	}
+    
 	printf("Data recollected.\n");
 
-	BB_container.paretoFront = BB_container.paretoContainer.getParetoFront();
+	BB_container.getParetoFront();
 	BB_container.printParetoFront();
 	BB_container.saveParetoFront();
 	BB_container.saveSummarize();
