@@ -7,7 +7,7 @@
 //
 
 #include "Problem.hpp"
-
+/*
 Problem::Problem(){
     
     totalObjectives = 0;
@@ -20,7 +20,7 @@ Problem::Problem(){
     upperBound = nullptr;
     name = nullptr;
 }
-
+*/
 Problem::Problem(const Problem& toCopy):
     totalObjectives(toCopy.getNumberOfObjectives()),
     totalVariables(toCopy.getNumberOfVariables()),

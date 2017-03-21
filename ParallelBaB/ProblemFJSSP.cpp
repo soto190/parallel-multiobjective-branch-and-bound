@@ -7,7 +7,7 @@
 //
 
 #include "ProblemFJSSP.hpp"
-
+/*
 ProblemFJSSP::ProblemFJSSP():Problem(){
     
     jobMachineToMap = nullptr;
@@ -23,7 +23,7 @@ ProblemFJSSP::ProblemFJSSP():Problem(){
     processingTime = nullptr;
 
 }
-
+**/
 ProblemFJSSP::ProblemFJSSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
     
     totalJobs = 0;
@@ -57,6 +57,8 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy),
     
     jobMachineToMap = new int * [totalJobs];
     mapToJobMachine = new int * [totalJobs * totalMachines];
+    processingTime = new int * [totalOperations];
+    jobOperationHasNumber = new int * [totalOperations];
     
     numberOfOperationsInJob = new int[totalJobs];
     releaseTime = new int[totalJobs];
@@ -88,9 +90,6 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy),
         bestWorkloads[machine] = toCopy.getBestWorkload(machine);// bestWorkloads[machine];
     }
     
-    jobOperationHasNumber = new int * [totalOperations];
-    processingTime = new int * [totalOperations];
-    
     for (operation = 0; operation < totalOperations; operation++){
         
         processingTime[operation] = new int[toCopy.getNumberOfMachines()];
@@ -115,12 +114,39 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
     
     if (this == &toCopy) return *this;
     
+    
     totalJobs = toCopy.getNumberOfJobs();
     totalOperations = toCopy.getNumberOfOperations();
     totalMachines = toCopy.getNumberOfMachines();
     totalVariables = toCopy.getNumberOfVariables();
     totalObjectives = toCopy.getNumberOfObjectives();
     totalConstraints = toCopy.getNumberOfConstraints();
+    
+    if (processingTime != nullptr) {
+        int job = 0;
+        for(job = 0; job < totalJobs; job++){
+            delete [] processingTime[job];
+            delete [] jobMachineToMap[job];
+        }
+        
+        for (job = 0; job < totalJobs * totalMachines; job++)
+            delete [] mapToJobMachine[job];
+        
+        delete [] jobMachineToMap;
+        delete [] mapToJobMachine;
+        delete [] processingTime;
+        delete [] numberOfOperationsInJob;
+        delete [] releaseTime;
+        delete [] jobOperationHasNumber;
+        delete [] operationIsFromJob;
+        delete [] assignationMinPij;
+        delete [] minWorkload;
+        delete [] assignationBestWorkload;
+        delete [] bestWorkloads;
+        
+        delete[] lowerBound;
+        delete[] upperBound;
+    }
     
     lowerBound = new int[totalVariables];
     upperBound = new int[totalVariables];

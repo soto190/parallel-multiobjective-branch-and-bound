@@ -13,7 +13,6 @@
 #include <iostream>
 #include <cstring>
 #include "Solution.hpp"
-#include <tbb/mutex.h>
 #include <climits> /*For the Ehecatl wich uses GCC 4.4.7 and Xeon Phi, this activates INT_MAX.*/
 
 enum ProblemType{combination = 0, permutation = 1, permutation_with_repetition_and_combination = 2, XD=190};
@@ -22,7 +21,7 @@ class Problem{
 
 public:
     
-    Problem();
+    //Problem();
     Problem(const Problem& toCopy);
     Problem (int totalObjectives, int totalVariables);
     virtual ~Problem();
@@ -36,9 +35,6 @@ public:
     int totalConstraints;
     int * lowerBound;
     int * upperBound;
-
-    tbb::mutex MutexToUpdate;
-
     
     virtual double evaluate(Solution & solution) = 0;
     virtual double evaluatePartial(Solution & solution, int levelEvaluation) = 0;

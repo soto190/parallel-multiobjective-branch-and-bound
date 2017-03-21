@@ -60,7 +60,7 @@
 class ProblemFJSSP: public Problem {
 public:
     
-    ProblemFJSSP();
+    // ProblemFJSSP();
     ProblemFJSSP(const ProblemFJSSP& toCopy);
     ProblemFJSSP(int totalObjectives, int totalVariables);
    
