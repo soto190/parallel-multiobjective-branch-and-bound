@@ -42,40 +42,40 @@ BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
 }
 
 BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problem, const Interval & branch, GlobalPool &globa_pool, HandlerContainer& pareto_container):
-    rank(rank), problem(problem), globalPool(globa_pool), starting_interval(branch), paretoContainer(pareto_container) {
-
+    rank(rank),
+    problem(problem),
+    globalPool(globa_pool),
+    starting_interval(branch),
+    paretoContainer(pareto_container),
+    currentLevel(0),
+    totalLevels(0),
+    totalNodes(0),
+    branches(0),
+    exploredNodes(0),
+    reachedLeaves(0),
+    unexploredNodes(0),
+    prunedNodes(0),
+    callsToPrune(0),
+    callsToBranch(0),
+    totalUpdatesInLowerBound(0),
+    totalTime(0){
+        
+    this->start = std::clock();
 	this->t1 = std::chrono::high_resolution_clock::now();
 	this->t2 = std::chrono::high_resolution_clock::now();
-
-	this->start = std::clock();
-    
-	this->currentLevel = 0;
-	this->totalLevels = 0;
-	this->totalNodes = 0;
-	this->branches = 0;
-	this->exploredNodes = 0;
-	this->reachedLeaves = 0;
-	this->unexploredNodes = 0;
-	this->prunedNodes = 0;
-	this->callsToPrune = 0;
-	this->callsToBranch = 0;
-	this->totalUpdatesInLowerBound = 0;
-	this->totalTime = 0;
 
 	int numberOfObjectives = this->problem.getNumberOfObjectives();
 	int numberOfVariables = this->problem.getNumberOfVariables();
 
-	this->currentSolution(numberOfObjectives, numberOfVariables);
 	this->bestObjectivesFound(numberOfObjectives, numberOfVariables);
+    this->currentSolution(numberOfObjectives, numberOfVariables);
 	this->problem.createDefaultSolution(this->currentSolution);
     
 	int nObj = 0;
 	for (nObj = 0; nObj < numberOfObjectives; nObj++)
-		this->bestObjectivesFound.setObjective(nObj,
-				this->currentSolution.getObjective(nObj));
+		this->bestObjectivesFound.setObjective(nObj, this->currentSolution.getObjective(nObj));
 
-	this->ivm_tree(this->problem.getNumberOfVariables(),
-			this->problem.getUpperBound(0) + 1);
+	this->ivm_tree(this->problem.getNumberOfVariables(), this->problem.getUpperBound(0) + 1);
 	this->ivm_tree.setOwner(rank);
 }
 

@@ -14,15 +14,14 @@
  *
  */
 Solution::Solution():totalObjectives(0), totalVariables(0) {
-    this->makespan = 0;
-	this->energy = 0;
-	this->machineWithMakespan = 0;
-    this->build_up_to = -1;
-    this->objective = nullptr;
-    this->variable = nullptr;
-    this->execTime = nullptr;
-    this->partialObjective = nullptr;
-
+    makespan = 0;
+	energy = 0;
+	machineWithMakespan = 0;
+    build_up_to = -1;
+    objective = nullptr;
+    variable = nullptr;
+    execTime = nullptr;
+    partialObjective = nullptr;
 }
 
 Solution::Solution(int numberOfObjectives, int numberOfVariables):
@@ -39,17 +38,17 @@ Solution::Solution(int numberOfObjectives, int numberOfVariables):
     
 	int var = 0, obj = 0;
 	for (obj = 0; obj < numberOfObjectives; obj++)
-		this->objective[obj] = 0;
+		objective[obj] = 0;
 
 	for (var = 0; var < numberOfVariables; var++) {
-		this->variable[var] = 0;
-		this->partialObjective[var] = new double[numberOfObjectives];
+		variable[var] = 0;
+		partialObjective[var] = new double[numberOfObjectives];
 		for (obj = 0; obj < numberOfObjectives; obj++)
-			this->partialObjective[var][obj] = 0;
+			partialObjective[var][obj] = 0;
 	}
 
 	for (var = 0; var < 16; var++)
-		this->execTime[var] = 0;
+		execTime[var] = 0;
 }
 
 Solution::Solution(const Solution &solution):
@@ -60,36 +59,34 @@ Solution::Solution(const Solution &solution):
     energy(solution.energy),
     machineWithMakespan(solution.machineWithMakespan){
     
-	this->objective = new double[this->totalObjectives];
-	this->variable = new int[this->totalVariables];
-	this->partialObjective = new double *[this->totalVariables];
-	this->execTime = new double[16];
+	objective = new double[totalObjectives];
+	variable = new int[totalVariables];
+	partialObjective = new double *[totalVariables];
+	execTime = new double[16];
 
 	int var = 0, obj = 0;
 
-	for (obj = 0; obj < this->totalObjectives; obj++)
-		this->objective[obj] = solution.getObjective(obj);
+	for (obj = 0; obj < totalObjectives; obj++)
+		objective[obj] = solution.getObjective(obj);
 
-	for (var = 0; var < this->totalVariables; var++) {
-		this->variable[var] = solution.getVariable(var);
-		this->partialObjective[var] = new double[this->totalObjectives];
-		for (obj = 0; obj < this->totalObjectives; obj++)
-            this->partialObjective[var][obj] = solution.getPartialObjective(var, obj);
+	for (var = 0; var < totalVariables; var++) {
+		variable[var] = solution.getVariable(var);
+		partialObjective[var] = new double[totalObjectives];
+		for (obj = 0; obj < totalObjectives; obj++)
+            partialObjective[var][obj] = solution.getPartialObjective(var, obj);
 	}
 
 	for (var = 0; var < 16; var++)
-		this->execTime[var] = solution.execTime[var];
-
+		execTime[var] = solution.execTime[var];
 }
 
 Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
-    this->makespan = 0;
-    this->energy = 0;
-    this->machineWithMakespan = 0;
-    this->build_up_to = -1;
-    this->totalObjectives = numberOfObjectives;
-    this->totalVariables = numberOfVariables;
-    
+    makespan = 0;
+    energy = 0;
+    machineWithMakespan = 0;
+    build_up_to = -1;
+    totalObjectives = numberOfObjectives;
+    totalVariables = numberOfVariables;
     
     /** Freeing previously used memory. **/
     if(objective != nullptr){
@@ -97,29 +94,29 @@ Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
         delete[] variable;
         delete[] execTime;
         int index = 0;
-        for (index = 0; index < this->totalVariables; index++)
-            delete[] this->partialObjective[index];
-        delete[] this->partialObjective;
+        for (index = 0; index < totalVariables; index++)
+            delete[] partialObjective[index];
+        delete[] partialObjective;
     }
     
-    this->objective = new double[numberOfObjectives];
-    this->variable = new int[numberOfVariables];
-    this->execTime = new double[16];
-    this->partialObjective = new double *[numberOfVariables];
+    objective = new double[numberOfObjectives];
+    variable = new int[numberOfVariables];
+    execTime = new double[16];
+    partialObjective = new double *[numberOfVariables];
     
     int var = 0, obj = 0;
     for (obj = 0; obj < numberOfObjectives; obj++)
-        this->objective[obj] = 0;
+        objective[obj] = 0;
     
     for (var = 0; var < numberOfVariables; var++) {
-        this->variable[var] = 0;
-        this->partialObjective[var] = new double[numberOfObjectives];
+        variable[var] = 0;
+        partialObjective[var] = new double[numberOfObjectives];
         for (obj = 0; obj < numberOfObjectives; obj++)
-            this->partialObjective[var][obj] = 0;
+            partialObjective[var][obj] = 0;
     }
     
     for (var = 0; var < 16; var++)
-        this->execTime[var] = 0;
+        execTime[var] = 0;
     
     return *this;
 }
@@ -128,9 +125,9 @@ Solution& Solution::operator=(const Solution &solution) {
     
     if (this == &solution) return *this;
     
-    this->build_up_to = solution.getBuildUpTo();
-    this->totalObjectives = solution.getNumberOfObjectives();
-    this->totalVariables = solution.getNumberOfVariables();
+    build_up_to = solution.getBuildUpTo();
+    totalObjectives = solution.getNumberOfObjectives();
+    totalVariables = solution.getNumberOfVariables();
     
     /** Freeing previously used memory. **/
     if (objective != nullptr) {
@@ -138,32 +135,32 @@ Solution& Solution::operator=(const Solution &solution) {
         delete[] variable;
         delete[] execTime;
         int index = 0;
-        for (index = 0; index < this->totalVariables; index++)
-            delete[] this->partialObjective[index];
-        delete[] this->partialObjective;
+        for (index = 0; index < totalVariables; index++)
+            delete[] partialObjective[index];
+        delete[] partialObjective;
     }
     
-    this->objective = new double[this->totalObjectives];
-    this->variable = new int[this->totalVariables];
-    this->execTime = new double[16];
-    this->partialObjective = new double *[this->totalVariables];
+    objective = new double[totalObjectives];
+    variable = new int[totalVariables];
+    execTime = new double[16];
+    partialObjective = new double *[totalVariables];
     
     int var = 0, obj = 0;
     
-    for (obj = 0; obj < this->totalObjectives; obj++)
-        this->objective[obj] = solution.getObjective(obj);
+    for (obj = 0; obj < totalObjectives; obj++)
+        objective[obj] = solution.getObjective(obj);
     
-    for (var = 0; var < this->totalVariables; var++) {
-        this->variable[var] = solution.getVariable(var);
-        this->partialObjective[var] = new double[this->totalObjectives];
-        for (obj = 0; obj < this->totalObjectives; obj++)
-            this->partialObjective[var][obj] =
+    for (var = 0; var < totalVariables; var++) {
+        variable[var] = solution.getVariable(var);
+        partialObjective[var] = new double[totalObjectives];
+        for (obj = 0; obj < totalObjectives; obj++)
+            partialObjective[var][obj] =
             solution.partialObjective[var][obj];
     }
     
     /**Section for the HCSP problem**/
     for (var = 0; var < 16; var++)
-        this->execTime[var] = solution.execTime[var];
+        execTime[var] = solution.execTime[var];
     
     return *this;
 }
@@ -183,47 +180,21 @@ Solution::~Solution() {
 	delete[] variable;
 	delete[] execTime;
 	int index = 0;
-	for (index = 0; index < this->totalVariables; index++)
-		delete[] this->partialObjective[index];
+	for (index = 0; index < totalVariables; index++)
+		delete[] partialObjective[index];
 
-	delete[] this->partialObjective;
+	delete[] partialObjective;
 }
 
-void Solution::setObjective(int index, double value) {
-	this->objective[index] = value;
-}
-
-void Solution::setVariable(int index, int value) {
-	this->variable[index] = value;
-}
-
-void Solution::setPartialObjective(int var, int objective, double value) {
-	this->partialObjective[var][objective] = value;
-}
-
-int Solution::getVariable(int index) const {
-	return this->variable[index];
-}
-
-double Solution::getObjective(int index) const {
-	return this->objective[index];
-}
-
-int Solution::getNumberOfVariables() const {
-	return this->totalVariables;
-}
-
-int Solution::getNumberOfObjectives() const {
-	return this->totalObjectives;
-}
-
-int Solution::getPartialObjective(int var, int objective) const{
-    return this->partialObjective[var][objective];
-}
-
-int Solution::getBuildUpTo() const {
-	return this->build_up_to;
-}
+void Solution::setObjective(int index, double value) { objective[index] = value; }
+void Solution::setVariable(int index, int value) { variable[index] = value; }
+void Solution::setPartialObjective(int var, int objective, double value) { partialObjective[var][objective] = value; }
+double Solution::getObjective(int index) const { return objective[index]; }
+int Solution::getVariable(int index) const { return variable[index]; }
+int Solution::getNumberOfVariables() const { return totalVariables; }
+int Solution::getNumberOfObjectives() const { return totalObjectives; }
+int Solution::getPartialObjective(int var, int objective) const{ return partialObjective[var][objective]; }
+int Solution::getBuildUpTo() const { return build_up_to; }
 
 DominanceRelation Solution::dominates(const Solution & solution) const {
 	int nObj = 0;
@@ -237,8 +208,8 @@ DominanceRelation Solution::dominates(const Solution & solution) const {
 	 * For more objectives consider
 	 * if (solAIsBetterIn > 0 and solBIsBetterIn > 0) break the FOR because the solutions are non-dominated.
 	 **/
-	for (nObj = 0; nObj < this->totalObjectives; nObj++) {
-		objA = this->getObjective(nObj);
+	for (nObj = 0; nObj < totalObjectives; nObj++) {
+		objA = getObjective(nObj);
 		objB = solution.getObjective(nObj);
 
 		if (objA < objB) {
@@ -262,29 +233,29 @@ DominanceRelation Solution::dominates(const Solution & solution) const {
 
 void Solution::print() const {
 	int nObj, nVar;
-	for (nObj = 0; nObj < this->totalObjectives; nObj++)
-		printf("%f ", this->getObjective(nObj));
+	for (nObj = 0; nObj < totalObjectives; nObj++)
+		printf("%f ", getObjective(nObj));
 
 	printf("| ");
 
-	for (nVar = 0; nVar < this->totalVariables; nVar++)
-		printf("%d ", this->getVariable(nVar));
+	for (nVar = 0; nVar < totalVariables; nVar++)
+		printf("%d ", getVariable(nVar));
 
 	printf("|\n");
 }
 
 void Solution::printObjectives() const {
 	int nObj;
-	for (nObj = 0; nObj < this->totalObjectives; nObj++)
-		printf("%f ", this->getObjective(nObj));
+	for (nObj = 0; nObj < totalObjectives; nObj++)
+		printf("%f ", getObjective(nObj));
 
 	printf("\n");
 }
 
 void Solution::printVariables() const {
 	int nVar;
-	for (nVar = 0; nVar < this->totalVariables; nVar++)
-		printf("%d ", this->getVariable(nVar));
+	for (nVar = 0; nVar < totalVariables; nVar++)
+		printf("%d ", getVariable(nVar));
 
 	printf("\n");
 }

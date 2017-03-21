@@ -21,11 +21,10 @@ class Problem{
 
 public:
     
-    //Problem();
     Problem(const Problem& toCopy);
     Problem (int totalObjectives, int totalVariables);
     virtual ~Problem();
-    Problem& operator=(const Problem& toCopy);
+    virtual Problem& operator=(const Problem& toCopy);
     
     char * name;
     ProblemType type;

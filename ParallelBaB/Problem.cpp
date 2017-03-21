@@ -7,20 +7,7 @@
 //
 
 #include "Problem.hpp"
-/*
-Problem::Problem(){
-    
-    totalObjectives = 0;
-    totalVariables = 0;
-    type = ProblemType::XD;
-    startingLevel = 0;
-    totalConstraints = 0;
-    
-    lowerBound = nullptr;
-    upperBound = nullptr;
-    name = nullptr;
-}
-*/
+
 Problem::Problem(const Problem& toCopy):
     totalObjectives(toCopy.getNumberOfObjectives()),
     totalVariables(toCopy.getNumberOfVariables()),

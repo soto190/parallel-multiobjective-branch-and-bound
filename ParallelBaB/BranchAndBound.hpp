@@ -40,28 +40,17 @@ struct GlobalPool{
         return true;
     }
     
-    void push(const Interval & interval){
-        Queue.push(interval);
-    }
-    
-    bool try_pop(Interval& interval){
-        return Queue.try_pop(interval);
-    }
-    
-    bool empty(){
-        return Queue.empty();
-    }
-    
-    unsigned long unsafe_size(){
-        return Queue.unsafe_size();
-    }
+    unsigned long unsafe_size(){ return Queue.unsafe_size(); }
+    void push(const Interval & interval){ Queue.push(interval);}
+    bool try_pop(Interval& interval){ return Queue.try_pop(interval); }
+    bool empty(){ return Queue.empty(); }
 };
 
 class BranchAndBound: public tbb::task {
 
 private:
     
-    int rank; /** identifies the number of thread-B&B**/
+    int rank; /** Identifies the number of thread-B&B. **/
 
     unsigned long totalNodes;
     unsigned long branches;
@@ -72,7 +61,7 @@ private:
     unsigned long prunedNodes;
     unsigned long callsToPrune;
     unsigned long totalUpdatesInLowerBound;
-    unsigned long totalLevels; /** Number of tree levels **/
+    unsigned long totalLevels; /** Number of tree levels. **/
     
     int currentLevel; /** Active level **/
     
@@ -96,9 +85,7 @@ private:
     
 public:
     BranchAndBound(const BranchAndBound& branchAndBound);
-    BranchAndBound(int rank, const ProblemFJSSP& problem,
-			const Interval & branch, GlobalPool& globa_pool, HandlerContainer& pareto_container);
-    
+    BranchAndBound(int rank, const ProblemFJSSP& problem, const Interval & branch, GlobalPool& globa_pool, HandlerContainer& pareto_container);
     BranchAndBound& operator()(int rank, const ProblemFJSSP& problem, const Interval & branch);
 	~BranchAndBound();
     
