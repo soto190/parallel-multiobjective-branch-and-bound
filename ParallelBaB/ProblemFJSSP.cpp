@@ -54,57 +54,57 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy),
     
     std::strcpy(name, toCopy.name);
     
-    
     jobMachineToMap = new int * [totalJobs];
     mapToJobMachine = new int * [totalJobs * totalMachines];
     processingTime = new int * [totalOperations];
-    jobOperationHasNumber = new int * [totalOperations];
+    jobOperationHasNumber = new int * [totalJobs];
     
-    numberOfOperationsInJob = new int[totalJobs];
     releaseTime = new int[totalJobs];
+    numberOfOperationsInJob = new int[totalJobs];
     operationIsFromJob = new int[totalOperations];
-    assignationMinPij = new int[totalOperations];
     assignationBestWorkload = new int[totalOperations];
+    assignationMinPij = new int[totalOperations];
     bestWorkloads = new int[totalMachines];
     minWorkload = new int[totalMachines];
     
     int job = 0, map = 0, machine = 0, operation = 0, operationCounter = 0;
     
     for (job = 0; job < totalJobs; job++) {
-        numberOfOperationsInJob[job] = toCopy.getNumberOfOperationsInJob(job); //jobHasNoperations[job];
-        releaseTime[job] = toCopy.getReleaseTimeOfJob(job);//releaseTime[job];
+        numberOfOperationsInJob[job] = toCopy.getNumberOfOperationsInJob(job);
+        releaseTime[job] = toCopy.getReleaseTimeOfJob(job);
         
         jobMachineToMap[job] = new int[toCopy.getNumberOfMachines()];
         
         for (machine = 0; machine < totalMachines; machine++) {
             mapToJobMachine[map] = new int[2];
-            mapToJobMachine[map][0] = toCopy.getMapOfJobMachine(map, 0); //toCopy.mapToJobMachine[map][0];
+            mapToJobMachine[map][0] = toCopy.getMapOfJobMachine(map, 0);
             mapToJobMachine[map][1] = toCopy.getMapOfJobMachine(map, 1);
-            jobMachineToMap[job][machine] = toCopy.getJobMachineToMap(job, machine);// jobMachineToMap[job][machine];
+            jobMachineToMap[job][machine] = toCopy.getJobMachineToMap(job, machine);
             map++;
         }
     }
     
     for (machine = 0; machine < totalMachines; machine++) {
-        minWorkload[machine] = toCopy.getMinWorkload(machine);// minWorkload[machine];
-        bestWorkloads[machine] = toCopy.getBestWorkload(machine);// bestWorkloads[machine];
+        minWorkload[machine] = toCopy.getMinWorkload(machine);
+        bestWorkloads[machine] = toCopy.getBestWorkload(machine);
     }
     
     for (operation = 0; operation < totalOperations; operation++){
         
         processingTime[operation] = new int[toCopy.getNumberOfMachines()];
         for (machine = 0; machine < totalMachines; machine++)
-            processingTime[operation][machine] = toCopy.getProccessingTime(operation, machine);// processingTime[operation][machine];
+            processingTime[operation][machine] = toCopy.getProccessingTime(operation, machine);
         
-        assignationMinPij[operation] = toCopy.getAssignationMinPij(operation);// assignationMinPij[operation];
-        assignationBestWorkload[operation] = toCopy.getAssignatioBestWorkload(operation);//assignationBestWorkload[operation];
+        assignationMinPij[operation] = toCopy.getAssignationMinPij(operation);
+        assignationBestWorkload[operation] = toCopy.getAssignatioBestWorkload(operation);
     }
     
     for (job = 0; job < totalJobs; job++) {
-        jobOperationHasNumber[job] = new int[toCopy.getNumberOfOperationsInJob(job)]; //[numberOfOperationsInJob[job]];
+        jobOperationHasNumber[job] = new int[toCopy.getNumberOfOperationsInJob(job)];
+        
         for(operation = 0; operation < numberOfOperationsInJob[job]; operation++){
-            jobOperationHasNumber[job][operation] = toCopy.getOperationInJobIsNumber(job, operation);//operationInJobIsNumber[job][operation];
-            operationIsFromJob[operationCounter] = toCopy.getOperationIsFromJob(operationCounter);// operationIsFromJob[operationCounter];
+            jobOperationHasNumber[job][operation] = toCopy.getOperationInJobIsNumber(job, operation);
+            operationIsFromJob[operationCounter] = toCopy.getOperationIsFromJob(operationCounter);
             operationCounter++;
         }
     }
@@ -123,21 +123,24 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
     totalConstraints = toCopy.getNumberOfConstraints();
     
     if (processingTime != nullptr) {
-        int job = 0;
+        int job = 0, operation = 0;
         for(job = 0; job < totalJobs; job++){
-            delete [] processingTime[job];
             delete [] jobMachineToMap[job];
+            delete [] jobOperationHasNumber[job];
         }
         
         for (job = 0; job < totalJobs * totalMachines; job++)
             delete [] mapToJobMachine[job];
         
+        for (operation = 0; operation < totalOperations; operation++)
+            delete [] processingTime[operation];
+        
         delete [] jobMachineToMap;
         delete [] mapToJobMachine;
         delete [] processingTime;
+        delete [] jobOperationHasNumber;
         delete [] numberOfOperationsInJob;
         delete [] releaseTime;
-        delete [] jobOperationHasNumber;
         delete [] operationIsFromJob;
         delete [] assignationMinPij;
         delete [] minWorkload;
@@ -191,7 +194,7 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
         bestWorkloads[machine] = toCopy.getBestWorkload(machine);// bestWorkloads[machine];
     }
     
-    jobOperationHasNumber = new int * [totalOperations];
+    jobOperationHasNumber = new int * [totalJobs];
     processingTime = new int * [totalOperations];
     
     for (operation = 0; operation < totalOperations; operation++){
@@ -574,14 +577,17 @@ int ProblemFJSSP::getLowerBoundInObj(int nObj){
 void ProblemFJSSP::loadInstance(char** filePath){
     
     if(processingTime != nullptr){
-        int job = 0;
+        int job = 0, operation = 0;
         for(job = 0; job < totalJobs; job++){
-            delete [] processingTime[job];
+            delete [] jobOperationHasNumber[job];
             delete [] jobMachineToMap[job];
         }
         
         for (job = 0; job < totalJobs * totalMachines; job++)
             delete [] mapToJobMachine[job];
+        
+        for (operation = 0; operation < totalOperations; operation++)
+            delete[] processingTime[operation];
         
         delete [] jobMachineToMap;
         delete [] mapToJobMachine;
@@ -630,12 +636,13 @@ void ProblemFJSSP::loadInstance(char** filePath){
     sumOfMinPij = 0;
     bestWorkloadFound = INT_MAX;
     std::getline(infile, line);
-    processingTime = new int * [totalOperations];
+    
     assignationMinPij = new int [totalOperations];
     minWorkload = new int[totalMachines];
     assignationBestWorkload = new int [totalOperations];
     bestWorkloads = new int[totalMachines];
-    
+    jobOperationHasNumber = new int * [totalJobs];
+    processingTime = new int * [totalOperations];
     jobMachineToMap = new int * [totalJobs];
     mapToJobMachine = new int * [totalJobs * totalMachines];
     
@@ -680,7 +687,6 @@ void ProblemFJSSP::loadInstance(char** filePath){
     totalVariables = totalOperations;
     
     int operationCounter = 0;
-    jobOperationHasNumber = new int * [totalJobs];
     for (job = 0; job < totalJobs; job++) {
         jobOperationHasNumber[job] = new int[numberOfOperationsInJob[job]];
         for(operation = 0; operation < numberOfOperationsInJob[job]; operation++){

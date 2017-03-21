@@ -58,8 +58,27 @@
  Operation 7 is from job 2: [7] = 2
  **/
 class ProblemFJSSP: public Problem {
-public:
+
+private:
+    /**FJSSP functions**/
+    int totalJobs;
+    int totalOperations;
+    int totalMachines;
+    int sumOfMinPij;
+    int bestWorkloadFound;
+    int * assignationMinPij;       /** Length equals to numberOfOperations. **/
+    int * assignationBestWorkload; /** Length equals to numberOfOperations. */
+    int * bestWorkloads;           /** Length equals to number of machines. **/
+    int * minWorkload;             /** Length equals to number of machines. **/
+    int * numberOfOperationsInJob; /** Length equals to number of jobs x number of operations in each job. **/
+    int * releaseTime;             /** Length equals to number of Jobs. **/
+    int * operationIsFromJob;      /** Length equals to numberOfOperations. **/
+    int ** processingTime;         /** Length equals to numberOfOperations x numberOfMachines. **/
+    int ** mapToJobMachine;        /** Length equals to numberOfMaps x 2. **/
+    int ** jobMachineToMap;        /** Length equals to numberOfJobs x numberOfMachines. **/
+    int ** jobOperationHasNumber;  /** Length equals to job x numberOfOperationsInJob. **/
     
+public:
     // ProblemFJSSP();
     ProblemFJSSP(const ProblemFJSSP& toCopy);
     ProblemFJSSP(int totalObjectives, int totalVariables);
@@ -93,29 +112,8 @@ public:
     int getMappingOf(int value1, int value2);
     int getTimesValueIsRepeated(int value);
     
-    
     Solution goodSolutionWithMaxWorkload;
-
-private:
-    /**FJSSP functions**/
-    int totalJobs;
-    int totalOperations;
-    int totalMachines;
-    int sumOfMinPij;
-    int bestWorkloadFound;
-    int * assignationMinPij;       /** Length equals to numberOfOperations. **/
-    int * assignationBestWorkload; /** Length equals to numberOfOperations. */
-    int * bestWorkloads;           /** Length equals to number of machines. **/
-    int * minWorkload;             /** Length equals to number of machines. **/
-    int * numberOfOperationsInJob; /** Length equals to number of jobs x number of operations in each job. **/
-    int * releaseTime;             /** Length equals to number of Jobs. **/
-    int * operationIsFromJob;      /** Length equals to numberOfOperations. **/
-    int ** processingTime;         /** Length equals to numberOfOperations x numberOfMachines. **/
-    int ** mapToJobMachine;        /** Length equals to numberOfMaps x 2. **/
-    int ** jobMachineToMap;        /** Length equals to numberOfJobs x numberOfMachines. **/
-    int ** jobOperationHasNumber;  /** Length equals to job x numberOfOperationsInJob. **/
-    
-public:
+   
     int getNumberOfJobs() const;
     int getNumberOfOperations() const;
     int getNumberOfMachines() const;
@@ -132,7 +130,6 @@ public:
     int getProccessingTime(int operation, int machine) const;
     int getNumberOfOperationsInJob(int job) const;
     int getReleaseTimeOfJob(int job) const;
-
     
     void loadInstance(char** path);
     void printInstance();
