@@ -220,14 +220,17 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
 }
 
 ProblemFJSSP::~ProblemFJSSP(){
-    int job = 0;
+    int job = 0, operation = 0;
     for(job = 0; job < totalJobs; job++){
-        delete [] processingTime[job];
+        delete [] jobOperationHasNumber[job];
         delete [] jobMachineToMap[job];
     }
     
     for (job = 0; job < totalJobs * totalMachines; job++)
         delete [] mapToJobMachine[job];
+
+    for (operation = 0; operation < totalOperations; operation++)
+        delete [] processingTime[operation];
     
     delete [] jobMachineToMap;
     delete [] mapToJobMachine;
