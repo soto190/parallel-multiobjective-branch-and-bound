@@ -72,7 +72,7 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy),
         numberOfOperationsInJob[job] = toCopy.getNumberOfOperationsInJob(job); //jobHasNoperations[job];
         releaseTime[job] = toCopy.getReleaseTimeOfJob(job);//releaseTime[job];
         
-        jobMachineToMap[job] = new int[totalMachines];
+        jobMachineToMap[job] = new int[toCopy.getNumberOfMachines()];
         
         for (machine = 0; machine < totalMachines; machine++) {
             mapToJobMachine[map] = new int[2];
@@ -93,7 +93,7 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy),
     
     for (operation = 0; operation < totalOperations; operation++){
         
-        processingTime[operation] = new int[totalMachines];
+        processingTime[operation] = new int[toCopy.getNumberOfMachines()];
         for (machine = 0; machine < totalMachines; machine++)
             processingTime[operation][machine] = toCopy.getProccessingTime(operation, machine);// processingTime[operation][machine];
         
@@ -102,7 +102,7 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy),
     }
     
     for (job = 0; job < totalJobs; job++) {
-        jobOperationHasNumber[job] = new int[numberOfOperationsInJob[job]];
+        jobOperationHasNumber[job] = new int[toCopy.getNumberOfOperationsInJob(job)]; //[numberOfOperationsInJob[job]];
         for(operation = 0; operation < numberOfOperationsInJob[job]; operation++){
             jobOperationHasNumber[job][operation] = toCopy.getOperationInJobIsNumber(job, operation);//operationInJobIsNumber[job][operation];
             operationIsFromJob[operationCounter] = toCopy.getOperationIsFromJob(operationCounter);// operationIsFromJob[operationCounter];
@@ -220,14 +220,11 @@ ProblemFJSSP::~ProblemFJSSP(){
  *
  */
 double ProblemFJSSP::evaluate(Solution & solution){
-    
     evaluatePartial(solution, getFinalLevel());
-    
     return 0.0;
 }
 
 double ProblemFJSSP::evaluatePartial(Solution & solution, int levelEvaluation){
-    
     evaluatePartialTest4(solution, levelEvaluation);
     return 0.0;
 }
@@ -549,6 +546,29 @@ int ProblemFJSSP::getLowerBoundInObj(int nObj){
 }
 
 void ProblemFJSSP::loadInstance(char** filePath){
+    
+    if(processingTime != nullptr){
+        int job = 0;
+        for(job = 0; job < totalJobs; job++){
+            delete [] processingTime[job];
+            delete [] jobMachineToMap[job];
+        }
+        
+        for (job = 0; job < totalJobs * totalMachines; job++)
+            delete [] mapToJobMachine[job];
+        
+        delete [] jobMachineToMap;
+        delete [] mapToJobMachine;
+        delete [] processingTime;
+        delete [] numberOfOperationsInJob;
+        delete [] releaseTime;
+        delete [] jobOperationHasNumber;
+        delete [] operationIsFromJob;
+        delete [] assignationMinPij;
+        delete [] minWorkload;
+        delete [] assignationBestWorkload;
+        delete [] bestWorkloads;
+    }
     
     std::ifstream infile(filePath[0]);
     std::string line;
