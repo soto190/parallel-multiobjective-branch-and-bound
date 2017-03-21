@@ -63,6 +63,7 @@ public:
     int getNumberOfVariables() const;
     int getNumberOfObjectives() const;
     int getNumberOfConstraints() const;
+    int getStartingLevel() const;
     
     virtual int getTotalElements() = 0;
     virtual int * getElemensToRepeat() = 0;
@@ -70,8 +71,8 @@ public:
     virtual int getMappingOf(int value1, int value2);
     virtual int getTimesValueIsRepeated(int value);
     
-    virtual int getLowerBound(int index) = 0;
-    virtual int getUpperBound(int index) = 0;
+    int getLowerBound(int index) const;
+    int getUpperBound(int index) const;
     
     virtual int getLowerBoundInObj(int nObj) = 0;
     

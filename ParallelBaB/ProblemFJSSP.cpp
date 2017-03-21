@@ -10,176 +10,179 @@
 
 ProblemFJSSP::ProblemFJSSP():Problem(){
     
-    this->jobMachineToMap = nullptr;
-    this->mapToJobMachine = nullptr;
-    this->jobHasNoperations = nullptr;
-    this->releaseTime = nullptr;
-    this->operationIsFromJob = nullptr;
-    this->assignationMinPij = nullptr;
-    this->assignationBestWorkload = nullptr;
-    this->bestWorkloads = nullptr;
-    this->minWorkload = nullptr;
-    this->operationInJobIsNumber = nullptr;
-    this->processingTime = nullptr;
+    jobMachineToMap = nullptr;
+    mapToJobMachine = nullptr;
+    numberOfOperationsInJob = nullptr;
+    releaseTime = nullptr;
+    operationIsFromJob = nullptr;
+    assignationMinPij = nullptr;
+    assignationBestWorkload = nullptr;
+    bestWorkloads = nullptr;
+    minWorkload = nullptr;
+    jobOperationHasNumber = nullptr;
+    processingTime = nullptr;
 
 }
 
-ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy){
+ProblemFJSSP::ProblemFJSSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
     
-    this->totalJobs = toCopy.getNumberOfJobs();
-    this->totalOperations = toCopy.getNumberOfOperations();
-    this->totalMachines = toCopy.getNumberOfMachines();
-    this->totalConstraints = toCopy.getNumberOfConstraints();
+    totalJobs = 0;
+    totalOperations = 0;
+    totalMachines = 0;
+    sumOfMinPij = 0;
+    
+    jobMachineToMap = nullptr;
+    mapToJobMachine = nullptr;
+    numberOfOperationsInJob = nullptr;
+    releaseTime = nullptr;
+    operationIsFromJob = nullptr;
+    assignationMinPij = nullptr;
+    assignationBestWorkload = nullptr;
+    bestWorkloads = nullptr;
+    minWorkload = nullptr;
+    jobOperationHasNumber = nullptr;
+    processingTime = nullptr;
+}
+
+ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy),
+    totalJobs(toCopy.getNumberOfJobs()),
+    totalOperations(toCopy.getNumberOfOperations()),
+    totalMachines(toCopy.getNumberOfMachines()),
+    goodSolutionWithMaxWorkload(toCopy.goodSolutionWithMaxWorkload),
+    sumOfMinPij(toCopy.getSumOfMinPij()),
+    bestWorkloadFound(toCopy.getBestWorkloadFound()){
+    
+    std::strcpy(name, toCopy.name);
     
     
-    std::strcpy(this->name, toCopy.name);
+    jobMachineToMap = new int * [totalJobs];
+    mapToJobMachine = new int * [totalJobs * totalMachines];
     
-    this->goodSolutionWithMaxWorkload = toCopy.goodSolutionWithMaxWorkload;
-    
-    this->sumOfMinPij = toCopy.getSumOfMinPij();
-    this->bestWorkloadFound = toCopy.getBestWorkloadFound();
-    
-    this->jobMachineToMap = new int * [totalJobs];
-    this->mapToJobMachine = new int * [totalJobs * totalMachines];
-    
-    this->jobHasNoperations = new int[totalJobs];
-    this->releaseTime = new int[totalJobs];
-    this->operationIsFromJob = new int[this->totalOperations];
-    this->assignationMinPij = new int[totalOperations];
-    this->assignationBestWorkload = new int[totalOperations];
-    this->bestWorkloads = new int[totalMachines];
-    this->minWorkload = new int[totalMachines];
+    numberOfOperationsInJob = new int[totalJobs];
+    releaseTime = new int[totalJobs];
+    operationIsFromJob = new int[totalOperations];
+    assignationMinPij = new int[totalOperations];
+    assignationBestWorkload = new int[totalOperations];
+    bestWorkloads = new int[totalMachines];
+    minWorkload = new int[totalMachines];
     
     int job = 0, map = 0, machine = 0, operation = 0, operationCounter = 0;
     
-    for (job = 0; job < this->totalJobs; job++) {
-        this->jobHasNoperations[job] = toCopy.getNumberOfOperationsInJob(job); //jobHasNoperations[job];
-        this->releaseTime[job] = toCopy.getReleaseTimeOfJob(job);//releaseTime[job];
+    for (job = 0; job < totalJobs; job++) {
+        numberOfOperationsInJob[job] = toCopy.getNumberOfOperationsInJob(job); //jobHasNoperations[job];
+        releaseTime[job] = toCopy.getReleaseTimeOfJob(job);//releaseTime[job];
         
-        this->jobMachineToMap[job] = new int[this->totalMachines];
+        jobMachineToMap[job] = new int[totalMachines];
         
-        for (machine = 0; machine < this->totalMachines; machine++) {
-            this->mapToJobMachine[map] = new int[2];
-            this->mapToJobMachine[map][0] = toCopy.getMapOfJobMachine(map, 0); //toCopy.mapToJobMachine[map][0];
-            this->mapToJobMachine[map][1] = toCopy.getMapOfJobMachine(map, 1);
-            this->jobMachineToMap[job][machine] = toCopy.getJobMachineToMap(job, machine);// jobMachineToMap[job][machine];
+        for (machine = 0; machine < totalMachines; machine++) {
+            mapToJobMachine[map] = new int[2];
+            mapToJobMachine[map][0] = toCopy.getMapOfJobMachine(map, 0); //toCopy.mapToJobMachine[map][0];
+            mapToJobMachine[map][1] = toCopy.getMapOfJobMachine(map, 1);
+            jobMachineToMap[job][machine] = toCopy.getJobMachineToMap(job, machine);// jobMachineToMap[job][machine];
             map++;
         }
     }
     
-    for (machine = 0; machine < this->totalMachines; machine++) {
-        this->minWorkload[machine] = toCopy.getMinWorkload(machine);// minWorkload[machine];
-        this->bestWorkloads[machine] = toCopy.getBestWorkload(machine);// bestWorkloads[machine];
+    for (machine = 0; machine < totalMachines; machine++) {
+        minWorkload[machine] = toCopy.getMinWorkload(machine);// minWorkload[machine];
+        bestWorkloads[machine] = toCopy.getBestWorkload(machine);// bestWorkloads[machine];
     }
     
-    this->operationInJobIsNumber = new int * [this->totalOperations];
-    this->processingTime = new int * [totalOperations];
+    jobOperationHasNumber = new int * [totalOperations];
+    processingTime = new int * [totalOperations];
     
-    for (operation = 0; operation < this->totalOperations; operation++){
+    for (operation = 0; operation < totalOperations; operation++){
         
-        this->processingTime[operation] = new int[totalMachines];
-        for (machine = 0; machine < this->totalMachines; machine++)
-            this->processingTime[operation][machine] = toCopy.getProccessingTime(operation, machine);// processingTime[operation][machine];
+        processingTime[operation] = new int[totalMachines];
+        for (machine = 0; machine < totalMachines; machine++)
+            processingTime[operation][machine] = toCopy.getProccessingTime(operation, machine);// processingTime[operation][machine];
         
-        this->assignationMinPij[operation] = toCopy.getAssignationMinPij(operation);// assignationMinPij[operation];
-        this->assignationBestWorkload[operation] = toCopy.getAssignatioBestWorkload(operation);//assignationBestWorkload[operation];
+        assignationMinPij[operation] = toCopy.getAssignationMinPij(operation);// assignationMinPij[operation];
+        assignationBestWorkload[operation] = toCopy.getAssignatioBestWorkload(operation);//assignationBestWorkload[operation];
     }
     
-    for (job = 0; job < this->totalJobs; job++) {
-        this->operationInJobIsNumber[job] = new int[this->jobHasNoperations[job]];
-        for(operation = 0; operation < this->jobHasNoperations[job]; operation++){
-            this->operationInJobIsNumber[job][operation] = toCopy.getOperationInJobIsNumber(job, operation);//operationInJobIsNumber[job][operation];
-            this->operationIsFromJob[operationCounter] = toCopy.getOperationIsFromJob(operationCounter);// operationIsFromJob[operationCounter];
+    for (job = 0; job < totalJobs; job++) {
+        jobOperationHasNumber[job] = new int[numberOfOperationsInJob[job]];
+        for(operation = 0; operation < numberOfOperationsInJob[job]; operation++){
+            jobOperationHasNumber[job][operation] = toCopy.getOperationInJobIsNumber(job, operation);//operationInJobIsNumber[job][operation];
+            operationIsFromJob[operationCounter] = toCopy.getOperationIsFromJob(operationCounter);// operationIsFromJob[operationCounter];
             operationCounter++;
         }
     }
-}
-
-ProblemFJSSP::ProblemFJSSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
-
-    this->totalJobs = 0;
-    this->totalOperations = 0;
-    this->totalMachines = 0;
-    this->sumOfMinPij = 0;
 }
 
 ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
     
     if (this == &toCopy) return *this;
     
-    this->totalJobs = toCopy.totalJobs;
-    this->totalOperations = toCopy.totalOperations;
-    this->totalMachines = toCopy.totalMachines;
-    this->totalVariables = toCopy.totalVariables;
-    this->totalObjectives = toCopy.totalObjectives;
-    this->totalConstraints = toCopy.totalConstraints;
+    totalJobs = toCopy.getNumberOfJobs();
+    totalOperations = toCopy.getNumberOfOperations();
+    totalMachines = toCopy.getNumberOfMachines();
+    totalVariables = toCopy.getNumberOfVariables();
+    totalObjectives = toCopy.getNumberOfObjectives();
+    totalConstraints = toCopy.getNumberOfConstraints();
     
-    this->lowerBound = new int[totalVariables];
-    this->upperBound = new int[totalVariables];
+    lowerBound = new int[totalVariables];
+    upperBound = new int[totalVariables];
     
-    std::strcpy(this->name, toCopy.name);
+    std::strcpy(name, toCopy.name);
     
-    this->goodSolutionWithMaxWorkload = toCopy.goodSolutionWithMaxWorkload;
+    goodSolutionWithMaxWorkload = toCopy.goodSolutionWithMaxWorkload;
     
-    this->sumOfMinPij = toCopy.sumOfMinPij;
-    this->bestWorkloadFound = toCopy.bestWorkloadFound;
+    sumOfMinPij = toCopy.getSumOfMinPij();
+    bestWorkloadFound = toCopy.getBestWorkloadFound();
     
-    this->totalOperations = toCopy.totalOperations;
-    this->jobMachineToMap = new int * [totalJobs];
-    this->mapToJobMachine = new int * [totalJobs * totalMachines];
+    jobMachineToMap = new int * [totalJobs];
+    mapToJobMachine = new int * [totalJobs * totalMachines];
     
-    this->jobHasNoperations = new int[totalJobs];
-    this->releaseTime = new int[totalJobs];
-    this->minWorkload = new int[totalMachines];
-    this->bestWorkloads = new int[totalMachines];
+    numberOfOperationsInJob = new int[totalJobs];
+    releaseTime = new int[totalJobs];
+    operationIsFromJob = new int[totalOperations];
+    assignationMinPij = new int[totalOperations];
+    assignationBestWorkload = new int[totalOperations];
+    bestWorkloads = new int[totalMachines];
+    minWorkload = new int[totalMachines];
     
     int job = 0, map = 0, machine = 0, operation = 0, operationCounter = 0;
     
-    for (job = 0; job < this->totalJobs; job++) {
-        this->jobHasNoperations[job] = toCopy.jobHasNoperations[job];
-        this->releaseTime[job] = toCopy.releaseTime[job];
-        this->jobMachineToMap[job] = new int[this->totalMachines];
+    for (job = 0; job < totalJobs; job++) {
+        numberOfOperationsInJob[job] = toCopy.getNumberOfOperationsInJob(job); //jobHasNoperations[job];
+        releaseTime[job] = toCopy.getReleaseTimeOfJob(job);//releaseTime[job];
         
-        for (machine = 0; machine < this->totalMachines; machine++) {
-            this->mapToJobMachine[map] = new int[2];
-            this->mapToJobMachine[map][0] = toCopy.mapToJobMachine[map][0];
-            this->mapToJobMachine[map][1] = toCopy.mapToJobMachine[map][1];
-            this->jobMachineToMap[job][machine] = toCopy.jobMachineToMap[job][machine];
+        jobMachineToMap[job] = new int[totalMachines];
+        
+        for (machine = 0; machine < totalMachines; machine++) {
+            mapToJobMachine[map] = new int[2];
+            mapToJobMachine[map][0] = toCopy.getMapOfJobMachine(map, 0); //toCopy.mapToJobMachine[map][0];
+            mapToJobMachine[map][1] = toCopy.getMapOfJobMachine(map, 1);
+            jobMachineToMap[job][machine] = toCopy.getJobMachineToMap(job, machine);// jobMachineToMap[job][machine];
             map++;
         }
     }
     
-    for (machine = 0; machine < this->totalMachines; machine++) {
-        this->minWorkload[machine] = toCopy.minWorkload[machine];
-        this->bestWorkloads[machine] = toCopy.bestWorkloads[machine];
+    for (machine = 0; machine < totalMachines; machine++) {
+        minWorkload[machine] = toCopy.getMinWorkload(machine);// minWorkload[machine];
+        bestWorkloads[machine] = toCopy.getBestWorkload(machine);// bestWorkloads[machine];
     }
     
-    this->operationInJobIsNumber = new int * [this->totalOperations];
+    jobOperationHasNumber = new int * [totalOperations];
+    processingTime = new int * [totalOperations];
     
-    this->operationIsFromJob = new int[this->totalOperations];
-    this->assignationMinPij = new int[totalOperations];
-    this->assignationBestWorkload = new int[totalOperations];
-    
-    this->processingTime = new int * [totalOperations];
-    
-    for (operation = 0; operation < this->totalOperations; operation++){
+    for (operation = 0; operation < totalOperations; operation++){
         
-        this->processingTime[operation] = new int[totalMachines];
-        for (machine = 0; machine < this->totalMachines; machine++) {
-            this->processingTime[operation][machine] = toCopy.processingTime[operation][machine];
-            
-        }
+        processingTime[operation] = new int[totalMachines];
+        for (machine = 0; machine < totalMachines; machine++)
+            processingTime[operation][machine] = toCopy.getProccessingTime(operation, machine);// processingTime[operation][machine];
         
-        this->assignationMinPij[operation] = toCopy.assignationMinPij[operation];
-        this->assignationBestWorkload[operation] = toCopy.assignationBestWorkload[operation];
-
+        assignationMinPij[operation] = toCopy.getAssignationMinPij(operation);// assignationMinPij[operation];
+        assignationBestWorkload[operation] = toCopy.getAssignatioBestWorkload(operation);//assignationBestWorkload[operation];
     }
     
-    for (job = 0; job < this->totalJobs; job++) {
-        this->operationInJobIsNumber[job] = new int[this->jobHasNoperations[job]];
-        for(operation = 0; operation < this->jobHasNoperations[job]; operation++){
-            this->operationInJobIsNumber[job][operation] = toCopy.operationInJobIsNumber[job][operation];
-            this->operationIsFromJob[operationCounter] = toCopy.operationIsFromJob[operationCounter];
+    for (job = 0; job < totalJobs; job++) {
+        jobOperationHasNumber[job] = new int[numberOfOperationsInJob[job]];
+        for(operation = 0; operation < numberOfOperationsInJob[job]; operation++){
+            jobOperationHasNumber[job][operation] = toCopy.getOperationInJobIsNumber(job, operation);//operationInJobIsNumber[job][operation];
+            operationIsFromJob[operationCounter] = toCopy.getOperationIsFromJob(operationCounter);// operationIsFromJob[operationCounter];
             operationCounter++;
         }
     }
@@ -189,27 +192,25 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
 
 ProblemFJSSP::~ProblemFJSSP(){
     int job = 0;
-    for(job = 0; job < this->totalJobs; job++){
+    for(job = 0; job < totalJobs; job++){
         delete [] processingTime[job];
-        delete [] operationInJobIsNumber[job];
         delete [] jobMachineToMap[job];
     }
     
-    for (job = 0; job < this->totalJobs * this->totalMachines; job++)
+    for (job = 0; job < totalJobs * totalMachines; job++)
         delete [] mapToJobMachine[job];
     
     delete [] jobMachineToMap;
     delete [] mapToJobMachine;
     delete [] processingTime;
-    delete [] jobHasNoperations;
+    delete [] numberOfOperationsInJob;
     delete [] releaseTime;
-    delete [] operationInJobIsNumber;
+    delete [] jobOperationHasNumber;
     delete [] operationIsFromJob;
     delete [] assignationMinPij;
     delete [] minWorkload;
     delete [] assignationBestWorkload;
     delete [] bestWorkloads;
-    //delete goodSolutionWithMaxWorkload;
     
 }
 
@@ -220,14 +221,14 @@ ProblemFJSSP::~ProblemFJSSP(){
  */
 double ProblemFJSSP::evaluate(Solution & solution){
     
-    this->evaluatePartial(solution, this->getFinalLevel());
+    evaluatePartial(solution, getFinalLevel());
     
     return 0.0;
 }
 
 double ProblemFJSSP::evaluatePartial(Solution & solution, int levelEvaluation){
     
-    this->evaluatePartialTest4(solution, levelEvaluation);
+    evaluatePartialTest4(solution, levelEvaluation);
     return 0.0;
 }
 
@@ -262,48 +263,48 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
     int machine = 0;
     int numberOp = 0;
     
-    int minPij = this->sumOfMinPij;
-    int bestWL [this->totalMachines];
+    int minPij = sumOfMinPij;
+    int bestWL [totalMachines];
     
-    int operationOfJob [this->totalJobs];
-    int startingTime [this->totalOperations];
-    int endingTime [this->totalOperations];
-    int timeInMachine [this->totalMachines];
-    int workload [this->totalMachines];
+    int operationOfJob [totalJobs];
+    int startingTime [totalOperations];
+    int endingTime [totalOperations];
+    int timeInMachine [totalMachines];
+    int workload [totalMachines];
     
-    for (operation = 0; operation < this->totalOperations; operation++) {
+    for (operation = 0; operation < totalOperations; operation++) {
         startingTime[operation] = 0;
         endingTime[operation] = 0;
     }
     
-    for (job = 0; job < this->totalJobs; job++)
+    for (job = 0; job < totalJobs; job++)
         operationOfJob[job] = 0;
     
-    for (machine = 0; machine < this->totalMachines; machine++){
+    for (machine = 0; machine < totalMachines; machine++){
         timeInMachine[machine] = 0;
         workload[machine] = 0;
-        bestWL[machine] = this->bestWorkloads[machine];
+        bestWL[machine] = bestWorkloads[machine];
     }
     
     int map = 0;
     for (operationInPosition = 0; operationInPosition <= levelEvaluation; operationInPosition++) {
         map = solution.getVariable(operationInPosition);
-        job = this->getMapOfJobMachine(map, 0);
-        machine = this->getMapOfJobMachine(map, 1);
+        job = getMapOfJobMachine(map, 0);
+        machine = getMapOfJobMachine(map, 1);
         
-        numberOp = this->getOperationInJobIsNumber(job, operationOfJob[job]);
+        numberOp = getOperationInJobIsNumber(job, operationOfJob[job]);
         /** The minimun total workload is reduced. **/
-        minPij -= this->getProccessingTime(numberOp, this->getAssignationMinPij(numberOp));
+        minPij -= getProccessingTime(numberOp, getAssignationMinPij(numberOp));
         
         /** With the number of operation and the machine we can continue. **/
-        int proccesingTime = this->getProccessingTime(numberOp, machine);
+        int proccesingTime = getProccessingTime(numberOp, machine);
         workload[machine] += proccesingTime;
         totalWorkload += proccesingTime;
         
-        bestWL[this->getAssignatioBestWorkload(numberOp)] -= this->getProccessingTime(numberOp, this->getAssignatioBestWorkload(numberOp));
+        bestWL[getAssignatioBestWorkload(numberOp)] -= getProccessingTime(numberOp, getAssignatioBestWorkload(numberOp));
         
         if (operationOfJob[job] == 0) { /** If it is the first operation of the job.**/
-            if(timeInMachine[machine] >= this->getReleaseTimeOfJob(job)){
+            if(timeInMachine[machine] >= getReleaseTimeOfJob(job)){
              
                 startingTime[numberOp] = timeInMachine[machine];
                 timeInMachine[machine] += proccesingTime;
@@ -311,8 +312,8 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
             
             }else{ /** If the job has to wait for the release time.**/
                 
-                startingTime[numberOp] = this->getReleaseTimeOfJob(job);
-                timeInMachine[machine] = this->getReleaseTimeOfJob(job) + proccesingTime;
+                startingTime[numberOp] = getReleaseTimeOfJob(job);
+                timeInMachine[machine] = getReleaseTimeOfJob(job) + proccesingTime;
                 endingTime[numberOp] = timeInMachine[machine];
             
             }
@@ -344,7 +345,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
         }
     }
     
-    for (machine = 0; machine < this->totalMachines; machine++)
+    for (machine = 0; machine < totalMachines; machine++)
         if(workload[machine] + bestWL[machine] > maxWorkload)
             maxWorkload = workload[machine] + bestWL[machine];
     
@@ -354,32 +355,24 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
     
     /** Updates the best workloads and the assignation. **/
     /*
-    if(maxWorkload < this->bestWorkloadFound){
-        this->MutexToUpdate.lock();
-        this->bestWorkloadFound = maxWorkload;
+    if(maxWorkload < bestWorkloadFound){
+        MutexToUpdate.lock();
+        bestWorkloadFound = maxWorkload;
         
-        for (machine = 0; machine < this->totalMachines; machine++)
-            this->bestWorkloads[machine] = workload[machine];
+        for (machine = 0; machine < totalMachines; machine++)
+            bestWorkloads[machine] = workload[machine];
         
-        for (operation = 0; operation < this->totalOperations; operation++)
-            this->assignationBestWorkload[operation] = this->mapToJobMachine[solution.getVariable(operation)][1];
-        this->MutexToUpdate.unlock();
+        for (operation = 0; operation < totalOperations; operation++)
+            assignationBestWorkload[operation] = mapToJobMachine[solution.getVariable(operation)][1];
+        MutexToUpdate.unlock();
     }
     */
     return 0.0;
 }
 
-double ProblemFJSSP::evaluateLastLevel(Solution * solution){
-    return 0.0;
-}
-
-double ProblemFJSSP::removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel){
-    return 0.0;
-}
-
-double ProblemFJSSP::removeLastLevelEvaluation(Solution * solution, int newLevel){
-    return 0.0;
-}
+double ProblemFJSSP::evaluateLastLevel(Solution * solution){ return 0.0;}
+double ProblemFJSSP::removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel){ return 0.0;}
+double ProblemFJSSP::removeLastLevelEvaluation(Solution * solution, int newLevel){ return 0.0;}
 
 void ProblemFJSSP::createDefaultSolution(Solution & solution){
     
@@ -389,42 +382,39 @@ void ProblemFJSSP::createDefaultSolution(Solution & solution){
     int map = 0;
     int machine = 0;
     
-    for (job = 0; job < this->totalJobs; job++)
-        for (operation = 0; operation < this->jobHasNoperations[job]; operation++){
-            map = this->jobMachineToMap[job][machine];
+    for (job = 0; job < totalJobs; job++)
+        for (operation = 0; operation < numberOfOperationsInJob[job]; operation++){
+            map = jobMachineToMap[job][machine];
             solution.setVariable(countOperations++, map);
             machine++;
-            if (machine == this->totalMachines)
+            if (machine == totalMachines)
                 machine = 0;
         }
     
-    this->evaluate(solution);
+    evaluate(solution);
 }
 
 void ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){
     
     if(nObj == 0){
-        this->createDefaultSolution(solution);
+        createDefaultSolution(solution);
     }else if(nObj == 1){
-        solution = this->goodSolutionWithMaxWorkload;
+        solution = goodSolutionWithMaxWorkload;
     }
     else if(nObj == 2){
         int operation = 0;
-        for (operation = 0; operation < this->totalOperations; operation++)
-            solution.setVariable(operation, this->jobMachineToMap[this->operationIsFromJob[operation]][this->assignationMinPij[operation]]);
+        for (operation = 0; operation < totalOperations; operation++)
+            solution.setVariable(operation, jobMachineToMap[operationIsFromJob[operation]][assignationMinPij[operation]]);
     }
-    this->evaluate(solution);
+    evaluate(solution);
 }
-
+/**
+ *
+ * Creates a good solution with max workload based on the best solution for total workload.
+ *
+ **/
 void ProblemFJSSP::buildSolutionWithGoodMaxWorkload(Solution & solution){
-
-    /**
-     *
-     * Creates a good solution with max workload based on the best solution for total workload.
-     *
-     **/
-    this->buildSolutionWithGoodMaxWorkloadv2(solution);
-
+    buildSolutionWithGoodMaxWorkloadv2(solution);
 }
 
 void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
@@ -440,27 +430,27 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
     int maxWorkloadObj = 0;
     int totalWorkload = 0;
     
-    int operationOfJob [this->totalJobs];
-    int workload [this->totalMachines];
+    int operationOfJob [totalJobs];
+    int workload [totalMachines];
     int maxWorkloadedMachine = 0;
     
-    for (nMachine = 0; nMachine < this->totalMachines; nMachine++)
+    for (nMachine = 0; nMachine < totalMachines; nMachine++)
         workload[nMachine] = 0;
     
     /** Assign the operations to machines which generates the min TotalWorkload and computes the machines workloads. **/
     int counterOperations = 0;
-    for (nJob = 0; nJob < this->totalJobs; nJob++){
+    for (nJob = 0; nJob < totalJobs; nJob++){
         operationOfJob[nJob] = 0;
-        for (nOperation = 0; nOperation < this->jobHasNoperations[nJob]; nOperation++){
+        for (nOperation = 0; nOperation < numberOfOperationsInJob[nJob]; nOperation++){
             
-            nMachine = this->assignationMinPij[counterOperations];
-            procTiOp = this->processingTime[counterOperations][nMachine];
-            this->assignationBestWorkload[counterOperations] = nMachine;
+            nMachine = assignationMinPij[counterOperations];
+            procTiOp = processingTime[counterOperations][nMachine];
+            assignationBestWorkload[counterOperations] = nMachine;
             
             workload[nMachine] += procTiOp;
             totalWorkload += procTiOp;
             
-            solution.setVariable(counterOperations, this->jobMachineToMap[nJob][nMachine]);
+            solution.setVariable(counterOperations, jobMachineToMap[nJob][nMachine]);
             counterOperations++;
             
             if(workload[nMachine] > maxWorkload) {
@@ -481,31 +471,31 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
         bestMachine = 0;
         minWorkload = INT_MAX;
         
-        for (nOperation = 0; nOperation < this->totalOperations; nOperation++)
-            if(this->mapToJobMachine[solution.getVariable(nOperation)][1] == maxWorkloadedMachine)
-                for (nMachine = 0; nMachine < this->totalMachines; nMachine++)
+        for (nOperation = 0; nOperation < totalOperations; nOperation++)
+            if(mapToJobMachine[solution.getVariable(nOperation)][1] == maxWorkloadedMachine)
+                for (nMachine = 0; nMachine < totalMachines; nMachine++)
                     if(nMachine != maxWorkloadedMachine
-                       && (workload[nMachine] + this->processingTime[nOperation][nMachine]) < minWorkload) {
+                       && (workload[nMachine] + processingTime[nOperation][nMachine]) < minWorkload) {
                         bestOperation = nOperation;
                         bestMachine = nMachine;
-                        minWorkload = workload[nMachine] + this->processingTime[nOperation][nMachine];
+                        minWorkload = workload[nMachine] + processingTime[nOperation][nMachine];
                     }
         
         /** Applies the change. **/
-        totalWorkload -= this->processingTime[bestOperation][maxWorkloadedMachine];
-        workload[maxWorkloadedMachine] -= this->processingTime[bestOperation][maxWorkloadedMachine];
+        totalWorkload -= processingTime[bestOperation][maxWorkloadedMachine];
+        workload[maxWorkloadedMachine] -= processingTime[bestOperation][maxWorkloadedMachine];
       
-        totalWorkload += this->processingTime[bestOperation][bestMachine];
-        workload[bestMachine] += this->processingTime[bestOperation][bestMachine];
+        totalWorkload += processingTime[bestOperation][bestMachine];
+        workload[bestMachine] += processingTime[bestOperation][bestMachine];
         
-        solution.setVariable(bestOperation, this->jobMachineToMap[this->operationIsFromJob[bestOperation]][bestMachine]);
-        this->assignationBestWorkload[bestOperation] = bestMachine;
+        solution.setVariable(bestOperation, jobMachineToMap[operationIsFromJob[bestOperation]][bestMachine]);
+        assignationBestWorkload[bestOperation] = bestMachine;
         
         /** Recalculates the maxWorkload and minWorkload for the next iteration. **/
         maxWorkload = 0;
         int lastMaxWorkloadedMachine = maxWorkloadedMachine;
         int lastBestWorkloadMachine = bestMachine;
-        for (nMachine = 0; nMachine < this->totalMachines; nMachine++)
+        for (nMachine = 0; nMachine < totalMachines; nMachine++)
             if(workload[nMachine] > maxWorkload) {
                 maxWorkload = workload[nMachine];
                 maxWorkloadedMachine = nMachine;
@@ -517,25 +507,25 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
             maxWorkloadObj = maxWorkload;
         else{
             /** Removes the change. **/
-            workload[lastMaxWorkloadedMachine] += this->processingTime[bestOperation][lastMaxWorkloadedMachine];
-            workload[lastBestWorkloadMachine] -= this->processingTime[bestOperation][lastBestWorkloadMachine];
+            workload[lastMaxWorkloadedMachine] += processingTime[bestOperation][lastMaxWorkloadedMachine];
+            workload[lastBestWorkloadMachine] -= processingTime[bestOperation][lastBestWorkloadMachine];
             
-            totalWorkload += this->processingTime[bestOperation][lastMaxWorkloadedMachine];
-            totalWorkload -= this->processingTime[bestOperation][lastBestWorkloadMachine];
+            totalWorkload += processingTime[bestOperation][lastMaxWorkloadedMachine];
+            totalWorkload -= processingTime[bestOperation][lastBestWorkloadMachine];
             
             
-            solution.setVariable(bestOperation, this->jobMachineToMap[this->operationIsFromJob[bestOperation]][lastMaxWorkloadedMachine]);
+            solution.setVariable(bestOperation, jobMachineToMap[operationIsFromJob[bestOperation]][lastMaxWorkloadedMachine]);
             solution.setObjective(1, workload[lastMaxWorkloadedMachine]);
             
-            this->assignationBestWorkload[bestOperation] = lastMaxWorkloadedMachine;
+            assignationBestWorkload[bestOperation] = lastMaxWorkloadedMachine;
 
             maxWorkloadIsReduced = 0;
         }
     }
     
-    this->bestWorkloadFound = maxWorkloadObj;
-    for (nMachine = 0; nMachine < this->totalMachines; nMachine++)
-        this->bestWorkloads[nMachine] = workload[nMachine];
+    bestWorkloadFound = maxWorkloadObj;
+    for (nMachine = 0; nMachine < totalMachines; nMachine++)
+        bestWorkloads[nMachine] = workload[nMachine];
 }
 
 /** For all the variables the lower bound is 0. **/
@@ -549,45 +539,13 @@ int ProblemFJSSP::getLowerBound(int indexVar){
  *
  **/
 int ProblemFJSSP::getUpperBound(int indexVar){
-    return (this->totalJobs * this->totalMachines) - 1;
+    return (totalJobs * totalMachines) - 1;
 }
 
 int ProblemFJSSP::getLowerBoundInObj(int nObj){
     if(nObj == 1)
-        return this->sumOfMinPij;
+        return sumOfMinPij;
     return INT_MAX;
-}
-
-ProblemType ProblemFJSSP::getType() const {
-    return ProblemType::permutation_with_repetition_and_combination;
-}
-
-int ProblemFJSSP::getStartingLevel(){
-    return 0;
-}
-
-int ProblemFJSSP::getFinalLevel(){
-    return this->totalOperations - 1;
-}
-
-int ProblemFJSSP::getTotalElements(){
-    return this->totalJobs;
-}
-
-int * ProblemFJSSP::getElemensToRepeat(){
-    return this->jobHasNoperations;
-}
-
-int ProblemFJSSP::getMapping(int map, int position){
-    return this->mapToJobMachine[map][position];
-}
-
-int ProblemFJSSP::getMappingOf(int job, int machine){
-    return this->jobMachineToMap[job][machine];
-}
-
-int ProblemFJSSP::getTimesValueIsRepeated(int value){
-    return this->totalMachines;
 }
 
 void ProblemFJSSP::loadInstance(char** filePath){
@@ -599,41 +557,41 @@ void ProblemFJSSP::loadInstance(char** filePath){
     std::getline(infile, line);
     std::getline(infile, line);
     elemens = split(line, ' ');
-    this->totalJobs = std::stoi(elemens.at(0));
-    this->totalMachines = std::stoi(elemens.at(1));
-    this->jobHasNoperations = new int[this->totalJobs];
-    this->releaseTime = new int[this->totalJobs];
+    totalJobs = std::stoi(elemens.at(0));
+    totalMachines = std::stoi(elemens.at(1));
+    numberOfOperationsInJob = new int[totalJobs];
+    releaseTime = new int[totalJobs];
     
     
     std::getline(infile, line);
     std::getline(infile, line);
     elemens = split(line, ' ');
     int job = 0;
-    this->totalOperations = 0;
-    for(job = 0; job < this->totalJobs; job++){
-        this->jobHasNoperations[job] = std::stoi(elemens.at(job));
-        this->totalOperations += this->jobHasNoperations[job];
+    totalOperations = 0;
+    for(job = 0; job < totalJobs; job++){
+        numberOfOperationsInJob[job] = std::stoi(elemens.at(job));
+        totalOperations += numberOfOperationsInJob[job];
     }
     
     std::getline(infile, line);
     std::getline(infile, line);
     elemens = split(line, ' ');
-    for (job = 0; job < this->totalJobs; job++)
-        this->releaseTime[job] = std::stoi(elemens.at(job));
+    for (job = 0; job < totalJobs; job++)
+        releaseTime[job] = std::stoi(elemens.at(job));
     
     
-    this->operationIsFromJob = new int[this->totalOperations];
-    this->sumOfMinPij = 0;
-    this->bestWorkloadFound = INT_MAX;
+    operationIsFromJob = new int[totalOperations];
+    sumOfMinPij = 0;
+    bestWorkloadFound = INT_MAX;
     std::getline(infile, line);
-    this->processingTime = new int * [this->totalOperations];
-    this->assignationMinPij = new int [this->totalOperations];
-    this->minWorkload = new int[this->totalMachines];
-    this->assignationBestWorkload = new int [this->totalOperations];
-    this->bestWorkloads = new int[this->totalMachines];
+    processingTime = new int * [totalOperations];
+    assignationMinPij = new int [totalOperations];
+    minWorkload = new int[totalMachines];
+    assignationBestWorkload = new int [totalOperations];
+    bestWorkloads = new int[totalMachines];
     
-    this->jobMachineToMap = new int * [this->totalJobs];
-    this->mapToJobMachine = new int * [this->totalJobs * this->totalMachines];
+    jobMachineToMap = new int * [totalJobs];
+    mapToJobMachine = new int * [totalJobs * totalMachines];
     
     int operation = 0;
     int machine = 0;
@@ -641,109 +599,115 @@ void ProblemFJSSP::loadInstance(char** filePath){
     int minMachine = 0;
     int map = 0;
     
-    for (job = 0; job < this->totalJobs; job++) {
-        this->jobMachineToMap[job] = new int[this->totalMachines];
-        for (machine = 0; machine < this->totalMachines; machine++) {
-            this->mapToJobMachine[map] = new int[2];
-            this->mapToJobMachine[map][0] = job;
-            this->mapToJobMachine[map][1] = machine;
-            this->jobMachineToMap[job][machine] = map;
+    for (job = 0; job < totalJobs; job++) {
+        jobMachineToMap[job] = new int[totalMachines];
+        for (machine = 0; machine < totalMachines; machine++) {
+            mapToJobMachine[map] = new int[2];
+            mapToJobMachine[map][0] = job;
+            mapToJobMachine[map][1] = machine;
+            jobMachineToMap[job][machine] = map;
             map++;
         }
     }
     
-    for (machine = 0; machine < this->totalMachines; machine++)
+    for (machine = 0; machine < totalMachines; machine++)
         minWorkload[machine] = 0;
     
-    for (operation = 0; operation < this->totalOperations; operation++) {
-        this->processingTime[operation] = new int[this->totalMachines];
+    for (operation = 0; operation < totalOperations; operation++) {
+        processingTime[operation] = new int[totalMachines];
         std::getline(infile, line);
         elemens = split(line, ' ');
         minPij = INT_MAX;
         minMachine = 0;
-        for (machine = 0; machine < this->totalMachines; machine++){
-            this->processingTime[operation][machine] = std::stoi(elemens.at(machine));
+        for (machine = 0; machine < totalMachines; machine++){
+            processingTime[operation][machine] = std::stoi(elemens.at(machine));
             if (processingTime[operation][machine] < minPij){
                 minPij = processingTime[operation][machine];
                 minMachine = machine;
             }
         }
-        this->sumOfMinPij += minPij;
-        this->minWorkload[minMachine] += processingTime[operation][minMachine];
-        this->assignationMinPij[operation] = minMachine;
+        sumOfMinPij += minPij;
+        minWorkload[minMachine] += processingTime[operation][minMachine];
+        assignationMinPij[operation] = minMachine;
     }
     
-    this->totalVariables = this->totalOperations;
+    totalVariables = totalOperations;
     
     int operationCounter = 0;
-    this->operationInJobIsNumber = new int * [this->totalJobs];
-    for (job = 0; job < this->totalJobs; job++) {
-        this->operationInJobIsNumber[job] = new int[this->jobHasNoperations[job]];
-        for(operation = 0; operation < this->jobHasNoperations[job]; operation++){
-            this->operationInJobIsNumber[job][operation] = operationCounter;
-            this->operationIsFromJob[operationCounter++] = job;
+    jobOperationHasNumber = new int * [totalJobs];
+    for (job = 0; job < totalJobs; job++) {
+        jobOperationHasNumber[job] = new int[numberOfOperationsInJob[job]];
+        for(operation = 0; operation < numberOfOperationsInJob[job]; operation++){
+            jobOperationHasNumber[job][operation] = operationCounter;
+            operationIsFromJob[operationCounter++] = job;
         }
     }
-    goodSolutionWithMaxWorkload (this->getNumberOfObjectives(), this->getNumberOfVariables());
+    goodSolutionWithMaxWorkload (getNumberOfObjectives(), getNumberOfVariables());
     buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
     
     infile.close();
 
 }
 
-int ProblemFJSSP::getNumberOfJobs() const{ return this->totalJobs;}
-int ProblemFJSSP::getNumberOfOperations() const{ return this->totalOperations;}
-int ProblemFJSSP::getNumberOfMachines() const{ return this->totalMachines;}
-int ProblemFJSSP::getSumOfMinPij() const{ return this->sumOfMinPij;}
-int ProblemFJSSP::getBestWorkloadFound() const{ return this->bestWorkloadFound;}
-int ProblemFJSSP::getAssignationMinPij(int n_operation) const{ return this->assignationMinPij[n_operation];}
-int ProblemFJSSP::getAssignatioBestWorkload(int n_operation) const{ return this->assignationBestWorkload[n_operation];}
-int ProblemFJSSP::getBestWorkload(int n_machine) const{ return this->bestWorkloads[n_machine];}
-int ProblemFJSSP::getMinWorkload(int n_machine) const{ return this->minWorkload[n_machine];}
-int ProblemFJSSP::getMapOfJobMachine(int map, int machine_or_job) const{ return this->mapToJobMachine[map][machine_or_job];}
-int ProblemFJSSP::getJobMachineToMap(int job, int machine) const{ return this->jobMachineToMap[job][machine];}
-int ProblemFJSSP::getOperationInJobIsNumber(int job, int operation) const{ return this->operationInJobIsNumber[job][operation];}
-int ProblemFJSSP::getOperationIsFromJob(int n_operation) const{ return this->operationIsFromJob[n_operation];}
-int ProblemFJSSP::getProccessingTime(int operation, int machine) const{ return this->processingTime[operation][machine];}
-int ProblemFJSSP::getNumberOfOperationsInJob(int job) const{return this->jobHasNoperations[job];}
-int ProblemFJSSP::getReleaseTimeOfJob(int job) const{ return this->releaseTime[job];}
+ProblemType ProblemFJSSP::getType() const { return ProblemType::permutation_with_repetition_and_combination; }
+int ProblemFJSSP::getStartingLevel(){ return 0;}
+int ProblemFJSSP::getFinalLevel(){return totalOperations - 1;}
+int ProblemFJSSP::getTotalElements(){return totalJobs;}
+int * ProblemFJSSP::getElemensToRepeat(){return numberOfOperationsInJob;}
+int ProblemFJSSP::getMapping(int map, int position){return mapToJobMachine[map][position];}
+int ProblemFJSSP::getMappingOf(int job, int machine){return jobMachineToMap[job][machine];}
+int ProblemFJSSP::getTimesValueIsRepeated(int value){return totalMachines;}
+int ProblemFJSSP::getNumberOfJobs() const{ return totalJobs;}
+int ProblemFJSSP::getNumberOfOperations() const{ return totalOperations;}
+int ProblemFJSSP::getNumberOfMachines() const{ return totalMachines;}
+int ProblemFJSSP::getSumOfMinPij() const{ return sumOfMinPij;}
+int ProblemFJSSP::getBestWorkloadFound() const{ return bestWorkloadFound;}
+int ProblemFJSSP::getAssignationMinPij(int n_operation) const{ return assignationMinPij[n_operation];}
+int ProblemFJSSP::getAssignatioBestWorkload(int n_operation) const{ return assignationBestWorkload[n_operation];}
+int ProblemFJSSP::getBestWorkload(int n_machine) const{ return bestWorkloads[n_machine];}
+int ProblemFJSSP::getMinWorkload(int n_machine) const{ return minWorkload[n_machine];}
+int ProblemFJSSP::getMapOfJobMachine(int map, int machine_or_job) const{ return mapToJobMachine[map][machine_or_job];}
+int ProblemFJSSP::getJobMachineToMap(int job, int machine) const{ return jobMachineToMap[job][machine];}
+int ProblemFJSSP::getOperationInJobIsNumber(int job, int operation) const{ return jobOperationHasNumber[job][operation];}
+int ProblemFJSSP::getOperationIsFromJob(int n_operation) const{ return operationIsFromJob[n_operation];}
+int ProblemFJSSP::getProccessingTime(int operation, int machine) const{ return processingTime[operation][machine];}
+int ProblemFJSSP::getNumberOfOperationsInJob(int job) const{return numberOfOperationsInJob[job];}
+int ProblemFJSSP::getReleaseTimeOfJob(int job) const{ return releaseTime[job];}
 
 void ProblemFJSSP::printInstance(){}
 
 void ProblemFJSSP::printProblemInfo(){
-    printf("Total jobs: %d\n", this->totalJobs);
-    printf("Total machines: %d\n", this->totalMachines);
-    printf("Total operations: %d\n", this->totalOperations);
+    printf("Total jobs: %d\n", totalJobs);
+    printf("Total machines: %d\n", totalMachines);
+    printf("Total operations: %d\n", totalOperations);
 
     printf("Operations in each job:\n");
     
     int job = 0, machine = 0, operation = 0;
-    for (job = 0; job < this->totalJobs; job++)
-        printf("%2d ", this->jobHasNoperations[job]);
+    for (job = 0; job < totalJobs; job++)
+        printf("%2d ", numberOfOperationsInJob[job]);
     printf("\n");
     
     printf("Release time for each job:\n");
-    for (job = 0; job < this->totalJobs; job++)
-        printf("%2d ", this->releaseTime[job]);
+    for (job = 0; job < totalJobs; job++)
+        printf("%2d ", releaseTime[job]);
     printf("\n");
 
     printf("Processing times: \n");
     printf("\t\t  ");
-    for (machine = 0; machine < this->totalMachines; machine++)
+    for (machine = 0; machine < totalMachines; machine++)
         printf("M%-2d ", machine);
     printf("\n");
-    for (operation = 0; operation < this->totalOperations; operation++) {
+    for (operation = 0; operation < totalOperations; operation++) {
         
-        printf("[J%-2d] %2d:", this->operationIsFromJob[operation], operation);
-        for (machine = 0; machine < this->totalMachines; machine++)
-            printf("%3d ", this->processingTime[operation][machine]);
+        printf("[J%-2d] %2d:", operationIsFromJob[operation], operation);
+        for (machine = 0; machine < totalMachines; machine++)
+            printf("%3d ", processingTime[operation][machine]);
         printf("\n");
     }
 }
 
-void ProblemFJSSP::printSolutionInfo(Solution &solution){
-    printSchedule(solution);
-}
+void ProblemFJSSP::printSolutionInfo(Solution &solution){ printSchedule(solution);}
 
 void ProblemFJSSP::printSchedule(Solution & solution){
     
@@ -757,24 +721,24 @@ void ProblemFJSSP::printSchedule(Solution & solution){
     int machine = 0;
     int numberOp = 0;
     
-    int operationOfJob [this->totalJobs];
-    int startingTime [this->totalOperations];
-    int endingTime [this->totalOperations];
-    int timeInMachine [this->totalMachines];
-    int workload [this->totalMachines];
+    int operationOfJob [totalJobs];
+    int startingTime [totalOperations];
+    int endingTime [totalOperations];
+    int timeInMachine [totalMachines];
+    int workload [totalMachines];
     
-    char gantt[this->totalMachines][255];
+    char gantt[totalMachines][255];
     int time = 0;
     
-    for (operation = 0; operation < this->totalOperations; operation++) {
+    for (operation = 0; operation < totalOperations; operation++) {
         startingTime[operation] = 0;
         endingTime[operation] = 0;
     }
     
-    for (job = 0; job < this->totalJobs; job++)
+    for (job = 0; job < totalJobs; job++)
         operationOfJob[job] = 0;
     
-    for (machine = 0; machine < this->totalMachines; machine++){
+    for (machine = 0; machine < totalMachines; machine++){
         timeInMachine[machine] = 0;
         workload[machine] = 0;
         
@@ -784,26 +748,26 @@ void ProblemFJSSP::printSchedule(Solution & solution){
         }
     }
     int map = 0;
-    for (operationInPosition = 0; operationInPosition < this->totalOperations; operationInPosition++) {
+    for (operationInPosition = 0; operationInPosition < totalOperations; operationInPosition++) {
         
         map = solution.getVariable(operationInPosition);
-        job = this->mapToJobMachine[map][0];
-        machine = this->mapToJobMachine[map][1];
+        job = mapToJobMachine[map][0];
+        machine = mapToJobMachine[map][1];
         
-        numberOp = this->operationInJobIsNumber[job][operationOfJob[job]];
+        numberOp = jobOperationHasNumber[job][operationOfJob[job]];
         
         /** With the number of operation and the machine we can continue. **/
-        workload[machine] += this->processingTime[numberOp][machine];
-        totalWorkload += this->processingTime[numberOp][machine];
+        workload[machine] += processingTime[numberOp][machine];
+        totalWorkload += processingTime[numberOp][machine];
         
         if (operationOfJob[job] == 0) { /** If it is the first operation of the job.**/
-            if(timeInMachine[machine] >= this->releaseTime[job]){
+            if(timeInMachine[machine] >= releaseTime[job]){
                 startingTime[numberOp] = timeInMachine[machine];
-                timeInMachine[machine] += this->processingTime[numberOp][machine];
+                timeInMachine[machine] += processingTime[numberOp][machine];
                 endingTime[numberOp] = timeInMachine[machine];
             }else{ /** If the job has to wait for the release time.**/
-                startingTime[numberOp] = this->releaseTime[job];
-                timeInMachine[machine] = this->releaseTime[job] + this->processingTime[numberOp][machine];
+                startingTime[numberOp] = releaseTime[job];
+                timeInMachine[machine] = releaseTime[job] + processingTime[numberOp][machine];
                 endingTime[numberOp] = timeInMachine[machine];
             }
             
@@ -811,13 +775,13 @@ void ProblemFJSSP::printSchedule(Solution & solution){
             if(endingTime[numberOp - 1] > timeInMachine[machine]){ /**The operation is waiting for their dependency operation.**/
                 
                 startingTime[numberOp] = endingTime[numberOp - 1];
-                timeInMachine[machine] = endingTime[numberOp - 1] + this->processingTime[numberOp][machine];
+                timeInMachine[machine] = endingTime[numberOp - 1] + processingTime[numberOp][machine];
                 endingTime[numberOp] = timeInMachine[machine];
                 
             }else{ /**The operation starts when the machine is avaliable.**/
                 
                 startingTime[numberOp] = timeInMachine[machine];
-                timeInMachine[machine] += this->processingTime[numberOp][machine];
+                timeInMachine[machine] += processingTime[numberOp][machine];
                 endingTime[numberOp] = timeInMachine[machine];
                 
             }
@@ -839,12 +803,12 @@ void ProblemFJSSP::printSchedule(Solution & solution){
     solution.setObjective(1, maxWorkload);
     
     printf("Op :  M  ti -  tf\n");
-    for (operation = 0; operation < this->totalOperations; operation++)
-        printf("%3d: %2d %3d - %3d \n", operation, this->mapToJobMachine[solution.getVariable(operation)][1], startingTime[operation], endingTime[operation]);
+    for (operation = 0; operation < totalOperations; operation++)
+        printf("%3d: %2d %3d - %3d \n", operation, mapToJobMachine[solution.getVariable(operation)][1], startingTime[operation], endingTime[operation]);
     
     printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
 
-    for (machine = 0; machine < this->totalMachines; machine++) {
+    for (machine = 0; machine < totalMachines; machine++) {
         printf("M%d  |", machine);
         for (time = 0; time < makespan; time++)
             printf("%3c", gantt[machine][time]);
@@ -862,7 +826,7 @@ void ProblemFJSSP::printSchedule(Solution & solution){
 }
 
 void ProblemFJSSP::printSolution(Solution & solution){
-    printPartialSolution(solution, this->totalOperations - 1);
+    printPartialSolution(solution, totalOperations - 1);
 }
 
 void ProblemFJSSP::printPartialSolution(Solution & solution, int level){
@@ -870,7 +834,7 @@ void ProblemFJSSP::printPartialSolution(Solution & solution, int level){
     int indexVar = 0;
     int withVariables = 1;
     
-    for (indexVar = 0; indexVar < this->getNumberOfObjectives(); indexVar++)
+    for (indexVar = 0; indexVar < getNumberOfObjectives(); indexVar++)
         printf("%7.0f ", solution.getObjective(indexVar));
     
     if (withVariables == 1) {
@@ -880,22 +844,22 @@ void ProblemFJSSP::printPartialSolution(Solution & solution, int level){
         for (indexVar = 0; indexVar <= level; indexVar++)
             printf("%3d ", solution.getVariable(indexVar));
         
-        for (indexVar = level + 1; indexVar < this->totalOperations; indexVar ++)
+        for (indexVar = level + 1; indexVar < totalOperations; indexVar ++)
             printf("  - ");
         /*
         printf("|\n\t\t\t\t | ");
         for (indexVar = 0; indexVar <= level; indexVar++)
-            printf("%3d ", this->getMapping(solution->getVariable(indexVar), 0));
+            printf("%3d ", getMapping(solution->getVariable(indexVar), 0));
         
-        for (indexVar = level + 1; indexVar < this->totalOperations; indexVar ++)
+        for (indexVar = level + 1; indexVar < totalOperations; indexVar ++)
                 printf("  - ");
         
         printf("|\n\t\t\t\t | ");
 
         for (indexVar = 0; indexVar <= level; indexVar++)
-            printf("%3d ", this->getMapping(solution->getVariable(indexVar), 1));
+            printf("%3d ", getMapping(solution->getVariable(indexVar), 1));
         
-        for (indexVar = level + 1; indexVar < this->totalOperations; indexVar ++)
+        for (indexVar = level + 1; indexVar < totalOperations; indexVar ++)
             printf("  - ");
         */
         printf("|");

@@ -103,18 +103,18 @@ private:
     int totalMachines;
     int sumOfMinPij;
     int bestWorkloadFound;
-    int * assignationMinPij; /** Lenght equals to numberOfOperations. **/
-    int * assignationBestWorkload; /** Lenght equals to numberOfOperations. */
-    int * bestWorkloads;
-    int * minWorkload;
-    int ** mapToJobMachine; /** Length equals to numberOfMaps x 2.**/
-    int ** jobMachineToMap; /** Lenght equals to numberOfJobs x numberOfMachines. **/
-    int * jobHasNoperations;
-    int * releaseTime;
-    int ** operationInJobIsNumber;
-    int * operationIsFromJob;
-    int ** processingTime;
-
+    int * assignationMinPij;       /** Length equals to numberOfOperations. **/
+    int * assignationBestWorkload; /** Length equals to numberOfOperations. */
+    int * bestWorkloads;           /** Length equals to number of machines. **/
+    int * minWorkload;             /** Length equals to number of machines. **/
+    int * numberOfOperationsInJob; /** Length equals to number of jobs x number of operations in each job. **/
+    int * releaseTime;             /** Length equals to number of Jobs. **/
+    int * operationIsFromJob;      /** Length equals to numberOfOperations. **/
+    int ** processingTime;         /** Length equals to numberOfOperations x numberOfMachines. **/
+    int ** mapToJobMachine;        /** Length equals to numberOfMaps x 2. **/
+    int ** jobMachineToMap;        /** Length equals to numberOfJobs x numberOfMachines. **/
+    int ** jobOperationHasNumber;  /** Length equals to job x numberOfOperationsInJob. **/
+    
 public:
     int getNumberOfJobs() const;
     int getNumberOfOperations() const;

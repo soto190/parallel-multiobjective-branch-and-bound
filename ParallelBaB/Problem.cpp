@@ -10,65 +10,62 @@
 
 Problem::Problem(){
     
-    this->totalObjectives = 0;
-    this->totalVariables = 0;
-    this->type = ProblemType::XD;
-    this->startingLevel = 0;
-    this->totalConstraints = 0;
+    totalObjectives = 0;
+    totalVariables = 0;
+    type = ProblemType::XD;
+    startingLevel = 0;
+    totalConstraints = 0;
     
-    this->lowerBound = nullptr;
-    this->upperBound = nullptr;
-    this->name = nullptr;
+    lowerBound = nullptr;
+    upperBound = nullptr;
+    name = nullptr;
 }
 
-Problem::Problem(const Problem& toCopy){
-    this->totalObjectives = toCopy.getNumberOfObjectives();
-    this->totalVariables = toCopy.getNumberOfVariables();
-    this->type = toCopy.getType();
-    this->startingLevel = toCopy.startingLevel;
-    this->totalConstraints = toCopy.getNumberOfConstraints();
-    this->name = new char[255];
-    std::strcpy(this->name, toCopy.name);
-    this->lowerBound = new int[toCopy.getNumberOfVariables()];
-    this->upperBound = new int[toCopy.getNumberOfVariables()];
+Problem::Problem(const Problem& toCopy):
+    totalObjectives(toCopy.getNumberOfObjectives()),
+    totalVariables(toCopy.getNumberOfVariables()),
+    type(toCopy.getType()),
+    startingLevel(toCopy.getStartingLevel()),
+    totalConstraints(toCopy.getNumberOfConstraints()){
     
-    int index = 0;
-    for (index = 0; index < totalVariables; index++) {
-        
-        this->lowerBound[index] = toCopy.lowerBound[index];
-        this->upperBound[index] = toCopy.upperBound[index];
-    }
+        name = new char[255];
+        std::strcpy(name, toCopy.name);
+        lowerBound = new int[toCopy.getNumberOfVariables()];
+        upperBound = new int[toCopy.getNumberOfVariables()];
     
+        int index = 0;
+        for (index = 0; index < totalVariables; index++) {
+            lowerBound[index] = toCopy.getLowerBound(index);
+            upperBound[index] = toCopy.getUpperBound(index);
+        }
 }
 
-Problem::Problem(int totalObjectives, int totalVariables){
-    this->totalObjectives = totalObjectives;
-    this->totalVariables = totalVariables;
-    this->type = ProblemType::XD;
-    this->startingLevel = 0;
-    this->totalConstraints = 0;
-   
-    this->name = new char[255];
-    this->lowerBound = new int[totalVariables];
-    this->upperBound = new int[totalVariables];
-    
+Problem::Problem(int numberOfObjectives, int numberOfVariables):
+    totalObjectives(numberOfObjectives),
+    totalVariables(numberOfVariables),
+    type(ProblemType::XD),
+    startingLevel(0),
+    totalConstraints(0){
+        name = new char[255];
+        lowerBound = new int[numberOfVariables];
+        upperBound = new int[numberOfVariables];
 }
 
 Problem::~Problem(){
-    delete [] this->lowerBound;
-    delete [] this->upperBound;
-    delete [] this->name;
+    delete [] lowerBound;
+    delete [] upperBound;
+    delete [] name;
 }
 
 Problem& Problem::operator=(const Problem &toCopy){
     
     if (this == &toCopy) return *this;
     
-    this->totalObjectives = toCopy.getNumberOfObjectives();
-    this->totalVariables = toCopy.getNumberOfVariables();
-    this->type = toCopy.getType();
-    this->startingLevel = toCopy.startingLevel;
-    this->totalConstraints = toCopy.getNumberOfConstraints();
+    totalObjectives = toCopy.getNumberOfObjectives();
+    totalVariables = toCopy.getNumberOfVariables();
+    type = toCopy.getType();
+    startingLevel = toCopy.getStartingLevel();
+    totalConstraints = toCopy.getNumberOfConstraints();
     
     if (name != nullptr) {
         delete[] lowerBound;
@@ -76,101 +73,46 @@ Problem& Problem::operator=(const Problem &toCopy){
         delete[] name;
     }
     
-    this->name = new char[255];
-    std::strcpy(this->name, toCopy.name);
+    name = new char[255];
+    std::strcpy(name, toCopy.name);
     
-    this->lowerBound = new int[toCopy.getNumberOfVariables()];
-    this->upperBound = new int[toCopy.getNumberOfVariables()];
+    lowerBound = new int[toCopy.getNumberOfVariables()];
+    upperBound = new int[toCopy.getNumberOfVariables()];
     
     int index = 0;
     for (index = 0; index < totalVariables; index++) {
-        this->lowerBound[index] = toCopy.lowerBound[index];
-        this->upperBound[index] = toCopy.upperBound[index];
+        lowerBound[index] = toCopy.getLowerBound(index);
+        upperBound[index] = toCopy.getUpperBound(index);
     }
     
     return *this;
 }
 
-void Problem::setName(const char* name){
-    
-    std::strcpy(this->name, name);
-}
+void Problem::setName(const char* new_name){ std::strcpy(name, new_name);}
+void Problem::setNumberOfVariables(int numberOfVariables){ totalVariables = numberOfVariables; }
 
-char * Problem::getName(){
-    return this->name;
-}
+char * Problem::getName(){ return name; }
+int * Problem::getElemensToRepeat(){ return nullptr; }
 
-void Problem::setNumberOfVariables(int numberOfVariables){
-    this->totalVariables = numberOfVariables;
-}
+int Problem::getNumberOfObjectives() const{ return totalObjectives; }
+int Problem::getNumberOfVariables() const{ return totalVariables; }
+int Problem::getNumberOfConstraints() const{ return totalConstraints; }
+int Problem::getStartingLevel() const{ return startingLevel; }
+int Problem::getLowerBound(int index) const{ return lowerBound[index]; }
+int Problem::getUpperBound(int index) const{ return upperBound[index]; }
+int Problem::getLowerBoundInObj(int nObj){ return INT_MAX; }
+int Problem::getTotalElements(){ return 0; }
+int Problem::getMapping(int map, int position){ return 0; }
+int Problem::getMappingOf(int value1, int value2){ return 0; }
+int Problem::getTimesValueIsRepeated(int value){ return 0; }
 
-int Problem::getNumberOfObjectives() const{
-    return this->totalObjectives;
-}
-
-int Problem::getNumberOfVariables() const{
-    return this->totalVariables;
-}
-
-int Problem::getNumberOfConstraints() const{
-    return this->totalConstraints;
-}
-
-int Problem::getLowerBound(int index){
-    return this->lowerBound[index];
-}
-
-int Problem::getUpperBound(int index){
-    return this->upperBound[index];
-}
-
-int Problem::getLowerBoundInObj(int nObj){
-    return INT_MAX;
-}
-
-int Problem::getTotalElements(){
-    return 0;
-}
-
-int * Problem::getElemensToRepeat(){
-    return nullptr;
-}
-
-int Problem::getMapping(int map, int position){
-    return 0;
-}
-
-int Problem::getMappingOf(int value1, int value2){
-    return 0;
-}
-
-int Problem::getTimesValueIsRepeated(int value){
-    return 0;
-}
-
-double Problem::evaluate(Solution & solution){
-    return 0;
-}
-
-double Problem::evaluatePartial(Solution & solution, int levelEvaluation){
-    return 0;
-}
-
-void Problem::createDefaultSolution(Solution & solution){
-}
-
-void Problem::getSolutionWithLowerBoundInObj(int nObj, Solution& sol){
-}
-
+double Problem::evaluate(Solution & solution){ return 0; }
+double Problem::evaluatePartial(Solution & solution, int levelEvaluation){ return 0;}
+void Problem::createDefaultSolution(Solution & solution){}
+void Problem::getSolutionWithLowerBoundInObj(int nObj, Solution& sol){}
 void Problem::printSolution(Solution & solution){}
-
 void Problem::printPartialSolution(Solution & solution, int level){}
-
 void Problem::printInstance(){}
-
 void Problem::printProblemInfo(){}
-
 void Problem::printSolutionInfo(Solution & solution){}
-
-void Problem::loadInstance(char * filePath[]){
-}
+void Problem::loadInstance(char * filePath[]){}
