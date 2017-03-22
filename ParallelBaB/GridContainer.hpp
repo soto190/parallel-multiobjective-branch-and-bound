@@ -84,8 +84,8 @@ enum BucketState {
          int improves = 1;
          unsigned long index = 0;
 
-         for (index = 0; index < size; index++) {
-             domination = obj.dominates(m_vec[index]);
+         for (index = 0; index < m_vec.size(); index++) {
+             domination = obj.dominates(m_vec.at(index));
              if (domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
                  improves = 0;
                  index = size; /** To end the loop. **/
@@ -113,9 +113,9 @@ enum BucketState {
          unsigned long nSol = 0;
          int domination;
          
-         for (nSol = 0; nSol < size; nSol++) {
+         for (nSol = 0; nSol < m_vec.size(); nSol++) {
              
-             domination = obj.dominates(m_vec[nSol]);
+             domination = obj.dominates(m_vec.at(nSol));
              
              switch (domination) {
                      
