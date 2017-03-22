@@ -66,8 +66,8 @@ public:
     virtual int getMappingOf(int value1, int value2);
     virtual int getTimesValueIsRepeated(int value);
     
-    int getLowerBound(int index) const;
-    int getUpperBound(int index) const;
+    virtual int getLowerBound(int index) const = 0;
+    virtual int getUpperBound(int index) const = 0;
     
     virtual int getLowerBoundInObj(int nObj) = 0;
     

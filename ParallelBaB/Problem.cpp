@@ -17,7 +17,7 @@ Problem::Problem(const Problem& toCopy):
     
         name = new char[255];
         std::strcpy(name, toCopy.name);
-        lowerBound = new int[toCopy.getNumberOfVariables()];
+    /*    lowerBound = new int[toCopy.getNumberOfVariables()];
         upperBound = new int[toCopy.getNumberOfVariables()];
     
         int index = 0;
@@ -25,6 +25,7 @@ Problem::Problem(const Problem& toCopy):
             lowerBound[index] = toCopy.getLowerBound(index);
             upperBound[index] = toCopy.getUpperBound(index);
         }
+     */
 }
 
 Problem::Problem(int numberOfObjectives, int numberOfVariables):
@@ -33,15 +34,20 @@ Problem::Problem(int numberOfObjectives, int numberOfVariables):
     type(ProblemType::XD),
     startingLevel(0),
     totalConstraints(0){
-        name = new char[255];
+        
+    name = new char[255];
+        /*
         lowerBound = new int[numberOfVariables];
         upperBound = new int[numberOfVariables];
+         */
 }
 
 Problem::~Problem(){
+    /*
     delete [] lowerBound;
     delete [] upperBound;
-    delete [] name;
+    */delete [] name;
+     
 }
 
 Problem& Problem::operator=(const Problem &toCopy){
@@ -54,7 +60,7 @@ Problem& Problem::operator=(const Problem &toCopy){
     startingLevel = toCopy.getStartingLevel();
     totalConstraints = toCopy.getNumberOfConstraints();
     
-    if (name != nullptr) {
+    if (lowerBound != nullptr) {
         delete[] lowerBound;
         delete[] upperBound;
         delete[] name;
@@ -62,16 +68,16 @@ Problem& Problem::operator=(const Problem &toCopy){
     
     name = new char[255];
     std::strcpy(name, toCopy.name);
-    
+   /*
     lowerBound = new int[toCopy.getNumberOfVariables()];
     upperBound = new int[toCopy.getNumberOfVariables()];
-    
+   
     int index = 0;
     for (index = 0; index < totalVariables; index++) {
         lowerBound[index] = toCopy.getLowerBound(index);
         upperBound[index] = toCopy.getUpperBound(index);
     }
-    
+    */
     return *this;
 }
 
@@ -85,8 +91,8 @@ int Problem::getNumberOfObjectives() const{ return totalObjectives; }
 int Problem::getNumberOfVariables() const{ return totalVariables; }
 int Problem::getNumberOfConstraints() const{ return totalConstraints; }
 int Problem::getStartingLevel() const{ return startingLevel; }
-int Problem::getLowerBound(int index) const{ return lowerBound[index]; }
-int Problem::getUpperBound(int index) const{ return upperBound[index]; }
+int Problem::getLowerBound(int index) const { return 0; }
+int Problem::getUpperBound(int index) const { return 0; }
 int Problem::getLowerBoundInObj(int nObj){ return INT_MAX; }
 int Problem::getTotalElements(){ return 0; }
 int Problem::getMapping(int map, int position){ return 0; }

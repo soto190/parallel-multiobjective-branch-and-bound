@@ -32,7 +32,13 @@
 #include "tbb/cache_aligned_allocator.h"
 #include "tbb/concurrent_queue.h"
 //#include <memory.h> /** For the Ehecatl wich uses GCC 4.4.7, this activates the shared_ptr. **/
-
+/**
+ *
+ * If Data Race in Queu.tryPop(interval); read the next lines
+ * From https://software.intel.com/en-us/forums/intel-threading-building-blocks/topic/295293 :
+ *   "There is internal synchronization in TBB that a tool can not recognize as correct. E.g. some common synchronization patterns (for example, test and test and set) might have benigndata races.Alsotools usually can not recognize synchronization that does not use "standard" primitives (such as pthread_mutex) and instead is uses carefully designed protocols based on atomic operations." - Alexey Kukanov (Intel)  Fri, 07/24/2009 - 05:20
+ *
+ **/
 struct GlobalPool{
     tbb::concurrent_queue<Interval> Queue;
     

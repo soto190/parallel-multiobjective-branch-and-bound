@@ -99,8 +99,8 @@ public:
     void printPartialSolution(Solution & solution, int level);
     void printSolutionInfo(Solution & solution);
     
-    int getLowerBound(int indexVar);
-    int getUpperBound(int indexVar);
+    int getLowerBound(int indexVar) const;
+    int getUpperBound(int indexVar) const;
     ProblemType getType() const;
     int getStartingLevel();
     int getFinalLevel();

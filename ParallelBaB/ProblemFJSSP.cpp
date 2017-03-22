@@ -42,6 +42,9 @@ ProblemFJSSP::ProblemFJSSP(int totalObjectives, int totalVariables):Problem(tota
     minWorkload = nullptr;
     jobOperationHasNumber = nullptr;
     processingTime = nullptr;
+    
+    lowerBound = nullptr;
+    upperBound = nullptr;
 }
 
 ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy),
@@ -51,9 +54,13 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy),
     goodSolutionWithMaxWorkload(toCopy.goodSolutionWithMaxWorkload),
     sumOfMinPij(toCopy.getSumOfMinPij()),
     bestWorkloadFound(toCopy.getBestWorkloadFound()){
-    
+
+        lowerBound = new int[totalVariables];
+        upperBound = new int[totalVariables];
+
     std::strcpy(name, toCopy.name);
     
+        
     jobMachineToMap = new int * [totalJobs];
     mapToJobMachine = new int * [totalJobs * totalMachines];
     processingTime = new int * [totalOperations];
@@ -90,6 +97,7 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy),
     }
     
     for (operation = 0; operation < totalOperations; operation++){
+        lowerBound[operation] = toCopy.getLowerBound(operation);
         
         processingTime[operation] = new int[toCopy.getNumberOfMachines()];
         for (machine = 0; machine < totalMachines; machine++)
@@ -147,12 +155,14 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
         delete [] assignationBestWorkload;
         delete [] bestWorkloads;
         
-        delete[] lowerBound;
-        delete[] upperBound;
+        delete [] upperBound;
+        delete [] lowerBound;
+        delete [] name;
     }
     
     lowerBound = new int[totalVariables];
     upperBound = new int[totalVariables];
+    name = new char[255];
     
     std::strcpy(name, toCopy.name);
     
@@ -244,6 +254,9 @@ ProblemFJSSP::~ProblemFJSSP(){
     delete [] assignationBestWorkload;
     delete [] bestWorkloads;
     
+    delete [] upperBound;
+    delete [] lowerBound;
+    //delete [] name;
 }
 
 /**
@@ -437,6 +450,7 @@ void ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){
     }
     evaluate(solution);
 }
+
 /**
  *
  * Creates a good solution with max workload based on the best solution for total workload.
@@ -558,7 +572,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
 }
 
 /** For all the variables the lower bound is 0. **/
-int ProblemFJSSP::getLowerBound(int indexVar){
+int ProblemFJSSP::getLowerBound(int indexVar) const{
     return 0;
 }
 
@@ -567,7 +581,7 @@ int ProblemFJSSP::getLowerBound(int indexVar){
  * The Range of variables is the number of maps.
  *
  **/
-int ProblemFJSSP::getUpperBound(int indexVar){
+int ProblemFJSSP::getUpperBound(int indexVar) const{
     return (totalJobs * totalMachines) - 1;
 }
 
