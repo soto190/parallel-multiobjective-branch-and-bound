@@ -57,12 +57,12 @@ tbb::task * ParallelBranchAndBound::execute() {
         bb_threads.pop_back();
     
 		BB_container.increaseNumberOfExploredNodes(bb_in->getNumberOfExploredNodes());
-        BB_container.increaseNumberOfCallsToBranch(bb_in->getNumberOfCallsToBranch());// callsToBranch += bb_in->getNumberOfCallsToBranch();
-        BB_container.increaseNumberOfBranches(bb_in->getNumberOfBranches()); // branches += bb_in->getNumberOfBranches();
-        BB_container.increaseNumberOfCallsToPrune(bb_in->getNumberOfCallsToPrune());// callsToPrune += bb_in->getNumberOfCallsToPrune();
-        BB_container.increaseNumberOfPrunedNodes(bb_in->getNumberOfPrunedNodes());//prunedNodes += bb_in->getNumberOfPrunedNodes();
-        BB_container.increaseNumberOfReachedLeaves(bb_in->getNumberOfReachedLeaves());// reachedLeaves += bb_in->getNumberOfReachedLeaves();
-        BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());// totalUpdatesInLowerBound += ;
+        BB_container.increaseNumberOfCallsToBranch(bb_in->getNumberOfCallsToBranch());
+        BB_container.increaseNumberOfBranches(bb_in->getNumberOfBranches());
+        BB_container.increaseNumberOfCallsToPrune(bb_in->getNumberOfCallsToPrune());
+        BB_container.increaseNumberOfPrunedNodes(bb_in->getNumberOfPrunedNodes());
+        BB_container.increaseNumberOfReachedLeaves(bb_in->getNumberOfReachedLeaves());
+        BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());
 	}
     
 	printf("Data recollected.\n");

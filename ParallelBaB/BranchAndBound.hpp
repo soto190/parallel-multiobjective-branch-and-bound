@@ -26,6 +26,7 @@
 #include "Dominance.hpp"
 #include "IVMTree.hpp"
 #include "Interval.hpp"
+#include "tbb/atomic.h"
 #include "tbb/parallel_for.h"
 #include "tbb/task.h"
 #include "tbb/cache_aligned_allocator.h"
@@ -52,16 +53,16 @@ private:
     
     int rank; /** Identifies the number of thread-B&B. **/
 
-    unsigned long totalNodes;
-    unsigned long branches;
-    unsigned long exploredNodes;
-    unsigned long callsToBranch;
-    unsigned long reachedLeaves;
-    unsigned long unexploredNodes;
-    unsigned long prunedNodes;
-    unsigned long callsToPrune;
-    unsigned long totalUpdatesInLowerBound;
-    unsigned long totalLevels; /** Number of tree levels. **/
+    tbb::atomic<unsigned long> totalNodes;
+    tbb::atomic<unsigned long> branches;
+    tbb::atomic<unsigned long> exploredNodes;
+    tbb::atomic<unsigned long> callsToBranch;
+    tbb::atomic<unsigned long> reachedLeaves;
+    tbb::atomic<unsigned long> unexploredNodes;
+    tbb::atomic<unsigned long> prunedNodes;
+    tbb::atomic<unsigned long> callsToPrune;
+    tbb::atomic<unsigned long> totalUpdatesInLowerBound;
+    tbb::atomic<unsigned long> totalLevels; /** Number of tree levels. **/
     
     int currentLevel; /** Active level **/
     

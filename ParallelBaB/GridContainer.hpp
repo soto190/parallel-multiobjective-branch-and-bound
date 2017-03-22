@@ -29,17 +29,15 @@ enum BucketState {
  private:
      unsigned long posx;
      unsigned long posy;
+     tbb::mutex mutex_update;
      tbb::atomic<unsigned long> size;
      tbb::atomic<BucketState> state;
-     tbb::mutex mutex_update;
-     
      std::vector<Solution> m_vec;
-     
 
  public:
      
      ParetoBucket():size(0), posx(0), posy(0), state(BucketState::unexplored){
-         m_vec.reserve(100);
+//         m_vec.reserve(100);
      };
      
      ParetoBucket(unsigned long posx, unsigned long posy):
@@ -47,7 +45,7 @@ enum BucketState {
         posx(posx),
         posy(posy),
         size(0){
-            m_vec.reserve(100);
+//            m_vec.reserve(100);
      };
      
      ParetoBucket(const ParetoBucket& toCopy):
@@ -80,7 +78,7 @@ enum BucketState {
      std::vector<Solution>& getVector() {return m_vec;}
      const std::vector<Solution>& getVectorToCopy() const {return m_vec;}
      
-     int produceImprovement(const Solution& obj) const {
+     int produceImprovement(const Solution& obj) const{
          
          DominanceRelation domination;
          int improves = 1;
@@ -93,7 +91,7 @@ enum BucketState {
                  index = size; /** To end the loop. **/
              }
          }
-         
+
          return improves;
      }
      
@@ -117,7 +115,7 @@ enum BucketState {
          
          for (nSol = 0; nSol < size; nSol++) {
              
-             domination = obj.dominates(m_vec.at(nSol));
+             domination = obj.dominates(m_vec[nSol]);
              
              switch (domination) {
                      
@@ -185,10 +183,8 @@ public:
 
 		m_Data.reserve(cols * rows);
         int index = 0, indey = 0;
-
         for (indey = 0; indey < rows; indey++)
             for (index = 0; index < cols; index++)
-//                m_Data[indey * cols + index].setPositionXY(index, indey);
                 m_Data.push_back(ParetoBucket(index, indey));
 	}
     
@@ -220,17 +216,9 @@ public:
 		return m_Data[y * cols + x].getVector();
 	}
 
-	int getCols() const {
-		return cols;
-	}
-
-	int getRows() const {
-		return rows;
-	}
-    
-    unsigned long getSize() const{
-        return numberOfElements;
-    }
+	int getCols() const { return cols; }
+	int getRows() const { return rows; }
+    unsigned long getSize() const{ return numberOfElements; }
     
     BucketState getStateOf(size_t x, size_t y) const{
         return m_Data[y * cols + x].getState();

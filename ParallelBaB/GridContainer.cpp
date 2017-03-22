@@ -79,17 +79,12 @@ HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double ma
 HandlerContainer::~HandlerContainer() {
     delete[] rangeinx;
     delete[] rangeiny;
-    
     paretoFront.clear();
 }
 
-void HandlerContainer::checkCoordinate(const Solution &solution,
-                                       int * coordinate) const {
-    
-    coordinate[0] = binarySearch(solution.getObjective(0), this->rangeinx,
-                                 this->getCols());
-    coordinate[1] = binarySearch(solution.getObjective(1), this->rangeiny,
-                                 this->getRows());
+void HandlerContainer::checkCoordinate(const Solution &solution, int * coordinate) const {
+    coordinate[0] = binarySearch(solution.getObjective(0), rangeinx, getCols());
+    coordinate[1] = binarySearch(solution.getObjective(1), rangeiny, getRows());
 }
 
 /**
@@ -104,7 +99,7 @@ int HandlerContainer::set(const Solution & solution, int x, int y) {
     int nCol = 0;
     int nRow = 0;
     int updated = 0;
-    BucketState state = this->grid.getStateOf(x, y);
+    BucketState state = grid.getStateOf(x, y);
     
     switch (state) {
             
@@ -115,24 +110,24 @@ int HandlerContainer::set(const Solution & solution, int x, int y) {
              Calls to this segment of code on worst case O((cols - 1) * (rows - 1))
              **/
             
-            for (nRow = y + 1; nRow < this->grid.getRows(); nRow++)
-                for (nCol = x + 1; nCol < this->grid.getCols(); nCol++)
-                    if (this->grid.getStateOf(nCol, nRow) == BucketState::dominated)
+            for (nRow = y + 1; nRow < grid.getRows(); nRow++)
+                for (nCol = x + 1; nCol < grid.getCols(); nCol++)
+                    if (grid.getStateOf(nCol, nRow) == BucketState::dominated)
                     /** If the bucket in (nCol, nRow) is dominated the exploration continue to the next row**/
-                        nCol = this->grid.getCols();
+                        nCol = grid.getCols();
                     else
-                        this->clearContainer(nCol, nRow);
+                        clearContainer(nCol, nRow);
             
-            this->grid.set(solution, x, y);
-            this->grid.setStateOf(BucketState::nondominated, x, y);
-            this->activeBuckets.fetch_and_increment();
-            this->unexploredBuckets.fetch_and_decrement();
+            grid.set(solution, x, y);
+            grid.setStateOf(BucketState::nondominated, x, y);
+            activeBuckets.fetch_and_increment();
+            unexploredBuckets.fetch_and_decrement();
             
             updated = 1;
             break;
             
         case BucketState::nondominated:
-            updated = this->grid.set(solution, x, y);
+            updated = grid.set(solution, x, y);
             break;
             
         case BucketState::dominated:
@@ -148,73 +143,17 @@ int HandlerContainer::set(const Solution & solution, int x, int y) {
  **/
 int HandlerContainer::add(const Solution & solution) {
     int coordinate[2];
-    this->checkCoordinate(solution, coordinate);
-    
-    int result = this->set(solution, coordinate[0], coordinate[1]);
-    return result;
+    checkCoordinate(solution, coordinate);
+    return set(solution, coordinate[0], coordinate[1]);
 }
 
 void HandlerContainer::clearContainer(int x, int y) {
     
-    if (this->grid.getSizeOf(x, y) > 0) {
-        //this->numberOfElements -= this->grid.getSizeOf(x, y);
-        this->disabledBuckets.fetch_and_increment();
-        this->activeBuckets.fetch_and_decrement();
-        this->grid.clear(x, y);
-    }
-}
-
-unsigned long HandlerContainer::getNumberOfActiveBuckets() const{
-    return activeBuckets;
-}
-
-unsigned long HandlerContainer::getNumberOfUnexploredBuckets() const{
-    return unexploredBuckets;
-}
-
-unsigned long HandlerContainer::getNumberOfDisabledBuckets() const{
-    return disabledBuckets;
-}
-
-std::vector<Solution>& HandlerContainer::get(int x, int y) {
-    return grid.get(x, y);
-}
-
-unsigned int HandlerContainer::getRows() const {
-    return grid.getRows();
-}
-
-unsigned int HandlerContainer::getCols() const {
-    return grid.getCols();
-}
-
-unsigned long HandlerContainer::getSize() const {
-    return grid.getSize();
-}
-
-unsigned long HandlerContainer::getSizeOf(int x, int y) const {
-    return this->grid.getSizeOf(x, y);
-}
-
-void HandlerContainer::printGridSize() {
-    int nCol = 0;
-    int nRow = 0;
-    for (nRow = this->grid.getRows() - 1; nRow >= 0; nRow--) {
-        printf("[%3d] ", nRow);
-        for (nCol = 0; nCol < this->grid.getCols(); nCol++)
-            printf("%3ld ", this->grid.getSizeOf(nCol, nRow));
-        printf("\n");
-    }
-}
-
-void HandlerContainer::printStates() {
-    int nCol = 0;
-    int nRow = 0;
-    for (nRow = this->grid.getRows() - 1; nRow >= 0; nRow--) {
-        printf("[%3d] ", nRow);
-        for (nCol = 0; nCol < this->grid.getCols(); nCol++)
-            printf("%3d", this->getStateOf(nCol, nRow));
-        printf("\n");
+    if (grid.getSizeOf(x, y) > 0) {
+        //numberOfElements -= grid.getSizeOf(x, y);
+        disabledBuckets.fetch_and_increment();
+        activeBuckets.fetch_and_decrement();
+        grid.clear(x, y);
     }
 }
 
@@ -224,24 +163,48 @@ void HandlerContainer::printStates() {
  * 1: non-Dominated (Pareto front).
  * 2: Dominated.
  */
-BucketState HandlerContainer::getStateOf(int x, int y) const {
-    return this->grid.getStateOf(x, y);
+BucketState HandlerContainer::getStateOf(int x, int y) const { return grid.getStateOf(x, y); }
+std::vector<Solution>& HandlerContainer::get(int x, int y) { return grid.get(x, y); }
+unsigned int HandlerContainer::getRows() const { return grid.getRows(); }
+unsigned int HandlerContainer::getCols() const { return grid.getCols(); }
+unsigned long HandlerContainer::getSize() const { return grid.getSize(); }
+unsigned long HandlerContainer::getSizeOf(int x, int y) const { return grid.getSizeOf(x, y); }
+unsigned long HandlerContainer::getNumberOfActiveBuckets() const{ return activeBuckets; }
+unsigned long HandlerContainer::getNumberOfUnexploredBuckets() const{ return unexploredBuckets; }
+unsigned long HandlerContainer::getNumberOfDisabledBuckets() const{ return disabledBuckets; }
+
+void HandlerContainer::setStateOf(BucketState state, int x, int y) { grid.setStateOf(state, x, y); }
+
+void HandlerContainer::printGridSize() {
+    int nCol = 0;
+    int nRow = 0;
+    for (nRow = grid.getRows() - 1; nRow >= 0; nRow--) {
+        printf("[%3d] ", nRow);
+        for (nCol = 0; nCol < grid.getCols(); nCol++)
+            printf("%3ld ", grid.getSizeOf(nCol, nRow));
+        printf("\n");
+    }
 }
 
-void HandlerContainer::setStateOf(BucketState state, int x, int y) {
-    this->grid.setStateOf(state, x, y);
+void HandlerContainer::printStates() {
+    int nCol = 0;
+    int nRow = 0;
+    for (nRow = grid.getRows() - 1; nRow >= 0; nRow--) {
+        printf("[%3d] ", nRow);
+        for (nCol = 0; nCol < grid.getCols(); nCol++)
+            printf("%3d", getStateOf(nCol, nRow));
+        printf("\n");
+    }
 }
 
 /**
  * Stores a copy of the received solution.
  */
-
-
 int HandlerContainer::improvesTheGrid(const Solution &solution) {
     
     int bucketCoordinate[2];
-    this->checkCoordinate(solution, bucketCoordinate);
-    BucketState stateOfBucket = this->grid.getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
+    checkCoordinate(solution, bucketCoordinate);
+    BucketState stateOfBucket = grid.getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
     int improveIt = 0;
     
     switch (stateOfBucket) {
@@ -254,7 +217,7 @@ int HandlerContainer::improvesTheGrid(const Solution &solution) {
             break;
             
         case BucketState::nondominated:
-            improveIt = this->grid.improvesBucket(solution, bucketCoordinate[0], bucketCoordinate[1]);
+            improveIt = grid.improvesBucket(solution, bucketCoordinate[0], bucketCoordinate[1]);
             break;
     }
     
@@ -263,35 +226,30 @@ int HandlerContainer::improvesTheGrid(const Solution &solution) {
 
 /**
  *
- * This requiere a Mutex.
- *
  */
 int HandlerContainer::improvesTheBucket(const Solution &solution, int x, int y) {
-
-    int improves = grid.improvesBucket(solution, x, y);
-
-    return improves;
+    return grid.improvesBucket(solution, x, y);
 }
 
 std::vector<Solution>& HandlerContainer::getParetoFront() {
     
-    this->paretoFront.reserve(this->getSize());
+    paretoFront.reserve(getSize());
     
     int bucketX = 0;
     int bucketY = 0;
     
-    for (bucketY = 0; bucketY < this->getRows(); bucketY++)
-        for (bucketX = 0; bucketX < this->getCols(); bucketX++) {
-            BucketState state = this->grid.getStateOf(bucketX, bucketY);
+    for (bucketY = 0; bucketY < getRows(); bucketY++)
+        for (bucketX = 0; bucketX < getCols(); bucketX++) {
+            BucketState state = grid.getStateOf(bucketX, bucketY);
             if (state == BucketState::nondominated) {
-                std::vector<Solution> vec = this->grid.get(bucketX, bucketY);
+                std::vector<Solution> vec = grid.get(bucketX, bucketY);
                 std::vector<Solution>::iterator it = vec.begin();
                 
                 for (it = vec.begin(); it != vec.end(); it++)
-                    this->paretoFront.push_back(*it);
+                    paretoFront.push_back(*it);
                 
             } else if (state == BucketState::dominated)
-                bucketX = this->grid.getCols();
+                bucketX = grid.getCols();
         }
     
     extractParetoFront(paretoFront);
@@ -300,9 +258,9 @@ std::vector<Solution>& HandlerContainer::getParetoFront() {
 
 double HandlerContainer::getMaxIn(int dimension) {
     if (dimension == 0)
-        return this->maxinx;
+        return maxinx;
     else if (dimension == 1)
-        return this->maxiny;
+        return maxiny;
     else
         return -1;
 }
@@ -434,16 +392,16 @@ HandlerContainer3D::HandlerContainer3D(int rows, int cols, int depth,
 
 int * HandlerContainer3D::getCandidateBucket(Solution &solution) {
     
-    int * coordinate = new int[this->getNumberOfDimension()];
+    int * coordinate = new int[getNumberOfDimension()];
     
-    coordinate[0] = binarySearch(solution.getObjective(0), this->rangeinx,
-                                 this->getCols());
+    coordinate[0] = binarySearch(solution.getObjective(0), rangeinx,
+                                 getCols());
     
-    coordinate[1] = binarySearch(solution.getObjective(1), this->rangeiny,
-                                 this->getRows());
+    coordinate[1] = binarySearch(solution.getObjective(1), rangeiny,
+                                 getRows());
     
-    coordinate[2] = binarySearch(solution.getObjective(2), this->rangeinz,
-                                 this->getDepth());
+    coordinate[2] = binarySearch(solution.getObjective(2), rangeinz,
+                                 getDepth());
     
     return coordinate;
     
@@ -451,30 +409,30 @@ int * HandlerContainer3D::getCandidateBucket(Solution &solution) {
 
 int HandlerContainer3D::set(Solution & solution, int x, int y, int z) {
     
-    if (this->getStateOf(x, y, z) == BucketState::unexplored) {
+    if (getStateOf(x, y, z) == BucketState::unexplored) {
  
         int nCol = 0;
         int nRow = 0;
         int nDeep = 0;
-        for (nDeep = z + 1; nDeep < this->grid.getDepth(); nDeep++)
-            for (nRow = y + 1; nRow < this->grid.getRows(); nRow++)
-                for (nCol = x + 1; nCol < this->grid.getCols(); nCol++)
-                    if (this->getStateOf(nCol, nRow, nDeep)
+        for (nDeep = z + 1; nDeep < grid.getDepth(); nDeep++)
+            for (nRow = y + 1; nRow < grid.getRows(); nRow++)
+                for (nCol = x + 1; nCol < grid.getCols(); nCol++)
+                    if (getStateOf(nCol, nRow, nDeep)
                         == BucketState::dominated)
-                        nCol = this->grid.getDepth();
+                        nCol = grid.getDepth();
                     else
-                        this->clearContainer(nCol, nRow, nDeep);
+                        clearContainer(nCol, nRow, nDeep);
         
-        this->updateBucket(new Solution(solution), x, y, z);
-        this->setStateOf(BucketState::nondominated, x, y, z);
-        this->totalElements++;
-        this->activeBuckets++;
-        this->unexploredBuckets--;
+        updateBucket(new Solution(solution), x, y, z);
+        setStateOf(BucketState::nondominated, x, y, z);
+        totalElements++;
+        activeBuckets++;
+        unexploredBuckets--;
         
         return 1;
         
-    } else if (this->getStateOf(x, y, z) == BucketState::nondominated)
-        return this->updateBucket(new Solution(solution), x, y, z);
+    } else if (getStateOf(x, y, z) == BucketState::nondominated)
+        return updateBucket(new Solution(solution), x, y, z);
     
     return 0;
 }
@@ -483,19 +441,19 @@ int * HandlerContainer3D::add(Solution & solution) {
     
     int * coordinate = getCandidateBucket(solution);
     
-    this->set(solution, coordinate[0], coordinate[1], coordinate[2]);
+    set(solution, coordinate[0], coordinate[1], coordinate[2]);
     
     return coordinate;
 }
 
 void HandlerContainer3D::clearContainer(int x, int y, int z) {
-    this->setStateOf(dominated, x, y, z);
+    setStateOf(dominated, x, y, z);
     
-    if (this->grid.getSizeOf(x, y, z) > 0) {
-        this->totalElements -= this->grid.getSizeOf(x, y, z);
-        this->disabledBuckets++;
-        this->activeBuckets--;
-        this->grid.clear(x, y, z);
+    if (grid.getSizeOf(x, y, z) > 0) {
+        totalElements -= grid.getSizeOf(x, y, z);
+        disabledBuckets++;
+        activeBuckets--;
+        grid.clear(x, y, z);
     }
 }
 
@@ -520,7 +478,7 @@ unsigned long HandlerContainer3D::getSize() {
 }
 
 unsigned long HandlerContainer3D::getSizeOf(int x, int y, int z) {
-    return this->grid.getSizeOf(x, y, z);
+    return grid.getSizeOf(x, y, z);
 }
 */
 /**
@@ -533,10 +491,10 @@ void HandlerContainer3D::printGridSize() {
     int nCol = 0;
     int nRow = 0;
     int nDeep = 0;
-    for (nRow = this->grid.getRows() - 1; nRow >= 0; nRow--) {
+    for (nRow = grid.getRows() - 1; nRow >= 0; nRow--) {
         printf("[%3d] ", nRow);
-        for (nCol = 0; nCol < this->grid.getCols(); nCol++)
-            printf("%3ld ", this->grid.getSizeOf(nCol, nRow, nDeep));
+        for (nCol = 0; nCol < grid.getCols(); nCol++)
+            printf("%3ld ", grid.getSizeOf(nCol, nRow, nDeep));
         printf("\n");
     }
 }
@@ -550,10 +508,10 @@ void HandlerContainer3D::printStates() {
     int nCol = 0;
     int nRow = 0;
     int nDeep = 0;
-    for (nRow = this->grid.getRows() - 1; nRow >= 0; nRow--) {
+    for (nRow = grid.getRows() - 1; nRow >= 0; nRow--) {
         printf("[%3d] ", nRow);
-        for (nCol = 0; nCol < this->grid.getCols(); nCol++)
-            printf("%3d", this->getStateOf(nCol, nRow, nDeep));
+        for (nCol = 0; nCol < grid.getCols(); nCol++)
+            printf("%3d", getStateOf(nCol, nRow, nDeep));
         printf("\n");
     }
 }
@@ -561,13 +519,13 @@ void HandlerContainer3D::printStates() {
 
 BucketState HandlerContainer3D::getStateOf(int x, int y, int z) {
     
-    return this->gridState[(x * this->getCols()) + y
-                           + (this->getCols() * this->getRows() * z)];
+    return gridState[(x * getCols()) + y
+                           + (getCols() * getRows() * z)];
 }
 
 void HandlerContainer3D::setStateOf(BucketState state, int x, int y, int z) {
-    this->gridState[(x * this->getCols()) + y
-                    + (this->getCols() * this->getRows() * z)] = state;
+    gridState[(x * getCols()) + y
+                    + (getCols() * getRows() * z)] = state;
 }
 
 int HandlerContainer3D::updateBucket(Solution * solution, int x, int y, int z) {
@@ -580,11 +538,11 @@ int HandlerContainer3D::updateBucket(Solution * solution, int x, int y, int z) {
         if (paretoFront.size() < sizeBeforeUpdate) {
             unsigned long int removedElements = sizeBeforeUpdate
             - (paretoFront.size() - 1);
-            this->totalElements -= removedElements;
-            this->totalElements++;
+            totalElements -= removedElements;
+            totalElements++;
         }
         else if (paretoFront.size() == sizeBeforeUpdate + 1)
-            this->totalElements++;
+            totalElements++;
     }
     return updated;
 }
@@ -592,27 +550,27 @@ int HandlerContainer3D::updateBucket(Solution * solution, int x, int y, int z) {
 std::vector<Solution> HandlerContainer3D::getParetoFront() {
     
     std::vector<Solution> paretoFront;
-    paretoFront.reserve(this->totalElements);
+    paretoFront.reserve(totalElements);
     
     int bucketX = 0;
     int bucketY = 0;
     int bucketZ = 0;
     int index = 0;
     
-    for (bucketY = 0; bucketY < this->getRows(); bucketY++)
-        for (bucketX = 0; bucketX < this->getCols(); bucketX++)
-            for (bucketZ = 0; bucketZ < this->getDepth(); bucketZ++) {
+    for (bucketY = 0; bucketY < getRows(); bucketY++)
+        for (bucketX = 0; bucketX < getCols(); bucketX++)
+            for (bucketZ = 0; bucketZ < getDepth(); bucketZ++) {
                 
-                BucketState state = this->getStateOf(bucketX, bucketY, bucketZ);
+                BucketState state = getStateOf(bucketX, bucketY, bucketZ);
                 if (state == BucketState::nondominated) {
-                    std::vector<Solution> bucket = this->get(bucketX, bucketY,
+                    std::vector<Solution> bucket = get(bucketX, bucketY,
                                                              bucketZ);
                     //                    paretoFront.insert(paretoFront.begin(), bucket.begin() , bucket.end());
                     for (index = 0; index < bucket.size(); index++) {
                         paretoFront.push_back(bucket.at(index));
                     }
                 } else if (state == BucketState::dominated) {
-                    bucketZ = this->getDepth();
+                    bucketZ = getDepth();
                 }
             }
     
@@ -629,6 +587,6 @@ unsigned int HandlerContainer3D::getSizeOfDimension(int dimension) {
 }
 
 unsigned int HandlerContainer3D::getNumberOfDimension() {
-    return this->grid.getNumberOfDimensions();
+    return grid.getNumberOfDimensions();
 }
 */
