@@ -553,7 +553,7 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
  *
  *  NOTE: Remember to avoid to split the intervals in the last levels.
  **/
-void BranchAndBound::splitInterval(const Interval & branch_to_split) {
+void BranchAndBound::splitInterval(Interval & branch_to_split) {
 
 	int index_var = 0;
 	int level_to_split = branch_to_split.getBuildUpTo() + 1;
@@ -601,21 +601,22 @@ void BranchAndBound::splitInterval(const Interval & branch_to_split) {
 					machine++) {
 
 				toAdd = problem.getMappingOf(jobToCheck, machine);
-				Interval branch(branch_to_split); /** Creates a new Interval from a given branch. **/
 
-				/** Gets the branch to add. */
-                branch.setValueAt(level_to_split, toAdd);
-                branch.setBuildUpTo(level_to_split);
-
+               
 				sol_test.setVariable(level_to_split, toAdd);
 				problem.evaluatePartial(sol_test, level_to_split);
 
 				if (improvesTheGrid(sol_test) == 1) {
+                    /** Gets the branch to add. */
+                    //Interval branch(branch_to_split); /** Creates a new Interval from a given branch. **/
+                    branch_to_split.setValueAt(level_to_split, toAdd);
+                    branch_to_split.setBuildUpTo(level_to_split);
+
 					/**Add it to Intervals. **/
 					if (rank == 0)
-                        globalPool.push(branch);
+                        globalPool.push(branch_to_split);
                     else
-						localPool.push(branch);
+						localPool.push(branch_to_split);
 					branches_created++;
 				} else
 					prunedNodes++;
@@ -735,7 +736,7 @@ unsigned long BranchAndBound::getNumberOfNodes( ) const{ return totalNodes; }
 unsigned long BranchAndBound::getNumberOfBranches( ) const{ return branches; }
 unsigned long BranchAndBound::getNumberOfExploredNodes( ) const{ return exploredNodes; }
 unsigned long BranchAndBound::getNumberOfCallsToBranch( ) const{ return callsToBranch; }
-unsigned long BranchAndBound::getNumberOfReachedLeaves( ) const{ return totalLevels; }
+unsigned long BranchAndBound::getNumberOfReachedLeaves( ) const{ return reachedLeaves; }
 unsigned long BranchAndBound::getNumberOfUnexploredNodes( ) const{ return unexploredNodes; }
 unsigned long BranchAndBound::getNumberOfPrunedNodes( ) const{ return prunedNodes; }
 unsigned long BranchAndBound::getNumberOfCallsToPrune( ) const{ return callsToPrune; }
@@ -788,8 +789,14 @@ int BranchAndBound::saveSummarize() {
 	printf("\tunexplored buckets:%ld\n",
 			paretoContainer.getNumberOfUnexploredBuckets());
 	printf("\tTotal elements in: %ld\n", paretoContainer.getSize());
-
-	std::ofstream myfile(summarizeFile);
+    
+    /*
+    problem.printSolution(paretoFront.front());
+    printf("\n");
+    problem.printSchedule(paretoFront.front());
+    */
+	
+    std::ofstream myfile(summarizeFile);
 	if (myfile.is_open()) {
 		printf("Saving summarize in file...\n");
 

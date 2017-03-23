@@ -473,18 +473,18 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
     int maxWorkloadObj = 0;
     int totalWorkload = 0;
     
-    int operationOfJob [totalJobs];
-    int workload [totalMachines];
+    int operationOfJob [getNumberOfJobs()];
+    int workload [getNumberOfMachines()];
     int maxWorkloadedMachine = 0;
     
-    for (nMachine = 0; nMachine < totalMachines; nMachine++)
+    for (nMachine = 0; nMachine < getNumberOfMachines(); nMachine++)
         workload[nMachine] = 0;
     
     /** Assign the operations to machines which generates the min TotalWorkload and computes the machines workloads. **/
     int counterOperations = 0;
-    for (nJob = 0; nJob < totalJobs; nJob++){
+    for (nJob = 0; nJob < getNumberOfJobs(); nJob++){
         operationOfJob[nJob] = 0;
-        for (nOperation = 0; nOperation < numberOfOperationsInJob[nJob]; nOperation++){
+        for (nOperation = 0; nOperation < getNumberOfOperationsInJob(nJob); nOperation++){
             
             nMachine = assignationMinPij[counterOperations];
             procTiOp = processingTime[counterOperations][nMachine];
@@ -514,9 +514,9 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
         bestMachine = 0;
         minWorkload = INT_MAX;
         
-        for (nOperation = 0; nOperation < totalOperations; nOperation++)
+        for (nOperation = 0; nOperation < getNumberOfOperations(); nOperation++)
             if(mapToJobMachine[solution.getVariable(nOperation)][1] == maxWorkloadedMachine)
-                for (nMachine = 0; nMachine < totalMachines; nMachine++)
+                for (nMachine = 0; nMachine < getNumberOfMachines(); nMachine++)
                     if(nMachine != maxWorkloadedMachine
                        && (workload[nMachine] + processingTime[nOperation][nMachine]) < minWorkload) {
                         bestOperation = nOperation;
@@ -538,7 +538,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
         maxWorkload = 0;
         int lastMaxWorkloadedMachine = maxWorkloadedMachine;
         int lastBestWorkloadMachine = bestMachine;
-        for (nMachine = 0; nMachine < totalMachines; nMachine++)
+        for (nMachine = 0; nMachine < getNumberOfMachines(); nMachine++)
             if(workload[nMachine] > maxWorkload) {
                 maxWorkload = workload[nMachine];
                 maxWorkloadedMachine = nMachine;
@@ -556,7 +556,6 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
             totalWorkload += processingTime[bestOperation][lastMaxWorkloadedMachine];
             totalWorkload -= processingTime[bestOperation][lastBestWorkloadMachine];
             
-            
             solution.setVariable(bestOperation, jobMachineToMap[operationIsFromJob[bestOperation]][lastMaxWorkloadedMachine]);
             solution.setObjective(1, workload[lastMaxWorkloadedMachine]);
             
@@ -566,9 +565,10 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
         }
     }
     
-    bestWorkloadFound = maxWorkloadObj;
-    for (nMachine = 0; nMachine < totalMachines; nMachine++)
+    getBestWorkload(maxWorkloadObj);// bestWorkloadFound = maxWorkloadObj;
+    for (nMachine = 0; nMachine < getNumberOfMachines(); nMachine++)
         bestWorkloads[nMachine] = workload[nMachine];
+
 }
 
 /** For all the variables the lower bound is 0. **/
@@ -593,128 +593,135 @@ int ProblemFJSSP::getLowerBoundInObj(int nObj){
 
 void ProblemFJSSP::loadInstance(char** filePath){
     
-    if(processingTime != nullptr){
-        int job = 0, operation = 0;
-        for(job = 0; job < totalJobs; job++){
-            delete [] jobOperationHasNumber[job];
-            delete [] jobMachineToMap[job];
-        }
-        
-        for (job = 0; job < totalJobs * totalMachines; job++)
-            delete [] mapToJobMachine[job];
-        
-        for (operation = 0; operation < totalOperations; operation++)
-            delete[] processingTime[operation];
-        
-        delete [] jobMachineToMap;
-        delete [] mapToJobMachine;
-        delete [] processingTime;
-        delete [] numberOfOperationsInJob;
-        delete [] releaseTime;
-        delete [] jobOperationHasNumber;
-        delete [] operationIsFromJob;
-        delete [] assignationMinPij;
-        delete [] minWorkload;
-        delete [] assignationBestWorkload;
-        delete [] bestWorkloads;
-    }
+
     
     std::ifstream infile(filePath[0]);
-    std::string line;
-    std::vector<std::string> elemens;
-    
-    std::getline(infile, line);
-    std::getline(infile, line);
-    elemens = split(line, ' ');
-    totalJobs = std::stoi(elemens.at(0));
-    totalMachines = std::stoi(elemens.at(1));
-    numberOfOperationsInJob = new int[totalJobs];
-    releaseTime = new int[totalJobs];
-    
-    
-    std::getline(infile, line);
-    std::getline(infile, line);
-    elemens = split(line, ' ');
-    int job = 0;
-    totalOperations = 0;
-    for(job = 0; job < totalJobs; job++){
-        numberOfOperationsInJob[job] = std::stoi(elemens.at(job));
-        totalOperations += numberOfOperationsInJob[job];
-    }
-    
-    std::getline(infile, line);
-    std::getline(infile, line);
-    elemens = split(line, ' ');
-    for (job = 0; job < totalJobs; job++)
-        releaseTime[job] = std::stoi(elemens.at(job));
-    
-    
-    operationIsFromJob = new int[totalOperations];
-    sumOfMinPij = 0;
-    bestWorkloadFound = INT_MAX;
-    std::getline(infile, line);
-    
-    assignationMinPij = new int [totalOperations];
-    minWorkload = new int[totalMachines];
-    assignationBestWorkload = new int [totalOperations];
-    bestWorkloads = new int[totalMachines];
-    jobOperationHasNumber = new int * [totalJobs];
-    processingTime = new int * [totalOperations];
-    jobMachineToMap = new int * [totalJobs];
-    mapToJobMachine = new int * [totalJobs * totalMachines];
-    
-    int operation = 0;
-    int machine = 0;
-    int minPij = INT_MAX;
-    int minMachine = 0;
-    int map = 0;
-    
-    for (job = 0; job < totalJobs; job++) {
-        jobMachineToMap[job] = new int[totalMachines];
-        for (machine = 0; machine < totalMachines; machine++) {
-            mapToJobMachine[map] = new int[2];
-            mapToJobMachine[map][0] = job;
-            mapToJobMachine[map][1] = machine;
-            jobMachineToMap[job][machine] = map;
-            map++;
+    if(infile.is_open()){
+        
+        if(processingTime != nullptr){
+            int job = 0, operation = 0;
+            for(job = 0; job < totalJobs; job++){
+                delete [] jobOperationHasNumber[job];
+                delete [] jobMachineToMap[job];
+            }
+            
+            for (job = 0; job < totalJobs * totalMachines; job++)
+                delete [] mapToJobMachine[job];
+            
+            for (operation = 0; operation < totalOperations; operation++)
+                delete[] processingTime[operation];
+            
+            delete [] jobMachineToMap;
+            delete [] mapToJobMachine;
+            delete [] processingTime;
+            delete [] numberOfOperationsInJob;
+            delete [] releaseTime;
+            delete [] jobOperationHasNumber;
+            delete [] operationIsFromJob;
+            delete [] assignationMinPij;
+            delete [] minWorkload;
+            delete [] assignationBestWorkload;
+            delete [] bestWorkloads;
         }
-    }
-    
-    for (machine = 0; machine < totalMachines; machine++)
-        minWorkload[machine] = 0;
-    
-    for (operation = 0; operation < totalOperations; operation++) {
-        processingTime[operation] = new int[totalMachines];
+        
+        std::string line;
+        std::vector<std::string> elemens;
+        
+        std::getline(infile, line);
         std::getline(infile, line);
         elemens = split(line, ' ');
-        minPij = INT_MAX;
-        minMachine = 0;
-        for (machine = 0; machine < totalMachines; machine++){
-            processingTime[operation][machine] = std::stoi(elemens.at(machine));
-            if (processingTime[operation][machine] < minPij){
-                minPij = processingTime[operation][machine];
-                minMachine = machine;
+        totalJobs = std::stoi(elemens.at(0));
+        totalMachines = std::stoi(elemens.at(1));
+        numberOfOperationsInJob = new int[totalJobs];
+        releaseTime = new int[totalJobs];
+        
+        
+        std::getline(infile, line);
+        std::getline(infile, line);
+        elemens = split(line, ' ');
+        int job = 0;
+        totalOperations = 0;
+
+        for(job = 0; job < getNumberOfJobs(); job++){
+            numberOfOperationsInJob[job] = std::stoi(elemens.at(job));
+            totalOperations += numberOfOperationsInJob[job];
+        }
+        
+        std::getline(infile, line);
+        std::getline(infile, line);
+        elemens = split(line, ' ');
+        for (job = 0; job < getNumberOfJobs(); job++)
+            releaseTime[job] = std::stoi(elemens.at(job));
+        
+        
+        operationIsFromJob = new int[totalOperations];
+        sumOfMinPij = 0;
+        bestWorkloadFound = INT_MAX;
+        std::getline(infile, line);
+        
+        assignationMinPij = new int [totalOperations];
+        minWorkload = new int[totalMachines];
+        assignationBestWorkload = new int [totalOperations];
+        bestWorkloads = new int[totalMachines];
+        jobOperationHasNumber = new int * [totalJobs];
+        processingTime = new int * [totalOperations];
+        jobMachineToMap = new int * [totalJobs];
+        mapToJobMachine = new int * [totalJobs * totalMachines];
+        
+        int operation = 0;
+        int machine = 0;
+        int minPij = INT_MAX;
+        int minMachine = 0;
+        int map = 0;
+        
+        for (job = 0; job < getNumberOfJobs(); job++) {
+            jobMachineToMap[job] = new int[totalMachines];
+            for (machine = 0; machine < totalMachines; machine++) {
+                mapToJobMachine[map] = new int[2];
+                mapToJobMachine[map][0] = job;
+                mapToJobMachine[map][1] = machine;
+                jobMachineToMap[job][machine] = map;
+                map++;
             }
         }
-        sumOfMinPij += minPij;
-        minWorkload[minMachine] += processingTime[operation][minMachine];
-        assignationMinPij[operation] = minMachine;
-    }
-    
-    totalVariables = totalOperations;
-    
-    int operationCounter = 0;
-    for (job = 0; job < totalJobs; job++) {
-        jobOperationHasNumber[job] = new int[numberOfOperationsInJob[job]];
-        for(operation = 0; operation < numberOfOperationsInJob[job]; operation++){
-            jobOperationHasNumber[job][operation] = operationCounter;
-            operationIsFromJob[operationCounter++] = job;
+        
+        for (machine = 0; machine < getNumberOfMachines(); machine++)
+            minWorkload[machine] = 0;
+        
+        for (operation = 0; operation < getNumberOfOperations(); operation++) {
+            processingTime[operation] = new int[totalMachines];
+            std::getline(infile, line);
+            elemens = split(line, ' ');
+            minPij = INT_MAX;
+            minMachine = 0;
+            for (machine = 0; machine < getNumberOfMachines(); machine++){
+                processingTime[operation][machine] = std::stoi(elemens.at(machine));
+                if (processingTime[operation][machine] < minPij){
+                    minPij = processingTime[operation][machine];
+                    minMachine = machine;
+                }
+            }
+            sumOfMinPij += minPij;
+            minWorkload[minMachine] += processingTime[operation][minMachine];
+            assignationMinPij[operation] = minMachine;
         }
+
+        infile.close();
+
+        totalVariables = totalOperations;
+        
+        int operationCounter = 0;
+        for (job = 0; job < getNumberOfJobs(); job++) {
+            jobOperationHasNumber[job] = new int[numberOfOperationsInJob[job]];
+            for(operation = 0; operation < numberOfOperationsInJob[job]; operation++){
+                jobOperationHasNumber[job][operation] = operationCounter;
+                operationIsFromJob[operationCounter++] = job;
+            }
+        }
+        goodSolutionWithMaxWorkload (getNumberOfObjectives(), getNumberOfVariables());
+        buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
+        
     }
-    goodSolutionWithMaxWorkload (getNumberOfObjectives(), getNumberOfVariables());
-    buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
-    
-    infile.close();
 
 }
 

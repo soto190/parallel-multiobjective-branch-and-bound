@@ -163,7 +163,7 @@ private:
 	/** IVM functions. **/
 public:
 	void computeLastBranch(Interval & branch);
-	void splitInterval(const Interval & branch);
+	void splitInterval(Interval & branch);
 	void splitIntervalSolution(const Solution & solution);
 
 private:

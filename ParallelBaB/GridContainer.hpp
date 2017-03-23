@@ -81,18 +81,14 @@ enum BucketState {
      int produceImprovement(const Solution& obj) const{
          
          DominanceRelation domination;
-         int improves = 1;
          unsigned long index = 0;
 
          for (index = 0; index < m_vec.size(); index++) {
              domination = obj.dominates(m_vec.at(index));
-             if (domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
-                 improves = 0;
-                 index = size; /** To end the loop. **/
-             }
+             if (domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals)
+                 return 0;
          }
-
-         return improves;
+         return 1;
      }
      
      /** 
@@ -102,7 +98,6 @@ enum BucketState {
       ***/
      int push_back(const Solution& obj){
 
-         mutex_update.lock();
          unsigned int dominates = 0;
          unsigned int nondominated = 0;
          unsigned int dominated = 0;
@@ -120,11 +115,15 @@ enum BucketState {
              switch (domination) {
                      
                  case DominanceRelation::Dominates:
-                     
+                     mutex_update.lock(); /** a) Testing this mutex **/
                      m_vec.erase(begin + nSol);
+                     mutex_update.unlock(); /** a) Testing this mutex **/
+
                      size.fetch_and_decrement();
                      dominates++;
                      nSol--;
+                     
+
                      break;
                      
                  case DominanceRelation::Nondominated:
@@ -148,12 +147,15 @@ enum BucketState {
             || dominates > 0
             || nondominated == size
             || dominated == 0)) {
-                 m_vec.push_back(obj); /** Creates a new copy. **/
-                 wasAdded = 1;
-                 size.fetch_and_increment();
+                
+                mutex_update.lock();/** a) Testing this mutex **/
+                m_vec.push_back(obj); /** Creates a new copy. **/
+                mutex_update.unlock();/** a) Testing this mutex **/
+
+                wasAdded = 1;
+                size.fetch_and_increment();
              }
          
-         mutex_update.unlock();
          
          return wasAdded;
      }

@@ -19,7 +19,7 @@
 Interval::Interval():
     max_size(1),
     build_up_to(-1),
-    interval(new int[1]{-1}){
+    interval(nullptr){
 }
 
 Interval::Interval(int max_size):
@@ -62,8 +62,9 @@ Interval& Interval::operator=(const Interval &toCopy){
     max_size = toCopy.getSize();
     build_up_to = toCopy.getBuildUpTo();
     
-    delete [] interval; /** Freeing previously used memory. **/
-    interval = new int[toCopy.getSize()];
+    if(interval != nullptr)
+        delete [] interval; /** Freeing previously used memory. **/
+    interval = new int[max_size];
     int index = 0;
     
     for (index = 0; index < max_size; index++)
