@@ -16,6 +16,7 @@
 #include "Dominance.hpp"
 #include "myutils.hpp"
 #include "tbb/mutex.h"
+#include "tbb/spin_rw_mutex.h"
 #include "tbb/concurrent_vector.h"
 
 enum BucketState {
@@ -29,7 +30,7 @@ enum BucketState {
  private:
      unsigned long posx;
      unsigned long posy;
-     tbb::mutex mutex_update;
+     tbb::spin_rw_mutex mutex_update;
      tbb::atomic<unsigned long> size;
      tbb::atomic<BucketState> state;
      std::vector<Solution> m_vec;
@@ -80,6 +81,7 @@ enum BucketState {
      
      int produceImprovement(const Solution& obj){
 
+         mutex_update.lock_read();
          DominanceRelation domination;
          unsigned long index = 0, size_vec = m_vec.size();
          int improves = 1;
@@ -90,7 +92,7 @@ enum BucketState {
                  index = size_vec;
              }
          }
-
+         mutex_update.unlock();
          return improves;
      }
      
@@ -101,7 +103,7 @@ enum BucketState {
       ***/
      int push_back(const Solution& obj){
          
-
+         mutex_update.lock(); /** a) Testing this mutex **/
          unsigned int dominates = 0;
          unsigned int nondominated = 0;
          unsigned int dominated = 0;
@@ -111,7 +113,6 @@ enum BucketState {
          int wasAdded = 0;
          unsigned long nSol = 0;
          int domination;
-         mutex_update.lock(); /** a) Testing this mutex **/
 
          for (nSol = 0; nSol < m_vec.size(); nSol++) {
              
