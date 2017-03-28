@@ -205,7 +205,7 @@ int HandlerContainer::improvesTheGrid(const Solution &solution) {
     int bucketCoordinate[2];
     checkCoordinate(solution, bucketCoordinate);
     BucketState stateOfBucket = grid.getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
-    int improveIt = 0;
+    int improves = 0;
     
     switch (stateOfBucket) {
             
@@ -213,15 +213,15 @@ int HandlerContainer::improvesTheGrid(const Solution &solution) {
             break;
             
         case BucketState::unexplored:
-            improveIt = 1;
+            improves = 1;
             break;
             
         case BucketState::nondominated:
-            improveIt = grid.improvesBucket(solution, bucketCoordinate[0], bucketCoordinate[1]);
+            improves = grid.improvesBucket(solution, bucketCoordinate[0], bucketCoordinate[1]);
             break;
     }
     
-    return improveIt;
+    return improves;
 }
 
 /**

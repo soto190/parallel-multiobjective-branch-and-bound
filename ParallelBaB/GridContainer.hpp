@@ -78,17 +78,20 @@ enum BucketState {
      std::vector<Solution>& getVector() {return m_vec;}
      const std::vector<Solution>& getVectorToCopy() const {return m_vec;}
      
-     int produceImprovement(const Solution& obj) const{
-         
-         DominanceRelation domination;
-         unsigned long index = 0;
+     int produceImprovement(const Solution& obj){
 
-         for (index = 0; index < m_vec.size(); index++) {
+         DominanceRelation domination;
+         unsigned long index = 0, size_vec = m_vec.size();
+         int improves = 1;
+         for (index = 0; index < size_vec; index++) {
              domination = obj.dominates(m_vec.at(index));
-             if (domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals)
-                 return 0;
+             if (domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
+                 improves = 0;
+                 index = size_vec;
+             }
          }
-         return 1;
+
+         return improves;
      }
      
      /** 
@@ -97,6 +100,7 @@ enum BucketState {
       *
       ***/
      int push_back(const Solution& obj){
+         
 
          unsigned int dominates = 0;
          unsigned int nondominated = 0;
@@ -107,7 +111,8 @@ enum BucketState {
          int wasAdded = 0;
          unsigned long nSol = 0;
          int domination;
-         
+         mutex_update.lock(); /** a) Testing this mutex **/
+
          for (nSol = 0; nSol < m_vec.size(); nSol++) {
              
              domination = obj.dominates(m_vec.at(nSol));
@@ -115,15 +120,11 @@ enum BucketState {
              switch (domination) {
                      
                  case DominanceRelation::Dominates:
-                     mutex_update.lock(); /** a) Testing this mutex **/
                      m_vec.erase(begin + nSol);
-                     mutex_update.unlock(); /** a) Testing this mutex **/
 
                      size.fetch_and_decrement();
                      dominates++;
                      nSol--;
-                     
-
                      break;
                      
                  case DominanceRelation::Nondominated:
@@ -148,15 +149,14 @@ enum BucketState {
             || nondominated == size
             || dominated == 0)) {
                 
-                mutex_update.lock();/** a) Testing this mutex **/
                 m_vec.push_back(obj); /** Creates a new copy. **/
-                mutex_update.unlock();/** a) Testing this mutex **/
 
                 wasAdded = 1;
                 size.fetch_and_increment();
              }
          
-         
+         mutex_update.unlock();/** a) Testing this mutex **/
+
          return wasAdded;
      }
      

@@ -608,13 +608,12 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 
 				if (improvesTheGrid(sol_test) == 1) {
                     /** Gets the branch to add. */
-                    //Interval branch(branch_to_split); /** Creates a new Interval from a given branch. **/
                     branch_to_split.setValueAt(level_to_split, toAdd);
                     branch_to_split.setBuildUpTo(level_to_split);
 
 					/**Add it to Intervals. **/
 					if (rank == 0)
-                        globalPool.push(branch_to_split);
+                        globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
                     else
 						localPool.push(branch_to_split);
 					branches_created++;
@@ -628,7 +627,7 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 	/** TODO: Design something to decide when to add something to the global pool. **/
 	if (rank > 0
 			&& branches_created > (problem.getUpperBound(0) * 0.5)
-			&& branch_to_split.getBuildUpTo() < (totalLevels * 0.7)) {
+			&& branch_to_split.getBuildUpTo() < (totalLevels * 0.8)) {
         int moved = 0;
         int branches_to_move = (int) branches_created * 0.3;
         for (moved = 0; moved < branches_to_move; moved++) {
