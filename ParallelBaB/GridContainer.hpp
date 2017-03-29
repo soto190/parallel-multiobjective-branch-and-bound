@@ -17,11 +17,14 @@
 #include "myutils.hpp"
 #include "tbb/mutex.h"
 #include "tbb/spin_rw_mutex.h"
+#include "tbb/queuing_rw_mutex.h"
 #include "tbb/concurrent_vector.h"
 
 enum BucketState {
 	unexplored = 0, nondominated = 1, dominated = 2
 };
+
+typedef tbb::queuing_rw_mutex Lock;
 
 /** Wrapping a vector. **/
 //template<class T>
@@ -30,7 +33,9 @@ enum BucketState {
  private:
      unsigned long posx;
      unsigned long posy;
-     tbb::spin_rw_mutex mutex_update;
+     Lock improving_lock;
+
+// tbb::spin_rw_mutex mutex_update;
      tbb::atomic<unsigned long> size;
      tbb::atomic<BucketState> state;
      std::vector<Solution> m_vec;
@@ -81,7 +86,8 @@ enum BucketState {
      
      int produceImprovement(const Solution& obj){
 
-         mutex_update.lock_read();
+         tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, false);
+        
          DominanceRelation domination;
          unsigned long index = 0, size_vec = m_vec.size();
          int improves = 1;
@@ -92,7 +98,7 @@ enum BucketState {
                  index = size_vec;
              }
          }
-         mutex_update.unlock();
+         // mutex_update.unlock();
          return improves;
      }
      
@@ -103,7 +109,9 @@ enum BucketState {
       ***/
      int push_back(const Solution& obj){
          
-         mutex_update.lock(); /** a) Testing this mutex **/
+         
+         tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, true);
+//mutex_update.lock(); /** a) Testing this mutex **/
          unsigned int dominates = 0;
          unsigned int nondominated = 0;
          unsigned int dominated = 0;
@@ -156,7 +164,7 @@ enum BucketState {
                 size.fetch_and_increment();
              }
          
-         mutex_update.unlock();/** a) Testing this mutex **/
+         // mutex_update.unlock();/** a) Testing this mutex **/
 
          return wasAdded;
      }
