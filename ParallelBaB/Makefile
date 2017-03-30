@@ -15,7 +15,7 @@ obj = $(src:.cpp = .o)
 
 all: branchAndBound
 
-debug: LIBS = LIBS_DEBUG
+debug: LIBS = $(LIBS_DEBUG)
 debug: LDFLAGS += -g -traceback -shared-intel
 debug: branchAndBound
 
