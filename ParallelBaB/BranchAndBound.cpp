@@ -463,7 +463,7 @@ int BranchAndBound::aLeafHasBeenReached() const {
 /**
  * Check if the ivm has pending branches to be explored.
  */
-int BranchAndBound::theTreeHasMoreBranches() {
+int BranchAndBound::theTreeHasMoreBranches() const {
 	return ivm_tree.hasPendingBranches();
 }
 
@@ -637,26 +637,18 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 	}
 }
 
-unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) {
+unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) const {
 	unsigned long result = 1;
 	for (long j = n; j > n - i; j--)
 		result *= j;
 	return result;
 }
 
-int BranchAndBound::getUpperBound(int objective) {
-	return 0;
-}
-
-int BranchAndBound::getLowerBoundInObj(int nObj) {
-	return problem.getLowerBoundInObj(nObj);
-}
-
 /**
  * This functions compute the number of nodes.
  *
  */
-unsigned long BranchAndBound::computeTotalNodes(unsigned  long totalVariables) {
+unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) const {
 	long totalNodes = 0;
     long nodes_per_branch = 0;
     long deepest_level;

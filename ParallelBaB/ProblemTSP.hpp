@@ -50,9 +50,9 @@ public:
     void printSolution(Solution & solution);
     void printPartialSolution(Solution & solution, int level);
         
-    int getLowerBound(int indexVar);
-    int getUpperBound(int indexVar);
-    int getLowerBoundInObj(int nObj);
+    int getLowerBound(int indexVar) const;
+    int getUpperBound(int indexVar) const;
+    int getLowerBoundInObj(int nObj) const;
 
     
     ProblemType getType() const;

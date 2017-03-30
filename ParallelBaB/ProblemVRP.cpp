@@ -24,17 +24,9 @@ double ProblemVRP::evaluateLastLevel(Solution * solution){return 0.0;}
 double ProblemVRP::removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel){return 0.0;}
 double ProblemVRP::removeLastLevelEvaluation(Solution * solution, int newLevel){return 0.0;}
 
-int ProblemVRP::getLowerBound(int indexVar){
-    return 0;
-}
-
-int ProblemVRP::getUpperBound(int indexVar){
-    return 1;
-}
-
-int ProblemVRP::getLowerBoundInObj(int nObj){
-    return INT_MAX;
-}
+int ProblemVRP::getLowerBound(int indexVar) const{ return 0; }
+int ProblemVRP::getUpperBound(int indexVar) const{ return 1; }
+int ProblemVRP::getLowerBoundInObj(int nObj) const{ return INT_MAX;}
 
 ProblemType ProblemVRP::getType() const {return ProblemType::combination;}
 int ProblemVRP::getStartingLevel(){return 0;}

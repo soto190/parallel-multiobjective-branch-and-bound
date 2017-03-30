@@ -93,7 +93,7 @@ int Problem::getNumberOfConstraints() const{ return totalConstraints; }
 int Problem::getStartingLevel() const{ return startingLevel; }
 int Problem::getLowerBound(int index) const { return 0; }
 int Problem::getUpperBound(int index) const { return 0; }
-int Problem::getLowerBoundInObj(int nObj){ return INT_MAX; }
+int Problem::getLowerBoundInObj(int nObj)const{ return INT_MAX; }
 int Problem::getTotalElements(){ return 0; }
 int Problem::getMapping(int map, int position){ return 0; }
 int Problem::getMappingOf(int value1, int value2){ return 0; }

@@ -130,13 +130,14 @@ public:
     int getProccessingTime(int operation, int machine) const;
     int getNumberOfOperationsInJob(int job) const;
     int getReleaseTimeOfJob(int job) const;
+    int getLowerBoundInObj(int nObj) const;
+
     
     void loadInstance(char** path);
     void printInstance();
     void printProblemInfo();
     void printSchedule(Solution & solution);
     double evaluatePartialTest4(Solution & solution, int currentLevel);
-    int getLowerBoundInObj(int nObj);
     void buildSolutionWithGoodMaxWorkload(Solution & solution);
     void buildSolutionWithGoodMaxWorkloadv2(Solution & solution);
     

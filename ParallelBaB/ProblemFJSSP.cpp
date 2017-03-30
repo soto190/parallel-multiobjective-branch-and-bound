@@ -585,7 +585,7 @@ int ProblemFJSSP::getUpperBound(int indexVar) const{
     return (totalJobs * totalMachines) - 1;
 }
 
-int ProblemFJSSP::getLowerBoundInObj(int nObj){
+int ProblemFJSSP::getLowerBoundInObj(int nObj) const{
     if(nObj == 1)
         return sumOfMinPij;
     return INT_MAX;

@@ -93,15 +93,15 @@ int ProblemTSP::getFinalLevel(){
     return this->getNumberOfVariables() - getStartingLevel();
 }
 
-int ProblemTSP::getLowerBound(int indexVar){
+int ProblemTSP::getLowerBound(int indexVar) const{
     return 1;
 }
 
-int ProblemTSP::getUpperBound(int indexVar){
+int ProblemTSP::getUpperBound(int indexVar) const{
     return this->getNumberOfVariables() - 1;
 }
 
-int ProblemTSP::getLowerBoundInObj(int nObj){
+int ProblemTSP::getLowerBoundInObj(int nObj) const{
     return INT_MAX;
 }
 

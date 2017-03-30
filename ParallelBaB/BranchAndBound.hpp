@@ -148,12 +148,10 @@ public:
 private:
 	void printCurrentSolution(int withVariables = 0);
 	int aLeafHasBeenReached() const;
-	int theTreeHasMoreBranches();
-	int getLowerBoundInObj(int nObj);
+	int theTreeHasMoreBranches() const;
 
-	unsigned long computeTotalNodes(unsigned long totalVariables);
-	unsigned long permut(unsigned long n, unsigned long i);
-	int getUpperBound(int objective);
+	unsigned long computeTotalNodes(unsigned long totalVariables) const;
+	unsigned long permut(unsigned long n, unsigned long i) const;
 
 	/** Grid functions. **/
 	int improvesTheGrid(const Solution & solution) const;

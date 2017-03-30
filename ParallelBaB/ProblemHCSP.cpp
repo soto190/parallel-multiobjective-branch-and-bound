@@ -142,15 +142,15 @@ int ProblemHCSP::getFinalLevel(){
     return this->totalVariables - 1;
 }
 
-int ProblemHCSP::getLowerBound(int indexVar){
+int ProblemHCSP::getLowerBound(int indexVar) const{
     return 0;
 }
 
-int ProblemHCSP::getUpperBound(int indexVar){
+int ProblemHCSP::getUpperBound(int indexVar) const{
     return this->totalMappings - 1;
 }
 
-int ProblemHCSP::getLowerBoundInObj(int nObj){
+int ProblemHCSP::getLowerBoundInObj(int nObj) const{
     return INT_MAX;
 }
 
