@@ -178,9 +178,9 @@ void HandlerContainer::setStateOf(BucketState state, int x, int y) { grid.setSta
 void HandlerContainer::printGridSize() {
     int nCol = 0;
     int nRow = 0;
-    for (nRow = grid.getRows() - 1; nRow >= 0; nRow--) {
+    for (nRow = grid.getRows() - 1; nRow >= 0; --nRow) {
         printf("[%3d] ", nRow);
-        for (nCol = 0; nCol < grid.getCols(); nCol++)
+        for (nCol = 0; nCol < grid.getCols(); ++nCol)
             printf("%3ld ", grid.getSizeOf(nCol, nRow));
         printf("\n");
     }
@@ -189,9 +189,9 @@ void HandlerContainer::printGridSize() {
 void HandlerContainer::printStates() {
     int nCol = 0;
     int nRow = 0;
-    for (nRow = grid.getRows() - 1; nRow >= 0; nRow--) {
+    for (nRow = grid.getRows() - 1; nRow >= 0; --nRow) {
         printf("[%3d] ", nRow);
-        for (nCol = 0; nCol < grid.getCols(); nCol++)
+        for (nCol = 0; nCol < grid.getCols(); ++nCol)
             printf("%3d", getStateOf(nCol, nRow));
         printf("\n");
     }
@@ -238,14 +238,14 @@ std::vector<Solution>& HandlerContainer::getParetoFront() {
     int bucketX = 0;
     int bucketY = 0;
     
-    for (bucketY = 0; bucketY < getRows(); bucketY++)
-        for (bucketX = 0; bucketX < getCols(); bucketX++) {
+    for (bucketY = 0; bucketY < getRows(); ++bucketY)
+        for (bucketX = 0; bucketX < getCols(); ++bucketX) {
             BucketState state = grid.getStateOf(bucketX, bucketY);
             if (state == BucketState::nondominated) {
                 std::vector<Solution> vec = grid.get(bucketX, bucketY);
                 std::vector<Solution>::iterator it = vec.begin();
                 
-                for (it = vec.begin(); it != vec.end(); it++)
+                for (it = vec.begin(); it != vec.end(); ++it)
                     paretoFront.push_back(*it);
                 
             } else if (state == BucketState::dominated)

@@ -91,7 +91,7 @@ typedef tbb::queuing_rw_mutex Lock;
          DominanceRelation domination;
          unsigned long index = 0, size_vec = m_vec.size();
          int improves = 1;
-         for (index = 0; index < size_vec; index++) {
+         for (index = 0; index < size_vec; ++index) {
              domination = obj.dominates(m_vec.at(index));
              if (domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
                  improves = 0;
@@ -122,7 +122,7 @@ typedef tbb::queuing_rw_mutex Lock;
          unsigned long nSol = 0;
          int domination;
 
-         for (nSol = 0; nSol < m_vec.size(); nSol++) {
+         for (nSol = 0; nSol < m_vec.size(); ++nSol) {
              
              domination = obj.dominates(m_vec.at(nSol));
              
@@ -194,8 +194,8 @@ public:
 
 		m_Data.reserve(cols * rows);
         int index = 0, indey = 0;
-        for (indey = 0; indey < rows; indey++)
-            for (index = 0; index < cols; index++)
+        for (indey = 0; indey < rows; ++indey)
+            for (index = 0; index < cols; ++index)
                 m_Data.push_back(ParetoBucket(index, indey));
 	}
     

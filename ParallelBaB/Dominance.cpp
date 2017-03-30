@@ -19,7 +19,7 @@ DominanceRelation dominanceOperator(Solution & leftSolution,
 	 * For more objectives consider
 	 * if (solAIsBetterIn > 0 and solBIsBetterIn > 0) break the FOR because the solutions are non-dominated.
 	 **/
-	for (objective = 0; objective < leftSolution.totalObjectives; objective++) {
+	for (objective = 0; objective < leftSolution.totalObjectives; ++objective) {
 		double objL = leftSolution.getObjective(objective);
 		double objR = rightSolution.getObjective(objective);
 
@@ -58,7 +58,7 @@ int updateFront(Solution & solution, std::vector<Solution>& paretoFront) {
 	unsigned long nSol = 0;
 	int domination;
 
-	for (nSol = 0; nSol < paretoFront.size(); nSol++) {
+	for (nSol = 0; nSol < paretoFront.size(); ++nSol) {
 
 		domination = solution.dominates(paretoFront.at(nSol)); //dominanceOperator(solution, paretoFront.at(nSol));
 
@@ -114,9 +114,9 @@ void extractParetoFront(std::vector<Solution>& front) {
 	unsigned long currentSol = 0;
 	DominanceRelation domination;
 	if (front.size() > 0) {
-		for (currentSol = 0; currentSol < front.size() - 1; currentSol++) {
+		for (currentSol = 0; currentSol < front.size() - 1; ++currentSol) {
 			Solution solution = front.at(currentSol);
-			for (nextSol = currentSol + 1; nextSol < front.size(); nextSol++) {
+			for (nextSol = currentSol + 1; nextSol < front.size(); ++nextSol) {
 
 				domination = dominanceOperator(solution, front.at(nextSol));
 

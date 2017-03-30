@@ -15,7 +15,6 @@
  * size is equals to the number of variables.
  *
  **/
-
 Interval::Interval():
     max_size(1),
     build_up_to(-1),
@@ -35,7 +34,7 @@ Interval::Interval(const Interval &toCopy):
 
     interval = new int[max_size];
     int index = 0;
-    for (index = 0; index < max_size; index++)
+    for (index = 0; index < max_size; ++index)
         interval[index] = toCopy.getValueAt(index);
 
 }
@@ -49,7 +48,7 @@ Interval& Interval::operator()(int size){
     
     delete [] interval; /** Freeing previously used memory. **/
     interval = new int[size];
-    for (index = 0; index < max_size; index++)
+    for (index = 0; index < max_size; ++index)
         interval[index] = -1;
     
     return *this;
@@ -67,7 +66,7 @@ Interval& Interval::operator=(const Interval &toCopy){
     interval = new int[max_size];
     int index = 0;
     
-    for (index = 0; index < max_size; index++)
+    for (index = 0; index < max_size; ++index)
         interval[index] = toCopy.getValueAt(index);
     
     return *this;
@@ -93,10 +92,10 @@ void Interval::showInterval() const{
     char sep = '-';
     
     printf("[");
-    for (index_var = 0; index_var <= build_up_to; index_var++)
+    for (index_var = 0; index_var <= build_up_to; ++index_var)
         printf("%3d ", interval[index_var]);
     
-    for (index_var = build_up_to + 1; index_var < max_size; index_var++)
+    for (index_var = build_up_to + 1; index_var < max_size; ++index_var)
         printf("%3c ", sep);
     
     printf("]\n");

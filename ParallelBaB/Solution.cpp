@@ -37,17 +37,17 @@ Solution::Solution(int numberOfObjectives, int numberOfVariables):
     partialObjective(new double * [numberOfVariables]){
     
 	int var = 0, obj = 0;
-	for (obj = 0; obj < numberOfObjectives; obj++)
+	for (obj = 0; obj < numberOfObjectives; ++obj)
 		objective[obj] = 0;
 
-	for (var = 0; var < numberOfVariables; var++) {
+	for (var = 0; var < numberOfVariables; ++var) {
 		variable[var] = 0;
 		partialObjective[var] = new double[numberOfObjectives];
-		for (obj = 0; obj < numberOfObjectives; obj++)
+		for (obj = 0; obj < numberOfObjectives; ++obj)
 			partialObjective[var][obj] = 0;
 	}
 
-	for (var = 0; var < 16; var++)
+	for (var = 0; var < 16; ++var)
 		execTime[var] = 0;
 }
 
@@ -66,17 +66,17 @@ Solution::Solution(const Solution &solution):
 
 	int var = 0, obj = 0;
 
-	for (obj = 0; obj < totalObjectives; obj++)
+	for (obj = 0; obj < totalObjectives; ++obj)
 		objective[obj] = solution.getObjective(obj);
 
-	for (var = 0; var < totalVariables; var++) {
+	for (var = 0; var < totalVariables; ++var) {
 		variable[var] = solution.getVariable(var);
 		partialObjective[var] = new double[totalObjectives];
-		for (obj = 0; obj < totalObjectives; obj++)
+		for (obj = 0; obj < totalObjectives; ++obj)
             partialObjective[var][obj] = solution.getPartialObjective(var, obj);
 	}
 
-	for (var = 0; var < 16; var++)
+	for (var = 0; var < 16; ++var)
 		execTime[var] = solution.execTime[var];
 }
 
@@ -94,7 +94,7 @@ Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
         delete[] variable;
         delete[] execTime;
         int index = 0;
-        for (index = 0; index < totalVariables; index++)
+        for (index = 0; index < totalVariables; ++index)
             delete[] partialObjective[index];
         delete[] partialObjective;
     }
@@ -105,17 +105,17 @@ Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
     partialObjective = new double *[numberOfVariables];
     
     int var = 0, obj = 0;
-    for (obj = 0; obj < numberOfObjectives; obj++)
+    for (obj = 0; obj < numberOfObjectives; ++obj)
         objective[obj] = 0;
     
-    for (var = 0; var < numberOfVariables; var++) {
+    for (var = 0; var < numberOfVariables; ++var) {
         variable[var] = 0;
         partialObjective[var] = new double[numberOfObjectives];
-        for (obj = 0; obj < numberOfObjectives; obj++)
+        for (obj = 0; obj < numberOfObjectives; ++obj)
             partialObjective[var][obj] = 0;
     }
     
-    for (var = 0; var < 16; var++)
+    for (var = 0; var < 16; ++var)
         execTime[var] = 0;
     
     return *this;
@@ -135,7 +135,7 @@ Solution& Solution::operator=(const Solution &solution) {
         delete[] variable;
         delete[] execTime;
         int index = 0;
-        for (index = 0; index < totalVariables; index++)
+        for (index = 0; index < totalVariables; ++index)
             delete[] partialObjective[index];
         delete[] partialObjective;
     }
@@ -147,19 +147,19 @@ Solution& Solution::operator=(const Solution &solution) {
     
     int var = 0, obj = 0;
     
-    for (obj = 0; obj < totalObjectives; obj++)
+    for (obj = 0; obj < totalObjectives; ++obj)
         objective[obj] = solution.getObjective(obj);
     
-    for (var = 0; var < totalVariables; var++) {
+    for (var = 0; var < totalVariables; ++var) {
         variable[var] = solution.getVariable(var);
         partialObjective[var] = new double[totalObjectives];
-        for (obj = 0; obj < totalObjectives; obj++)
+        for (obj = 0; obj < totalObjectives; ++obj)
             partialObjective[var][obj] =
             solution.partialObjective[var][obj];
     }
     
     /**Section for the HCSP problem**/
-    for (var = 0; var < 16; var++)
+    for (var = 0; var < 16; ++var)
         execTime[var] = solution.execTime[var];
     
     return *this;
@@ -168,7 +168,7 @@ Solution& Solution::operator=(const Solution &solution) {
 int Solution::operator==(const Solution &solution){
     int index = 0;
     
-    for (index = 0; index < totalObjectives; index++)
+    for (index = 0; index < totalObjectives; ++index)
         if (objective[index] < solution.getObjective(index))
             return 0;
     
@@ -180,7 +180,7 @@ Solution::~Solution() {
 	delete[] variable;
 	delete[] execTime;
 	int index = 0;
-	for (index = 0; index < totalVariables; index++)
+	for (index = 0; index < totalVariables; ++index)
 		delete[] partialObjective[index];
 
 	delete[] partialObjective;
@@ -208,7 +208,7 @@ DominanceRelation Solution::dominates(const Solution & solution) const {
 	 * For more objectives consider
 	 * if (solAIsBetterIn > 0 and solBIsBetterIn > 0) break the FOR because the solutions are non-dominated.
 	 **/
-	for (nObj = 0; nObj < totalObjectives; nObj++) {
+	for (nObj = 0; nObj < totalObjectives; ++nObj) {
 		objA = getObjective(nObj);
 		objB = solution.getObjective(nObj);
 
@@ -233,12 +233,12 @@ DominanceRelation Solution::dominates(const Solution & solution) const {
 
 void Solution::print() const {
 	int nObj, nVar;
-	for (nObj = 0; nObj < totalObjectives; nObj++)
+	for (nObj = 0; nObj < totalObjectives; ++nObj)
 		printf("%f ", getObjective(nObj));
 
 	printf("| ");
 
-	for (nVar = 0; nVar < totalVariables; nVar++)
+	for (nVar = 0; nVar < totalVariables; ++nVar)
 		printf("%d ", getVariable(nVar));
 
 	printf("|\n");
@@ -246,7 +246,7 @@ void Solution::print() const {
 
 void Solution::printObjectives() const {
 	int nObj;
-	for (nObj = 0; nObj < totalObjectives; nObj++)
+	for (nObj = 0; nObj < totalObjectives; ++nObj)
 		printf("%f ", getObjective(nObj));
 
 	printf("\n");
@@ -254,7 +254,7 @@ void Solution::printObjectives() const {
 
 void Solution::printVariables() const {
 	int nVar;
-	for (nVar = 0; nVar < totalVariables; nVar++)
+	for (nVar = 0; nVar < totalVariables; ++nVar)
 		printf("%d ", getVariable(nVar));
 
 	printf("\n");

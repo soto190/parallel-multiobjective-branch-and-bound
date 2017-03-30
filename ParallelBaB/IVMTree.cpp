@@ -57,7 +57,7 @@ IVMTree::IVMTree(int n_rows, int n_cols) {
     
     int r = 0, c = 0;
     
-    for (r = 0; r < rows; r++) {
+    for (r = 0; r < rows; ++r) {
         
         active_node[r] = -1;
         max_nodes_in_level[r] = 0;
@@ -65,7 +65,7 @@ IVMTree::IVMTree(int n_rows, int n_cols) {
         end_exploration[r] = cols;
         
         ivm[r] = new int[cols];
-        for (c = 0; c < cols; c++)
+        for (c = 0; c < cols; ++c)
             ivm[r][c] = -1;
     }
     
@@ -92,7 +92,7 @@ IVMTree::IVMTree(const IVMTree& toCopy) {
     
     int r = 0, c = 0;
     
-    for (r = 0; r < rows; r++) {
+    for (r = 0; r < rows; ++r) {
         active_node[r] = toCopy.active_node[r];
         max_nodes_in_level[r] = toCopy.max_nodes_in_level[r];
         start_exploration[r] = toCopy.start_exploration[r];
@@ -100,7 +100,7 @@ IVMTree::IVMTree(const IVMTree& toCopy) {
         
         ivm[r] = new int[cols];
         
-        for (c = 0; c < cols; c++)
+        for (c = 0; c < cols; ++c)
             ivm[r][c] = toCopy.ivm[r][c];
     }
 }
@@ -124,7 +124,7 @@ IVMTree& IVMTree::operator=(const IVMTree &toCopy){
     
     int r = 0, c = 0;
     
-    for (r = 0; r < rows; r++) {
+    for (r = 0; r < rows; ++r) {
         active_node[r] = toCopy.active_node[r];
         max_nodes_in_level[r] = toCopy.max_nodes_in_level[r];
         start_exploration[r] = toCopy.start_exploration[r];
@@ -132,7 +132,7 @@ IVMTree& IVMTree::operator=(const IVMTree &toCopy){
         
         ivm[r] = new int[cols];
         
-        for (c = 0; c < cols; c++)
+        for (c = 0; c < cols; ++c)
             ivm[r][c] = toCopy.ivm[r][c];
     }
     
@@ -155,11 +155,11 @@ IVMTree& IVMTree::operator()(int n_rows, int n_cols) {
     
     int r = 0, c = 0;
     
-    for (r = 0; r < rows; r++) {
+    for (r = 0; r < rows; ++r) {
         ivm[r] = new int[cols];
         active_node[r] = -1;
         max_nodes_in_level[r] = 0;
-        for (c = 0; c < cols; c++)
+        for (c = 0; c < cols; ++c)
             ivm[r][c] = -1;
     }
     
@@ -174,7 +174,7 @@ IVMTree::~IVMTree() {
     delete[] end_exploration;
     
     int r = 0;
-    for (r = 0; r < rows; r++)
+    for (r = 0; r < rows; ++r)
         delete[] ivm[r];
     
     delete[] ivm;
@@ -235,7 +235,7 @@ void IVMTree::setExplorationInterval(int set_starting_level, int *starts,
     starting_level = set_starting_level;
     active_level = set_starting_level - 1;
     
-    for (level = 0; level < rows; level++) {
+    for (level = 0; level < rows; ++level) {
         active_node[level] = starts[level];
         start_exploration[level] = starts[level];
         end_exploration[level] = ends[level];
@@ -318,7 +318,7 @@ void IVMTree::showIVM() {
      * NN: Number of nodes.
      */
     printf("[Row]\tAC\tAN\tNN\n");
-    for (r = 0; r < rows; r++) {
+    for (r = 0; r < rows; ++r) {
         /** The integer vector. **/
         if (active_node[r] == -1)
             printf("[%3d] %3c ", r, sep);
@@ -336,7 +336,7 @@ void IVMTree::showIVM() {
         printf(" %3d | ", max_nodes_in_level[r]);
         
         /** The matrix. **/
-        for (c = 0; c < cols; c++)
+        for (c = 0; c < cols; ++c)
             if (ivm[r][c] == -1)
                 printf("%3c", sep);
             else

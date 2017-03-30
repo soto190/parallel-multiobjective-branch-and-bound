@@ -13,8 +13,7 @@
 #include <vector>
 #include "Solution.hpp"
 
-DominanceRelation dominanceOperator(Solution & leftSolution,
-		Solution & rightSolution);
+DominanceRelation dominanceOperator(Solution & leftSolution, Solution & rightSolution);
 int updateFront(Solution & solution, std::vector<Solution>& front);
 void extractParetoFront(std::vector<Solution>& front);
 

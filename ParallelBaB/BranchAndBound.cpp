@@ -48,7 +48,7 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, cons
     starting_interval(branch),
     paretoContainer(pareto_container),
     currentLevel(0),
-    totalLevels(0),
+    totalLevels(problemToCopy.getNumberOfVariables()),
     totalNodes(0),
     branches(0),
     exploredNodes(0),
@@ -63,16 +63,19 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, cons
     start = std::clock();
 	t1 = std::chrono::high_resolution_clock::now();
 	t2 = std::chrono::high_resolution_clock::now();
+        
 
 	int numberOfObjectives = problem.getNumberOfObjectives();
 	int numberOfVariables = problem.getNumberOfVariables();
+
+    totalNodes.fetch_and_store(computeTotalNodes(numberOfVariables));
 
 	bestObjectivesFound(numberOfObjectives, numberOfVariables);
     currentSolution(numberOfObjectives, numberOfVariables);
 	problem.createDefaultSolution(currentSolution);
     
 	int nObj = 0;
-	for (nObj = 0; nObj < numberOfObjectives; nObj++)
+	for (nObj = 0; nObj < numberOfObjectives; ++nObj)
 		bestObjectivesFound.setObjective(nObj, currentSolution.getObjective(nObj));
 
 	ivm_tree(problem.getNumberOfVariables(), problem.getUpperBound(0) + 1);
@@ -110,7 +113,7 @@ BranchAndBound& BranchAndBound::operator()(int rank_new, const ProblemFJSSP &pro
     problem.createDefaultSolution(currentSolution);
     
     int nObj = 0;
-    for (nObj = 0; nObj < numberOfObjectives; nObj++)
+    for (nObj = 0; nObj < numberOfObjectives; ++nObj)
         bestObjectivesFound.setObjective(nObj, currentSolution.getObjective(nObj));
 
     ivm_tree(problem.getNumberOfVariables(), problem.getUpperBound(0) + 1);
@@ -155,9 +158,8 @@ void BranchAndBound::initialize(int starts_tree) {
 	problem.createDefaultSolution(currentSolution);
 
 	int nObj = 0;
-	for (nObj = 0; nObj < numberOfObjectives; nObj++)
-		bestObjectivesFound.setObjective(nObj,
-				currentSolution.getObjective(nObj));
+	for (nObj = 0; nObj < numberOfObjectives; ++nObj)
+		bestObjectivesFound.setObjective(nObj, currentSolution.getObjective(nObj));
 
     //updateParetoGrid(bestInObj1);
     //updateParetoGrid(bestInObj2);
@@ -171,8 +173,7 @@ void BranchAndBound::initialize(int starts_tree) {
  * - branch.build_up_to.
  *
  **/
-int BranchAndBound::initializeExplorationInterval(const Interval & branch_to_init,
-		IVMTree& tree) {
+int BranchAndBound::initializeExplorationInterval(const Interval & branch_to_init, IVMTree& tree) {
 
 	int col = 0;
 	int row = 0; /** Counter level.**/
@@ -183,8 +184,8 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch_to_ini
     tree.setActiveLevel(builded_up_to);
 
     /** Copy the built part. TODO: Probably this part can be removed, considering the root node.**/
-	for (row = 0; row <= builded_up_to; row++) {
-		for (col = 0; col < tree.getNumberOfCols(); col++)
+	for (row = 0; row <= builded_up_to; ++row) {
+		for (col = 0; col < tree.getNumberOfCols(); ++col)
             tree.setIVMValueAt(row, col, -1);
         builded_value = branch_to_init.getValueAt(row);
         tree.setStartExploration(row, builded_value);
@@ -197,7 +198,7 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch_to_ini
 		currentSolution.setVariable(row, builded_value);
 	}
 
-    for (row = builded_up_to + 1; row <= totalLevels; row++) {
+    for (row = builded_up_to + 1; row <= totalLevels; ++row) {
         tree.setStartExploration(row, 0);
         tree.resetNumberOfNodesAt(row);
 	}
@@ -238,8 +239,7 @@ void BranchAndBound::solve(const Interval& branch_to_solve) {
 		if (!globalPool.empty()) {
 			globalPool.try_pop(branchFromGlobal);
 			working++;
-			printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n",
-					rank, globalPool.unsafe_size());
+			printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
 			branchFromGlobal.showInterval();
             splitInterval(branchFromGlobal);
 
@@ -258,8 +258,7 @@ void BranchAndBound::solve(const Interval& branch_to_solve) {
                 explore(currentSolution);
                 problem.evaluatePartial(currentSolution, currentLevel);
 
-				if (aLeafHasBeenReached() == 0
-						&& theTreeHasMoreBranches()) {
+				if (aLeafHasBeenReached() == 0 && theTreeHasMoreBranches()) {
 					if (improvesTheGrid(currentSolution))
 						branch(currentSolution, currentLevel);
 					else
@@ -274,16 +273,14 @@ void BranchAndBound::solve(const Interval& branch_to_solve) {
 					if (updated == 1) {
 						printf("[B&B-%03d] ", rank);
 						printCurrentSolution();
-						printf(" + [%6lu] \n",
-								paretoContainer.getSize());
+						printf(" + [%6lu] \n", paretoContainer.getSize());
 					}
 				}
 			}
 		}
 
 		t2 = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<float> time_span = std::chrono::duration_cast<
-				std::chrono::milliseconds>(t2 - t1);
+		std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
 		totalTime = time_span.count();
 	}
     printf("[B&B-%03d] No more intervals in global pool. Going to sleep.\n", rank);
@@ -306,9 +303,10 @@ int BranchAndBound::explore(Solution & solution) {
 
 	exploredNodes++;
 
-	if (aLeafHasBeenReached()) /** If the active node is a leaf then we need to go up. **/
-		ivm_tree.pruneActiveNode();
-
+    if (aLeafHasBeenReached()){ /** If the active node is a leaf then we need to go up. **/
+        ivm_tree.pruneActiveNode();
+    }
+    
 	int level = ivm_tree.getCurrentLevel();
 	int element = ivm_tree.getActiveNode();
 
@@ -349,10 +347,9 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 	case ProblemType::permutation:
 		levelStarting = problem.getStartingLevel();
 
-		for (variable = problem.getUpperBound(0);
-				variable >= problem.getLowerBound(0); variable--) {
+		for (variable = problem.getUpperBound(0); variable >= problem.getLowerBound(0); --variable) {
 			isInPermut = 0;
-			for (level = levelStarting; level <= currentLevel; level++)
+			for (level = levelStarting; level <= currentLevel; ++level)
 				if (solution.getVariable(level) == variable) {
 					isInPermut = 1;
 					level = currentLevel + 1;
@@ -369,18 +366,17 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
 	case ProblemType::permutation_with_repetition_and_combination:
 
-		for (variable = 0; variable < problem.getTotalElements(); variable++) {
+		for (variable = 0; variable < problem.getTotalElements(); ++variable) {
 			isInPermut = 0;
 			jobToCheck = variable;
 			timesRepeated[jobToCheck] = 0;
 
-			for (varInPos = 0; varInPos <= currentLevel; varInPos++) {
+			for (varInPos = 0; varInPos <= currentLevel; ++varInPos) {
 				map = solution.getVariable(varInPos);
 				jobAllocated = problem.getMapping(map, 0);
 				if (jobToCheck == jobAllocated) {
 					timesRepeated[jobToCheck]++;
-					if (timesRepeated[jobToCheck]
-							== numberOfRepetitionsAllowed[jobToCheck]) {
+					if (timesRepeated[jobToCheck] == numberOfRepetitionsAllowed[jobToCheck]) {
 						isInPermut = 1;
 						varInPos = currentLevel + 1;
 					}
@@ -389,9 +385,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
 			if (isInPermut == 0) {
 				/** TODO: sort the branches. **/
-				for (machine = 0;
-						machine < problem.getTimesValueIsRepeated(0);
-						machine++) {
+				for (machine = 0; machine < problem.getTimesValueIsRepeated(0); ++machine) {
 					toAdd = problem.getMappingOf(jobToCheck, machine);
 
 					solution.setVariable(currentLevel + 1, toAdd);
@@ -424,8 +418,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 		break;
 
 	case ProblemType::combination:
-		for (variable = problem.getUpperBound(0);
-				variable >= problem.getLowerBound(0); variable--) {
+		for (variable = problem.getUpperBound(0); variable >= problem.getLowerBound(0); --variable) {
 			ivm_tree.setNode(currentLevel + 1, variable);
 			branches++;
             branches_created++;
@@ -503,12 +496,12 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
         branch_to_compute.setBuildUpTo(0);
 	} else
 		/** For each level search the job to allocate.**/
-		for (job = problem.getTotalElements() - 1; job >= 0; job--) {
+		for (job = problem.getTotalElements() - 1; job >= 0; --job) {
 			isIn = 0;
 			jobToCheck = job;
 			timesRepeated[jobToCheck] = 0;
 
-			for (varInPos = 0; varInPos < totalLevels; varInPos++) {
+			for (varInPos = 0; varInPos < totalLevels; ++varInPos) {
                 map = branch_to_compute.getValueAt(varInPos);// branch.interval[varInPos];
 				jobAllocated = problem.getMapping(map, 0);
 				if (jobToCheck == jobAllocated) {
@@ -561,17 +554,16 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 
 	Solution sol_test(2, branch_to_split.getSize());
 
-	for (index_var = 0; index_var <= branch_to_split.getBuildUpTo(); index_var++) {
+	for (index_var = 0; index_var <= branch_to_split.getBuildUpTo(); ++index_var) {
 		sol_test.setVariable(index_var, branch_to_split.getValueAt(index_var));
 	}
 
-	for (jobToCheck = 0; jobToCheck < problem.getTotalElements();
-			jobToCheck++) {
+	for (jobToCheck = 0; jobToCheck < problem.getTotalElements(); ++jobToCheck) {
 
 		isIn = 0;
 		timesRepeated[jobToCheck] = 0;
 
-		for (varInPos = 0; varInPos < level_to_split; varInPos++) {
+		for (varInPos = 0; varInPos < level_to_split; ++varInPos) {
             map = branch_to_split.getValueAt(varInPos);
 			jobAllocated = problem.getMapping(map, 0);
 			if (jobToCheck == jobAllocated) {
@@ -588,9 +580,7 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 			int toAdd = 0;
 			int machine = 0;
             
-			for (machine = 0;
-					machine < problem.getTimesValueIsRepeated(0);
-					machine++) {
+			for (machine = 0; machine < problem.getTimesValueIsRepeated(0); ++machine) {
 
 				toAdd = problem.getMappingOf(jobToCheck, machine);
 
@@ -622,7 +612,7 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 			&& branch_to_split.getBuildUpTo() < (totalLevels * 0.8)) {
         int moved = 0;
         int branches_to_move = (int) branches_created * 0.3;
-        for (moved = 0; moved < branches_to_move; moved++) {
+        for (moved = 0; moved < branches_to_move; ++moved) {
             globalPool.push(localPool.front());
             localPool.pop();
         }
@@ -631,7 +621,7 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 
 unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) const {
 	unsigned long result = 1;
-	for (long j = n; j > n - i; j--)
+	for (long j = n; j > n - i; --j)
 		result *= j;
 	return result;
 }
@@ -648,7 +638,7 @@ unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) co
 	switch (problem.getType()) {
 
 	case ProblemType::permutation:
-		for (int i = 0; i < totalVariables; i++)
+		for (int i = 0; i < totalVariables; ++i)
 			totalNodes += (totalVariables - i) * permut(totalVariables, i);
 		break;
 
@@ -689,7 +679,7 @@ void BranchAndBound::printParetoFront(int withVariables) {
 	int counterSolutions = 0;
 	std::vector<Solution>::iterator it;
 
-	for (it = paretoFront.begin(); it != paretoFront.end(); it++) {
+	for (it = paretoFront.begin(); it != paretoFront.end(); ++it) {
 		printf("[%6d] ", ++counterSolutions);
 		problem.printSolution(*it);
 		printf("\n");
@@ -821,19 +811,18 @@ int BranchAndBound::saveSummarize() {
 
 		std::vector<Solution>::iterator it;
 
-		for (it = paretoFront.begin(); it != paretoFront.end();
-				it++) {
+		for (it = paretoFront.begin(); it != paretoFront.end(); ++it) {
 
 			myfile << std::fixed << std::setw(6) << std::setfill(' ')
 					<< ++counterSolutions << " ";
 
-			for (nObj = 0; nObj < numberOfObjectives; nObj++)
+			for (nObj = 0; nObj < numberOfObjectives; ++nObj)
 				myfile << std::fixed << std::setw(26) << std::setprecision(16)
 						<< std::setfill(' ') << (*it).getObjective(nObj) << " ";
 
 			myfile << " | ";
 
-			for (nVar = 0; nVar < numberOfVariables; nVar++)
+			for (nVar = 0; nVar < numberOfVariables; ++nVar)
 				myfile << std::fixed << std::setw(4) << std::setfill(' ')
 						<< (*it).getVariable(nVar) << " "; //printf("%3d ", (*it)->getVariable(nVar));
 
@@ -859,9 +848,8 @@ int BranchAndBound::saveParetoFront() {
 
 		std::vector<Solution>::iterator it;
 
-		for (it = paretoFront.begin(); it != paretoFront.end();
-				it++) {
-			for (nObj = 0; nObj < numberOfObjectives - 1; nObj++)
+		for (it = paretoFront.begin(); it != paretoFront.end(); ++it) {
+			for (nObj = 0; nObj < numberOfObjectives - 1; ++nObj)
 				myfile << std::fixed << std::setw(26) << std::setprecision(16)
 						<< std::setfill(' ') << (*it).getObjective(nObj)
 						<< ", ";

@@ -76,13 +76,13 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy),
     
     int job = 0, map = 0, machine = 0, operation = 0, operationCounter = 0;
     
-    for (job = 0; job < totalJobs; job++) {
+    for (job = 0; job < totalJobs; ++job) {
         numberOfOperationsInJob[job] = toCopy.getNumberOfOperationsInJob(job);
         releaseTime[job] = toCopy.getReleaseTimeOfJob(job);
         
         jobMachineToMap[job] = new int[toCopy.getNumberOfMachines()];
         
-        for (machine = 0; machine < totalMachines; machine++) {
+        for (machine = 0; machine < totalMachines; ++machine) {
             mapToJobMachine[map] = new int[2];
             mapToJobMachine[map][0] = toCopy.getMapOfJobMachine(map, 0);
             mapToJobMachine[map][1] = toCopy.getMapOfJobMachine(map, 1);
@@ -91,26 +91,26 @@ ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy): Problem(toCopy),
         }
     }
     
-    for (machine = 0; machine < totalMachines; machine++) {
+    for (machine = 0; machine < totalMachines; ++machine) {
         minWorkload[machine] = toCopy.getMinWorkload(machine);
         bestWorkloads[machine] = toCopy.getBestWorkload(machine);
     }
     
-    for (operation = 0; operation < totalOperations; operation++){
+    for (operation = 0; operation < totalOperations; ++operation){
         lowerBound[operation] = toCopy.getLowerBound(operation);
         
         processingTime[operation] = new int[toCopy.getNumberOfMachines()];
-        for (machine = 0; machine < totalMachines; machine++)
+        for (machine = 0; machine < totalMachines; ++machine)
             processingTime[operation][machine] = toCopy.getProccessingTime(operation, machine);
         
         assignationMinPij[operation] = toCopy.getAssignationMinPij(operation);
         assignationBestWorkload[operation] = toCopy.getAssignatioBestWorkload(operation);
     }
     
-    for (job = 0; job < totalJobs; job++) {
+    for (job = 0; job < totalJobs; ++job) {
         jobOperationHasNumber[job] = new int[toCopy.getNumberOfOperationsInJob(job)];
         
-        for(operation = 0; operation < numberOfOperationsInJob[job]; operation++){
+        for(operation = 0; operation < numberOfOperationsInJob[job]; ++operation){
             jobOperationHasNumber[job][operation] = toCopy.getOperationInJobIsNumber(job, operation);
             operationIsFromJob[operationCounter] = toCopy.getOperationIsFromJob(operationCounter);
             operationCounter++;
@@ -132,15 +132,15 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
     
     if (processingTime != nullptr) {
         int job = 0, operation = 0;
-        for(job = 0; job < totalJobs; job++){
+        for(job = 0; job < totalJobs; ++job){
             delete [] jobMachineToMap[job];
             delete [] jobOperationHasNumber[job];
         }
         
-        for (job = 0; job < totalJobs * totalMachines; job++)
+        for (job = 0; job < totalJobs * totalMachines; ++job)
             delete [] mapToJobMachine[job];
         
-        for (operation = 0; operation < totalOperations; operation++)
+        for (operation = 0; operation < totalOperations; ++operation)
             delete [] processingTime[operation];
         
         delete [] jobMachineToMap;
@@ -184,13 +184,13 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
     
     int job = 0, map = 0, machine = 0, operation = 0, operationCounter = 0;
     
-    for (job = 0; job < totalJobs; job++) {
+    for (job = 0; job < totalJobs; ++job) {
         numberOfOperationsInJob[job] = toCopy.getNumberOfOperationsInJob(job); //jobHasNoperations[job];
         releaseTime[job] = toCopy.getReleaseTimeOfJob(job);//releaseTime[job];
         
         jobMachineToMap[job] = new int[totalMachines];
         
-        for (machine = 0; machine < totalMachines; machine++) {
+        for (machine = 0; machine < totalMachines; ++machine) {
             mapToJobMachine[map] = new int[2];
             mapToJobMachine[map][0] = toCopy.getMapOfJobMachine(map, 0); //toCopy.mapToJobMachine[map][0];
             mapToJobMachine[map][1] = toCopy.getMapOfJobMachine(map, 1);
@@ -199,7 +199,7 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
         }
     }
     
-    for (machine = 0; machine < totalMachines; machine++) {
+    for (machine = 0; machine < totalMachines; ++machine) {
         minWorkload[machine] = toCopy.getMinWorkload(machine);// minWorkload[machine];
         bestWorkloads[machine] = toCopy.getBestWorkload(machine);// bestWorkloads[machine];
     }
@@ -207,19 +207,19 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
     jobOperationHasNumber = new int * [totalJobs];
     processingTime = new int * [totalOperations];
     
-    for (operation = 0; operation < totalOperations; operation++){
+    for (operation = 0; operation < totalOperations; ++operation){
         
         processingTime[operation] = new int[totalMachines];
-        for (machine = 0; machine < totalMachines; machine++)
+        for (machine = 0; machine < totalMachines; ++machine)
             processingTime[operation][machine] = toCopy.getProccessingTime(operation, machine);// processingTime[operation][machine];
         
         assignationMinPij[operation] = toCopy.getAssignationMinPij(operation);// assignationMinPij[operation];
         assignationBestWorkload[operation] = toCopy.getAssignatioBestWorkload(operation);//assignationBestWorkload[operation];
     }
     
-    for (job = 0; job < totalJobs; job++) {
+    for (job = 0; job < totalJobs; ++job) {
         jobOperationHasNumber[job] = new int[numberOfOperationsInJob[job]];
-        for(operation = 0; operation < numberOfOperationsInJob[job]; operation++){
+        for(operation = 0; operation < numberOfOperationsInJob[job]; ++operation){
             jobOperationHasNumber[job][operation] = toCopy.getOperationInJobIsNumber(job, operation);//operationInJobIsNumber[job][operation];
             operationIsFromJob[operationCounter] = toCopy.getOperationIsFromJob(operationCounter);// operationIsFromJob[operationCounter];
             operationCounter++;
@@ -231,15 +231,15 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
 
 ProblemFJSSP::~ProblemFJSSP(){
     int job = 0, operation = 0;
-    for(job = 0; job < totalJobs; job++){
+    for(job = 0; job < totalJobs; ++job){
         delete [] jobOperationHasNumber[job];
         delete [] jobMachineToMap[job];
     }
     
-    for (job = 0; job < totalJobs * totalMachines; job++)
+    for (job = 0; job < totalJobs * totalMachines; ++job)
         delete [] mapToJobMachine[job];
 
-    for (operation = 0; operation < totalOperations; operation++)
+    for (operation = 0; operation < totalOperations; ++operation)
         delete [] processingTime[operation];
     
     delete [] jobMachineToMap;
@@ -314,15 +314,15 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
     int timeInMachine [totalMachines];
     int workload [totalMachines];
     
-    for (operation = 0; operation < totalOperations; operation++) {
+    for (operation = 0; operation < totalOperations; ++operation) {
         startingTime[operation] = 0;
         endingTime[operation] = 0;
     }
     
-    for (job = 0; job < totalJobs; job++)
+    for (job = 0; job < totalJobs; ++job)
         operationOfJob[job] = 0;
     
-    for (machine = 0; machine < totalMachines; machine++){
+    for (machine = 0; machine < totalMachines; ++machine){
         timeInMachine[machine] = 0;
         workload[machine] = 0;
         bestWL[machine] = bestWorkloads[machine];
@@ -387,7 +387,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
         }
     }
     
-    for (machine = 0; machine < totalMachines; machine++)
+    for (machine = 0; machine < totalMachines; ++machine)
         if(workload[machine] + bestWL[machine] > maxWorkload)
             maxWorkload = workload[machine] + bestWL[machine];
     
@@ -401,10 +401,10 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
         MutexToUpdate.lock();
         bestWorkloadFound = maxWorkload;
         
-        for (machine = 0; machine < totalMachines; machine++)
+        for (machine = 0; machine < totalMachines; ++machine)
             bestWorkloads[machine] = workload[machine];
         
-        for (operation = 0; operation < totalOperations; operation++)
+        for (operation = 0; operation < totalOperations; ++operation)
             assignationBestWorkload[operation] = mapToJobMachine[solution.getVariable(operation)][1];
         MutexToUpdate.unlock();
     }
@@ -424,8 +424,8 @@ void ProblemFJSSP::createDefaultSolution(Solution & solution){
     int map = 0;
     int machine = 0;
     
-    for (job = 0; job < totalJobs; job++)
-        for (operation = 0; operation < numberOfOperationsInJob[job]; operation++){
+    for (job = 0; job < totalJobs; ++job)
+        for (operation = 0; operation < numberOfOperationsInJob[job]; ++operation){
             map = jobMachineToMap[job][machine];
             solution.setVariable(countOperations++, map);
             machine++;
@@ -445,7 +445,7 @@ void ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){
     }
     else if(nObj == 2){
         int operation = 0;
-        for (operation = 0; operation < totalOperations; operation++)
+        for (operation = 0; operation < totalOperations; ++operation)
             solution.setVariable(operation, jobMachineToMap[operationIsFromJob[operation]][assignationMinPij[operation]]);
     }
     evaluate(solution);
@@ -477,14 +477,14 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
     int workload [getNumberOfMachines()];
     int maxWorkloadedMachine = 0;
     
-    for (nMachine = 0; nMachine < getNumberOfMachines(); nMachine++)
+    for (nMachine = 0; nMachine < getNumberOfMachines(); ++nMachine)
         workload[nMachine] = 0;
     
     /** Assign the operations to machines which generates the min TotalWorkload and computes the machines workloads. **/
     int counterOperations = 0;
-    for (nJob = 0; nJob < getNumberOfJobs(); nJob++){
+    for (nJob = 0; nJob < getNumberOfJobs(); ++nJob){
         operationOfJob[nJob] = 0;
-        for (nOperation = 0; nOperation < getNumberOfOperationsInJob(nJob); nOperation++){
+        for (nOperation = 0; nOperation < getNumberOfOperationsInJob(nJob); ++nOperation){
             
             nMachine = assignationMinPij[counterOperations];
             procTiOp = processingTime[counterOperations][nMachine];
@@ -514,9 +514,9 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
         bestMachine = 0;
         minWorkload = INT_MAX;
         
-        for (nOperation = 0; nOperation < getNumberOfOperations(); nOperation++)
+        for (nOperation = 0; nOperation < getNumberOfOperations(); ++nOperation)
             if(mapToJobMachine[solution.getVariable(nOperation)][1] == maxWorkloadedMachine)
-                for (nMachine = 0; nMachine < getNumberOfMachines(); nMachine++)
+                for (nMachine = 0; nMachine < getNumberOfMachines(); ++nMachine)
                     if(nMachine != maxWorkloadedMachine
                        && (workload[nMachine] + processingTime[nOperation][nMachine]) < minWorkload) {
                         bestOperation = nOperation;
@@ -538,7 +538,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
         maxWorkload = 0;
         int lastMaxWorkloadedMachine = maxWorkloadedMachine;
         int lastBestWorkloadMachine = bestMachine;
-        for (nMachine = 0; nMachine < getNumberOfMachines(); nMachine++)
+        for (nMachine = 0; nMachine < getNumberOfMachines(); ++nMachine)
             if(workload[nMachine] > maxWorkload) {
                 maxWorkload = workload[nMachine];
                 maxWorkloadedMachine = nMachine;
@@ -566,7 +566,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
     }
     
     getBestWorkload(maxWorkloadObj);// bestWorkloadFound = maxWorkloadObj;
-    for (nMachine = 0; nMachine < getNumberOfMachines(); nMachine++)
+    for (nMachine = 0; nMachine < getNumberOfMachines(); ++nMachine)
         bestWorkloads[nMachine] = workload[nMachine];
 
 }
@@ -600,15 +600,15 @@ void ProblemFJSSP::loadInstance(char** filePath){
         
         if(processingTime != nullptr){
             int job = 0, operation = 0;
-            for(job = 0; job < totalJobs; job++){
+            for(job = 0; job < totalJobs; ++job){
                 delete [] jobOperationHasNumber[job];
                 delete [] jobMachineToMap[job];
             }
             
-            for (job = 0; job < totalJobs * totalMachines; job++)
+            for (job = 0; job < totalJobs * totalMachines; ++job)
                 delete [] mapToJobMachine[job];
             
-            for (operation = 0; operation < totalOperations; operation++)
+            for (operation = 0; operation < totalOperations; ++operation)
                 delete[] processingTime[operation];
             
             delete [] jobMachineToMap;
@@ -642,7 +642,7 @@ void ProblemFJSSP::loadInstance(char** filePath){
         int job = 0;
         totalOperations = 0;
 
-        for(job = 0; job < getNumberOfJobs(); job++){
+        for(job = 0; job < getNumberOfJobs(); ++job){
             numberOfOperationsInJob[job] = std::stoi(elemens.at(job));
             totalOperations += numberOfOperationsInJob[job];
         }
@@ -650,7 +650,7 @@ void ProblemFJSSP::loadInstance(char** filePath){
         std::getline(infile, line);
         std::getline(infile, line);
         elemens = split(line, ' ');
-        for (job = 0; job < getNumberOfJobs(); job++)
+        for (job = 0; job < getNumberOfJobs(); ++job)
             releaseTime[job] = std::stoi(elemens.at(job));
         
         
@@ -674,9 +674,9 @@ void ProblemFJSSP::loadInstance(char** filePath){
         int minMachine = 0;
         int map = 0;
         
-        for (job = 0; job < getNumberOfJobs(); job++) {
+        for (job = 0; job < getNumberOfJobs(); ++job) {
             jobMachineToMap[job] = new int[totalMachines];
-            for (machine = 0; machine < totalMachines; machine++) {
+            for (machine = 0; machine < totalMachines; ++machine) {
                 mapToJobMachine[map] = new int[2];
                 mapToJobMachine[map][0] = job;
                 mapToJobMachine[map][1] = machine;
@@ -685,16 +685,16 @@ void ProblemFJSSP::loadInstance(char** filePath){
             }
         }
         
-        for (machine = 0; machine < getNumberOfMachines(); machine++)
+        for (machine = 0; machine < getNumberOfMachines(); ++machine)
             minWorkload[machine] = 0;
         
-        for (operation = 0; operation < getNumberOfOperations(); operation++) {
+        for (operation = 0; operation < getNumberOfOperations(); ++operation) {
             processingTime[operation] = new int[totalMachines];
             std::getline(infile, line);
             elemens = split(line, ' ');
             minPij = INT_MAX;
             minMachine = 0;
-            for (machine = 0; machine < getNumberOfMachines(); machine++){
+            for (machine = 0; machine < getNumberOfMachines(); ++machine){
                 processingTime[operation][machine] = std::stoi(elemens.at(machine));
                 if (processingTime[operation][machine] < minPij){
                     minPij = processingTime[operation][machine];
@@ -711,9 +711,9 @@ void ProblemFJSSP::loadInstance(char** filePath){
         totalVariables = totalOperations;
         
         int operationCounter = 0;
-        for (job = 0; job < getNumberOfJobs(); job++) {
+        for (job = 0; job < getNumberOfJobs(); ++job) {
             jobOperationHasNumber[job] = new int[numberOfOperationsInJob[job]];
-            for(operation = 0; operation < numberOfOperationsInJob[job]; operation++){
+            for(operation = 0; operation < numberOfOperationsInJob[job]; ++operation){
                 jobOperationHasNumber[job][operation] = operationCounter;
                 operationIsFromJob[operationCounter++] = job;
             }
@@ -760,24 +760,24 @@ void ProblemFJSSP::printProblemInfo(){
     printf("Operations in each job:\n");
     
     int job = 0, machine = 0, operation = 0;
-    for (job = 0; job < totalJobs; job++)
+    for (job = 0; job < totalJobs; ++job)
         printf("%2d ", numberOfOperationsInJob[job]);
     printf("\n");
     
     printf("Release time for each job:\n");
-    for (job = 0; job < totalJobs; job++)
+    for (job = 0; job < totalJobs; ++job)
         printf("%2d ", releaseTime[job]);
     printf("\n");
 
     printf("Processing times: \n");
     printf("\t\t  ");
-    for (machine = 0; machine < totalMachines; machine++)
+    for (machine = 0; machine < totalMachines; ++machine)
         printf("M%-2d ", machine);
     printf("\n");
-    for (operation = 0; operation < totalOperations; operation++) {
+    for (operation = 0; operation < totalOperations; ++operation) {
         
         printf("[J%-2d] %2d:", operationIsFromJob[operation], operation);
-        for (machine = 0; machine < totalMachines; machine++)
+        for (machine = 0; machine < totalMachines; ++machine)
             printf("%3d ", processingTime[operation][machine]);
         printf("\n");
     }
@@ -806,15 +806,15 @@ void ProblemFJSSP::printSchedule(Solution & solution){
     char gantt[totalMachines][255];
     int time = 0;
     
-    for (operation = 0; operation < totalOperations; operation++) {
+    for (operation = 0; operation < totalOperations; ++operation) {
         startingTime[operation] = 0;
         endingTime[operation] = 0;
     }
     
-    for (job = 0; job < totalJobs; job++)
+    for (job = 0; job < totalJobs; ++job)
         operationOfJob[job] = 0;
     
-    for (machine = 0; machine < totalMachines; machine++){
+    for (machine = 0; machine < totalMachines; ++machine){
         timeInMachine[machine] = 0;
         workload[machine] = 0;
         
@@ -879,12 +879,12 @@ void ProblemFJSSP::printSchedule(Solution & solution){
     solution.setObjective(1, maxWorkload);
     
     printf("Op :  M  ti -  tf\n");
-    for (operation = 0; operation < totalOperations; operation++)
+    for (operation = 0; operation < totalOperations; ++operation)
         printf("%3d: %2d %3d - %3d \n", operation, mapToJobMachine[solution.getVariable(operation)][1], startingTime[operation], endingTime[operation]);
     
     printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
 
-    for (machine = 0; machine < totalMachines; machine++) {
+    for (machine = 0; machine < totalMachines; ++machine) {
         printf("M%d  |", machine);
         for (time = 0; time < makespan; time++)
             printf("%3c", gantt[machine][time]);
