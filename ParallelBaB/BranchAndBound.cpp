@@ -154,18 +154,10 @@ void BranchAndBound::initialize(int starts_tree) {
 	bestObjectivesFound(numberOfObjectives, numberOfVariables);
 	problem.createDefaultSolution(currentSolution);
 
-    
-    //Solution bestInObj1;
-    //problem.getSolutionWithLowerBoundInObj(1, bestInObj1);
-    //Solution bestInObj2;
-    //problem.getSolutionWithLowerBoundInObj(2, bestInObj2);
-
 	int nObj = 0;
 	for (nObj = 0; nObj < numberOfObjectives; nObj++)
 		bestObjectivesFound.setObjective(nObj,
 				currentSolution.getObjective(nObj));
-
-    //bestObjectivesFound.setObjective(1, bestInObj1.getObjective(1));
 
     //updateParetoGrid(bestInObj1);
     //updateParetoGrid(bestInObj2);

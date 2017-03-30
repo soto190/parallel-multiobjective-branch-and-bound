@@ -67,6 +67,10 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "4"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "FJSSP"
             isEnabled = "YES">
          </CommandLineArgument>

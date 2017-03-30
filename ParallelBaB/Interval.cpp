@@ -33,7 +33,7 @@ Interval::Interval(const Interval &toCopy):
     max_size(toCopy.getSize()),
     build_up_to(toCopy.getBuildUpTo()){
 
-    interval = new int[toCopy.getSize()];
+    interval = new int[max_size];
     int index = 0;
     for (index = 0; index < max_size; index++)
         interval[index] = toCopy.getValueAt(index);

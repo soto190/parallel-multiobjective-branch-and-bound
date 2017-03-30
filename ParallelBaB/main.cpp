@@ -19,33 +19,39 @@
 #include "ParallelBranchAndBound.hpp"
 #include "myutils.hpp"
 #include "GridContainer.hpp"
-//#include <tbb/tbbmalloc_proxy.h>
 #include <tbb/task_scheduler_init.h>
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
 #include <tbb/task_group.h>
 
 /**
- * argv[1] = problem: TSP, HCSP, VRP, and FJSSP.
- * argv[2] = First input file of instance.
- * argv[3] = Second input file of instance.
- * argv[4] = output folder for Pareto front, the file name is given by the instance name.
+ * argv[1] = number of threads.
+ * argv[2] = problem: TSP, HCSP, VRP, and FJSSP.
+ * argv[3] = First input file of instance.
+ * argv[4] = Second input file of instance.
+ * argv[5] = output folder for Pareto front, the file name is given by the instance name.
  */
 
 int main(int argc, const char * argv[]) {
 
+    const int arg_num_threads = 1;
+    //const int arg_problem = 2;
+    const int arg_input_file1 = 3;
+    const int arg_input_file2 = 4;
+    const int arg_output = 5;
+    
 	ProblemFJSSP  problem (2, 1);
 
 //    if (strcmp(argv[1], "TSP") == 0) {
 //		printf("Problem: TSP\n");
 //        problem = new ProblemTSP(2, 1);
-//	} else if (strcmp(argv[1], "HCSP") == 0) {
+//	} else if (strcmp(argv[arg_problem], "HCSP") == 0) {
 //		printf("Problem: HCSP\n");
 //		problem = new ProblemHCSP(2, 1);
-//	} else if (strcmp(argv[1], "VRP") == 0) {
+//	} else if (strcmp(argv[arg_problem], "VRP") == 0) {
 //		printf("Problem: VRP\n");
 //		problem = new ProblemVRP(2, 1);
-//	} else if (strcmp(argv[1], "FJSSP") == 0) {
+//	} else if (strcmp(argv[arg_problem], "FJSSP") == 0) {
 //		printf("Problem: FJSSP\n");
 //		problem = new ProblemFJSSP(2, 1);
 //	} else {
@@ -53,16 +59,17 @@ int main(int argc, const char * argv[]) {
 //		return 0;
 //	}
 
+    
 	char **files = new char*[2];
 	files[0] = new char[255];
 	files[1] = new char[255];
-	std::strcpy(files[0], argv[2]);
-	std::strcpy(files[1], argv[3]);
+	std::strcpy(files[0], argv[arg_input_file1]);
+	std::strcpy(files[1], argv[arg_input_file2]);
 
 	/** Get name of the instance. **/
 	std::vector<std::string> elemens;
 	std::vector<std::string> splited;
-	elemens = split(argv[2], '/');
+	elemens = split(argv[arg_input_file1], '/');
 
 	unsigned long int sizeOfElems = elemens.size();
 	splited = split(elemens[sizeOfElems - 1], '.');
@@ -78,8 +85,8 @@ int main(int argc, const char * argv[]) {
 	 * - CSV: contains the Pareto front.
 	 * - TXT: contains a log file.
 	 **/
-	std::string outputFile = argv[4] + splited[0] + ".csv";
-	std::string summarizeFile = argv[4] + splited[0] + ".txt";
+	std::string outputFile = argv[arg_output] + splited[0] + ".csv";
+	std::string summarizeFile = argv[arg_output] + splited[0] + ".txt";
 
     try {
         Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
@@ -87,7 +94,7 @@ int main(int argc, const char * argv[]) {
         GlobalPool global_pool;
         HandlerContainer global_grid(100, 100, solution.getObjective(0), solution.getObjective(1));
         
-        int number_of_threads = 4;//tbb::task_scheduler_init::default_num_threads();
+        int number_of_threads = stoi(argv[arg_num_threads]);//tbb::task_scheduler_init::default_num_threads();
 		tbb::task_scheduler_init init(number_of_threads);
 
 		ParallelBranchAndBound * pbb =
