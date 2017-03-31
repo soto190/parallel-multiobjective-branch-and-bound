@@ -470,7 +470,7 @@ void ProblemTSP::readCost(char *filePath){
     infile.close();
 }
 
-void ProblemTSP::printSolution(Solution & solution){
+void ProblemTSP::printSolution(const Solution & solution){
     printPartialSolution(solution, this->totalVariables);
 }
 
@@ -478,6 +478,6 @@ void ProblemTSP::printSolutionInfo(Solution & solution){
     printf("TODO: Implement this function.\n");
 }
 
-void ProblemTSP::printPartialSolution(Solution & solution, int level){
+void ProblemTSP::printPartialSolution(const Solution & solution, int level){
     
 }

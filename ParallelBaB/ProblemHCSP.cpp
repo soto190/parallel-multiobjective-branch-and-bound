@@ -535,7 +535,7 @@ void ProblemHCSP::readMachinesConfigurations(char *filePath){
     infile.close();
 }
 
-void ProblemHCSP::printSolution(Solution & solution){
+void ProblemHCSP::printSolution(const Solution & solution){
     printPartialSolution(solution, this->totalVariables);
 }
 
@@ -543,6 +543,6 @@ void ProblemHCSP::printSolutionInfo(Solution & solution){
     printf("TODO: Implement this function.\n");
 }
 
-void ProblemHCSP::printPartialSolution(Solution & solution, int level){
+void ProblemHCSP::printPartialSolution(const Solution & solution, int level){
 
 }

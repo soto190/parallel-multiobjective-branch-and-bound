@@ -85,6 +85,12 @@ private:
     char * outputFile;
     char * summarizeFile;
     
+    int branches_to_move;
+    int deep_to_share;
+    
+    float percent_to_move = 0.2f;
+    float percent_deep = 0.85f;
+    
     double totalTime;
     std::clock_t start;
     std::chrono::high_resolution_clock::time_point t1;

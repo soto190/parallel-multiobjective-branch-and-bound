@@ -41,8 +41,8 @@ public:
     virtual double removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel) = 0;
     virtual double removeLastLevelEvaluation(Solution * solution, int newLevel) = 0;
     virtual void createDefaultSolution(Solution & solution);
-    virtual void printSolution(Solution & solution);
-    virtual void printPartialSolution(Solution & solution, int level);
+    virtual void printSolution(const Solution & solution);
+    virtual void printPartialSolution(const Solution & solution, int level);
     
     virtual ProblemType getType() const = 0;
     virtual int getStartingLevel() = 0;

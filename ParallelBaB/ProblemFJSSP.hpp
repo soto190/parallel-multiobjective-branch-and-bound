@@ -95,8 +95,8 @@ public:
     
     void createDefaultSolution(Solution & solution);
     void getSolutionWithLowerBoundInObj(int nObj, Solution& solution);
-    void printSolution(Solution & solution);
-    void printPartialSolution(Solution & solution, int level);
+    void printSolution(const Solution & solution);
+    void printPartialSolution(const Solution & solution, int level);
     void printSolutionInfo(Solution & solution);
     
     int getLowerBound(int indexVar) const;

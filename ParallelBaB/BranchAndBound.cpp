@@ -33,12 +33,15 @@ BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
     callsToBranch(toCopy.getNumberOfCallsToBranch()),
     totalUpdatesInLowerBound(toCopy.getNumberOfUpdatesInLowerBound()){
         
-    start = toCopy.start;
-    outputFile = new char[255];
-    summarizeFile = new char[255];
-
-    std::strcpy(outputFile, toCopy.outputFile);
-    std::strcpy(summarizeFile, toCopy.summarizeFile);
+        start = toCopy.start;
+        outputFile = new char[255];
+        summarizeFile = new char[255];
+        
+        branches_to_move = problem.getUpperBound(0) * percent_to_move;
+        deep_to_share = totalLevels * percent_deep;
+    
+        std::strcpy(outputFile, toCopy.outputFile);
+        std::strcpy(summarizeFile, toCopy.summarizeFile);
 }
 
 BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, const Interval & branch, GlobalPool &globa_pool, HandlerContainer& pareto_container):
@@ -65,6 +68,9 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, cons
 	t2 = std::chrono::high_resolution_clock::now();
         
 
+        branches_to_move = problem.getUpperBound(0) * percent_to_move;
+        deep_to_share = totalLevels * percent_deep;
+        
 	int numberOfObjectives = problem.getNumberOfObjectives();
 	int numberOfVariables = problem.getNumberOfVariables();
 
@@ -118,6 +124,9 @@ BranchAndBound& BranchAndBound::operator()(int rank_new, const ProblemFJSSP &pro
 
     ivm_tree(problem.getNumberOfVariables(), problem.getUpperBound(0) + 1);
     ivm_tree.setOwner(rank);
+    
+    branches_to_move = problem.getUpperBound(0) * percent_to_move;
+    deep_to_share = totalLevels * percent_deep;
     
     outputFile = new char[255];
     summarizeFile = new char[255];
@@ -539,7 +548,7 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
  *  NOTE: Remember to avoid to split the intervals in the last levels.
  **/
 void BranchAndBound::splitInterval(Interval & branch_to_split) {
-
+    
 	int index_var = 0;
 	int level_to_split = branch_to_split.getBuildUpTo() + 1;
 	int branches_created = 0;
@@ -568,8 +577,7 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 			jobAllocated = problem.getMapping(map, 0);
 			if (jobToCheck == jobAllocated) {
 				timesRepeated[jobToCheck]++;
-				if (timesRepeated[jobToCheck]
-						== numberOfRepetitionsAllowed[jobToCheck]) {
+				if (timesRepeated[jobToCheck] == numberOfRepetitionsAllowed[jobToCheck]) {
 					isIn = 1;
 					varInPos = level_to_split + 1;
 				}
@@ -584,7 +592,6 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 
 				toAdd = problem.getMappingOf(jobToCheck, machine);
 
-               
 				sol_test.setVariable(level_to_split, toAdd);
 				problem.evaluatePartial(sol_test, level_to_split);
 
@@ -608,10 +615,10 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
     
 	/** TODO: Design something to decide when to add something to the global pool. **/
 	if (rank > 0
-			&& branches_created > (problem.getUpperBound(0) * 0.5)
-			&& branch_to_split.getBuildUpTo() < (totalLevels * 0.8)) {
+        && branches_created > branches_to_move
+        && branch_to_split.getBuildUpTo() < deep_to_share) {
+        
         int moved = 0;
-        int branches_to_move = (int) branches_created * 0.3;
         for (moved = 0; moved < branches_to_move; ++moved) {
             globalPool.push(localPool.front());
             localPool.pop();
@@ -631,7 +638,7 @@ unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) const {
  *
  */
 unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) const {
-	long totalNodes = 0;
+	long n_nodes = 0;
     long nodes_per_branch = 0;
     long deepest_level;
 
@@ -639,24 +646,20 @@ unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) co
 
 	case ProblemType::permutation:
 		for (int i = 0; i < totalVariables; ++i)
-			totalNodes += (totalVariables - i) * permut(totalVariables, i);
+			n_nodes += (totalVariables - i) * permut(totalVariables, i);
 		break;
 
 	case ProblemType::combination:
-		nodes_per_branch = (problem.getUpperBound(0) + 1)
-				- problem.getLowerBound(0);
+		nodes_per_branch = (problem.getUpperBound(0) + 1) - problem.getLowerBound(0);
 		deepest_level = totalLevels + 1;
-		totalNodes = (pow(nodes_per_branch, deepest_level + 1) - 1)
-				/ (nodes_per_branch - 1);
+		n_nodes = (pow(nodes_per_branch, deepest_level + 1) - 1) / (nodes_per_branch - 1);
 		break;
 
 	case ProblemType::permutation_with_repetition_and_combination:
 		/** TODO: Design the correct computaiton of the number of nodes. **/
-		nodes_per_branch = (problem.getUpperBound(0) + 1)
-				- problem.getLowerBound(0);
+		nodes_per_branch = (problem.getUpperBound(0) + 1) - problem.getLowerBound(0);
 		deepest_level = totalLevels + 1;
-		totalNodes = (pow(nodes_per_branch, deepest_level + 1) - 1)
-				/ (nodes_per_branch - 1);
+		n_nodes = (pow(nodes_per_branch, deepest_level + 1) - 1) / (nodes_per_branch - 1);
 
 		break;
 
@@ -664,7 +667,7 @@ unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) co
 		break;
 	}
 
-	return totalNodes;
+	return n_nodes;
 }
 
 void BranchAndBound::printCurrentSolution(int withVariables) {

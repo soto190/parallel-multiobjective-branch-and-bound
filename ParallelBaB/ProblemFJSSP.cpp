@@ -375,7 +375,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
             }
         }
         
-        operationOfJob[job]++; /** This counts the number of operations from a job allocated. **/
+        operationOfJob[job]++; /** This counts the number of operations from an allocated job. **/
         
         if (timeInMachine[machine] > makespan){
             makespan = timeInMachine[machine];
@@ -395,20 +395,6 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
     solution.setObjective(1, maxWorkload);
     //solution->setObjective(2, totalWorkload + minPij);
     
-    /** Updates the best workloads and the assignation. **/
-    /*
-    if(maxWorkload < bestWorkloadFound){
-        MutexToUpdate.lock();
-        bestWorkloadFound = maxWorkload;
-        
-        for (machine = 0; machine < totalMachines; ++machine)
-            bestWorkloads[machine] = workload[machine];
-        
-        for (operation = 0; operation < totalOperations; ++operation)
-            assignationBestWorkload[operation] = mapToJobMachine[solution.getVariable(operation)][1];
-        MutexToUpdate.unlock();
-    }
-    */
     return 0.0;
 }
 
@@ -901,11 +887,11 @@ void ProblemFJSSP::printSchedule(Solution & solution){
     printf("\n");
 }
 
-void ProblemFJSSP::printSolution(Solution & solution){
+void ProblemFJSSP::printSolution(const Solution & solution){
     printPartialSolution(solution, totalOperations - 1);
 }
 
-void ProblemFJSSP::printPartialSolution(Solution & solution, int level){
+void ProblemFJSSP::printPartialSolution(const Solution & solution, int level){
     
     int indexVar = 0;
     int withVariables = 1;

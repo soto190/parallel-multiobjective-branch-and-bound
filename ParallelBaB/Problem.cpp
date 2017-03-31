@@ -103,8 +103,8 @@ double Problem::evaluate(Solution & solution){ return 0; }
 double Problem::evaluatePartial(Solution & solution, int levelEvaluation){ return 0;}
 void Problem::createDefaultSolution(Solution & solution){}
 void Problem::getSolutionWithLowerBoundInObj(int nObj, Solution& sol){}
-void Problem::printSolution(Solution & solution){}
-void Problem::printPartialSolution(Solution & solution, int level){}
+void Problem::printSolution(const Solution & solution){}
+void Problem::printPartialSolution(const Solution & solution, int level){}
 void Problem::printInstance(){}
 void Problem::printProblemInfo(){}
 void Problem::printSolutionInfo(Solution & solution){}
