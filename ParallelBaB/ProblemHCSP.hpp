@@ -55,9 +55,6 @@ public:
     void createDefaultSolution(Solution & solution);
     void getSolutionWithLowerBoundInObj(int nObj, Solution& solution);
 
-    void printSolution(const Solution & solution);
-    void printPartialSolution(const Solution & solution, int level);
-
     int getLowerBound(int indexVar) const;
     int getUpperBound(int indexVar) const;
     int getLowerBoundInObj(int nObj) const;
@@ -92,10 +89,10 @@ public:
     double computeProcessingTime(int task, int machine, int config);
     double computeEnergy(int task, int machine, int config, double proc_time);
     
+    void printSolution(const Solution & solution) const;
+    void printPartialSolution(const Solution & solution, int level) const;
+    void printSolutionInfo(const Solution & solution) const;
     void printInstance();
-    void printProblemInfo();
-    void printSolutionInfo(Solution & solution);
-
-    
+    void printProblemInfo() const;
 };
 #endif /* ProblemHCSP_hpp */

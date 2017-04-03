@@ -558,18 +558,14 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
 }
 
 /** For all the variables the lower bound is 0. **/
-int ProblemFJSSP::getLowerBound(int indexVar) const{
-    return 0;
-}
+int ProblemFJSSP::getLowerBound(int indexVar) const{ return 0; }
 
 /** 
  *
  * The Range of variables is the number of maps.
  *
  **/
-int ProblemFJSSP::getUpperBound(int indexVar) const{
-    return (totalJobs * totalMachines) - 1;
-}
+int ProblemFJSSP::getUpperBound(int indexVar) const{ return (totalJobs * totalMachines) - 1; }
 
 int ProblemFJSSP::getLowerBoundInObj(int nObj) const{
     if(nObj == 1)
@@ -578,8 +574,6 @@ int ProblemFJSSP::getLowerBoundInObj(int nObj) const{
 }
 
 void ProblemFJSSP::loadInstance(char** filePath){
-    
-
     
     std::ifstream infile(filePath[0]);
     if(infile.is_open()){
@@ -769,9 +763,9 @@ void ProblemFJSSP::printProblemInfo(){
     }
 }
 
-void ProblemFJSSP::printSolutionInfo(Solution &solution){ printSchedule(solution);}
+void ProblemFJSSP::printSolutionInfo(const Solution &solution) const{ printSchedule(solution);}
 
-void ProblemFJSSP::printSchedule(Solution & solution){
+void ProblemFJSSP::printSchedule(const Solution & solution) const {
     
     int makespan = 0;
     int maxWorkload = 0;
@@ -861,9 +855,6 @@ void ProblemFJSSP::printSchedule(Solution & solution){
             maxWorkload = workload[machine];
     }
     
-    solution.setObjective(0, makespan);
-    solution.setObjective(1, maxWorkload);
-    
     printf("Op :  M  ti -  tf\n");
     for (operation = 0; operation < totalOperations; ++operation)
         printf("%3d: %2d %3d - %3d \n", operation, mapToJobMachine[solution.getVariable(operation)][1], startingTime[operation], endingTime[operation]);
@@ -872,26 +863,26 @@ void ProblemFJSSP::printSchedule(Solution & solution){
 
     for (machine = 0; machine < totalMachines; ++machine) {
         printf("M%d  |", machine);
-        for (time = 0; time < makespan; time++)
+        for (time = 0; time < makespan; ++time)
             printf("%3c", gantt[machine][time]);
         printf("| %3d\n", workload[machine]);
     }
      printf("----");
-    for (time = 0; time < makespan; time++)
+    for (time = 0; time < makespan; ++time)
         printf("---");
     printf("--\n");
 
     printf("Time:");
-    for (time = 0; time < makespan; time++)
+    for (time = 0; time < makespan; ++time)
         printf("%3d", (time));
     printf("\n");
 }
 
-void ProblemFJSSP::printSolution(const Solution & solution){
+void ProblemFJSSP::printSolution(const Solution & solution) const{
     printPartialSolution(solution, totalOperations - 1);
 }
 
-void ProblemFJSSP::printPartialSolution(const Solution & solution, int level){
+void ProblemFJSSP::printPartialSolution(const Solution & solution, int level) const{
     
     int indexVar = 0;
     int withVariables = 1;

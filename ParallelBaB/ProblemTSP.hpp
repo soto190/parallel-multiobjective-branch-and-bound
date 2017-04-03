@@ -47,14 +47,10 @@ public:
     void createDefaultSolution(Solution & solution);
     void getSolutionWithLowerBoundInObj(int nObj, Solution& solution);
 
-    void printSolution(const Solution & solution);
-    void printPartialSolution(const Solution & solution, int level);
-        
     int getLowerBound(int indexVar) const;
     int getUpperBound(int indexVar) const;
     int getLowerBoundInObj(int nObj) const;
 
-    
     ProblemType getType() const;
     int getStartingLevel();
     int getFinalLevel();
@@ -76,11 +72,13 @@ public:
     void loadInstance(char* pathsFile[]);
     
     /**Print information**/
-    void printInstance();
-    void printProblemInfo();
-    void printSolutionInfo(Solution & solution);
+    void printSolution(const Solution & solution) const;
+    void printPartialSolution(const Solution & solution, int level) const;
+    void printSolutionInfo(const Solution & solution) const;
 
-    
+    void printInstance();
+    void printProblemInfo() const;
+
 private:
     void readCost(char * pathFile);
 };

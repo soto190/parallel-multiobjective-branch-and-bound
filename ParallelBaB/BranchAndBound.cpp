@@ -329,6 +329,8 @@ int BranchAndBound::explore(Solution & solution) {
 /**
  * Modifies the variable at built_up_to + 1 of the solution.
  *
+ * TODO: When branching insert some branches in the global pool.
+ * TODO: When branching consider copy the last row.
  *
  */
 int BranchAndBound::branch(Solution& solution, int currentLevel) {
@@ -417,7 +419,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 			}
 		}
 
-		if (branches_created > 0) { /** If a branched was created. **/
+        if (branches_created > 0) { /** If a branched was created. **/
 			ivm_tree.moveToNextLevel();
             ivm_tree.setActiveNodeAt(ivm_tree.getActiveLevel(), 0);
 		} else { /** If no branches were created then move to the next node. **/

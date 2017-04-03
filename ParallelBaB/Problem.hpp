@@ -41,8 +41,6 @@ public:
     virtual double removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel) = 0;
     virtual double removeLastLevelEvaluation(Solution * solution, int newLevel) = 0;
     virtual void createDefaultSolution(Solution & solution);
-    virtual void printSolution(const Solution & solution);
-    virtual void printPartialSolution(const Solution & solution, int level);
     
     virtual ProblemType getType() const = 0;
     virtual int getStartingLevel() = 0;
@@ -71,10 +69,12 @@ public:
     
     virtual int getLowerBoundInObj(int nObj) const = 0;
     
+    virtual void printSolution(const Solution & solution) const;
+    virtual void printPartialSolution(const Solution & solution, int level) const;
+    virtual void printSolutionInfo(Solution & solution) const;
     virtual void loadInstance(char* path[]);
     virtual void printInstance();
-    virtual void printProblemInfo();
-    virtual void printSolutionInfo(Solution & solution);
+    virtual void printProblemInfo() const;
 };
 
 #endif /* Problem_hpp */

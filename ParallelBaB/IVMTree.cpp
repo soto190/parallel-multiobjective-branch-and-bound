@@ -17,28 +17,7 @@ IVMTree::IVMTree() {
     root_node = 0;
     starting_level = 0;
     active_level = 0;
-    
-    /*active_node = new int[rows];
-    max_nodes_in_level = new int[rows];
-    start_exploration = new int[rows];
-    end_exploration = new int[rows];
 
-    ivm = new int *[rows];
-    
-    int r = 0, c = 0;
-    
-    for (r = 0; r < rows; r++) {
-        active_node[r] = -1;
-        max_nodes_in_level[r] = 0;
-        start_exploration[r] = 0;
-        end_exploration[r] = cols;
-        
-        ivm[r] = new int[cols];
-        
-        for (c = 0; c < cols; c++)
-            ivm[r][c] = -1;
-    }*/
-    
 }
 
 IVMTree::IVMTree(int n_rows, int n_cols) {
@@ -68,10 +47,7 @@ IVMTree::IVMTree(int n_rows, int n_cols) {
         for (c = 0; c < cols; ++c)
             ivm[r][c] = -1;
     }
-    
 }
-
-
 
 IVMTree::IVMTree(const IVMTree& toCopy) {
     
@@ -199,31 +175,13 @@ int IVMTree::getActiveLevel() const{ return active_level; }
 int IVMTree::getStartingLevel() const{ return starting_level; }
 int IVMTree::getStartExploration(int row)const{ return start_exploration[row]; }
 int IVMTree::getEndExploration(int row) const{ return end_exploration[row]; }
+int IVMTree::getNumberOfRows() const { return rows; }
+int IVMTree::getNumberOfCols() const { return cols; }
+int IVMTree::getTreeDeep() const { return rows; }
+int IVMTree::getOwner() const {return whoIam;}
 
-
-int IVMTree::getNumberOfRows() const {
-    return rows;
-}
-
-int IVMTree::getNumberOfCols() const {
-    return cols;
-}
-
-int IVMTree::getTreeDeep() const {
-    return rows;
-}
-
-void IVMTree::setOwner(int idBB) {
-    whoIam = idBB;
-}
-
-int IVMTree::getOwner() const {
-    return whoIam;
-}
-
-void IVMTree::setActiveLevel(int level) {
-    active_level = level;
-}
+void IVMTree::setActiveLevel(int level) { active_level = level; }
+void IVMTree::setOwner(int idBB) { whoIam = idBB;}
 
 /**
  * Initialize th IVM with the given interval.
@@ -245,38 +203,20 @@ void IVMTree::setExplorationInterval(int set_starting_level, int *starts,
     
 }
 
-int IVMTree::hasPendingBranches() const {
-    return hasBranches;
-}
-
-int IVMTree::getCurrentLevel() const {
-    return active_level;
-}
-
 void IVMTree::setNode(int level, int value) {
     ivm[level][max_nodes_in_level[level]] = value;
     max_nodes_in_level[level]++;
 }
 
-int IVMTree::moveToNextLevel() {
-    return active_level++;
-}
-
-int IVMTree::moveToNextNode() {
-    return ivm[active_level][active_node[active_level]];
-}
-
-int IVMTree::getActiveNode() const {
-    return ivm[active_level][active_node[active_level]];
-}
-
-int IVMTree::getFatherNode() const {
-    return ivm[active_level - 1][active_node[active_level - 1]];
-}
+int IVMTree::hasPendingBranches() const { return hasBranches; }
+int IVMTree::getCurrentLevel() const { return active_level; }
+int IVMTree::moveToNextLevel() { return active_level++; }
+int IVMTree::moveToNextNode() { return ivm[active_level][active_node[active_level]]; }
+int IVMTree::getActiveNode() const { return ivm[active_level][active_node[active_level]];}
+int IVMTree::getFatherNode() const { return ivm[active_level - 1][active_node[active_level - 1]]; }
 
 /** Prune the active node and set the active_level pointing a new active node. **/
 int IVMTree::pruneActiveNode() {
-    
     
     ivm[active_level][active_node[active_level]] = -1; /** Marks the node as removed. **/
     max_nodes_in_level[active_level]--; /** Reduces the number of nodes in the active level. **/

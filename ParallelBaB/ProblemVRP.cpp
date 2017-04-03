@@ -35,6 +35,6 @@ void ProblemVRP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){}
 void ProblemVRP::printInstance(){ printf("Hello from Problem VRP!\n");}
 void ProblemVRP::printProblemInfo(){}
 void ProblemVRP::loadInstance(char *path[]){}
-void ProblemVRP::printSolution(const Solution & solution){ printPartialSolution(solution, this->totalVariables);}
-void ProblemVRP::printPartialSolution(const Solution & solution, int level){}
-void ProblemVRP::printSolutionInfo(Solution & solution){ printf("TODO: Implement this function.\n"); }
+void ProblemVRP::printSolution(const Solution & solution) const{ printPartialSolution(solution, this->totalVariables);}
+void ProblemVRP::printPartialSolution(const Solution & solution, int level) const{}
+void ProblemVRP::printSolutionInfo(const Solution & solution) const{ printf("TODO: Implement this function.\n"); }

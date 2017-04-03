@@ -130,49 +130,17 @@ ProblemHCSP& ProblemHCSP::operator=(const ProblemHCSP &toCopy){
     return *this;
 }
 
-ProblemType ProblemHCSP::getType() const{
-    return ProblemType::combination;
-}
-
-int ProblemHCSP::getStartingLevel(){
-    return 0;
-}
-
-int ProblemHCSP::getFinalLevel(){
-    return this->totalVariables - 1;
-}
-
-int ProblemHCSP::getLowerBound(int indexVar) const{
-    return 0;
-}
-
-int ProblemHCSP::getUpperBound(int indexVar) const{
-    return this->totalMappings - 1;
-}
-
-int ProblemHCSP::getLowerBoundInObj(int nObj) const{
-    return INT_MAX;
-}
-
-int ProblemHCSP::getTotalElements(){
-    return 0;
-}
-
-int * ProblemHCSP::getElemensToRepeat(){
-    return nullptr;
-}
-
-int ProblemHCSP::getMapping(int map, int position){
-    return 0;
-}
-
-int ProblemHCSP::getMappingOf(int value1, int value2){
-    return 0;
-}
-
-int ProblemHCSP::getTimesValueIsRepeated(int value){
-    return 0;
-}
+ProblemType ProblemHCSP::getType() const{ return ProblemType::combination;}
+int ProblemHCSP::getStartingLevel(){ return 0; }
+int ProblemHCSP::getFinalLevel(){ return this->totalVariables - 1;}
+int ProblemHCSP::getLowerBound(int indexVar) const{ return 0;}
+int ProblemHCSP::getUpperBound(int indexVar) const{ return this->totalMappings - 1; }
+int ProblemHCSP::getLowerBoundInObj(int nObj) const{ return INT_MAX; }
+int ProblemHCSP::getTotalElements(){return 0;}
+int * ProblemHCSP::getElemensToRepeat(){ return nullptr;}
+int ProblemHCSP::getMapping(int map, int position){return 0;}
+int ProblemHCSP::getMappingOf(int value1, int value2){return 0;}
+int ProblemHCSP::getTimesValueIsRepeated(int value){return 0;}
 
 double ProblemHCSP::computeProcessingTime(int task, int machine, int config){
    return this->processingTime[task][machine] / this->speed[config][machine];
@@ -360,19 +328,15 @@ double ProblemHCSP::removeLastLevelEvaluation(Solution * solution, int newLevel)
     return 0.0;
 }
 
-void ProblemHCSP::createDefaultSolution(Solution & solution){
-
-}
-
-void ProblemHCSP::getSolutionWithLowerBoundInObj(int nObj, Solution & solution){    
-}
+void ProblemHCSP::createDefaultSolution(Solution & solution){}
+void ProblemHCSP::getSolutionWithLowerBoundInObj(int nObj, Solution & solution){}
 
 void ProblemHCSP::printInstance(){
     
     printf("Hello from Problem Scheduling!\n");
 }
 
-void ProblemHCSP::printProblemInfo(){
+void ProblemHCSP::printProblemInfo() const{
     printf("Total tasks: %d\n", this->totalTasks);
     printf("Total machines: %d\n", this->totalMachines);
     printf("Total mappings: %d\n", this->totalMappings);
@@ -535,14 +499,14 @@ void ProblemHCSP::readMachinesConfigurations(char *filePath){
     infile.close();
 }
 
-void ProblemHCSP::printSolution(const Solution & solution){
+void ProblemHCSP::printSolution(const Solution & solution) const{
     printPartialSolution(solution, this->totalVariables);
 }
 
-void ProblemHCSP::printSolutionInfo(Solution & solution){
+void ProblemHCSP::printSolutionInfo(const Solution & solution) const{
     printf("TODO: Implement this function.\n");
 }
 
-void ProblemHCSP::printPartialSolution(const Solution & solution, int level){
+void ProblemHCSP::printPartialSolution(const Solution & solution, int level) const{
 
 }

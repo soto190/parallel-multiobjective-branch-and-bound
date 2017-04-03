@@ -45,16 +45,13 @@ int binarySearch(double value, const double * array, int size) {
 		return high;
 
 	while (low <= high) {
-        
-		mid = (low + high) * 0.5;
-        if (array[mid] <= value && value <= array[mid + 1])
+		mid = (low + high) * 0.5f;
+        if (array[mid] <= value && value < array[mid + 1])
           return mid;
-		if (array[mid] > value)
+		else if (value < array[mid])
 			high = mid - 1;
-		else if (array[mid] < value)
+		else if (value > array[mid])
 			low = mid + 1;
-		
 	}
-
 	return high;
 }

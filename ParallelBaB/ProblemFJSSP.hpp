@@ -95,10 +95,6 @@ public:
     
     void createDefaultSolution(Solution & solution);
     void getSolutionWithLowerBoundInObj(int nObj, Solution& solution);
-    void printSolution(const Solution & solution);
-    void printPartialSolution(const Solution & solution, int level);
-    void printSolutionInfo(Solution & solution);
-    
     int getLowerBound(int indexVar) const;
     int getUpperBound(int indexVar) const;
     ProblemType getType() const;
@@ -131,13 +127,18 @@ public:
     int getNumberOfOperationsInJob(int job) const;
     int getReleaseTimeOfJob(int job) const;
     int getLowerBoundInObj(int nObj) const;
+    
+    double evaluatePartialTest4(Solution & solution, int currentLevel);
 
+    
+    void printSolution(const Solution & solution) const;
+    void printPartialSolution(const Solution & solution, int level) const;
+    void printSolutionInfo(const Solution & solution) const;
     
     void loadInstance(char** path);
     void printInstance();
     void printProblemInfo();
-    void printSchedule(Solution & solution);
-    double evaluatePartialTest4(Solution & solution, int currentLevel);
+    void printSchedule(const Solution & solution) const;
     void buildSolutionWithGoodMaxWorkload(Solution & solution);
     void buildSolutionWithGoodMaxWorkloadv2(Solution & solution);
     

@@ -280,7 +280,7 @@ void ProblemTSP::printInstance(){
     printf("Hello from Problem TSP!\n");
 }
 
-void ProblemTSP::printProblemInfo(){
+void ProblemTSP::printProblemInfo() const{
     int row = 0, col = 0;
     
     for (row = 0; row < this->totalVariables; row++) {
@@ -470,14 +470,6 @@ void ProblemTSP::readCost(char *filePath){
     infile.close();
 }
 
-void ProblemTSP::printSolution(const Solution & solution){
-    printPartialSolution(solution, this->totalVariables);
-}
-
-void ProblemTSP::printSolutionInfo(Solution & solution){
-    printf("TODO: Implement this function.\n");
-}
-
-void ProblemTSP::printPartialSolution(const Solution & solution, int level){
-    
-}
+void ProblemTSP::printSolution(const Solution & solution) const{ printPartialSolution(solution, this->totalVariables);}
+void ProblemTSP::printSolutionInfo(const Solution & solution) const{ printf("TODO: Implement this function.\n");}
+void ProblemTSP::printPartialSolution(const Solution & solution, int level) const{}
