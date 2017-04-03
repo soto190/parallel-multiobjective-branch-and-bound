@@ -63,9 +63,9 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, cons
     totalUpdatesInLowerBound(0),
     totalTime(0){
         
-    start = std::clock();
-	t1 = std::chrono::high_resolution_clock::now();
-	t2 = std::chrono::high_resolution_clock::now();
+        start = std::clock();
+        t1 = std::chrono::high_resolution_clock::now();
+        t2 = std::chrono::high_resolution_clock::now();
         
 
         branches_to_move = problem.getUpperBound(0) * percent_to_move;
@@ -337,108 +337,96 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
 	callsToBranch++;
     
-    int variable = 0;
+    int element = 0;
     int isInPermut = 0;
     int level = 0;
     int levelStarting= 0;
     int varInPos = 0;
-    int * numberOfRepetitionsAllowed = problem.getElemensToRepeat();
     int timesRepeated [problem.getTotalElements()];
-    int map = 0;
-    int jobToCheck = 0;
-    int jobAllocated = 0;
     int toAdd = 0;
     int machine = 0;
     
     int branches_created = 0;
 	//vector<double [3]> elements_sorted;
 
-	switch (problem.getType()) {
-
-	case ProblemType::permutation:
-		levelStarting = problem.getStartingLevel();
-
-		for (variable = problem.getUpperBound(0); variable >= problem.getLowerBound(0); --variable) {
-			isInPermut = 0;
-			for (level = levelStarting; level <= currentLevel; ++level)
-				if (solution.getVariable(level) == variable) {
-					isInPermut = 1;
-					level = currentLevel + 1;
-				}
-
-			if (isInPermut == 0) {
-				ivm_tree.setNode(currentLevel + 1, variable);
-				branches++;
+    switch (problem.getType()) {
+            
+        case ProblemType::permutation:
+            levelStarting = problem.getStartingLevel();
+            
+            for (element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
+                isInPermut = 0;
+                for (level = levelStarting; level <= currentLevel; ++level)
+                    if (solution.getVariable(level) == element) {
+                        isInPermut = 1;
+                        level = currentLevel + 1;
+                    }
+                
+                if (isInPermut == 0) {
+                    ivm_tree.setNode(currentLevel + 1, element);
+                    branches++;
+                    branches_created++;
+                }
+            }
+            
+            break;
+            
+        case ProblemType::permutation_with_repetition_and_combination:
+            
+            for (element = 0; element < problem.getTotalElements(); ++element)
+                timesRepeated[element] = 0;
+            
+            for (varInPos = 0; varInPos <= currentLevel; ++varInPos) {
+                element = problem.getMapping(solution.getVariable(varInPos), 0);
+                timesRepeated[element]++;
+            }
+            
+            for (element = 0; element < problem.getTotalElements(); ++element) {
+                if (timesRepeated[element] < problem.getTimesValueIsRepeated(element)) {
+                    /** TODO: sort the branches. **/
+                    for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
+                        toAdd = problem.getMappingOf(element, machine);
+                        
+                        solution.setVariable(currentLevel + 1, toAdd);
+                        problem.evaluatePartial(solution, currentLevel + 1);
+                        
+                        if (improvesTheGrid(solution)) {
+                            /*  double element[3];
+                             element[0] = solution->getObjective(0);
+                             element[1] = solution->getObjective(1);
+                             element[2] = toAdd;
+                             
+                             elements_sorted.push_back(element);
+                             */
+                            ivm_tree.setNode(currentLevel + 1, toAdd);
+                            branches++;
+                            branches_created++;
+                        } else
+                            prunedNodes++;
+                    }
+                }
+            }
+            
+            if (branches_created > 0) { /** If a branched was created. **/
+                ivm_tree.moveToNextLevel();
+                ivm_tree.setActiveNodeAt(ivm_tree.getActiveLevel(), 0);
+            } else { /** If no branches were created then move to the next node. **/
+                ivm_tree.pruneActiveNode();
+                prunedNodes++;
+            }
+            break;
+            
+        case ProblemType::combination:
+            for (element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
+                ivm_tree.setNode(currentLevel + 1, element);
+                branches++;
                 branches_created++;
-			}
-		}
-
-		break;
-
-	case ProblemType::permutation_with_repetition_and_combination:
-
-		for (variable = 0; variable < problem.getTotalElements(); ++variable) {
-			isInPermut = 0;
-			jobToCheck = variable;
-			timesRepeated[jobToCheck] = 0;
-
-			for (varInPos = 0; varInPos <= currentLevel; ++varInPos) {
-				map = solution.getVariable(varInPos);
-				jobAllocated = problem.getMapping(map, 0);
-				if (jobToCheck == jobAllocated) {
-					timesRepeated[jobToCheck]++;
-					if (timesRepeated[jobToCheck] == numberOfRepetitionsAllowed[jobToCheck]) {
-						isInPermut = 1;
-						varInPos = currentLevel + 1;
-					}
-				}
-			}
-
-			if (isInPermut == 0) {
-				/** TODO: sort the branches. **/
-				for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
-					toAdd = problem.getMappingOf(jobToCheck, machine);
-
-					solution.setVariable(currentLevel + 1, toAdd);
-					problem.evaluatePartial(solution, currentLevel + 1);
-
-					if (improvesTheGrid(solution)) {
-						/*  double element[3];
-						 element[0] = solution->getObjective(0);
-						 element[1] = solution->getObjective(1);
-						 element[2] = toAdd;
-
-						 elements_sorted.push_back(element);
-						 */
-						ivm_tree.setNode(currentLevel + 1, toAdd);
-						branches++;
-						branches_created++;
-					} else
-						prunedNodes++;
-				}
-			}
-		}
-
-        if (branches_created > 0) { /** If a branched was created. **/
-			ivm_tree.moveToNextLevel();
-            ivm_tree.setActiveNodeAt(ivm_tree.getActiveLevel(), 0);
-		} else { /** If no branches were created then move to the next node. **/
-			ivm_tree.pruneActiveNode();
-			prunedNodes++;
-		}
-		break;
-
-	case ProblemType::combination:
-		for (variable = problem.getUpperBound(0); variable >= problem.getLowerBound(0); --variable) {
-			ivm_tree.setNode(currentLevel + 1, variable);
-			branches++;
-            branches_created++;
-		}
-		break;
-
-	case ProblemType::XD:
-		break;
-	}
+            }
+            break;
+            
+        case ProblemType::XD:
+            break;
+    }
     
     return branches_created;
 }
@@ -554,46 +542,29 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 	int index_var = 0;
 	int level_to_split = branch_to_split.getBuildUpTo() + 1;
 	int branches_created = 0;
-
-	int isIn = 0;
-	int varInPos = 0;
-	int * numberOfRepetitionsAllowed = problem.getElemensToRepeat();
-	int timesRepeated[problem.getTotalElements()];
+    int num_elements = problem.getTotalElements();
+	int timesRepeated[num_elements];
 	int map = 0;
-	int jobToCheck = 0;
-	int jobAllocated = 0;
+	int element = 0;
+    int machine = 0;
+    int toAdd = 0;
 
 	Solution sol_test(2, branch_to_split.getSize());
 
+    for (element = 0; element < num_elements; ++element)
+        timesRepeated[element] = 0;
+    
 	for (index_var = 0; index_var <= branch_to_split.getBuildUpTo(); ++index_var) {
-		sol_test.setVariable(index_var, branch_to_split.getValueAt(index_var));
+        map = branch_to_split.getValueAt(index_var);
+		sol_test.setVariable(index_var, map);
+        timesRepeated[problem.getMapping(map, 0)]++;
 	}
 
-	for (jobToCheck = 0; jobToCheck < problem.getTotalElements(); ++jobToCheck) {
+	for (element = 0; element < num_elements; ++element)
+        if (timesRepeated[element] < problem.getTimesValueIsRepeated(element))
+            for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
 
-		isIn = 0;
-		timesRepeated[jobToCheck] = 0;
-
-		for (varInPos = 0; varInPos < level_to_split; ++varInPos) {
-            map = branch_to_split.getValueAt(varInPos);
-			jobAllocated = problem.getMapping(map, 0);
-			if (jobToCheck == jobAllocated) {
-				timesRepeated[jobToCheck]++;
-				if (timesRepeated[jobToCheck] == numberOfRepetitionsAllowed[jobToCheck]) {
-					isIn = 1;
-					varInPos = level_to_split + 1;
-				}
-			}
-		}
-
-		if (isIn == 0) {
-			int toAdd = 0;
-			int machine = 0;
-            
-			for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
-
-				toAdd = problem.getMappingOf(jobToCheck, machine);
-
+				toAdd = problem.getMappingOf(element, machine);
 				sol_test.setVariable(level_to_split, toAdd);
 				problem.evaluatePartial(sol_test, level_to_split);
 
@@ -611,8 +582,7 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 				} else
 					prunedNodes++;
 			}
-		}
-	}
+	
     branches += branches_created;
     
 	/** TODO: Design something to decide when to add something to the global pool. **/
