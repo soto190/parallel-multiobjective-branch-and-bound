@@ -73,6 +73,7 @@ typedef tbb::queuing_rw_mutex Lock;
      void resetSize(){ size.fetch_and_store(0);}
      void clear(){
          size.fetch_and_store(0);
+         tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, true);
          m_vec.clear();
          m_vec.resize(0);
      }
