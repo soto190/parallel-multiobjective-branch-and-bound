@@ -70,7 +70,7 @@ private:
     int * assignationBestWorkload; /** Length equals to numberOfOperations. */
     int * bestWorkloads;           /** Length equals to number of machines. **/
     int * minWorkload;             /** Length equals to number of machines. **/
-    int * numberOfOperationsInJob; /** Length equals to number of jobs x number of operations in each job. **/
+    int * numberOfOperationsInJob; /** Length equals to number of Jobs. **/
     int * releaseTime;             /** Length equals to number of Jobs. **/
     int * operationIsFromJob;      /** Length equals to numberOfOperations. **/
     int ** processingTime;         /** Length equals to numberOfOperations x numberOfMachines. **/

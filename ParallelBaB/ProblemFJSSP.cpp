@@ -710,9 +710,13 @@ int ProblemFJSSP::getStartingLevel(){ return 0;}
 int ProblemFJSSP::getFinalLevel(){return totalOperations - 1;}
 int ProblemFJSSP::getTotalElements(){return totalJobs;}
 int * ProblemFJSSP::getElemensToRepeat(){return numberOfOperationsInJob;}
+
+/** If position = 0 returns the job, if position = 1 returns the machine. (Decodes the map in job or machine). **/
 int ProblemFJSSP::getMapping(int map, int position){return mapToJobMachine[map][position];}
+
+/** Returns the map corresponding to the configuration of job and machine. (Codes the job and machine in a map). **/
 int ProblemFJSSP::getMappingOf(int job, int machine){return jobMachineToMap[job][machine];}
-int ProblemFJSSP::getTimesValueIsRepeated(int value){return totalMachines;}
+int ProblemFJSSP::getTimesValueIsRepeated(int value){return numberOfOperationsInJob[value];}
 int ProblemFJSSP::getNumberOfJobs() const{ return totalJobs;}
 int ProblemFJSSP::getNumberOfOperations() const{ return totalOperations;}
 int ProblemFJSSP::getNumberOfMachines() const{ return totalMachines;}

@@ -255,7 +255,7 @@ void BranchAndBound::solve(const Interval& branch_to_solve) {
 		} else
             working = 0;
 
-		while (localPool.size() > 0) {
+		while (!localPool.empty()) {
 
 			activeBranch = localPool.front();
 			localPool.pop();
@@ -396,7 +396,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
 			if (isInPermut == 0) {
 				/** TODO: sort the branches. **/
-				for (machine = 0; machine < problem.getTimesValueIsRepeated(0); ++machine) {
+				for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
 					toAdd = problem.getMappingOf(jobToCheck, machine);
 
 					solution.setVariable(currentLevel + 1, toAdd);
@@ -590,7 +590,7 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 			int toAdd = 0;
 			int machine = 0;
             
-			for (machine = 0; machine < problem.getTimesValueIsRepeated(0); ++machine) {
+			for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
 
 				toAdd = problem.getMappingOf(jobToCheck, machine);
 

@@ -41,7 +41,7 @@ Solution::Solution(int numberOfObjectives, int numberOfVariables):
 		objective[obj] = 0;
 
 	for (var = 0; var < numberOfVariables; ++var) {
-		variable[var] = 0;
+		variable[var] = -1;
 		partialObjective[var] = new double[numberOfObjectives];
 		for (obj = 0; obj < numberOfObjectives; ++obj)
 			partialObjective[var][obj] = 0;
@@ -109,7 +109,7 @@ Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
         objective[obj] = 0;
     
     for (var = 0; var < numberOfVariables; ++var) {
-        variable[var] = 0;
+        variable[var] = -1;
         partialObjective[var] = new double[numberOfObjectives];
         for (obj = 0; obj < numberOfObjectives; ++obj)
             partialObjective[var][obj] = 0;
@@ -187,7 +187,11 @@ Solution::~Solution() {
 }
 
 void Solution::setObjective(int index, double value) { objective[index] = value; }
-void Solution::setVariable(int index, int value) { variable[index] = value; }
+int Solution::setVariable(int index, int value) {
+    int last_value = variable[index];
+    variable[index] = value;
+    return last_value;
+}
 void Solution::setPartialObjective(int var, int objective, double value) { partialObjective[var][objective] = value; }
 double Solution::getObjective(int index) const { return objective[index]; }
 int Solution::getVariable(int index) const { return variable[index]; }

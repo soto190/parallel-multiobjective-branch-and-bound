@@ -43,7 +43,7 @@ typedef tbb::queuing_rw_mutex Lock;
  public:
      
      ParetoBucket():size(0), posx(0), posy(0), state(BucketState::unexplored){
-//         m_vec.reserve(100);
+         m_vec.reserve(50);
      };
      
      ParetoBucket(unsigned long posx, unsigned long posy):
@@ -51,7 +51,7 @@ typedef tbb::queuing_rw_mutex Lock;
         posx(posx),
         posy(posy),
         size(0){
-//            m_vec.reserve(100);
+            m_vec.reserve(50);
      };
      
      ParetoBucket(const ParetoBucket& toCopy):
@@ -71,12 +71,6 @@ typedef tbb::queuing_rw_mutex Lock;
      void setNonDominated(){ state.fetch_and_store(BucketState::nondominated); }
      void setDominated(){ state.fetch_and_store(BucketState::dominated); }
      void resetSize(){ size.fetch_and_store(0);}
-     void clear(){
-         size.fetch_and_store(0);
-         tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, true);
-         m_vec.clear();
-         m_vec.resize(0);
-     }
      
      unsigned long getPosx() const{ return posx; }
      unsigned long getPosy() const{ return posy; }
@@ -99,7 +93,7 @@ typedef tbb::queuing_rw_mutex Lock;
                  index = size_vec;
              }
          }
-         // mutex_update.unlock();
+
          return improves;
      }
      
@@ -110,9 +104,7 @@ typedef tbb::queuing_rw_mutex Lock;
       ***/
      int push_back(const Solution& obj){
          
-         
          tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, true);
-//mutex_update.lock(); /** a) Testing this mutex **/
          unsigned int dominates = 0;
          unsigned int nondominated = 0;
          unsigned int dominated = 0;
@@ -160,14 +152,20 @@ typedef tbb::queuing_rw_mutex Lock;
             || dominated == 0)) {
                 
                 m_vec.push_back(obj); /** Creates a new copy. **/
-
-                wasAdded = 1;
                 size.fetch_and_increment();
+                wasAdded = 1;
+
              }
          
-         // mutex_update.unlock();/** a) Testing this mutex **/
 
          return wasAdded;
+     }
+     
+     void clear(){
+         size.fetch_and_store(0);
+         tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, true);
+         m_vec.clear();
+         m_vec.resize(0);
      }
      
      /*

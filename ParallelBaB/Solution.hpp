@@ -34,7 +34,7 @@ public:
     int totalVariables;
     int totalObjectives;
     
-    void setVariable(int index, int value);
+    int setVariable(int index, int value);
     void setObjective(int index, double value);
     void setPartialObjective(int var, int objective, double value);
     
