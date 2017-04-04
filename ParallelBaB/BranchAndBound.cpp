@@ -212,7 +212,6 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch_to_ini
         tree.resetNumberOfNodesAt(row);
 	}
     
-	currentSolution.build_up_to = builded_up_to;
 	int branches_created = branch(currentSolution, builded_up_to);
     tree.setActiveNodeAt(tree.getActiveLevel(), 0);
     tree.setActiveNodeAt(tree.getActiveLevel(), tree.getStartExploration(tree.getActiveLevel()));
@@ -310,12 +309,8 @@ int BranchAndBound::explore(Solution & solution) {
         ivm_tree.pruneActiveNode();
     }
     
-	int level = ivm_tree.getCurrentLevel();
-	int element = ivm_tree.getActiveNode();
-
-	solution.setVariable(level, element);
-	currentLevel = level;
-	currentSolution.build_up_to = level;
+	currentLevel = ivm_tree.getCurrentLevel();
+	solution.setVariable(currentLevel, ivm_tree.getActiveNode());
 
 	return 0;
 }

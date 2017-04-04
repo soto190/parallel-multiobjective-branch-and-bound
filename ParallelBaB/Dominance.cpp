@@ -8,35 +8,37 @@
 
 #include "Dominance.hpp"
 
-DominanceRelation dominanceOperator(Solution & leftSolution,
-		Solution & rightSolution) {
+DominanceRelation dominanceOperator(Solution & l_solution, Solution & r_solution) {
+    
 	int objective = 0;
-	int solLIsBetterIn = 0;
-	int solRIsBetterIn = 0;
+	int l_is_better_in = 0;
+	int r_is_better_in = 0;
 	int equals = 1;
+    double obj_l = 0;
+    double obj_r = 0;
 
 	/**
 	 * For more objectives consider
 	 * if (solAIsBetterIn > 0 and solBIsBetterIn > 0) break the FOR because the solutions are non-dominated.
 	 **/
-	for (objective = 0; objective < leftSolution.totalObjectives; ++objective) {
-		double objL = leftSolution.getObjective(objective);
-		double objR = rightSolution.getObjective(objective);
+	for (objective = 0; objective < l_solution.getNumberOfObjectives(); ++objective) {
+        obj_l = l_solution.getObjective(objective);
+        obj_r = r_solution.getObjective(objective);
 
-		if (objL < objR) {
-			solLIsBetterIn++;
+		if (obj_l < obj_r) {
+			l_is_better_in++;
 			equals = 0;
-		} else if (objR < objL) {
-			solRIsBetterIn++;
+		} else if (obj_r < obj_l) {
+			r_is_better_in++;
 			equals = 0;
 		}
 	}
 
 	if (equals == 1)
 		return DominanceRelation::Equals;
-	else if (solLIsBetterIn > 0 && solRIsBetterIn == 0)
+	else if (l_is_better_in > 0 && r_is_better_in == 0)
 		return DominanceRelation::Dominates;
-	else if (solRIsBetterIn > 0 && solLIsBetterIn == 0)
+	else if (r_is_better_in > 0 && l_is_better_in == 0)
 		return DominanceRelation::Dominated;
 	else
 		return DominanceRelation::Nondominated;

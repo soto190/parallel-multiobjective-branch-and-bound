@@ -283,7 +283,7 @@ double ProblemHCSP::removeLastEvaluation(Solution * solution, int lastLevel, int
         
         proc_prime = this->computeProcessingTime(level, machine, config);
         solution->execTime[machine] -= proc_prime;
-        solution->objective[1] -= this->computeEnergy(level, machine, config, proc_prime);
+        solution->setObjective(1, solution-> getObjective(1) - this->computeEnergy(level, machine, config, proc_prime));
         
         solution->setVariable(level, -1);
     }
@@ -291,7 +291,7 @@ double ProblemHCSP::removeLastEvaluation(Solution * solution, int lastLevel, int
     for (machine = 0; machine < this->totalMachines; machine++)
         if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){
             solution->machineWithMakespan = machine;
-            solution->objective[0] = solution->execTime[machine];
+            solution->setObjective(0, solution->execTime[machine]);
         }
     
     return 0.0;
@@ -314,14 +314,14 @@ double ProblemHCSP::removeLastLevelEvaluation(Solution * solution, int newLevel)
             
             proc_prime = this->computeProcessingTime(level, machine, config);
             solution->execTime[machine] -= proc_prime;
-            solution->objective[1] -= this->computeEnergy(level, machine, config, proc_prime);
+            solution->setObjective(1, solution->getObjective(1) - this->computeEnergy(level, machine, config, proc_prime));
             solution->setVariable(level, -1);
         }
         
         for (machine = 0; machine < this->totalMachines; machine++)
             if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){
                 solution->machineWithMakespan = machine;
-                solution->objective[0] = solution->execTime[machine];
+                solution->setObjective(0, solution->execTime[machine]);
             }
     }
      

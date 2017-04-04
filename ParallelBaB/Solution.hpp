@@ -18,21 +18,26 @@ enum DominanceRelation {
 //template <class TypeVariable>
 class Solution{
     
-public:
-    Solution();
-    Solution(int totalObjectives, int totalVariables);
-    Solution(const Solution &solution);
     
-    ~Solution();
-    
+private:
     double * objective;
     double ** partialObjective;
     int * variable;
     
     int build_up_to = -1;
     
-    int totalVariables;
-    int totalObjectives;
+    int n_variables;
+    int n_objectives;
+    
+public:
+    
+    int machineWithMakespan;
+    double * execTime;
+    
+    Solution();
+    Solution(int totalObjectives, int totalVariables);
+    Solution(const Solution &solution);
+    ~Solution();
     
     int setVariable(int index, int value);
     void setObjective(int index, double value);
@@ -40,17 +45,10 @@ public:
     
     int getVariable(int index) const;
     double getObjective(int nObjective) const;
-    
     int getPartialObjective(int var, int objective) const;
     int getNumberOfVariables() const;
     int getNumberOfObjectives() const;
-    
     int getBuildUpTo() const;
-    
-    double makespan;
-    double energy;
-    double * execTime;
-    int machineWithMakespan;
     
     DominanceRelation dominates(const Solution &solution) const;
     
