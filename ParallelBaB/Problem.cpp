@@ -95,8 +95,8 @@ int Problem::getLowerBound(int index) const { return 0; }
 int Problem::getUpperBound(int index) const { return 0; }
 int Problem::getLowerBoundInObj(int nObj)const{ return INT_MAX; }
 int Problem::getTotalElements(){ return 0; }
-int Problem::getMapping(int map, int position){ return 0; }
-int Problem::getMappingOf(int value1, int value2){ return 0; }
+int Problem::getDecodeMap(int map, int position){ return 0; }
+int Problem::getCodeMap(int value1, int value2){ return 0; }
 int Problem::getTimesValueIsRepeated(int value){ return 0; }
 
 double Problem::evaluate(Solution & solution){ return 0; }

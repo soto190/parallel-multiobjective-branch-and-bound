@@ -113,11 +113,11 @@ int * ProblemTSP::getElemensToRepeat(){
     return nullptr;
 }
 
-int ProblemTSP::getMapping(int map, int position){
+int ProblemTSP::getDecodeMap(int map, int position){
     return 0;
 }
 
-int ProblemTSP::getMappingOf(int value1, int value2){
+int ProblemTSP::getCodeMap(int value1, int value2){
     return 0;
 }
 

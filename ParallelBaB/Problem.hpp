@@ -60,8 +60,8 @@ public:
     
     virtual int getTotalElements() = 0;
     virtual int * getElemensToRepeat() = 0;
-    virtual int getMapping(int map, int position) = 0; /** TODO: change function name and refactor to decodeMap(map, segment)**/
-    virtual int getMappingOf(int value1, int value2); /** TODO: change function name and refactor to codeMap(segment1, segment2)**/
+    virtual int getDecodeMap(int map, int position) = 0;
+    virtual int getCodeMap(int value1, int value2);
     virtual int getTimesValueIsRepeated(int value);
     
     virtual int getLowerBound(int index) const = 0;

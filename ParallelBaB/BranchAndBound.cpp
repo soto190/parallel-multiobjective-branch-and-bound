@@ -371,7 +371,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                 timesRepeated[element] = 0;
             
             for (varInPos = 0; varInPos <= currentLevel; ++varInPos) {
-                element = problem.getMapping(solution.getVariable(varInPos), 0);
+                element = problem.getDecodeMap(solution.getVariable(varInPos), 0);
                 timesRepeated[element]++;
             }
             
@@ -379,7 +379,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                 if (timesRepeated[element] < problem.getTimesValueIsRepeated(element)) {
                     /** TODO: sort the branches. **/
                     for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
-                        toAdd = problem.getMappingOf(element, machine);
+                        toAdd = problem.getCodeMap(element, machine);
                         
                         solution.setVariable(currentLevel + 1, toAdd);
                         problem.evaluatePartial(solution, currentLevel + 1);
@@ -496,7 +496,7 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
 
 			for (varInPos = 0; varInPos < totalLevels; ++varInPos) {
                 map = branch_to_compute.getValueAt(varInPos);// branch.interval[varInPos];
-				jobAllocated = problem.getMapping(map, 0);
+				jobAllocated = problem.getDecodeMap(map, 0);
 				if (jobToCheck == jobAllocated) {
 					timesRepeated[jobToCheck]++;
 					if (timesRepeated[jobToCheck]
@@ -508,7 +508,7 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
 			}
 
 			if (isIn == 0) {
-                branch_to_compute.setValueAt(totalLevels, problem.getMappingOf(jobToCheck, problem.getTimesValueIsRepeated(0) - 1));
+                branch_to_compute.setValueAt(totalLevels, problem.getCodeMap(jobToCheck, problem.getTimesValueIsRepeated(0) - 1));
 
                 branch_to_compute.increaseBuildUpTo();
 
@@ -551,14 +551,14 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 	for (index_var = 0; index_var <= branch_to_split.getBuildUpTo(); ++index_var) {
         map = branch_to_split.getValueAt(index_var);
 		sol_test.setVariable(index_var, map);
-        timesRepeated[problem.getMapping(map, 0)]++;
+        timesRepeated[problem.getDecodeMap(map, 0)]++;
 	}
 
 	for (element = 0; element < num_elements; ++element)
         if (timesRepeated[element] < problem.getTimesValueIsRepeated(element))
             for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
 
-				toAdd = problem.getMappingOf(element, machine);
+				toAdd = problem.getCodeMap(element, machine);
 				sol_test.setVariable(level_to_split, toAdd);
 				problem.evaluatePartial(sol_test, level_to_split);
 
