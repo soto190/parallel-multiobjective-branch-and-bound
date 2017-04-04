@@ -236,62 +236,56 @@ void BranchAndBound::solve(const Interval& branch_to_solve) {
 
 	double timeUp = 0;
 	int updated = 0;
-	int working = 1;
 
 	Interval branchFromGlobal = branch_to_solve;
 	Interval activeBranch(problem.getNumberOfVariables());
 
 	initialize(branchFromGlobal.getBuildUpTo());
 
-	while (working > 0) {
-
-		if (!globalPool.empty()) {
-			globalPool.try_pop(branchFromGlobal);
-			working++;
-			printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
-			branchFromGlobal.showInterval();
-            splitInterval(branchFromGlobal);
-
-		} else
-            working = 0;
-
-		while (!localPool.empty()) {
-
-			activeBranch = localPool.front();
-			localPool.pop();
+    while (!globalPool.empty()) {
+        
+        globalPool.try_pop(branchFromGlobal);
+        printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
+        branchFromGlobal.showInterval();
+        splitInterval(branchFromGlobal);
+        
+        while (!localPool.empty()) {
+            
+            activeBranch = localPool.front();
+            localPool.pop();
             
             initializeExplorationInterval(activeBranch, ivm_tree);
             
-			while (theTreeHasMoreBranches() == 1 && timeUp == 0) {
-				
+            while (theTreeHasMoreBranches() && !timeUp) {
+                
                 explore(currentSolution);
                 problem.evaluatePartial(currentSolution, currentLevel);
-
-				if (aLeafHasBeenReached() == 0 && theTreeHasMoreBranches()) {
-					if (improvesTheGrid(currentSolution))
-						branch(currentSolution, currentLevel);
-					else
-						prune(currentSolution, currentLevel);
-				} else {
-
-					reachedLeaves++;
-
-					updated = updateParetoGrid(currentSolution);
-					totalUpdatesInLowerBound += updated;
-
-					if (updated == 1) {
-						printf("[B&B-%03d] ", rank);
-						printCurrentSolution();
-						printf(" + [%6lu] \n", paretoContainer.getSize());
-					}
-				}
-			}
-		}
-
-		t2 = std::chrono::high_resolution_clock::now();
-		std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-		totalTime = time_span.count();
-	}
+                
+                if (!aLeafHasBeenReached() && theTreeHasMoreBranches()) {
+                    if (improvesTheGrid(currentSolution))
+                        branch(currentSolution, currentLevel);
+                    else
+                        prune(currentSolution, currentLevel);
+                } else {
+                    
+                    reachedLeaves++;
+                    
+                    updated = updateParetoGrid(currentSolution);
+                    totalUpdatesInLowerBound += updated;
+                    
+                    if (updated) {
+                        printf("[B&B-%03d] ", rank);
+                        printCurrentSolution();
+                        printf(" + [%6lu] \n", paretoContainer.getSize());
+                    }
+                }
+            }
+        }
+        
+        t2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+        totalTime = time_span.count();
+    }
     printf("[B&B-%03d] No more intervals in global pool. Going to sleep.\n", rank);
 }
 
@@ -568,7 +562,7 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 				sol_test.setVariable(level_to_split, toAdd);
 				problem.evaluatePartial(sol_test, level_to_split);
 
-				if (improvesTheGrid(sol_test) == 1) {
+				if (improvesTheGrid(sol_test)) {
                     /** Gets the branch to add. */
                     branch_to_split.setValueAt(level_to_split, toAdd);
                     branch_to_split.setBuildUpTo(level_to_split);
