@@ -233,12 +233,11 @@ int IVMTree::pruneActiveNode() {
     while (max_nodes_in_level[active_level] == 0 && active_level > root_node) { /** TODO: Check, why max_nodes_in_level reach -1, the minimun should be 0. **/
         
         active_node[active_level] = -1; /** Mark the level to indicate that there are no more pending nodes. **/
-        active_level--; /** Go to father node. **/
-        
-        ivm[active_level][active_node[active_level]] = -1; /** Prune the father node. **/
+        active_level--; /** Move to father node. **/
+        ivm[active_level][active_node[active_level]] = -1; /** Prune the node because it doesnt has more child. **/
         max_nodes_in_level[active_level]--; /** Reduce the number of nodes. **/
         
-        if (max_nodes_in_level[active_level] > 0) {
+        if (max_nodes_in_level[active_level] > 0) { /** If there are more nodes then move to the next node. **/
             active_node[active_level]++; /** Move to the next node. **/
             return ivm[active_level][active_node[active_level]]; /** Return the active node. **/
         }

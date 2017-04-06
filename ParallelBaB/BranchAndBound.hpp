@@ -73,6 +73,8 @@ private:
     int currentLevel; /** Active level **/
     
     ProblemFJSSP problem;
+    FJSSPdata fjssp_data;
+    
     Solution currentSolution;
     Solution bestObjectivesFound;
     IVMTree ivm_tree;
@@ -140,6 +142,7 @@ public:
     const ProblemFJSSP& getProblem() const;
     HandlerContainer& getParetoGrid() const;
     const Solution& getIncumbentSolution() const;
+    const FJSSPdata& getFJSSPdata() const;
     
     void setParetoFront(const std::vector<Solution>& front);
 	int setParetoFrontFile(const char * outputFile);

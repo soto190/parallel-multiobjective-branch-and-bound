@@ -398,6 +398,115 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
     return 0.0;
 }
 
+void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int level){
+    
+    int makespan = 0;
+    int max_workload = 0;
+    int operationInPosition = 0;
+    
+    int minPij = sumOfMinPij;
+    
+    int map = solution.getVariable(level);
+    int job = getDecodeMap(map, 0);
+    int machine = getDecodeMap(map, 1);
+    int numberOp = getOperationInJobIsNumber(job, data.getNumberOfOperationsAllocatedInJob(job));
+    
+    /** The minimun total workload is reduced. **/
+    minPij -= getProccessingTime(numberOp, getAssignationMinPij(numberOp));
+    
+    /** With the operation number and the machine we can continue. **/
+    int proccessingTime = getProccessingTime(numberOp, machine);
+   
+    data.setOperationAllocation(job, numberOp, machine, proccessingTime);
+
+    if (data.getLastOperationAllocatedInJob(job) == 0) { /** If it is the first operation of the job.**/
+        if(data.getTimeOnMachine(machine) >= getReleaseTimeOfJob(job)){
+            
+            data.setStartingTime(numberOp, data.getTimeOnMachine(machine));
+            data.increaseTimeOnMachine(machine, proccessingTime);
+            data.setEndingTime(numberOp, data.getTimeOnMachine(machine));
+            
+        }else{ /** If the job has to wait for the release time.**/
+            
+            data.setStartingTime(numberOp, getReleaseTimeOfJob(job));
+            data.setTimeOnMachine(machine, getReleaseTimeOfJob(job) + proccessingTime);
+            data.setEndingTime(numberOp, data.getTimeOnMachine(machine));
+        }
+    }else{
+        if(data.getEndingTime(numberOp - 1) > data.getTimeOnMachine(machine)){
+            
+            data.setStartingTime(numberOp, data.getEndingTime(numberOp - 1));
+            data.setTimeOnMachine(machine, data.getEndingTime(numberOp - 1) + proccessingTime);
+            data.setEndingTime(numberOp, data.getTimeOnMachine(machine));
+            
+        }else{ /**The operation starts when the machine is avaliable.**/
+            
+            data.setStartingTime(numberOp, data.getTimeOnMachine(machine));
+            data.increaseTimeOnMachine(machine, proccessingTime);
+            data.setEndingTime(numberOp, data.getTimeOnMachine(machine));
+        }
+    }
+    
+    for (machine = 0; machine < totalMachines; ++machine){
+
+        if (data.getTimeOnMachine(machine) > makespan){
+            makespan = data.getTimeOnMachine(machine);
+            solution.setPartialObjective(operationInPosition, 0, makespan);
+        }
+        
+        if(data.getWorkloadOnMachine(machine) > max_workload){
+            max_workload = data.getWorkloadOnMachine(machine);
+            solution.setPartialObjective(operationInPosition, 1, max_workload);
+        }
+    
+    }
+    
+    data.setMaxWorkload(max_workload);
+    data.setMakespan(makespan);
+    solution.setObjective(0, makespan);
+    solution.setObjective(1, max_workload);
+    //solution->setObjective(2, totalWorkload + minPij);
+}
+
+void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, int level){
+    int makespan = 0;
+    int max_workload = 0;
+    int operationInPosition = 0;
+    
+    int minPij = sumOfMinPij;
+    
+    int map = solution.getVariable(level);
+    int job = getDecodeMap(map, 0);
+    int machine = getDecodeMap(map, 1);
+    int numberOp = getOperationInJobIsNumber(job, data.getLastOperationAllocatedInJob(job));
+    
+    /** The minimun total workload is reduced. **/
+    minPij -= getProccessingTime(numberOp, getAssignationMinPij(numberOp));
+    
+    /** With the operation number and the machine we can continue. **/
+    data.deallocateOperation(job, numberOp);
+    
+    for (machine = 0; machine < totalMachines; ++machine){
+        
+        if (data.getTimeOnMachine(machine) > makespan){
+            makespan = data.getTimeOnMachine(machine);
+            solution.setPartialObjective(operationInPosition, 0, makespan);
+        }
+        
+        if(data.getWorkloadOnMachine(machine) > max_workload){
+            max_workload = data.getWorkloadOnMachine(machine);
+            solution.setPartialObjective(operationInPosition, 1, max_workload);
+        }
+        
+    }
+    
+    data.setMaxWorkload(max_workload);
+    data.setMakespan(makespan);
+    solution.setObjective(0, makespan);
+    solution.setObjective(1, max_workload);
+    
+}
+
 double ProblemFJSSP::evaluateLastLevel(Solution * solution){ return 0.0;}
 double ProblemFJSSP::removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel){ return 0.0;}
 double ProblemFJSSP::removeLastLevelEvaluation(Solution * solution, int newLevel){ return 0.0;}

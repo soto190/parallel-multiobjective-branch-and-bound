@@ -18,6 +18,7 @@ BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
     rank(toCopy.getRank()),
     globalPool(toCopy.getGlobalPool()),
     problem(toCopy.getProblem()),
+    fjssp_data(toCopy.getFJSSPdata()),
     paretoContainer(toCopy.getParetoGrid()),
     currentSolution(toCopy.getIncumbentSolution()),
     ivm_tree(toCopy.getIVMTree()),
@@ -47,6 +48,11 @@ BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
 BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, const Interval & branch, GlobalPool &globa_pool, HandlerContainer& pareto_container):
     rank(rank),
     problem(problemToCopy),
+
+    fjssp_data(problemToCopy.getNumberOfJobs(),
+               problemToCopy.getNumberOfOperations(),
+               problemToCopy.getNumberOfMachines()),
+
     globalPool(globa_pool),
     starting_interval(branch),
     paretoContainer(pareto_container),
@@ -67,25 +73,24 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, cons
         t1 = std::chrono::high_resolution_clock::now();
         t2 = std::chrono::high_resolution_clock::now();
         
-
         branches_to_move = problem.getUpperBound(0) * percent_to_move;
         deep_to_share = totalLevels * percent_deep;
         
-	int numberOfObjectives = problem.getNumberOfObjectives();
-	int numberOfVariables = problem.getNumberOfVariables();
-
-    totalNodes.fetch_and_store(computeTotalNodes(numberOfVariables));
-
-	bestObjectivesFound(numberOfObjectives, numberOfVariables);
-    currentSolution(numberOfObjectives, numberOfVariables);
-	problem.createDefaultSolution(currentSolution);
-    
-	int nObj = 0;
-	for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-		bestObjectivesFound.setObjective(nObj, currentSolution.getObjective(nObj));
-
-	ivm_tree(problem.getNumberOfVariables(), problem.getUpperBound(0) + 1);
-	ivm_tree.setOwner(rank);
+        int numberOfObjectives = problem.getNumberOfObjectives();
+        int numberOfVariables = problem.getNumberOfVariables();
+        
+        totalNodes.fetch_and_store(computeTotalNodes(numberOfVariables));
+        
+        bestObjectivesFound(numberOfObjectives, numberOfVariables);
+        currentSolution(numberOfObjectives, numberOfVariables);
+        problem.createDefaultSolution(currentSolution);
+        
+        int nObj = 0;
+        for (nObj = 0; nObj < numberOfObjectives; ++nObj)
+            bestObjectivesFound.setObjective(nObj, currentSolution.getObjective(nObj));
+        
+        ivm_tree(problem.getNumberOfVariables(), problem.getUpperBound(0) + 1);
+        ivm_tree.setOwner(rank);
 }
 
 BranchAndBound& BranchAndBound::operator()(int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch){
@@ -95,6 +100,7 @@ BranchAndBound& BranchAndBound::operator()(int rank_new, const ProblemFJSSP &pro
     start = std::clock();
     rank = rank_new;
     problem = problem_to_copy;
+    fjssp_data(problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
     
     currentLevel = 0;
     totalLevels = 0;
@@ -188,9 +194,11 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch_to_ini
 	int row = 0; /** Counter level.**/
     int builded_value = 0;
     int builded_up_to = branch_to_init.getBuildUpTo();
+    
     tree.setRootNode(builded_up_to);/** root node of this tree**/
     tree.setStartingLevel(builded_up_to); /** Level with the first branches of the tree. **/
     tree.setActiveLevel(builded_up_to);
+    fjssp_data.reset();
 
     /** Copy the built part. TODO: Probably this part can be removed, considering the root node.**/
 	for (row = 0; row <= builded_up_to; ++row) {
@@ -205,6 +213,7 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch_to_ini
 
 		/** TODO: Check this part. The interval is equivalent to the solution?. **/
 		currentSolution.setVariable(row, builded_value);
+        problem.evaluateDynamic(currentSolution, fjssp_data, row);
 	}
 
     for (row = builded_up_to + 1; row <= totalLevels; ++row) {
@@ -258,13 +267,18 @@ void BranchAndBound::solve(const Interval& branch_to_solve) {
             while (theTreeHasMoreBranches() && !timeUp) {
                 
                 explore(currentSolution);
-                problem.evaluatePartial(currentSolution, currentLevel);
+                problem.evaluateDynamic(currentSolution, fjssp_data, currentLevel);
                 
                 if (!aLeafHasBeenReached() && theTreeHasMoreBranches()) {
+                    
                     if (improvesTheGrid(currentSolution))
                         branch(currentSolution, currentLevel);
                     else
                         prune(currentSolution, currentLevel);
+                    
+                    for (int l = currentLevel; l >= ivm_tree.getActiveLevel(); --l)
+                        problem.evaluateRemoveDynamic(currentSolution, fjssp_data, l);
+                    
                 } else {
                     
                     reachedLeaves++;
@@ -307,11 +321,16 @@ int BranchAndBound::explore(Solution & solution) {
 
     if (aLeafHasBeenReached()){ /** If the active node is a leaf then we need to go up. **/
         ivm_tree.pruneActiveNode();
+        
+        for (int l = currentLevel; l >= ivm_tree.getActiveLevel(); --l)
+            problem.evaluateRemoveDynamic(solution, fjssp_data, l);
+        
     }
+   
+
     
 	currentLevel = ivm_tree.getCurrentLevel();
 	solution.setVariable(currentLevel, ivm_tree.getActiveNode());
-
 	return 0;
 }
 
@@ -362,22 +381,25 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             
         case ProblemType::permutation_with_repetition_and_combination:
             
+            /** TODO: TEST parallel for?. **/
             for (element = 0; element < problem.getTotalElements(); ++element)
                 timesRepeated[element] = 0;
             
+            /** TODO: TEST parallel for?. **/
             for (varInPos = 0; varInPos <= currentLevel; ++varInPos) {
                 element = problem.getDecodeMap(solution.getVariable(varInPos), 0);
                 timesRepeated[element]++;
             }
             
-            for (element = 0; element < problem.getTotalElements(); ++element) {
-                if (timesRepeated[element] < problem.getTimesValueIsRepeated(element)) {
+            /** TODO: TEST parallel for?, solution is shared and each thread needs their own copy. **/
+            for (element = 0; element < problem.getTotalElements(); ++element)
+                if (timesRepeated[element] < problem.getTimesValueIsRepeated(element))
                     /** TODO: sort the branches. **/
                     for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
                         toAdd = problem.getCodeMap(element, machine);
                         
                         solution.setVariable(currentLevel + 1, toAdd);
-                        problem.evaluatePartial(solution, currentLevel + 1);
+                        problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
                         
                         if (improvesTheGrid(solution)) {
                             /*  double element[3];
@@ -392,14 +414,16 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             branches_created++;
                         } else
                             prunedNodes++;
+                        problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
                     }
-                }
-            }
+                
             
-            if (branches_created > 0) { /** If a branched was created. **/
+            
+            if (branches_created > 0) { /** If a branch was created. **/
                 ivm_tree.moveToNextLevel();
                 ivm_tree.setActiveNodeAt(ivm_tree.getActiveLevel(), 0);
             } else { /** If no branches were created then move to the next node. **/
+                
                 ivm_tree.pruneActiveNode();
                 prunedNodes++;
             }
@@ -421,10 +445,8 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 }
 
 void BranchAndBound::prune(Solution & solution, int currentLevel) {
-
 	callsToPrune++;
 	ivm_tree.pruneActiveNode();
-
 }
 
 int BranchAndBound::aLeafHasBeenReached() const {
@@ -538,9 +560,9 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
     int machine = 0;
     int toAdd = 0;
 
-	Solution sol_test(2, branch_to_split.getSize());
+    Solution sol_test(2, branch_to_split.getSize()); /** TODO: This can be the current_solution**/
 
-    for (element = 0; element < num_elements; ++element)
+    for (element = 0; element < num_elements; ++element) /** TODO: This can be the fjssp_data **/
         timesRepeated[element] = 0;
     
 	for (index_var = 0; index_var <= branch_to_split.getBuildUpTo(); ++index_var) {
@@ -691,6 +713,8 @@ const Solution& BranchAndBound::getIncumbentSolution() const { return currentSol
 const IVMTree& BranchAndBound::getIVMTree() const { return ivm_tree;}
 const Interval& BranchAndBound::getStartingInterval() const { return starting_interval;}
 const ProblemFJSSP& BranchAndBound::getProblem() const { return problem;}
+const FJSSPdata& BranchAndBound::getFJSSPdata() const { return fjssp_data;}
+
 
 HandlerContainer& BranchAndBound::getParetoGrid() const { return paretoContainer;}
 HandlerContainer& BranchAndBound::getParetoContainer() {return paretoContainer;}
