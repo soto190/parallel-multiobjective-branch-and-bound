@@ -212,10 +212,10 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch_to_ini
         tree.setIVMValueAt(row, builded_value, builded_value);
 
 		/** TODO: Check this part. The interval is equivalent to the solution?. **/
-		currentSolution.setVariable(row, builded_value);
+        currentSolution.setVariable(row, builded_value);
         problem.evaluateDynamic(currentSolution, fjssp_data, row);
 	}
-
+    
     for (row = builded_up_to + 1; row <= totalLevels; ++row) {
         tree.setStartExploration(row, 0);
         tree.resetNumberOfNodesAt(row);
@@ -324,10 +324,7 @@ int BranchAndBound::explore(Solution & solution) {
         
         for (int l = currentLevel; l >= ivm_tree.getActiveLevel(); --l)
             problem.evaluateRemoveDynamic(solution, fjssp_data, l);
-        
     }
-   
-
     
 	currentLevel = ivm_tree.getCurrentLevel();
 	solution.setVariable(currentLevel, ivm_tree.getActiveNode());
@@ -349,8 +346,6 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     int isInPermut = 0;
     int level = 0;
     int levelStarting= 0;
-    int varInPos = 0;
-    int timesRepeated [problem.getTotalElements()];
     int toAdd = 0;
     int machine = 0;
     
@@ -381,20 +376,10 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             
         case ProblemType::permutation_with_repetition_and_combination:
             
-            /** TODO: TEST parallel for?. **/
-            for (element = 0; element < problem.getTotalElements(); ++element)
-                timesRepeated[element] = 0;
-            
-            /** TODO: TEST parallel for?. **/
-            for (varInPos = 0; varInPos <= currentLevel; ++varInPos) {
-                element = problem.getDecodeMap(solution.getVariable(varInPos), 0);
-                timesRepeated[element]++;
-            }
-            
             /** TODO: TEST parallel for?, solution is shared and each thread needs their own copy. **/
             for (element = 0; element < problem.getTotalElements(); ++element)
-                if (timesRepeated[element] < problem.getTimesValueIsRepeated(element))
-                    /** TODO: sort the branches. **/
+                if (fjssp_data.getNumberOfOperationsAllocatedInJob(element) < problem.getTimesValueIsRepeated(element))
+                /** TODO: sort the branches. **/
                     for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
                         toAdd = problem.getCodeMap(element, machine);
                         
@@ -416,8 +401,6 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             prunedNodes++;
                         problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
                     }
-                
-            
             
             if (branches_created > 0) { /** If a branch was created. **/
                 ivm_tree.moveToNextLevel();
@@ -554,37 +537,32 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 	int level_to_split = branch_to_split.getBuildUpTo() + 1;
 	int branches_created = 0;
     int num_elements = problem.getTotalElements();
-	int timesRepeated[num_elements];
 	int map = 0;
 	int element = 0;
     int machine = 0;
     int toAdd = 0;
-
-    Solution sol_test(2, branch_to_split.getSize()); /** TODO: This can be the current_solution**/
-
-    for (element = 0; element < num_elements; ++element) /** TODO: This can be the fjssp_data **/
-        timesRepeated[element] = 0;
+    fjssp_data.reset();
     
 	for (index_var = 0; index_var <= branch_to_split.getBuildUpTo(); ++index_var) {
         map = branch_to_split.getValueAt(index_var);
-		sol_test.setVariable(index_var, map);
-        timesRepeated[problem.getDecodeMap(map, 0)]++;
+        currentSolution.setVariable(index_var, map);
+        problem.evaluateDynamic(currentSolution, fjssp_data, index_var);
 	}
 
 	for (element = 0; element < num_elements; ++element)
-        if (timesRepeated[element] < problem.getTimesValueIsRepeated(element))
+        if (fjssp_data.getNumberOfOperationsAllocatedInJob(element) < problem.getTimesValueIsRepeated(element))
             for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
 
 				toAdd = problem.getCodeMap(element, machine);
-				sol_test.setVariable(level_to_split, toAdd);
-				problem.evaluatePartial(sol_test, level_to_split);
+				currentSolution.setVariable(level_to_split, toAdd);
+				problem.evaluateDynamic(currentSolution, fjssp_data, level_to_split);
 
-				if (improvesTheGrid(sol_test)) {
+				if (improvesTheGrid(currentSolution)) {
                     /** Gets the branch to add. */
                     branch_to_split.setValueAt(level_to_split, toAdd);
                     branch_to_split.setBuildUpTo(level_to_split);
 
-					/**Add it to Intervals. **/
+					/**Add it to pending intervals. **/
 					if (rank == 0)
                         globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
                     else
@@ -592,6 +570,9 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 					branches_created++;
 				} else
 					prunedNodes++;
+                
+                problem.evaluateRemoveDynamic(currentSolution, fjssp_data, level_to_split);
+
 			}
 	
     branches += branches_created;

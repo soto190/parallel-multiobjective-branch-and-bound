@@ -404,7 +404,7 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     int max_workload = 0;
     int operationInPosition = 0;
     
-    int minPij = sumOfMinPij;
+    //int minPij = sumOfMinPij;
     
     int map = solution.getVariable(level);
     int job = getDecodeMap(map, 0);
@@ -412,7 +412,7 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     int numberOp = getOperationInJobIsNumber(job, data.getNumberOfOperationsAllocatedInJob(job));
     
     /** The minimun total workload is reduced. **/
-    minPij -= getProccessingTime(numberOp, getAssignationMinPij(numberOp));
+    //minPij -= getProccessingTime(numberOp, getAssignationMinPij(numberOp));
     
     /** With the operation number and the machine we can continue. **/
     int proccessingTime = getProccessingTime(numberOp, machine);
@@ -473,15 +473,15 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
     int max_workload = 0;
     int operationInPosition = 0;
     
-    int minPij = sumOfMinPij;
+    //int minPij = sumOfMinPij;
     
     int map = solution.getVariable(level);
     int job = getDecodeMap(map, 0);
-    int machine = getDecodeMap(map, 1);
+    int machine = 0;
     int numberOp = getOperationInJobIsNumber(job, data.getLastOperationAllocatedInJob(job));
     
     /** The minimun total workload is reduced. **/
-    minPij -= getProccessingTime(numberOp, getAssignationMinPij(numberOp));
+    //minPij -= getProccessingTime(numberOp, getAssignationMinPij(numberOp));
     
     /** With the operation number and the machine we can continue. **/
     data.deallocateOperation(job, numberOp);
@@ -568,18 +568,18 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
     int maxWorkloadObj = 0;
     int totalWorkload = 0;
     
-    int operationOfJob [getNumberOfJobs()];
-    int workload [getNumberOfMachines()];
+    int operationOfJob [totalJobs];
+    int workload [totalMachines];
     int maxWorkloadedMachine = 0;
     
-    for (nMachine = 0; nMachine < getNumberOfMachines(); ++nMachine)
+    for (nMachine = 0; nMachine < totalMachines; ++nMachine)
         workload[nMachine] = 0;
     
     /** Assign the operations to machines which generates the min TotalWorkload and computes the machines workloads. **/
     int counterOperations = 0;
     for (nJob = 0; nJob < getNumberOfJobs(); ++nJob){
         operationOfJob[nJob] = 0;
-        for (nOperation = 0; nOperation < getNumberOfOperationsInJob(nJob); ++nOperation){
+        for (nOperation = 0; nOperation < numberOfOperationsInJob[nJob]; ++nOperation){
             
             nMachine = assignationMinPij[counterOperations];
             procTiOp = processingTime[counterOperations][nMachine];
@@ -609,7 +609,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
         bestMachine = 0;
         minWorkload = INT_MAX;
         
-        for (nOperation = 0; nOperation < getNumberOfOperations(); ++nOperation)
+        for (nOperation = 0; nOperation < totalOperations; ++nOperation)
             if(mapToJobMachine[solution.getVariable(nOperation)][1] == maxWorkloadedMachine)
                 for (nMachine = 0; nMachine < getNumberOfMachines(); ++nMachine)
                     if(nMachine != maxWorkloadedMachine
