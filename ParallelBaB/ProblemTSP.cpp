@@ -85,12 +85,12 @@ ProblemType ProblemTSP::getType() const{
     return ProblemType::permutation;
 }
 
-int ProblemTSP::getStartingLevel(){
+int ProblemTSP::getStartingRow(){
     return 1;
 }
 
 int ProblemTSP::getFinalLevel(){
-    return this->getNumberOfVariables() - getStartingLevel();
+    return this->getNumberOfVariables() - getStartingRow();
 }
 
 int ProblemTSP::getLowerBound(int indexVar) const{

@@ -21,11 +21,11 @@ private:
     int * active_node;
     int * start_exploration; /** This is not used. **/
     int * end_exploration; /** This is not used. **/
-    int active_level;
-    int starting_level;
+    int active_row;
+    int starting_row;
     int hasBranches = 1;
-    int root_node = 0;
-    int * max_nodes_in_level;
+    int root_row = 0; /** Root row. **/
+    int * n_nodes_at_row;
 
 public:
 	IVMTree();
@@ -34,11 +34,11 @@ public:
 	~IVMTree();
     
     void setOwner(int idBB);
-    void setRootNode(int node);
+    void setRootRow(int node);
     void setIVMValueAt(int row, int col, int value);
     void setActiveNodeAt(int row, int value);
-    void setActiveLevel(int row);
-    void setStartingLevel(int row);
+    void setActiveRow(int row);
+    void setStartingRow(int row);
     void setNumberOfNodesAt(int row, int value);
     void setExplorationInterval(int starting_level, int * starts, int * ends);
     void setStartExploration(int row, int value);
@@ -52,8 +52,9 @@ public:
     int getNumberOfNodesAt(int row) const;
     int getIVMValue(int row, int col) const;
     int getActiveNode(int row) const;
-    int getActiveLevel() const;
-    int getStartingLevel() const;
+    int getActiveRow() const;
+    int getLastNodeAtRow(int row) const;
+    int getStartingRow() const;
 	int getNumberOfRows() const;
 	int getNumberOfCols() const;
 	int getTreeDeep() const;
@@ -61,7 +62,8 @@ public:
     int getStartExploration(int row) const;
     int getEndExploration(int row) const;
     
-
+    int removeLastNodeAtRow(int row);
+    
 	int hasPendingBranches() const;
 	void setNode(int level, int value);
 	int getActiveNode() const;
@@ -70,10 +72,10 @@ public:
 
 	int getCurrentLevel() const;
 
-	int moveToNextLevel();
+	int moveToNextRow();
 	int moveToNextNode();
 
-	void showIVM();
+	void print();
 	IVMTree& operator()(int rows, int cols);
     IVMTree& operator=(const IVMTree& toCopy);
 

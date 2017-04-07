@@ -366,7 +366,7 @@ public:
     int getLowerBound(int indexVar) const;
     int getUpperBound(int indexVar) const;
     ProblemType getType() const;
-    int getStartingLevel();
+    int getStartingRow();
     int getFinalLevel();
     
     int * getElemensToRepeat();

@@ -175,8 +175,8 @@ public:
 
 private:
 	int initializeExplorationInterval(const Interval & branch, IVMTree & tree);
-	int initializeExplorationIntervalSolution(const Solution & branch,
-			IVMTree & tree);
+	int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);
+    int intializeIVM_data(Interval& branch, IVMTree & tree);
 	/** End IVM functions **/
 
 public:

@@ -35,7 +35,7 @@ public:
     int getUpperBound(int indexVar) const;
     int getLowerBoundInObj(int nObj) const;
     ProblemType getType() const;
-    int getStartingLevel();
+    int getStartingRow();
     int getFinalLevel();
     
     int * getElemensToRepeat();

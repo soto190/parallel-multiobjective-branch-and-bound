@@ -815,7 +815,7 @@ void ProblemFJSSP::loadInstance(char** filePath){
 }
 
 ProblemType ProblemFJSSP::getType() const { return ProblemType::permutation_with_repetition_and_combination; }
-int ProblemFJSSP::getStartingLevel(){ return 0;}
+int ProblemFJSSP::getStartingRow(){ return 0;}
 int ProblemFJSSP::getFinalLevel(){return totalOperations - 1;}
 int ProblemFJSSP::getTotalElements(){return totalJobs;}
 int * ProblemFJSSP::getElemensToRepeat(){return numberOfOperationsInJob;}

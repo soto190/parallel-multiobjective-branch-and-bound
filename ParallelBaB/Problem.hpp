@@ -43,7 +43,7 @@ public:
     virtual void createDefaultSolution(Solution & solution);
     
     virtual ProblemType getType() const = 0;
-    virtual int getStartingLevel() = 0;
+    virtual int getStartingRow() = 0;
     virtual int getFinalLevel() = 0;
     
     virtual void getSolutionWithLowerBoundInObj(int nObj, Solution & sol) = 0;
@@ -56,7 +56,7 @@ public:
     int getNumberOfVariables() const;
     int getNumberOfObjectives() const;
     int getNumberOfConstraints() const;
-    int getStartingLevel() const;
+    int getStartingRow() const;
     
     virtual int getTotalElements() = 0;
     virtual int * getElemensToRepeat() = 0;

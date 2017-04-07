@@ -192,38 +192,38 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch_to_ini
 
 	int col = 0;
 	int row = 0; /** Counter level.**/
-    int builded_value = 0;
-    int builded_up_to = branch_to_init.getBuildUpTo();
+    int build_value = 0;
+    int build_up_to = branch_to_init.getBuildUpTo();
     
-    tree.setRootNode(builded_up_to);/** root node of this tree**/
-    tree.setStartingLevel(builded_up_to); /** Level with the first branches of the tree. **/
-    tree.setActiveLevel(builded_up_to);
+    tree.setRootRow(build_up_to);/** root node of this tree**/
+    tree.setStartingRow(build_up_to); /** Level with the first branches of the tree. **/
+    tree.setActiveRow(build_up_to);
     fjssp_data.reset();
 
-    /** Copy the built part. TODO: Probably this part can be removed, considering the root node.**/
-	for (row = 0; row <= builded_up_to; ++row) {
+    /** Copy the built part. TODO: Probably this part can be removed, considering the root node. **/
+	for (row = 0; row <= build_up_to; ++row) {
 		for (col = 0; col < tree.getNumberOfCols(); ++col)
             tree.setIVMValueAt(row, col, -1);
-        builded_value = branch_to_init.getValueAt(row);
-        tree.setStartExploration(row, builded_value);
-        tree.setEndExploration(row, builded_value);
+        build_value = branch_to_init.getValueAt(row);
+        tree.setStartExploration(row, build_value);
+        tree.setEndExploration(row, build_value);
         tree.setNumberOfNodesAt(row, 1);
-        tree.setActiveNodeAt(row, builded_value);
-        tree.setIVMValueAt(row, builded_value, builded_value);
+        tree.setActiveNodeAt(row, build_value);
+        tree.setIVMValueAt(row, build_value, build_value);
 
 		/** TODO: Check this part. The interval is equivalent to the solution?. **/
-        currentSolution.setVariable(row, builded_value);
+        currentSolution.setVariable(row, build_value);
         problem.evaluateDynamic(currentSolution, fjssp_data, row);
 	}
     
-    for (row = builded_up_to + 1; row <= totalLevels; ++row) {
+    for (row = build_up_to + 1; row <= totalLevels; ++row) {
         tree.setStartExploration(row, 0);
         tree.resetNumberOfNodesAt(row);
 	}
     
-	int branches_created = branch(currentSolution, builded_up_to);
-    tree.setActiveNodeAt(tree.getActiveLevel(), 0);
-    tree.setActiveNodeAt(tree.getActiveLevel(), tree.getStartExploration(tree.getActiveLevel()));
+	int branches_created = branch(currentSolution, build_up_to);
+    tree.setActiveNodeAt(tree.getActiveRow(), 0);
+    tree.setActiveNodeAt(tree.getActiveRow(), tree.getStartExploration(tree.getActiveRow()));
 
     if (branches_created > 0)
         tree.setHasBranches(1);
@@ -231,6 +231,60 @@ int BranchAndBound::initializeExplorationInterval(const Interval & branch_to_ini
         tree.setHasBranches(0);
 
 	return 0;
+}
+
+int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
+    
+    int col = 0;
+    int row = 0; /** Counter level.**/
+    int build_value = 0;
+    int build_up_to = branch_init.getBuildUpTo();
+    
+    tree.setRootRow(build_up_to);/** root row of this tree**/
+    tree.setStartingRow(build_up_to + 1); /** Level/row with the first branches of the tree. **/
+    tree.setActiveRow(build_up_to);
+    fjssp_data.reset();
+    
+    /** Copy the built part. TODO: Probably this part can be removed, considering the root node. **/
+    for (row = 0; row <= build_up_to; ++row) {
+        for (col = 0; col < tree.getNumberOfCols(); ++col)
+            tree.setIVMValueAt(row, col, -1);
+        build_value = branch_init.getValueAt(row);
+        tree.setStartExploration(row, build_value);
+        tree.setEndExploration(row, build_value);
+        tree.setNumberOfNodesAt(row, 1);
+        tree.setActiveNodeAt(row, build_value);
+        tree.setIVMValueAt(row, build_value, build_value);
+        
+        /** TODO: Check this part. The interval is equivalent to the solution?. **/
+        currentSolution.setVariable(row, build_value);
+        problem.evaluateDynamic(currentSolution, fjssp_data, row);
+    }
+    
+    for (row = build_up_to + 1; row <= totalLevels; ++row) {
+        tree.setStartExploration(row, 0);
+        tree.resetNumberOfNodesAt(row);
+    }
+    
+    int branches_created = branch(currentSolution, build_up_to);
+    tree.setHasBranches(branches_created);
+    
+    
+    /** Send intervals to global_pool. **/
+    int branches_to_move_to_global_pool = branches_created * percent_to_move;
+    if (rank > 0
+        && branches_created > branches_to_move_to_global_pool
+        && branch_init.getBuildUpTo() < deep_to_share) {
+        
+        int moved = 0;
+        branch_init.increaseBuildUpTo();
+        for (moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
+            branch_init.setValueAt(build_up_to + 1, ivm_tree.removeLastNodeAtRow(build_up_to + 1));
+            globalPool.push(branch_init);
+        }
+    }
+
+    return 0;
 }
 
 tbb::task* BranchAndBound::execute() {
@@ -246,8 +300,6 @@ void BranchAndBound::solve(const Interval& branch_to_solve) {
 	int updated = 0;
 
 	Interval branchFromGlobal = branch_to_solve;
-	Interval activeBranch(problem.getNumberOfVariables());
-
 	initialize(branchFromGlobal.getBuildUpTo());
 
     while (!globalPool.empty()) {
@@ -255,42 +307,36 @@ void BranchAndBound::solve(const Interval& branch_to_solve) {
         globalPool.try_pop(branchFromGlobal);
         printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
         branchFromGlobal.showInterval();
-        splitInterval(branchFromGlobal);
         
-        while (!localPool.empty()) {
+        intializeIVM_data(branchFromGlobal, ivm_tree);
+        printf("[B&B-%03d] New pool size is %lu\n", rank, globalPool.unsafe_size());
+
+        while (theTreeHasMoreBranches() && !timeUp) {
             
-            activeBranch = localPool.front();
-            localPool.pop();
+            explore(currentSolution);
+            problem.evaluateDynamic(currentSolution, fjssp_data, currentLevel);
             
-            initializeExplorationInterval(activeBranch, ivm_tree);
-            
-            while (theTreeHasMoreBranches() && !timeUp) {
+            if (!aLeafHasBeenReached() && theTreeHasMoreBranches()) {
                 
-                explore(currentSolution);
-                problem.evaluateDynamic(currentSolution, fjssp_data, currentLevel);
+                if (improvesTheGrid(currentSolution))
+                    branch(currentSolution, currentLevel);
+                else
+                    prune(currentSolution, currentLevel);
                 
-                if (!aLeafHasBeenReached() && theTreeHasMoreBranches()) {
-                    
-                    if (improvesTheGrid(currentSolution))
-                        branch(currentSolution, currentLevel);
-                    else
-                        prune(currentSolution, currentLevel);
-                    
-                    for (int l = currentLevel; l >= ivm_tree.getActiveLevel(); --l)
-                        problem.evaluateRemoveDynamic(currentSolution, fjssp_data, l);
-                    
-                } else {
-                    
-                    reachedLeaves++;
-                    
-                    updated = updateParetoGrid(currentSolution);
-                    totalUpdatesInLowerBound += updated;
-                    
-                    if (updated) {
-                        printf("[B&B-%03d] ", rank);
-                        printCurrentSolution();
-                        printf(" + [%6lu] \n", paretoContainer.getSize());
-                    }
+                for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
+                    problem.evaluateRemoveDynamic(currentSolution, fjssp_data, l);
+                
+            } else {
+                
+                reachedLeaves++;
+                
+                updated = updateParetoGrid(currentSolution);
+                totalUpdatesInLowerBound += updated;
+                
+                if (updated) {
+                    printf("[B&B-%03d] ", rank);
+                    printCurrentSolution();
+                    printf(" + [%6lu] \n", paretoContainer.getSize());
                 }
             }
         }
@@ -322,7 +368,7 @@ int BranchAndBound::explore(Solution & solution) {
     if (aLeafHasBeenReached()){ /** If the active node is a leaf then we need to go up. **/
         ivm_tree.pruneActiveNode();
         
-        for (int l = currentLevel; l >= ivm_tree.getActiveLevel(); --l)
+        for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
             problem.evaluateRemoveDynamic(solution, fjssp_data, l);
     }
     
@@ -355,7 +401,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     switch (problem.getType()) {
             
         case ProblemType::permutation:
-            levelStarting = problem.getStartingLevel();
+            levelStarting = problem.getStartingRow();
             
             for (element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
                 isInPermut = 0;
@@ -403,8 +449,8 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                     }
             
             if (branches_created > 0) { /** If a branch was created. **/
-                ivm_tree.moveToNextLevel();
-                ivm_tree.setActiveNodeAt(ivm_tree.getActiveLevel(), 0);
+                ivm_tree.moveToNextRow();
+                ivm_tree.setActiveNodeAt(ivm_tree.getActiveRow(), 0);
             } else { /** If no branches were created then move to the next node. **/
                 
                 ivm_tree.pruneActiveNode();
@@ -533,7 +579,7 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
  **/
 void BranchAndBound::splitInterval(Interval & branch_to_split) {
     
-	int index_var = 0;
+	int row = 0;
 	int level_to_split = branch_to_split.getBuildUpTo() + 1;
 	int branches_created = 0;
     int num_elements = problem.getTotalElements();
@@ -541,12 +587,12 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 	int element = 0;
     int machine = 0;
     int toAdd = 0;
-    fjssp_data.reset();
+    //fjssp_data.reset(); /** This function call is not necesary because the structuras starts empty.**/
     
-	for (index_var = 0; index_var <= branch_to_split.getBuildUpTo(); ++index_var) {
-        map = branch_to_split.getValueAt(index_var);
-        currentSolution.setVariable(index_var, map);
-        problem.evaluateDynamic(currentSolution, fjssp_data, index_var);
+	for (row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
+        map = branch_to_split.getValueAt(row);
+        currentSolution.setVariable(row, map);
+        problem.evaluateDynamic(currentSolution, fjssp_data, row);
 	}
 
 	for (element = 0; element < num_elements; ++element)

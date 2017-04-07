@@ -131,7 +131,7 @@ ProblemHCSP& ProblemHCSP::operator=(const ProblemHCSP &toCopy){
 }
 
 ProblemType ProblemHCSP::getType() const{ return ProblemType::combination;}
-int ProblemHCSP::getStartingLevel(){ return 0; }
+int ProblemHCSP::getStartingRow(){ return 0; }
 int ProblemHCSP::getFinalLevel(){ return this->totalVariables - 1;}
 int ProblemHCSP::getLowerBound(int indexVar) const{ return 0;}
 int ProblemHCSP::getUpperBound(int indexVar) const{ return this->totalMappings - 1; }

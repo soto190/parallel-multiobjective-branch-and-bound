@@ -12,7 +12,7 @@ Problem::Problem(const Problem& toCopy):
     totalObjectives(toCopy.getNumberOfObjectives()),
     totalVariables(toCopy.getNumberOfVariables()),
     type(toCopy.getType()),
-    startingLevel(toCopy.getStartingLevel()),
+    startingLevel(toCopy.getStartingRow()),
     totalConstraints(toCopy.getNumberOfConstraints()){
     
         name = new char[255];
@@ -57,7 +57,7 @@ Problem& Problem::operator=(const Problem &toCopy){
     totalObjectives = toCopy.getNumberOfObjectives();
     totalVariables = toCopy.getNumberOfVariables();
     type = toCopy.getType();
-    startingLevel = toCopy.getStartingLevel();
+    startingLevel = toCopy.getStartingRow();
     totalConstraints = toCopy.getNumberOfConstraints();
     
     if (lowerBound != nullptr) {
@@ -90,7 +90,7 @@ int * Problem::getElemensToRepeat(){ return nullptr; }
 int Problem::getNumberOfObjectives() const{ return totalObjectives; }
 int Problem::getNumberOfVariables() const{ return totalVariables; }
 int Problem::getNumberOfConstraints() const{ return totalConstraints; }
-int Problem::getStartingLevel() const{ return startingLevel; }
+int Problem::getStartingRow() const{ return startingLevel; }
 int Problem::getLowerBound(int index) const { return 0; }
 int Problem::getUpperBound(int index) const { return 0; }
 int Problem::getLowerBoundInObj(int nObj)const{ return INT_MAX; }

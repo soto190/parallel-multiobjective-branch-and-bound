@@ -23,7 +23,7 @@ int ProblemVRP::getUpperBound(int indexVar) const{ return 1; }
 int ProblemVRP::getLowerBoundInObj(int nObj) const{ return INT_MAX;}
 
 ProblemType ProblemVRP::getType() const {return ProblemType::combination;}
-int ProblemVRP::getStartingLevel(){return 0;}
+int ProblemVRP::getStartingRow(){return 0;}
 int ProblemVRP::getFinalLevel(){return 0;}
 int ProblemVRP::getTotalElements(){return 0;}
 int * ProblemVRP::getElemensToRepeat(){return nullptr;}
