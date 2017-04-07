@@ -47,10 +47,10 @@ struct GlobalPool{
         return true;
     }
     
-    unsigned long unsafe_size(){ return Queue.unsafe_size(); }
+    unsigned long unsafe_size() const{ return Queue.unsafe_size(); }
+    bool empty() const { return Queue.empty(); }
     void push(const Interval & interval){ Queue.push(interval);}
     bool try_pop(Interval& interval){ return Queue.try_pop(interval); }
-    bool empty(){ return Queue.empty(); }
 };
 
 class BranchAndBound: public tbb::task {
