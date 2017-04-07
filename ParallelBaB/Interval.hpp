@@ -44,7 +44,7 @@ public:
     void setSize(int size);
     void setValueAt(int index, int value);
 
-	void showInterval() const;
+	void print() const;
 };
 
 #endif /* Interval_hpp */

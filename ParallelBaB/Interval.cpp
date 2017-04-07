@@ -86,7 +86,7 @@ void Interval::setValueAt(int index, int value){ interval[index] = value; }
 void Interval::setBuildUpTo(int newBuild){ build_up_to = newBuild; }
 int Interval::increaseBuildUpTo(){ return build_up_to++; }
 
-void Interval::showInterval() const{
+void Interval::print() const{
     
     int index_var = 0;
     char sep = '-';

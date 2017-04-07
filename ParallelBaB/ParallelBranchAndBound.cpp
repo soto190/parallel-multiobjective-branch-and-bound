@@ -28,7 +28,7 @@ tbb::task * ParallelBranchAndBound::execute() {
     BranchAndBound BB_container(0, this->problem, branch_init, global_pool, global_grid);
     BB_container.setParetoFrontFile(this->outputParetoFile);
     BB_container.setSummarizeFile(this->summarizeFile);
-    BB_container.splitInterval(branch_init);
+    BB_container.initGlobaPoolWithInterval(branch_init);
     
 	this->set_ref_count(this->number_of_threads + 1);
 

@@ -499,7 +499,7 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
         }
         
     }
-    
+    solution.setVariable(level, -1);
     data.setMaxWorkload(max_workload);
     data.setMakespan(makespan);
     solution.setObjective(0, makespan);

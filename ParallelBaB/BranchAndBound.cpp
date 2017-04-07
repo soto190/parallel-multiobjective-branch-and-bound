@@ -572,7 +572,7 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
  *
  *  NOTE: Remember to avoid to split the intervals in the last levels.
  **/
-void BranchAndBound::splitInterval(Interval & branch_to_split) {
+void BranchAndBound::initGlobaPoolWithInterval(Interval & branch_to_split) {
     
 	int row = 0;
 	int level_to_split = branch_to_split.getBuildUpTo() + 1;
@@ -606,8 +606,7 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
 					/**Add it to pending intervals. **/
 					if (rank == 0)
                         globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
-                    else
-						localPool.push(branch_to_split);
+                    
 					branches_created++;
 				} else
 					prunedNodes++;
@@ -615,20 +614,10 @@ void BranchAndBound::splitInterval(Interval & branch_to_split) {
                 problem.evaluateRemoveDynamic(currentSolution, fjssp_data, level_to_split);
 
 			}
-	
+    branch_to_split.setValueAt(level_to_split, -1);
+
     branches += branches_created;
-    
-	/** TODO: Design something to decide when to add something to the global pool. **/
-	if (rank > 0
-        && branches_created > branches_to_move
-        && branch_to_split.getBuildUpTo() < deep_to_share) {
-        
-        int moved = 0;
-        for (moved = 0; moved < branches_to_move; ++moved) {
-            globalPool.push(localPool.front());
-            localPool.pop();
-        }
-	}
+
 }
 
 unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) const {
@@ -893,4 +882,12 @@ void BranchAndBound::saveEvery(double timeInSeconds) {
 		saveParetoFront();
 		saveSummarize();
 	}
+}
+
+void BranchAndBound::printDebug(){
+    printf("DEBUG\n");
+    currentSolution.print();
+    ivm_tree.print();
+    fjssp_data.print();
+    printf("DEBUG\n");
 }

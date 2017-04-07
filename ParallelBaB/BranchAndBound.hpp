@@ -79,10 +79,9 @@ private:
     Solution bestObjectivesFound;
     IVMTree ivm_tree;
     Interval starting_interval;
-    GlobalPool& globalPool;
+    GlobalPool& globalPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
     HandlerContainer& paretoContainer;
     std::vector<Solution> paretoFront; /** paretofFront. **/
-    std::queue<Interval> localPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
     
     char * outputFile;
     char * summarizeFile;
@@ -154,6 +153,7 @@ public:
     void setParetoContainer(HandlerContainer & paretoContainer);
     HandlerContainer& getParetoContainer();
 
+    void printDebug();
 private:
 	void printCurrentSolution(int withVariables = 0);
 	int aLeafHasBeenReached() const;
@@ -170,7 +170,7 @@ private:
 	/** IVM functions. **/
 public:
 	void computeLastBranch(Interval & branch);
-	void splitInterval(Interval & branch);
+	void initGlobaPoolWithInterval(Interval & branch);
 	void splitIntervalSolution(const Solution & solution);
 
 private:

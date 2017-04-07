@@ -285,12 +285,12 @@ public:
         int machine = 0;
         int operation = 0;
         
-        printf("Op :  M  ti -  tf\n");
+        printf("\tOp :  M  ti -  tf\n");
         for (operation = 0; operation < n_operations; ++operation)
             if(operation_allocated_in[operation] > -1)
-                printf("%3d: %2d %3d - %3d \n", operation, operation_allocated_in[operation], starting_time[operation], ending_time[operation]);
+                printf("%3c %3d: %2d %3d - %3d \n", 'a' + operation, operation, operation_allocated_in[operation], starting_time[operation], ending_time[operation]);
             else
-                printf("%3d:  - %3d - %3d \n", operation, starting_time[operation], ending_time[operation]);
+                printf("%3c %3d:  - %3d - %3d \n", 'a' + operation, operation, starting_time[operation], ending_time[operation]);
 
         printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, max_workload, total_workload);
 
