@@ -957,7 +957,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
         }
         
         for (time = startingTime[numberOp]; time < endingTime[numberOp]; time++)
-            gantt[machine][time] = 'a' + job;
+            gantt[machine][time] = 'a' + numberOp;
         
         operationOfJob[job]++;
         
@@ -968,9 +968,9 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
             maxWorkload = workload[machine];
     }
     
-    printf("Op :  M  ti -  tf\n");
+    printf("\tOp :  M  ti -  tf\n");
     for (operation = 0; operation < totalOperations; ++operation)
-        printf("%3d: %2d %3d - %3d \n", operation, mapToJobMachine[solution.getVariable(operation)][1], startingTime[operation], endingTime[operation]);
+        printf("%3c %3d: %2d %3d - %3d \n", 'a' + operation, operation, mapToJobMachine[solution.getVariable(operation)][1], startingTime[operation], endingTime[operation]);
     
     printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
 

@@ -245,7 +245,6 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     tree.setActiveRow(build_up_to);
     fjssp_data.reset();
     
-    /** Copy the built part. TODO: Probably this part can be removed, considering the root node. **/
     for (row = 0; row <= build_up_to; ++row) {
         for (col = 0; col < tree.getNumberOfCols(); ++col)
             tree.setIVMValueAt(row, col, -1);
@@ -267,8 +266,6 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     }
     
     int branches_created = branch(currentSolution, build_up_to);
-    tree.setHasBranches(branches_created);
-    
     
     /** Send intervals to global_pool. **/
     int branches_to_move_to_global_pool = branches_created * percent_to_move;
@@ -390,7 +387,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     
     int element = 0;
     int isInPermut = 0;
-    int level = 0;
+    int row = 0;
     int levelStarting= 0;
     int toAdd = 0;
     int machine = 0;
@@ -405,10 +402,10 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             
             for (element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
                 isInPermut = 0;
-                for (level = levelStarting; level <= currentLevel; ++level)
-                    if (solution.getVariable(level) == element) {
+                for (row = levelStarting; row <= currentLevel; ++row)
+                    if (solution.getVariable(row) == element) {
                         isInPermut = 1;
-                        level = currentLevel + 1;
+                        row = currentLevel + 1;
                     }
                 
                 if (isInPermut == 0) {
@@ -447,12 +444,12 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             prunedNodes++;
                         problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
                     }
-            
+            ivm_tree.setHasBranches(branches_created);
+
             if (branches_created > 0) { /** If a branch was created. **/
                 ivm_tree.moveToNextRow();
                 ivm_tree.setActiveNodeAt(ivm_tree.getActiveRow(), 0);
             } else { /** If no branches were created then move to the next node. **/
-                
                 ivm_tree.pruneActiveNode();
                 prunedNodes++;
             }
@@ -694,7 +691,9 @@ void BranchAndBound::printParetoFront(int withVariables) {
 
 	for (it = paretoFront.begin(); it != paretoFront.end(); ++it) {
 		printf("[%6d] ", ++counterSolutions);
-		problem.printSolution(*it);
+        problem.printSolution(*it);
+        printf("\n");
+		problem.printSolutionInfo(*it);
 		printf("\n");
 	}
 }
