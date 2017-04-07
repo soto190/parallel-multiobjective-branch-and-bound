@@ -302,11 +302,9 @@ void BranchAndBound::solve(const Interval& branch_to_solve) {
     while (!globalPool.empty()) {
         
         globalPool.try_pop(branchFromGlobal);
-        printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
-        branchFromGlobal.showInterval();
-        
+        //printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
+        //branchFromGlobal.showInterval();
         intializeIVM_data(branchFromGlobal, ivm_tree);
-        printf("[B&B-%03d] New pool size is %lu\n", rank, globalPool.unsafe_size());
 
         while (theTreeHasMoreBranches() && !timeUp) {
             
