@@ -244,7 +244,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     tree.setStartingRow(build_up_to + 1); /** Level/row with the first branches of the tree. **/
     tree.setActiveRow(build_up_to);
     fjssp_data.reset();
-    
+    Interval temp_inteval(branch_init);
     for (row = 0; row <= build_up_to; ++row) {
         for (col = 0; col < tree.getNumberOfCols(); ++col)
             tree.setIVMValueAt(row, col, -1);
@@ -273,10 +273,10 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
         && branches_created > branches_to_move_to_global_pool
         && branch_init.getBuildUpTo() < deep_to_share) {
         
-        branch_init.increaseBuildUpTo();
+        temp_inteval.increaseBuildUpTo();
         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
-            branch_init.setValueAt(build_up_to + 1, ivm_tree.removeLastNodeAtRow(build_up_to + 1));
-            globalPool.push(branch_init);
+            temp_inteval.setValueAt(build_up_to + 1, ivm_tree.removeLastNodeAtRow(build_up_to + 1));
+            globalPool.push(temp_inteval);
         }
     }
 
