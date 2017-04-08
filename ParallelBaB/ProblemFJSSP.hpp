@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdio.h>
 #include <vector>
+#include <deque>
 #include <fstream>
 #include <string>
 #include <math.h>
