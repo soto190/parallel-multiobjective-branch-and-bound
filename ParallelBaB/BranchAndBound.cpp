@@ -273,9 +273,8 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
         && branches_created > branches_to_move_to_global_pool
         && branch_init.getBuildUpTo() < deep_to_share) {
         
-        int moved = 0;
         branch_init.increaseBuildUpTo();
-        for (moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
+        for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
             branch_init.setValueAt(build_up_to + 1, ivm_tree.removeLastNodeAtRow(build_up_to + 1));
             globalPool.push(branch_init);
         }
@@ -303,7 +302,7 @@ void BranchAndBound::solve(const Interval& branch_to_solve) {
         
         globalPool.try_pop(branchFromGlobal);
         //printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
-        //branchFromGlobal.showInterval();
+        //branchFromGlobal.print();
         intializeIVM_data(branchFromGlobal, ivm_tree);
 
         while (theTreeHasMoreBranches() && !timeUp) {
@@ -442,7 +441,6 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             prunedNodes++;
                         problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
                     }
-            ivm_tree.setHasBranches(branches_created);
 
             if (branches_created > 0) { /** If a branch was created. **/
                 ivm_tree.moveToNextRow();
