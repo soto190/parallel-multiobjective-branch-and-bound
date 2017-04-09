@@ -402,7 +402,7 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     
     int makespan = 0;
     int max_workload = 0;
-    int operationInPosition = 0;
+    int temp = 0;
     int map = solution.getVariable(level);
     int job = getDecodeMap(map, 0);
     int machine = getDecodeMap(map, 1);
@@ -412,6 +412,10 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     /** With the operation number and the machine we can continue. **/
     int proccessingTime = getProccessingTime(numberOp, machine);
     data.decreaseToltalWorkload(getProccessingTime(numberOp, getAssignationMinPij(numberOp)));
+    
+    data.decreaseTempWorkloadIn(getAssignatioBestWorkload(numberOp), getProccessingTime(numberOp, getAssignatioBestWorkload(numberOp)));
+    data.increaseTempWorkloadIn(machine, proccessingTime);
+    
     data.setOperationAllocation(job, numberOp, machine, proccessingTime);
 
     if (data.getLastOperationAllocatedInJob(job) == 0) { /** If it is the first operation of the job.**/
@@ -444,20 +448,21 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     
     for (machine = 0; machine < totalMachines; ++machine){
 
-        if (data.getTimeOnMachine(machine) > makespan){
+        if (data.getTimeOnMachine(machine) > makespan)
             makespan = data.getTimeOnMachine(machine);
-            solution.setPartialObjective(operationInPosition, 0, makespan);
-        }
         
-        if(data.getWorkloadOnMachine(machine) > max_workload){
+        if(data.getWorkloadOnMachine(machine) > max_workload)
             max_workload = data.getWorkloadOnMachine(machine);
-            solution.setPartialObjective(operationInPosition, 1, max_workload);
-        }
     
+        if(data.getTempBestWorkloadInMachine(machine) > temp)
+            temp = data.getTempBestWorkloadInMachine(machine);
     }
     
-    data.setMaxWorkload(max_workload);
+    if (temp < max_workload)
+        max_workload = temp;
+    
     data.setMakespan(makespan);
+    data.setMaxWorkload(max_workload);
     
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
@@ -467,7 +472,7 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
 void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, int level){
     int makespan = 0;
     int max_workload = 0;
-    int operationInPosition = 0;
+    int temp = 0;
     
     int map = solution.getVariable(level);
     int job = getDecodeMap(map, 0);
@@ -476,24 +481,33 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
     
     /** With the operation number and the machine we can continue. **/
     data.increaseToltalWorkload(getProccessingTime(numberOp, getAssignationMinPij(numberOp))); /** Using the best total_workload. **/
+    
+    data.increaseTempWorkloadIn(getAssignatioBestWorkload(numberOp), getProccessingTime(numberOp, getAssignatioBestWorkload(numberOp)));
+    data.decreaseTempWorkloadIn(machine, getProccessingTime(numberOp, machine));
+
     data.deallocateOperation(job, numberOp);
     
     for (machine = 0; machine < totalMachines; ++machine){
         
-        if (data.getTimeOnMachine(machine) > makespan){
+        if (data.getTimeOnMachine(machine) > makespan)
             makespan = data.getTimeOnMachine(machine);
-            solution.setPartialObjective(operationInPosition, 0, makespan);
-        }
         
-        if(data.getWorkloadOnMachine(machine) > max_workload){
+        if(data.getWorkloadOnMachine(machine) > max_workload)
             max_workload = data.getWorkloadOnMachine(machine);
-            solution.setPartialObjective(operationInPosition, 1, max_workload);
-        }
+        
+        if(data.getTempBestWorkloadInMachine(machine) > temp)
+            temp = data.getTempBestWorkloadInMachine(machine);
+        
         
     }
-    solution.setVariable(level, -1);
-    data.setMaxWorkload(max_workload);
+    
+    if (temp < max_workload)
+        max_workload = temp;
+    
     data.setMakespan(makespan);
+    data.setMaxWorkload(max_workload);
+    
+    solution.setVariable(level, -1);
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
 //    solution.setObjective(1, data.getTotalWorkload());

@@ -77,7 +77,8 @@ private:
     int* ending_time; /** Size = n_operations. Contains the ending time of the n_operation. **/
     int* time_on_machine; /** Size = n_machines. Contains the ending time of the last computed job. **/
     int* workload_in_machine; /** Size = n_machines. Contains the acumulated processing time. **/
-
+    int* best_workloads_machines; /** Size = n_machines.**/
+    int* temp_best_wl_m; /** Size = n_machines.**/
     std::vector<std::deque<int>> machine_allocations;
     
 public:
@@ -95,6 +96,8 @@ public:
         ending_time = new int[n_operations];
         time_on_machine = new int[n_machines];
         workload_in_machine = new int[n_machines];
+        best_workloads_machines = new int[n_machines];
+        temp_best_wl_m = new int[n_machines];
 
         machine_allocations.resize(n_machines);
 
@@ -104,6 +107,8 @@ public:
         for (int m = 0; m < n_machines; ++m){
             time_on_machine[m] = 0;
             workload_in_machine[m] = 0;
+            best_workloads_machines[m] = 0;
+            temp_best_wl_m[m] = 0;
         }
         
         for (int o = 0; o < n_operations; ++o){
@@ -130,6 +135,7 @@ public:
         ending_time = new int[n_operations];
         time_on_machine = new int[n_machines];
         workload_in_machine = new int[n_machines];
+        temp_best_wl_m = new int[n_machines];
         
         for (int j = 0; j < n_jobs; ++j)
             n_operations_allocated[j] = toCopy.getNumberOfOperationsAllocatedInJob(j);
@@ -137,6 +143,8 @@ public:
         for (int m = 0; m < n_machines; ++m){
             time_on_machine[m] = toCopy.getTimeOnMachine(m);
             workload_in_machine[m] = toCopy.getWorkloadOnMachine(m);
+            best_workloads_machines[m] = toCopy.getBestWorkloadInMachine(m);
+            temp_best_wl_m[m] = toCopy.getTempBestWorkloadInMachine(m);
         }
         
         for (int o = 0; o < n_operations; ++o){
@@ -214,6 +222,9 @@ public:
     int getMaxWorkload() const {return max_workload;}
     int getMinTotalWorkload() const{return min_total_workload;}
     
+    int getBestWorkloadInMachine(int machine) const{return best_workloads_machines[machine];}
+    int getTempBestWorkloadInMachine(int machine) const{return temp_best_wl_m[machine];}
+
     size_t getNumberOfOperationsAllocatedIn(int machine) const { return machine_allocations[machine].size();}
     const std::vector<std::deque<int>>& getMachineAllocations() const {return machine_allocations;}
     
@@ -228,6 +239,7 @@ public:
         machine_allocations[machine].push_back(operation);
         
     }
+    
     void setStartingTime(int operation, int start_time) { starting_time[operation] = start_time;}
     void setEndingTime(int operation, int end_time) { ending_time[operation] = end_time;}
     void setTimeOnMachine(int machine, int time) {time_on_machine[machine] = time;}
@@ -236,7 +248,12 @@ public:
     void setTotalWorkload(int workload) { total_workload = workload;}
     void setMaxWorkload(int workload) { max_workload = workload;}
     
+    void setTempBestWorkloadInMachine(int machine, int value){temp_best_wl_m[machine] = value;}
+    void setBestWorkloadInMachine(int machine, int value){best_workloads_machines[machine] = value;}
     void setMinTotalWorkload(int value){min_total_workload = value;}
+
+    void increaseTempWorkloadIn(int machine, int time){temp_best_wl_m[machine] += time;}
+    void decreaseTempWorkloadIn(int machine, int time){temp_best_wl_m[machine] -= time;}
 
     void increaseOperationsAllocatedIn(int job){n_operations_allocated[job]++;}
     void decreaseOperationsAllocatedIn(int job){n_operations_allocated[job]--;}
@@ -276,7 +293,8 @@ public:
         
         for (int m = 0; m < n_machines; ++m){
             time_on_machine[m] = 0;
-            workload_in_machine[m] = 0;
+            workload_in_machine[m] = 0;//best_workloads_machines[n_machines];
+            temp_best_wl_m[m] = best_workloads_machines[m];
             machine_allocations[m].clear();
         }
     
@@ -406,7 +424,6 @@ public:
     
     double evaluatePartialTest4(Solution & solution, int currentLevel);
 
-    
     void printSolution(const Solution & solution) const;
     void printPartialSolution(const Solution & solution, int level) const;
     void printSolutionInfo(const Solution & solution) const;

@@ -194,6 +194,10 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     tree.setActiveRow(build_up_to);
     
     fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
+    for (int m = 0; m < problem.getNumberOfMachines(); ++m){
+        fjssp_data.setBestWorkloadInMachine(m, problem.getBestWorkload(m));
+        fjssp_data.setTempBestWorkloadInMachine(m, problem.getBestWorkload(m));
+    }
     fjssp_data.reset();
     Interval temp_inteval(branch_init);
     for (row = 0; row <= build_up_to; ++row) {
@@ -260,7 +264,6 @@ void BranchAndBound::solve(const Interval& branch_to_solve) {
             
             explore(currentSolution);
             problem.evaluateDynamic(currentSolution, fjssp_data, currentLevel);
-            
             if (!aLeafHasBeenReached() && theTreeHasMoreBranches()) {
                 if (improvesTheGrid(currentSolution))
                     branch(currentSolution, currentLevel);
