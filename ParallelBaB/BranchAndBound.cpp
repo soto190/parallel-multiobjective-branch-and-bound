@@ -182,57 +182,6 @@ void BranchAndBound::initialize(int starts_tree) {
 
 }
 
-/**
- * This modifies the IVMTree.
- *
- * - branch.build_up_to.
- *
- **/
-int BranchAndBound::initializeExplorationInterval(const Interval & branch_to_init, IVMTree& tree) {
-
-	int col = 0;
-	int row = 0; /** Counter level.**/
-    int build_value = 0;
-    int build_up_to = branch_to_init.getBuildUpTo();
-    
-    tree.setRootRow(build_up_to);/** root node of this tree**/
-    tree.setStartingRow(build_up_to); /** Level with the first branches of the tree. **/
-    tree.setActiveRow(build_up_to);
-    fjssp_data.reset();
-
-    /** Copy the built part. TODO: Probably this part can be removed, considering the root node. **/
-	for (row = 0; row <= build_up_to; ++row) {
-		for (col = 0; col < tree.getNumberOfCols(); ++col)
-            tree.setIVMValueAt(row, col, -1);
-        build_value = branch_to_init.getValueAt(row);
-        tree.setStartExploration(row, build_value);
-        tree.setEndExploration(row, build_value);
-        tree.setNumberOfNodesAt(row, 1);
-        tree.setActiveNodeAt(row, build_value);
-        tree.setIVMValueAt(row, build_value, build_value);
-
-		/** TODO: Check this part. The interval is equivalent to the solution?. **/
-        currentSolution.setVariable(row, build_value);
-        problem.evaluateDynamic(currentSolution, fjssp_data, row);
-	}
-    
-    for (row = build_up_to + 1; row <= totalLevels; ++row) {
-        tree.setStartExploration(row, 0);
-        tree.resetNumberOfNodesAt(row);
-	}
-    
-	int branches_created = branch(currentSolution, build_up_to);
-    tree.setActiveNodeAt(tree.getActiveRow(), 0);
-    tree.setActiveNodeAt(tree.getActiveRow(), tree.getStartExploration(tree.getActiveRow()));
-
-    if (branches_created > 0)
-        tree.setHasBranches(1);
-    else
-        tree.setHasBranches(0);
-
-	return 0;
-}
-
 int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     
     int col = 0;
@@ -243,6 +192,8 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     tree.setRootRow(build_up_to);/** root row of this tree**/
     tree.setStartingRow(build_up_to + 1); /** Level/row with the first branches of the tree. **/
     tree.setActiveRow(build_up_to);
+    
+    fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
     fjssp_data.reset();
     Interval temp_inteval(branch_init);
     for (row = 0; row <= build_up_to; ++row) {
@@ -311,7 +262,6 @@ void BranchAndBound::solve(const Interval& branch_to_solve) {
             problem.evaluateDynamic(currentSolution, fjssp_data, currentLevel);
             
             if (!aLeafHasBeenReached() && theTreeHasMoreBranches()) {
-                
                 if (improvesTheGrid(currentSolution))
                     branch(currentSolution, currentLevel);
                 else
@@ -319,11 +269,8 @@ void BranchAndBound::solve(const Interval& branch_to_solve) {
                 
                 for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
                     problem.evaluateRemoveDynamic(currentSolution, fjssp_data, l);
-                
             } else {
-                
                 reachedLeaves++;
-                
                 updated = updateParetoGrid(currentSolution);
                 totalUpdatesInLowerBound += updated;
                 

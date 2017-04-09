@@ -143,17 +143,18 @@ public:
     const Solution& getIncumbentSolution() const;
     const FJSSPdata& getFJSSPdata() const;
     
+    void saveEvery(double timeInSeconds);
     void setParetoFront(const std::vector<Solution>& front);
 	int setParetoFrontFile(const char * outputFile);
+    int setSummarizeFile(const char * outputFile);
 	int saveParetoFront();
-	int setSummarizeFile(const char * outputFile);
 	int saveSummarize();
-	void saveEvery(double timeInSeconds);
-
+	
     void setParetoContainer(HandlerContainer & paretoContainer);
     HandlerContainer& getParetoContainer();
-
+    
     void printDebug();
+    
 private:
 	void printCurrentSolution(int withVariables = 0);
 	int aLeafHasBeenReached() const;
@@ -171,10 +172,8 @@ private:
 public:
 	void computeLastBranch(Interval & branch);
 	void initGlobaPoolWithInterval(Interval & branch);
-	void splitIntervalSolution(const Solution & solution);
 
 private:
-	int initializeExplorationInterval(const Interval & branch, IVMTree & tree);
 	int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);
     int intializeIVM_data(Interval& branch, IVMTree & tree);
 	/** End IVM functions **/

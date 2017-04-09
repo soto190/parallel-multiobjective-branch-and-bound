@@ -393,7 +393,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
     
     solution.setObjective(0, makespan);
     solution.setObjective(1, maxWorkload);
-    //solution->setObjective(2, totalWorkload + minPij);
+//    solution.setObjective(1, totalWorkload + minPij);
     
     return 0.0;
 }
@@ -403,20 +403,15 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     int makespan = 0;
     int max_workload = 0;
     int operationInPosition = 0;
-    
-    //int minPij = sumOfMinPij;
-    
     int map = solution.getVariable(level);
     int job = getDecodeMap(map, 0);
     int machine = getDecodeMap(map, 1);
     int numberOp = getOperationInJobIsNumber(job, data.getNumberOfOperationsAllocatedInJob(job));
     
-    /** The minimun total workload is reduced. **/
-    //minPij -= getProccessingTime(numberOp, getAssignationMinPij(numberOp));
     
     /** With the operation number and the machine we can continue. **/
     int proccessingTime = getProccessingTime(numberOp, machine);
-   
+    data.decreaseToltalWorkload(getProccessingTime(numberOp, getAssignationMinPij(numberOp)));
     data.setOperationAllocation(job, numberOp, machine, proccessingTime);
 
     if (data.getLastOperationAllocatedInJob(job) == 0) { /** If it is the first operation of the job.**/
@@ -463,9 +458,10 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     
     data.setMaxWorkload(max_workload);
     data.setMakespan(makespan);
+    
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
-    //solution->setObjective(2, totalWorkload + minPij);
+//    solution.setObjective(1, data.getTotalWorkload());
 }
 
 void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, int level){
@@ -473,17 +469,13 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
     int max_workload = 0;
     int operationInPosition = 0;
     
-    //int minPij = sumOfMinPij;
-    
     int map = solution.getVariable(level);
     int job = getDecodeMap(map, 0);
     int machine = 0;
     int numberOp = getOperationInJobIsNumber(job, data.getLastOperationAllocatedInJob(job));
     
-    /** The minimun total workload is reduced. **/
-    //minPij -= getProccessingTime(numberOp, getAssignationMinPij(numberOp));
-    
     /** With the operation number and the machine we can continue. **/
+    data.increaseToltalWorkload(getProccessingTime(numberOp, getAssignationMinPij(numberOp))); /** Using the best total_workload. **/
     data.deallocateOperation(job, numberOp);
     
     for (machine = 0; machine < totalMachines; ++machine){
@@ -504,7 +496,7 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
     data.setMakespan(makespan);
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
-    
+//    solution.setObjective(1, data.getTotalWorkload());
 }
 
 double ProblemFJSSP::evaluateLastLevel(Solution * solution){ return 0.0;}

@@ -69,6 +69,8 @@ private:
     int max_workload; /** Critical workload. **/
     int makespan;
     
+    int min_total_workload;
+    
     int* operation_allocated_in; /** Size = n_operations. **/
     int* n_operations_allocated; /** Size = n_jobs. Contains the number of the allocated operations from n job. **/
     int* starting_time; /** Size = n_operations. Contains the starting time of the n_operation. **/
@@ -85,7 +87,8 @@ public:
     n_operations(numberOfOperations),
     makespan(0),
     total_workload(0),
-    max_workload(0){
+    max_workload(0),
+    min_total_workload(0){
         n_operations_allocated = new int[n_jobs];
         operation_allocated_in = new int [n_operations];
         starting_time = new int[n_operations];
@@ -118,6 +121,7 @@ public:
     makespan(toCopy.getMakespan()),
     total_workload(toCopy.getTotalWorkload()),
     max_workload(toCopy.getMaxWorkload()),
+    min_total_workload(toCopy.getMinTotalWorkload()),
     machine_allocations(toCopy.getMachineAllocations()){
         
         n_operations_allocated = new int[n_jobs];
@@ -190,7 +194,6 @@ public:
             starting_time[o] = 0;
             ending_time[o] = 0;
         }
-        
 
         return *this;
     }
@@ -209,6 +212,8 @@ public:
     int getMakespan() const{return makespan;}
     int getTotalWorkload() const {return total_workload;}
     int getMaxWorkload() const {return max_workload;}
+    int getMinTotalWorkload() const{return min_total_workload;}
+    
     size_t getNumberOfOperationsAllocatedIn(int machine) const { return machine_allocations[machine].size();}
     const std::vector<std::deque<int>>& getMachineAllocations() const {return machine_allocations;}
     
@@ -230,6 +235,8 @@ public:
     void setMakespan(int value){makespan = value;}
     void setTotalWorkload(int workload) { total_workload = workload;}
     void setMaxWorkload(int workload) { max_workload = workload;}
+    
+    void setMinTotalWorkload(int value){min_total_workload = value;}
 
     void increaseOperationsAllocatedIn(int job){n_operations_allocated[job]++;}
     void decreaseOperationsAllocatedIn(int job){n_operations_allocated[job]--;}
@@ -261,7 +268,7 @@ public:
     
 
     void reset(){
-        total_workload = 0;
+        total_workload = min_total_workload;
         max_workload = 0;
         
         for (int j = 0; j < n_jobs; ++j)
