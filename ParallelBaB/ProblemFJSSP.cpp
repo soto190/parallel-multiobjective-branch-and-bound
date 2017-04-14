@@ -457,10 +457,10 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
         if(data.getTempBestWorkloadInMachine(machine) > temp)
             temp = data.getTempBestWorkloadInMachine(machine);
     }
-    
+    /*
     if (temp < max_workload)
         max_workload = temp;
-    
+    */
     data.setMakespan(makespan);
     data.setMaxWorkload(max_workload);
     
@@ -501,9 +501,9 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
         
     }
     
-    if (temp < max_workload)
+   /* if (temp < max_workload)
         max_workload = temp;
-    
+    */
     data.setMakespan(makespan);
     data.setMaxWorkload(max_workload);
     

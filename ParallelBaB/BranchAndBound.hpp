@@ -78,7 +78,7 @@ private:
     Solution currentSolution;
     Solution bestObjectivesFound;
     IVMTree ivm_tree;
-    Interval starting_interval;
+    Interval interval_to_solve;
     GlobalPool& globalPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
     HandlerContainer& paretoContainer;
     std::vector<Solution> paretoFront; /** paretofFront. **/
@@ -107,7 +107,7 @@ public:
     int getCurrentLevel() const;
     double getTotalTime();
     
-	void solve(const Interval & interval);
+	void solve(Interval & interval);
 	void initialize(int starting_level);
 	int explore(Solution & solution);
 	int branch(Solution & solution, int currentLevel);
@@ -181,10 +181,10 @@ private:
 public:
 	task* execute();
 	void setGlobalPool(tbb::concurrent_queue<Interval>& globalPool);
-	void operator()(const Interval& branch) {
+	/*void operator()(const Interval& branch) {
 		this->solve(branch);
 	};
-
+*/
 };
 
 #endif /* BranchAndBound_hpp */

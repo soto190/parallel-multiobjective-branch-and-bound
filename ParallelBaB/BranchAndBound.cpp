@@ -54,7 +54,7 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, cons
                problemToCopy.getNumberOfMachines()),
 
     globalPool(globa_pool),
-    starting_interval(branch),
+    interval_to_solve(branch),
     paretoContainer(pareto_container),
     currentLevel(0),
     totalLevels(problemToCopy.getNumberOfVariables()),
@@ -115,7 +115,7 @@ BranchAndBound& BranchAndBound::operator()(int rank_new, const ProblemFJSSP &pro
     totalUpdatesInLowerBound = 0;
     totalTime = 0;
     
-    starting_interval = branch; /** Copy the branch. **/
+    interval_to_solve = branch; /** Copy the branch. **/
     
     int numberOfObjectives = problem.getNumberOfObjectives();
     int numberOfVariables = problem.getNumberOfVariables();
@@ -168,9 +168,9 @@ void BranchAndBound::initialize(int starts_tree) {
 	totalUpdatesInLowerBound = 0;
 	totalNodes = computeTotalNodes(totalLevels);
 
-	currentSolution(numberOfObjectives, numberOfVariables);
+    //currentSolution(numberOfObjectives, numberOfVariables);
 	bestObjectivesFound(numberOfObjectives, numberOfVariables);
-	problem.createDefaultSolution(currentSolution);
+    //problem.createDefaultSolution(currentSolution);
 
 	int nObj = 0;
 	for (nObj = 0; nObj < numberOfObjectives; ++nObj)
@@ -178,7 +178,7 @@ void BranchAndBound::initialize(int starts_tree) {
 
     //updateParetoGrid(bestInObj1);
     //updateParetoGrid(bestInObj2);
-	updateParetoGrid(currentSolution);
+    updateParetoGrid(currentSolution);
 
 }
 
@@ -199,7 +199,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
         fjssp_data.setTempBestWorkloadInMachine(m, problem.getBestWorkload(m));
     }
     fjssp_data.reset();
-    Interval temp_inteval(branch_init);
+
     for (row = 0; row <= build_up_to; ++row) {
         for (col = 0; col < tree.getNumberOfCols(); ++col)
             tree.setIVMValueAt(row, col, -1);
@@ -228,10 +228,10 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
         && branches_created > branches_to_move_to_global_pool
         && branch_init.getBuildUpTo() < deep_to_share) {
         
-        temp_inteval.increaseBuildUpTo();
+        branch_init.increaseBuildUpTo();
         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
-            temp_inteval.setValueAt(build_up_to + 1, ivm_tree.removeLastNodeAtRow(build_up_to + 1));
-            globalPool.push(temp_inteval);
+            branch_init.setValueAt(build_up_to + 1, ivm_tree.removeLastNodeAtRow(build_up_to + 1));
+            globalPool.push(branch_init);
         }
     }
 
@@ -240,56 +240,53 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
 
 tbb::task* BranchAndBound::execute() {
 
-	solve(starting_interval);
+    initialize(interval_to_solve.getBuildUpTo());
+    
+    while (!globalPool.empty()) {
+        //printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
+        globalPool.try_pop(interval_to_solve);
+        intializeIVM_data(interval_to_solve, ivm_tree);
+        solve(interval_to_solve);
+    }
+    
+    printf("[B&B-%03d] No more intervals in global pool. Going to sleep.\n", rank);
+    
     return NULL;
-
 }
 
-void BranchAndBound::solve(const Interval& branch_to_solve) {
+void BranchAndBound::solve(Interval& branch_to_solve) {
 
-	double timeUp = 0;
-	int updated = 0;
-
-	Interval branchFromGlobal = branch_to_solve;
-	initialize(branchFromGlobal.getBuildUpTo());
-
-    while (!globalPool.empty()) {
+    double timeUp = 0;
+    int updated = 0;
+    while (theTreeHasMoreBranches() && !timeUp) {
         
-        globalPool.try_pop(branchFromGlobal);
-        //printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
-        //branchFromGlobal.print();
-        intializeIVM_data(branchFromGlobal, ivm_tree);
-
-        while (theTreeHasMoreBranches() && !timeUp) {
+        explore(currentSolution);
+        problem.evaluateDynamic(currentSolution, fjssp_data, currentLevel);
+        if (!aLeafHasBeenReached() && theTreeHasMoreBranches()) {
+            if (improvesTheGrid(currentSolution))
+                branch(currentSolution, currentLevel);
+            else
+                prune(currentSolution, currentLevel);
             
-            explore(currentSolution);
-            problem.evaluateDynamic(currentSolution, fjssp_data, currentLevel);
-            if (!aLeafHasBeenReached() && theTreeHasMoreBranches()) {
-                if (improvesTheGrid(currentSolution))
-                    branch(currentSolution, currentLevel);
-                else
-                    prune(currentSolution, currentLevel);
-                
-                for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
-                    problem.evaluateRemoveDynamic(currentSolution, fjssp_data, l);
-            } else {
-                reachedLeaves++;
-                updated = updateParetoGrid(currentSolution);
-                totalUpdatesInLowerBound += updated;
-                
-                if (updated) {
-                    printf("[B&B-%03d] ", rank);
-                    printCurrentSolution();
-                    printf(" + [%6lu] \n", paretoContainer.getSize());
-                }
+            for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
+                problem.evaluateRemoveDynamic(currentSolution, fjssp_data, l);
+        } else {
+            reachedLeaves++;
+            updated = updateParetoGrid(currentSolution);
+            totalUpdatesInLowerBound += updated;
+            
+          if (updated) {
+                printf("[B&B-%03d] ", rank);
+                printCurrentSolution();
+                printf(" + [%6lu] \n", paretoContainer.getSize());
             }
         }
-        
-        t2 = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-        totalTime = time_span.count();
     }
-    printf("[B&B-%03d] No more intervals in global pool. Going to sleep.\n", rank);
+    
+    t2 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+    totalTime = time_span.count();
+
 }
 
 double BranchAndBound::getTotalTime() {
@@ -672,7 +669,7 @@ void BranchAndBound::increaseNumberOfUpdatesInLowerBound(unsigned long value){ t
 
 const Solution& BranchAndBound::getIncumbentSolution() const { return currentSolution;}
 const IVMTree& BranchAndBound::getIVMTree() const { return ivm_tree;}
-const Interval& BranchAndBound::getStartingInterval() const { return starting_interval;}
+const Interval& BranchAndBound::getStartingInterval() const { return interval_to_solve;}
 const ProblemFJSSP& BranchAndBound::getProblem() const { return problem;}
 const FJSSPdata& BranchAndBound::getFJSSPdata() const { return fjssp_data;}
 
