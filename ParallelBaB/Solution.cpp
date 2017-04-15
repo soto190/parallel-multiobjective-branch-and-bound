@@ -13,63 +13,54 @@
  *
  *
  */
-Solution::Solution():n_objectives(0), n_variables(0) {
+Solution::Solution():
+n_objectives(0),
+n_variables(0) {
 	machineWithMakespan = 0;
     build_up_to = -1;
     objective = nullptr;
     variable = nullptr;
     execTime = nullptr;
-    partialObjective = nullptr;
 }
 
 Solution::Solution(int numberOfObjectives, int numberOfVariables):
-    n_objectives(numberOfObjectives),
-    n_variables(numberOfVariables),
-    build_up_to(-1),
-    machineWithMakespan(0),
-    objective(new double[numberOfObjectives]),
-    variable(new int[numberOfVariables]),
-    execTime(new double[16]),
-    partialObjective(new double * [numberOfVariables]){
+n_objectives(numberOfObjectives),
+n_variables(numberOfVariables),
+build_up_to(-1),
+machineWithMakespan(0),
+objective(new double[numberOfObjectives]),
+variable(new int[numberOfVariables]),
+execTime(new double[16]){
     
 	int var = 0, obj = 0;
 	for (obj = 0; obj < numberOfObjectives; ++obj)
 		objective[obj] = 0;
 
-	for (var = 0; var < numberOfVariables; ++var) {
+	for (var = 0; var < numberOfVariables; ++var)
 		variable[var] = -1;
-		partialObjective[var] = new double[numberOfObjectives];
-		for (obj = 0; obj < numberOfObjectives; ++obj)
-			partialObjective[var][obj] = 0;
-	}
-
+    
 	for (var = 0; var < 16; ++var)
 		execTime[var] = 0;
 }
 
 Solution::Solution(const Solution &solution):
-    n_objectives(solution.getNumberOfObjectives()),
-    n_variables(solution.getNumberOfVariables()),
-    build_up_to(solution.getBuildUpTo()),
-    machineWithMakespan(solution.machineWithMakespan){
+n_objectives(solution.getNumberOfObjectives()),
+n_variables(solution.getNumberOfVariables()),
+build_up_to(solution.getBuildUpTo()),
+machineWithMakespan(solution.machineWithMakespan){
     
         objective = new double[n_objectives];
         variable = new int[n_variables];
-        partialObjective = new double *[n_variables];
         execTime = new double[16];
         
         int var = 0, obj = 0;
         
         for (obj = 0; obj < n_objectives; ++obj)
             objective[obj] = solution.getObjective(obj);
-        
-        for (var = 0; var < n_variables; ++var) {
+      
+        for (var = 0; var < n_variables; ++var)
             variable[var] = solution.getVariable(var);
-            partialObjective[var] = new double[n_objectives];
-            for (obj = 0; obj < n_objectives; ++obj)
-                partialObjective[var][obj] = solution.getPartialObjective(var, obj);
-        }
-        
+     
         for (var = 0; var < 16; ++var)
             execTime[var] = solution.execTime[var];
 }
@@ -82,31 +73,23 @@ Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
     n_variables = numberOfVariables;
     
     /** Freeing previously used memory. **/
-    if(objective != nullptr){
+    if(objective != nullptr)
         delete[] objective;
-        delete[] variable;
-        delete[] execTime;
-        int index = 0;
-        for (index = 0; index < n_variables; ++index)
-            delete[] partialObjective[index];
-        delete[] partialObjective;
-    }
+    if (variable != nullptr)
+        delete [] variable;
+    if (execTime != nullptr)
+        delete [] execTime;
     
     objective = new double[numberOfObjectives];
     variable = new int[numberOfVariables];
     execTime = new double[16];
-    partialObjective = new double *[numberOfVariables];
     
     int var = 0, obj = 0;
     for (obj = 0; obj < numberOfObjectives; ++obj)
         objective[obj] = 0;
     
-    for (var = 0; var < numberOfVariables; ++var) {
+    for (var = 0; var < numberOfVariables; ++var)
         variable[var] = -1;
-        partialObjective[var] = new double[numberOfObjectives];
-        for (obj = 0; obj < numberOfObjectives; ++obj)
-            partialObjective[var][obj] = 0;
-    }
     
     for (var = 0; var < 16; ++var)
         execTime[var] = 0;
@@ -127,29 +110,19 @@ Solution& Solution::operator=(const Solution &solution) {
         delete[] objective;
         delete[] variable;
         delete[] execTime;
-        int index = 0;
-        for (index = 0; index < n_variables; ++index)
-            delete[] partialObjective[index];
-        delete[] partialObjective;
     }
     
     objective = new double[n_objectives];
     variable = new int[n_variables];
     execTime = new double[16];
-    partialObjective = new double *[n_variables];
     
     int var = 0, obj = 0;
     
     for (obj = 0; obj < n_objectives; ++obj)
         objective[obj] = solution.getObjective(obj);
     
-    for (var = 0; var < n_variables; ++var) {
+    for (var = 0; var < n_variables; ++var)
         variable[var] = solution.getVariable(var);
-        partialObjective[var] = new double[n_objectives];
-        for (obj = 0; obj < n_objectives; ++obj)
-            partialObjective[var][obj] =
-            solution.partialObjective[var][obj];
-    }
     
     /**Section for the HCSP problem**/
     for (var = 0; var < 16; ++var)
@@ -159,24 +132,18 @@ Solution& Solution::operator=(const Solution &solution) {
 }
 
 int Solution::operator==(const Solution &solution){
-    int index = 0;
+    int index = 1;
     
     for (index = 0; index < n_objectives; ++index)
-        if (objective[index] < solution.getObjective(index))
+        if (objective[index] < solution.getObjective(index) || objective[index] > solution.getObjective(index))
             return 0;
-    
-    return 1;
+    return index;
 }
 
 Solution::~Solution() {
 	delete[] objective;
 	delete[] variable;
 	delete[] execTime;
-	int index = 0;
-	for (index = 0; index < n_variables; ++index)
-		delete[] partialObjective[index];
-
-	delete[] partialObjective;
 }
 
 void Solution::setObjective(int index, double value) { objective[index] = value; }
@@ -186,12 +153,11 @@ int Solution::setVariable(int index, int value) {
     build_up_to = index;
     return last_value;
 }
-void Solution::setPartialObjective(int var, int objective, double value) { partialObjective[var][objective] = value; }
+
 double Solution::getObjective(int index) const { return objective[index]; }
 int Solution::getVariable(int index) const { return variable[index]; }
 int Solution::getNumberOfVariables() const { return n_variables; }
 int Solution::getNumberOfObjectives() const { return n_objectives; }
-int Solution::getPartialObjective(int var, int objective) const{ return partialObjective[var][objective]; }
 int Solution::getBuildUpTo() const { return build_up_to; }
 
 DominanceRelation Solution::dominates(const Solution & solution) const {

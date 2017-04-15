@@ -162,6 +162,11 @@ public:
         delete [] ending_time;
         delete [] time_on_machine;
         delete [] workload_in_machine;
+        delete [] best_workloads_machines;
+        delete [] temp_best_wl_m;
+        
+        for(int m = 0; m < n_machines; ++m)
+            machine_allocations[m].resize(0);
     }
     
     FJSSPdata& operator()(int numberOfJobs, int numberOfOperations, int numberOfMachines){

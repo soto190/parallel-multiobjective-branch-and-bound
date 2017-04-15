@@ -377,14 +377,12 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
         
         operationOfJob[job]++; /** This counts the number of operations from an allocated job. **/
         
-        if (timeInMachine[machine] > makespan){
+        if (timeInMachine[machine] > makespan)
             makespan = timeInMachine[machine];
-            solution.setPartialObjective(operationInPosition, 0, makespan);
-        }
-        if(workload[machine] > maxWorkload){
+        
+        if(workload[machine] > maxWorkload)
             maxWorkload = workload[machine];
-            solution.setPartialObjective(operationInPosition, 1, maxWorkload);
-        }
+        
     }
     
     for (machine = 0; machine < totalMachines; ++machine)

@@ -44,7 +44,7 @@ HandlerContainer::HandlerContainer(const HandlerContainer& toCopy):
 }
 
 HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double maxValY):
-    grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows) {
+grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows) {
     
     if (maxValX < cols)
         cols = maxValX;

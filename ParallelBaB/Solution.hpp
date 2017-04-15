@@ -21,7 +21,6 @@ class Solution{
     
 private:
     double * objective;
-    double ** partialObjective;
     int * variable;
     
     int build_up_to = -1;
@@ -41,21 +40,21 @@ public:
     
     int setVariable(int index, int value);
     void setObjective(int index, double value);
-    void setPartialObjective(int var, int objective, double value);
     
-    int getVariable(int index) const;
     double getObjective(int nObjective) const;
-    int getPartialObjective(int var, int objective) const;
+    int getVariable(int index) const;
     int getNumberOfVariables() const;
     int getNumberOfObjectives() const;
     int getBuildUpTo() const;
     
     DominanceRelation dominates(const Solution &solution) const;
     
-    /*overloading operators*/
+    /** Overloading operators. **/
     Solution& operator=(const Solution &solution);
     Solution& operator()(int numberOfObjectives, int numberOfVariables);
     int operator==(const Solution & solution);
+    
+    /** print functions. **/
     void print() const;
     void printObjectives() const;
     void printVariables() const;

@@ -16,23 +16,21 @@
  *
  **/
 Interval::Interval():
-    max_size(1),
-    build_up_to(-1),
-    interval(nullptr){
-}
+max_size(1),
+build_up_to(-1),
+interval(nullptr){}
 
 Interval::Interval(int max_size):
-    max_size(max_size),
-    build_up_to(-1),
-    interval(new int[max_size]){
-
+max_size(max_size),
+build_up_to(-1),
+interval(new int[max_size]){
 }
 
 Interval::Interval(const Interval &toCopy):
-    max_size(toCopy.getSize()),
-    build_up_to(toCopy.getBuildUpTo()){
-
-    interval = new int[max_size];
+max_size(toCopy.getSize()),
+interval(new int[toCopy.getSize()]),
+build_up_to(toCopy.getBuildUpTo()){
+    
     int index = 0;
     for (index = 0; index < max_size; ++index)
         interval[index] = toCopy.getValueAt(index);
@@ -73,8 +71,7 @@ Interval& Interval::operator=(const Interval &toCopy){
 }
 
 Interval::~Interval(){
-    if (interval != nullptr)
-        delete [] interval;
+    delete [] interval;
 }
 
 int Interval::getSize() const{ return  max_size;}
