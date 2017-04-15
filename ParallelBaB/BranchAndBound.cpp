@@ -168,16 +168,13 @@ void BranchAndBound::initialize(int starts_tree) {
 	totalUpdatesInLowerBound = 0;
 	totalNodes = computeTotalNodes(totalLevels);
 
-    //currentSolution(numberOfObjectives, numberOfVariables);
 	bestObjectivesFound(numberOfObjectives, numberOfVariables);
-    //problem.createDefaultSolution(currentSolution);
 
 	int nObj = 0;
 	for (nObj = 0; nObj < numberOfObjectives; ++nObj)
 		bestObjectivesFound.setObjective(nObj, incumbent_s.getObjective(nObj));
 
-    //updateParetoGrid(bestInObj1);
-    //updateParetoGrid(bestInObj2);
+//    updateParetoGrid(bestInObj2);
     updateParetoGrid(incumbent_s);
 
 }
@@ -246,7 +243,6 @@ tbb::task* BranchAndBound::execute() {
         if(globalPool.try_pop(interval_to_solve))
             //printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
             solve(interval_to_solve);
-        
     }
     
     printf("[B&B-%03d] No more intervals in global pool. Going to sleep.\n", rank);
@@ -256,7 +252,6 @@ tbb::task* BranchAndBound::execute() {
 
 void BranchAndBound::solve(Interval& branch_to_solve) {
 
-    
     double timeUp = 0;
     int updated = 0;
     intializeIVM_data(branch_to_solve, ivm_tree);
@@ -264,7 +259,10 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
-        
+        /*printf("[B&B-%03d] ", rank);
+        printCurrentSolution();
+        printf("\n");
+        */
         if (!aLeafHasBeenReached() && theTreeHasMoreBranches()){
             if (improvesTheGrid(incumbent_s))
                 branch(incumbent_s, currentLevel);
@@ -275,11 +273,13 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             updated = updateParetoGrid(incumbent_s);
             totalUpdatesInLowerBound += updated;
             
-            /*if (updated) {
-             printf("[B&B-%03d] ", rank);
-             printCurrentSolution();
-             printf(" + [%6lu] \n", paretoContainer.getSize());
-             }*/
+            if (updated) {
+                printf("[B&B-%03d] ", rank);
+                printCurrentSolution();
+                printf(" + [%6lu] \n", paretoContainer.getSize());
+                //paretoContainer.printGridSize();
+                //paretoContainer.printStates();
+            }
             
             /** Go back and prepare to remove the evaluations. **/
             ivm_tree.pruneActiveNode();
@@ -374,20 +374,14 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
                         
                         if (improvesTheGrid(solution)) {
-                            /*  double element[3];
-                             element[0] = solution->getObjective(0);
-                             element[1] = solution->getObjective(1);
-                             element[2] = toAdd;
-                             
-                             elements_sorted.push_back(element);
-                             */
                             ivm_tree.setNode(currentLevel + 1, toAdd);
-                            branches++;
                             branches_created++;
                         } else
                             prunedNodes++;
                         problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
                     }
+
+            branches += branches_created;
 
             if (branches_created > 0) { /** If a branch was created. **/
                 ivm_tree.moveToNextRow();
@@ -520,6 +514,11 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
  **/
 void BranchAndBound::initGlobaPoolWithInterval(Interval & branch_to_split) {
     
+    Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.getSolutionWithLowerBoundInObj(1, temp);
+    temp.print();
+    updateParetoGrid(temp);
+    
 	int row = 0;
 	int level_to_split = branch_to_split.getBuildUpTo() + 1;
 	int branches_created = 0;
@@ -558,12 +557,10 @@ void BranchAndBound::initGlobaPoolWithInterval(Interval & branch_to_split) {
 					prunedNodes++;
                 
                 problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, level_to_split);
-
 			}
+    
     branch_to_split.setValueAt(level_to_split, -1);
-
     branches += branches_created;
-
 }
 
 unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) const {
@@ -582,30 +579,30 @@ unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) co
     long nodes_per_branch = 0;
     long deepest_level;
 
-	switch (problem.getType()) {
-
-	case ProblemType::permutation:
-		for (int i = 0; i < totalVariables; ++i)
-			n_nodes += (totalVariables - i) * permut(totalVariables, i);
-		break;
-
-	case ProblemType::combination:
-		nodes_per_branch = (problem.getUpperBound(0) + 1) - problem.getLowerBound(0);
-		deepest_level = totalLevels + 1;
-		n_nodes = (pow(nodes_per_branch, deepest_level + 1) - 1) / (nodes_per_branch - 1);
-		break;
-
-	case ProblemType::permutation_with_repetition_and_combination:
-		/** TODO: Design the correct computaiton of the number of nodes. **/
-		nodes_per_branch = (problem.getUpperBound(0) + 1) - problem.getLowerBound(0);
-		deepest_level = totalLevels + 1;
-		n_nodes = (pow(nodes_per_branch, deepest_level + 1) - 1) / (nodes_per_branch - 1);
-
-		break;
-
-	case ProblemType::XD:
-		break;
-	}
+    switch (problem.getType()) {
+            
+        case ProblemType::permutation:
+            for (int i = 0; i < totalVariables; ++i)
+                n_nodes += (totalVariables - i) * permut(totalVariables, i);
+            break;
+            
+        case ProblemType::combination:
+            nodes_per_branch = (problem.getUpperBound(0) + 1) - problem.getLowerBound(0);
+            deepest_level = totalLevels + 1;
+            n_nodes = (pow(nodes_per_branch, deepest_level + 1) - 1) / (nodes_per_branch - 1);
+            break;
+            
+        case ProblemType::permutation_with_repetition_and_combination:
+            /** TODO: Design the correct computaiton of the number of nodes. **/
+            nodes_per_branch = (problem.getUpperBound(0) + 1) - problem.getLowerBound(0);
+            deepest_level = totalLevels + 1;
+            n_nodes = (pow(nodes_per_branch, deepest_level + 1) - 1) / (nodes_per_branch - 1);
+            
+            break;
+            
+        case ProblemType::XD:
+            break;
+    }
 
 	return n_nodes;
 }
@@ -673,7 +670,6 @@ const IVMTree& BranchAndBound::getIVMTree() const { return ivm_tree;}
 const Interval& BranchAndBound::getStartingInterval() const { return interval_to_solve;}
 const ProblemFJSSP& BranchAndBound::getProblem() const { return problem;}
 const FJSSPdata& BranchAndBound::getFJSSPdata() const { return fjssp_data;}
-
 
 HandlerContainer& BranchAndBound::getParetoGrid() const { return paretoContainer;}
 HandlerContainer& BranchAndBound::getParetoContainer() {return paretoContainer;}

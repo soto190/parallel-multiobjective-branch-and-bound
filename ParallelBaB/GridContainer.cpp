@@ -149,12 +149,12 @@ int HandlerContainer::add(const Solution & solution) {
 
 void HandlerContainer::clearContainer(int x, int y) {
     
-    if (grid.getSizeOf(x, y) > 0) {
-        //numberOfElements -= grid.getSizeOf(x, y);
-        disabledBuckets.fetch_and_increment();
+    if (grid.getSizeOf(x, y) > 0)
         activeBuckets.fetch_and_decrement();
-        grid.clear(x, y);
-    }
+    
+    disabledBuckets.fetch_and_increment();
+    grid.clear(x, y);
+    
 }
 
 /**
@@ -192,7 +192,7 @@ void HandlerContainer::printStates() {
     for (nRow = grid.getRows() - 1; nRow >= 0; --nRow) {
         printf("[%3d] ", nRow);
         for (nCol = 0; nCol < grid.getCols(); ++nCol)
-            printf("%3d", getStateOf(nCol, nRow));
+            printf("%3d", grid.getStateOf(nCol, nRow));
         printf("\n");
     }
 }
