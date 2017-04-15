@@ -198,6 +198,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
         fjssp_data.setBestWorkloadInMachine(m, problem.getBestWorkload(m));
         fjssp_data.setTempBestWorkloadInMachine(m, problem.getBestWorkload(m));
     }
+    
     fjssp_data.reset();
 
     for (row = 0; row <= build_up_to; ++row) {
@@ -240,13 +241,29 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
 
 tbb::task* BranchAndBound::execute() {
 
+   /* Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    temp.setVariable(0, 4);
+    temp.setVariable(1, 1);
+    temp.setVariable(2, 5);
+    temp.setVariable(3, 3);
+    temp.setVariable(4, 9);
+    temp.setVariable(5, 12);
+    temp.setVariable(6, 11);
+    temp.setVariable(7, 13);
+    temp.setVariable(8, 15);
+    temp.setVariable(9, 5);
+    temp.setVariable(10, 13);
+    temp.setVariable(11, 16);
+    problem.printSchedule(temp);
+*/
     initialize(interval_to_solve.getBuildUpTo());
     
     while (!globalPool.empty()) {
-        //printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
-        globalPool.try_pop(interval_to_solve);
-        intializeIVM_data(interval_to_solve, ivm_tree);
-        solve(interval_to_solve);
+        if(globalPool.try_pop(interval_to_solve)){
+            //printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
+            intializeIVM_data(interval_to_solve, ivm_tree);
+            solve(interval_to_solve);
+        }
     }
     
     printf("[B&B-%03d] No more intervals in global pool. Going to sleep.\n", rank);
@@ -262,6 +279,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         
         explore(currentSolution);
         problem.evaluateDynamic(currentSolution, fjssp_data, currentLevel);
+        
         if (!aLeafHasBeenReached() && theTreeHasMoreBranches()) {
             if (improvesTheGrid(currentSolution))
                 branch(currentSolution, currentLevel);
@@ -392,6 +410,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             if (branches_created > 0) { /** If a branch was created. **/
                 ivm_tree.moveToNextRow();
                 ivm_tree.setActiveNodeAt(ivm_tree.getActiveRow(), 0);
+                ivm_tree.setHasBranches(1);
             } else { /** If no branches were created then move to the next node. **/
                 ivm_tree.pruneActiveNode();
                 prunedNodes++;
@@ -549,7 +568,7 @@ void BranchAndBound::initGlobaPoolWithInterval(Interval & branch_to_split) {
                     branch_to_split.setBuildUpTo(level_to_split);
 
 					/**Add it to pending intervals. **/
-					if (rank == 0)
+                    if (rank == 0)
                         globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
                     
 					branches_created++;
