@@ -75,7 +75,7 @@ private:
     ProblemFJSSP problem;
     FJSSPdata fjssp_data;
     
-    Solution currentSolution;
+    Solution incumbent_s;
     Solution bestObjectivesFound;
     IVMTree ivm_tree;
     Interval interval_to_solve;

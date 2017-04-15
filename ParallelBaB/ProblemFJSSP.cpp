@@ -455,10 +455,10 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
         if(data.getTempBestWorkloadInMachine(machine) > temp)
             temp = data.getTempBestWorkloadInMachine(machine);
     }
-    /*
+    
     if (temp < max_workload)
         max_workload = temp;
-    */
+    
     data.setMakespan(makespan);
     data.setMaxWorkload(max_workload);
     
@@ -499,9 +499,9 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
         
     }
     
-   /* if (temp < max_workload)
+    if (temp < max_workload)
         max_workload = temp;
-    */
+    
     data.setMakespan(makespan);
     data.setMaxWorkload(max_workload);
     
@@ -976,8 +976,6 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     for (operation = 0; operation < totalOperations; ++operation)
         printf("%3c %3d: %2d %3d - %3d \n", 'a' + operation, operation, mapToJobMachine[solution.getVariable(operation)][1], startingTime[operation], endingTime[operation]);
     
-    printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
-
     for (machine = 0; machine < totalMachines; ++machine) {
         printf("M%d  |", machine);
         for (time = 0; time < makespan; ++time)
@@ -993,6 +991,8 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     for (time = 0; time < makespan; ++time)
         printf("%3d", (time));
     printf("\n");
+    printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
+
 }
 
 void ProblemFJSSP::printSolution(const Solution & solution) const{
@@ -1016,22 +1016,7 @@ void ProblemFJSSP::printPartialSolution(const Solution & solution, int level) co
         
         for (indexVar = level + 1; indexVar < totalOperations; indexVar ++)
             printf("  - ");
-        /*
-        printf("|\n\t\t\t\t | ");
-        for (indexVar = 0; indexVar <= level; indexVar++)
-            printf("%3d ", getDecodeMap(solution->getVariable(indexVar), 0));
         
-        for (indexVar = level + 1; indexVar < totalOperations; indexVar ++)
-                printf("  - ");
-        
-        printf("|\n\t\t\t\t | ");
-
-        for (indexVar = 0; indexVar <= level; indexVar++)
-            printf("%3d ", getDecodeMap(solution->getVariable(indexVar), 1));
-        
-        for (indexVar = level + 1; indexVar < totalOperations; indexVar ++)
-            printf("  - ");
-        */
         printf("|");
     }
 }

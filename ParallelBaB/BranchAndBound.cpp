@@ -20,7 +20,7 @@ BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
     problem(toCopy.getProblem()),
     fjssp_data(toCopy.getFJSSPdata()),
     paretoContainer(toCopy.getParetoGrid()),
-    currentSolution(toCopy.getIncumbentSolution()),
+    incumbent_s(toCopy.getIncumbentSolution()),
     ivm_tree(toCopy.getIVMTree()),
     currentLevel(toCopy.getCurrentLevel()),
     totalLevels(toCopy.getNumberOfLevels()),
@@ -82,12 +82,12 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, cons
         totalNodes.fetch_and_store(computeTotalNodes(numberOfVariables));
         
         bestObjectivesFound(numberOfObjectives, numberOfVariables);
-        currentSolution(numberOfObjectives, numberOfVariables);
-        problem.createDefaultSolution(currentSolution);
+        incumbent_s(numberOfObjectives, numberOfVariables);
+        problem.createDefaultSolution(incumbent_s);
         
         int nObj = 0;
         for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-            bestObjectivesFound.setObjective(nObj, currentSolution.getObjective(nObj));
+            bestObjectivesFound.setObjective(nObj, incumbent_s.getObjective(nObj));
         
         ivm_tree(problem.getNumberOfVariables(), problem.getUpperBound(0) + 1);
         ivm_tree.setOwner(rank);
@@ -120,13 +120,13 @@ BranchAndBound& BranchAndBound::operator()(int rank_new, const ProblemFJSSP &pro
     int numberOfObjectives = problem.getNumberOfObjectives();
     int numberOfVariables = problem.getNumberOfVariables();
     
-    currentSolution(numberOfObjectives, numberOfVariables);
+    incumbent_s(numberOfObjectives, numberOfVariables);
     bestObjectivesFound(numberOfObjectives, numberOfVariables);
-    problem.createDefaultSolution(currentSolution);
+    problem.createDefaultSolution(incumbent_s);
     
     int nObj = 0;
     for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-        bestObjectivesFound.setObjective(nObj, currentSolution.getObjective(nObj));
+        bestObjectivesFound.setObjective(nObj, incumbent_s.getObjective(nObj));
 
     ivm_tree(problem.getNumberOfVariables(), problem.getUpperBound(0) + 1);
     ivm_tree.setOwner(rank);
@@ -174,11 +174,11 @@ void BranchAndBound::initialize(int starts_tree) {
 
 	int nObj = 0;
 	for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-		bestObjectivesFound.setObjective(nObj, currentSolution.getObjective(nObj));
+		bestObjectivesFound.setObjective(nObj, incumbent_s.getObjective(nObj));
 
     //updateParetoGrid(bestInObj1);
     //updateParetoGrid(bestInObj2);
-    updateParetoGrid(currentSolution);
+    updateParetoGrid(incumbent_s);
 
 }
 
@@ -212,8 +212,8 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
         tree.setIVMValueAt(row, build_value, build_value);
         
         /** TODO: Check this part. The interval is equivalent to the solution?. **/
-        currentSolution.setVariable(row, build_value);
-        problem.evaluateDynamic(currentSolution, fjssp_data, row);
+        incumbent_s.setVariable(row, build_value);
+        problem.evaluateDynamic(incumbent_s, fjssp_data, row);
     }
     
     for (row = build_up_to + 1; row <= totalLevels; ++row) {
@@ -221,7 +221,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
         tree.resetNumberOfNodesAt(row);
     }
     
-    int branches_created = branch(currentSolution, build_up_to);
+    int branches_created = branch(incumbent_s, build_up_to);
     
     /** Send intervals to global_pool. **/
     int branches_to_move_to_global_pool = branches_created * percent_to_move;
@@ -241,29 +241,12 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
 
 tbb::task* BranchAndBound::execute() {
 
-   /* Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    temp.setVariable(0, 4);
-    temp.setVariable(1, 1);
-    temp.setVariable(2, 5);
-    temp.setVariable(3, 3);
-    temp.setVariable(4, 9);
-    temp.setVariable(5, 12);
-    temp.setVariable(6, 11);
-    temp.setVariable(7, 13);
-    temp.setVariable(8, 15);
-    temp.setVariable(9, 5);
-    temp.setVariable(10, 13);
-    temp.setVariable(11, 16);
-    problem.printSchedule(temp);
-*/
     initialize(interval_to_solve.getBuildUpTo());
-    
     while (!globalPool.empty()) {
-        if(globalPool.try_pop(interval_to_solve)){
+        if(globalPool.try_pop(interval_to_solve))
             //printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
-            intializeIVM_data(interval_to_solve, ivm_tree);
             solve(interval_to_solve);
-        }
+        
     }
     
     printf("[B&B-%03d] No more intervals in global pool. Going to sleep.\n", rank);
@@ -273,32 +256,39 @@ tbb::task* BranchAndBound::execute() {
 
 void BranchAndBound::solve(Interval& branch_to_solve) {
 
+    
     double timeUp = 0;
     int updated = 0;
+    intializeIVM_data(branch_to_solve, ivm_tree);
     while (theTreeHasMoreBranches() && !timeUp) {
         
-        explore(currentSolution);
-        problem.evaluateDynamic(currentSolution, fjssp_data, currentLevel);
+        explore(incumbent_s);
+        problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
         
-        if (!aLeafHasBeenReached() && theTreeHasMoreBranches()) {
-            if (improvesTheGrid(currentSolution))
-                branch(currentSolution, currentLevel);
+        if (!aLeafHasBeenReached() && theTreeHasMoreBranches()){
+            if (improvesTheGrid(incumbent_s))
+                branch(incumbent_s, currentLevel);
             else
-                prune(currentSolution, currentLevel);
-            
-            for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
-                problem.evaluateRemoveDynamic(currentSolution, fjssp_data, l);
-        } else {
+                prune(incumbent_s, currentLevel);
+        }else {
             reachedLeaves++;
-            updated = updateParetoGrid(currentSolution);
+            updated = updateParetoGrid(incumbent_s);
             totalUpdatesInLowerBound += updated;
             
-          if (updated) {
-                printf("[B&B-%03d] ", rank);
-                printCurrentSolution();
-                printf(" + [%6lu] \n", paretoContainer.getSize());
-            }
+            /*if (updated) {
+             printf("[B&B-%03d] ", rank);
+             printCurrentSolution();
+             printf(" + [%6lu] \n", paretoContainer.getSize());
+             }*/
+            
+            /** Go back and prepare to remove the evaluations. **/
+            ivm_tree.pruneActiveNode();
         }
+        /** If the branching operator doesnt creates branches or the prune
+         function was called then we need to remove the evaluations.
+         Also if a leave has been reached. **/
+        for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
+            problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, l);
     }
     
     t2 = std::chrono::high_resolution_clock::now();
@@ -323,14 +313,6 @@ double BranchAndBound::getTotalTime() {
 int BranchAndBound::explore(Solution & solution) {
 
 	exploredNodes++;
-
-    if (aLeafHasBeenReached()){ /** If the active node is a leaf then we need to go up. **/
-        ivm_tree.pruneActiveNode();
-        
-        for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
-            problem.evaluateRemoveDynamic(solution, fjssp_data, l);
-    }
-    
 	currentLevel = ivm_tree.getCurrentLevel();
 	solution.setVariable(currentLevel, ivm_tree.getActiveNode());
 	return 0;
@@ -550,8 +532,8 @@ void BranchAndBound::initGlobaPoolWithInterval(Interval & branch_to_split) {
     
 	for (row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
         map = branch_to_split.getValueAt(row);
-        currentSolution.setVariable(row, map);
-        problem.evaluateDynamic(currentSolution, fjssp_data, row);
+        incumbent_s.setVariable(row, map);
+        problem.evaluateDynamic(incumbent_s, fjssp_data, row);
 	}
 
 	for (element = 0; element < num_elements; ++element)
@@ -559,10 +541,10 @@ void BranchAndBound::initGlobaPoolWithInterval(Interval & branch_to_split) {
             for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
 
 				toAdd = problem.getCodeMap(element, machine);
-				currentSolution.setVariable(level_to_split, toAdd);
-				problem.evaluateDynamic(currentSolution, fjssp_data, level_to_split);
+				incumbent_s.setVariable(level_to_split, toAdd);
+				problem.evaluateDynamic(incumbent_s, fjssp_data, level_to_split);
 
-				if (improvesTheGrid(currentSolution)) {
+				if (improvesTheGrid(incumbent_s)) {
                     /** Gets the branch to add. */
                     branch_to_split.setValueAt(level_to_split, toAdd);
                     branch_to_split.setBuildUpTo(level_to_split);
@@ -575,7 +557,7 @@ void BranchAndBound::initGlobaPoolWithInterval(Interval & branch_to_split) {
 				} else
 					prunedNodes++;
                 
-                problem.evaluateRemoveDynamic(currentSolution, fjssp_data, level_to_split);
+                problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, level_to_split);
 
 			}
     branch_to_split.setValueAt(level_to_split, -1);
@@ -629,7 +611,7 @@ unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) co
 }
 
 void BranchAndBound::printCurrentSolution(int withVariables) {
-	problem.printPartialSolution(currentSolution, currentLevel);
+	problem.printPartialSolution(incumbent_s, currentLevel);
 }
 
 /**
@@ -686,7 +668,7 @@ void BranchAndBound::increaseNumberOfPrunedNodes(unsigned long value){ prunedNod
 void BranchAndBound::increaseNumberOfReachedLeaves(unsigned long value){ reachedLeaves.fetch_and_add(value); }
 void BranchAndBound::increaseNumberOfUpdatesInLowerBound(unsigned long value){ totalUpdatesInLowerBound.fetch_and_add(value); }
 
-const Solution& BranchAndBound::getIncumbentSolution() const { return currentSolution;}
+const Solution& BranchAndBound::getIncumbentSolution() const { return incumbent_s;}
 const IVMTree& BranchAndBound::getIVMTree() const { return ivm_tree;}
 const Interval& BranchAndBound::getStartingInterval() const { return interval_to_solve;}
 const ProblemFJSSP& BranchAndBound::getProblem() const { return problem;}
@@ -850,7 +832,7 @@ void BranchAndBound::saveEvery(double timeInSeconds) {
 
 void BranchAndBound::printDebug(){
     printf("DEBUG\n");
-    currentSolution.print();
+    incumbent_s.print();
     ivm_tree.print();
     fjssp_data.print();
     printf("DEBUG\n");
