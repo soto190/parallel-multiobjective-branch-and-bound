@@ -178,10 +178,17 @@ void HandlerContainer::setStateOf(BucketState state, int x, int y) { grid.setSta
 void HandlerContainer::printGridSize() {
     int nCol = 0;
     int nRow = 0;
+    BucketState state;
+    
     for (nRow = grid.getRows() - 1; nRow >= 0; --nRow) {
         printf("[%3d] ", nRow);
-        for (nCol = 0; nCol < grid.getCols(); ++nCol)
-            printf("%3ld ", grid.getSizeOf(nCol, nRow));
+        for (nCol = 0; nCol < grid.getCols(); ++nCol){
+            state = grid.getStateOf(nCol, nRow);
+            if(state == BucketState::unexplored)
+                printf(" - ");
+            else
+                printf("%3ld", grid.getSizeOf(nCol, nRow));
+        }
         printf("\n");
     }
 }
@@ -189,10 +196,16 @@ void HandlerContainer::printGridSize() {
 void HandlerContainer::printStates() {
     int nCol = 0;
     int nRow = 0;
+    BucketState state;
     for (nRow = grid.getRows() - 1; nRow >= 0; --nRow) {
         printf("[%3d] ", nRow);
-        for (nCol = 0; nCol < grid.getCols(); ++nCol)
-            printf("%3d", grid.getStateOf(nCol, nRow));
+        for (nCol = 0; nCol < grid.getCols(); ++nCol){
+            state = grid.getStateOf(nCol, nRow);
+            if(state == BucketState::unexplored)
+                printf(" - ");
+            else
+                printf("%3d", state);
+        }
         printf("\n");
     }
 }

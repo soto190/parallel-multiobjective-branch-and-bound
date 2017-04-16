@@ -261,8 +261,8 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
         /*printf("[B&B-%03d] ", rank);
         printCurrentSolution();
-        printf("\n");
-        */
+        printf("\n");*/
+        
         if (!aLeafHasBeenReached() && theTreeHasMoreBranches()){
             if (improvesTheGrid(incumbent_s))
                 branch(incumbent_s, currentLevel);
@@ -273,17 +273,16 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             updated = updateParetoGrid(incumbent_s);
             totalUpdatesInLowerBound += updated;
             
-            if (updated) {
+           /* if (updated) {
                 printf("[B&B-%03d] ", rank);
                 printCurrentSolution();
                 printf(" + [%6lu] \n", paretoContainer.getSize());
-                //paretoContainer.printGridSize();
-                //paretoContainer.printStates();
-            }
-            
+            }*/
             /** Go back and prepare to remove the evaluations. **/
             ivm_tree.pruneActiveNode();
         }
+        
+        
         /** If the branching operator doesnt creates branches or the prune
          function was called then we need to remove the evaluations.
          Also if a leave has been reached. **/
