@@ -41,16 +41,10 @@
  **/
 struct GlobalPool{
     tbb::concurrent_queue<Interval> Queue;
-    
-    bool pop_if_present(Interval& interval){
-        if(!Queue.try_pop(interval)) return false;
-        return true;
-    }
-    
     unsigned long unsafe_size() const{ return Queue.unsafe_size(); }
     bool empty() const { return Queue.empty(); }
     void push(const Interval & interval){ Queue.push(interval);}
-    bool try_pop(Interval& interval){ return Queue.try_pop(interval); }
+    bool try_pop(Interval& interval) { if(!Queue.try_pop(interval)) return false; return true;}
 };
 
 class BranchAndBound: public tbb::task {
