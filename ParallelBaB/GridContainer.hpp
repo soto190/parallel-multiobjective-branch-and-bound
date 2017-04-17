@@ -35,7 +35,6 @@ typedef tbb::queuing_rw_mutex Lock;
      unsigned long posy;
      Lock improving_lock;
 
-// tbb::spin_rw_mutex mutex_update;
      tbb::atomic<unsigned long> size;
      tbb::atomic<BucketState> state;
      std::vector<Solution> m_vec;
@@ -150,13 +149,10 @@ typedef tbb::queuing_rw_mutex Lock;
             || dominates > 0
             || nondominated == size
             || dominated == 0)) {
-                
                 m_vec.push_back(obj); /** Creates a new copy. **/
                 size.fetch_and_increment();
                 wasAdded = 1;
-
              }
-         
 
          return wasAdded;
      }

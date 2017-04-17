@@ -537,11 +537,10 @@ void ProblemFJSSP::createDefaultSolution(Solution & solution){
 
 void ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){
     
-    if(nObj == 0){
+    if(nObj == 0)
         createDefaultSolution(solution);
-    }else if(nObj == 1){
+    else if(nObj == 1)
         solution = goodSolutionWithMaxWorkload;
-    }
     else if(nObj == 2){
         int operation = 0;
         for (operation = 0; operation < totalOperations; ++operation)
@@ -728,7 +727,6 @@ void ProblemFJSSP::loadInstance(char** filePath){
         numberOfOperationsInJob = new int[totalJobs];
         releaseTime = new int[totalJobs];
         
-        
         std::getline(infile, line);
         std::getline(infile, line);
         elemens = split(line, ' ');
@@ -813,9 +811,7 @@ void ProblemFJSSP::loadInstance(char** filePath){
         }
         goodSolutionWithMaxWorkload (getNumberOfObjectives(), getNumberOfVariables());
         buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
-        
     }
-
 }
 
 ProblemType ProblemFJSSP::getType() const { return ProblemType::permutation_with_repetition_and_combination; }
@@ -977,7 +973,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
         printf("%3c %3d: %2d %3d - %3d \n", 'a' + operation, operation, mapToJobMachine[solution.getVariable(operation)][1], startingTime[operation], endingTime[operation]);
     
     for (machine = 0; machine < totalMachines; ++machine) {
-        printf("M%d  |", machine);
+        printf("M%d  | ", machine);
         for (time = 0; time < makespan; ++time)
             printf("%3c", gantt[machine][time]);
         printf("| %3d\n", workload[machine]);

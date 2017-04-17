@@ -239,11 +239,10 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
 tbb::task* BranchAndBound::execute() {
 
     initialize(interval_to_solve.getBuildUpTo());
-    while (!globalPool.empty()) {
+    while (!globalPool.empty())
         if(globalPool.try_pop(interval_to_solve))
             //printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
             solve(interval_to_solve);
-    }
     
     printf("[B&B-%03d] No more intervals in global pool. Going to sleep.\n", rank);
     
@@ -386,6 +385,25 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                 ivm_tree.moveToNextRow();
                 ivm_tree.setActiveNodeAt(ivm_tree.getActiveRow(), 0);
                 ivm_tree.setHasBranches(1);
+                /** Testing code. **/
+               /* if (globalPool.unsafe_size() < 10) {
+                    Interval branch_init(problem.getNumberOfVariables());
+                    for (int var = 0; var <= currentLevel; ++var)
+                        branch_init.setValueAt(var, solution.getVariable(var));
+                    
+                    branch_init.setBuildUpTo(currentLevel);
+                    int branches_to_move_to_global_pool = branches_created * percent_to_move;
+                    if (rank > 0
+                        && branches_created > branches_to_move_to_global_pool
+                        && branch_init.getBuildUpTo() < deep_to_share) {
+                        
+                        branch_init.increaseBuildUpTo();
+                        for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
+                            branch_init.setValueAt(currentLevel + 1, ivm_tree.removeLastNodeAtRow(currentLevel + 1));
+                            globalPool.push(branch_init);
+                        }
+                    }
+                }*/ /** End testing code. **/
             } else { /** If no branches were created then move to the next node. **/
                 ivm_tree.pruneActiveNode();
                 prunedNodes++;

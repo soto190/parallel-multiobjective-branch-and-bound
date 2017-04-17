@@ -84,7 +84,7 @@ private:
     int deep_to_share;
     
     float percent_to_move = 0.5f;
-    float percent_deep = 0.85f;
+    float percent_deep = 0.90f;
     
     double totalTime;
     std::clock_t start;
