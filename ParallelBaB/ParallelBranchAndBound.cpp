@@ -8,10 +8,10 @@
 
 #include "ParallelBranchAndBound.hpp"
 
-ParallelBranchAndBound::ParallelBranchAndBound(const ProblemFJSSP& problem, GlobalPool& global_pool, HandlerContainer& global_grid):
+ParallelBranchAndBound::ParallelBranchAndBound(const ProblemFJSSP& problem/*, GlobalPool& global_pool, HandlerContainer& global_grid*/):
     problem(problem),
-    global_pool(global_pool),
-    global_grid(global_grid),
+    /*global_pool(global_pool),*/
+    /*global_grid(global_grid),*/
     branch_init(problem.getNumberOfVariables()){
         this->outputParetoFile = new char[255];
         this->summarizeFile = new char[255];
@@ -25,7 +25,8 @@ ParallelBranchAndBound::~ParallelBranchAndBound(){
 tbb::task * ParallelBranchAndBound::execute() {
 
     int counter_threads = 0;
-    BranchAndBound BB_container(0, this->problem, branch_init, global_pool, global_grid);
+    
+    BranchAndBound BB_container(0, this->problem, branch_init/*, global_pool, global_grid*/);
     BB_container.setParetoFrontFile(this->outputParetoFile);
     BB_container.setSummarizeFile(this->summarizeFile);
     BB_container.initGlobaPoolWithInterval(branch_init);
@@ -38,7 +39,7 @@ tbb::task * ParallelBranchAndBound::execute() {
 
 		BranchAndBound * BaB_task =
 				new (tbb::task::allocate_child()) BranchAndBound(
-						counter_threads, this->problem, branch_init, global_pool, global_grid);
+						counter_threads, this->problem, branch_init/*, global_pool, global_grid*/);
 
         bb_threads.push_back(BaB_task);
 		tl.push_back(*BaB_task);

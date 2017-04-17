@@ -204,8 +204,16 @@ public:
     ~GridContainer(){
     }
 
-	std::vector<Solution>& operator()(size_t x, size_t y) {
-		return m_Data[y * cols + x].getVector();
+	GridContainer& operator()(int width, int height) {
+        cols = width;
+        rows = height;
+        numberOfElements.store(0);
+        m_Data.reserve(cols * rows);
+        int index = 0, indey = 0;
+        for (indey = 0; indey < rows; ++indey)
+            for (index = 0; index < cols; ++index)
+                m_Data.push_back(ParetoBucket(index, indey));
+		return *this;
 	}
 
 	int set(const Solution& obj, size_t x, size_t y) {
@@ -270,10 +278,12 @@ private:
 
 public:
     
-
+    HandlerContainer():grid(0,0){};
     HandlerContainer(int width, int height, double maxValX, double maxValY);
     HandlerContainer(const HandlerContainer& toCopy);
 	~HandlerContainer();
+    
+    HandlerContainer& operator()(int width, int height, double maxValX, double maxValY);
     
 	int add(const Solution & solution);
     int set(const Solution & solution, int x, int y);

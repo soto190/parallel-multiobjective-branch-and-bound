@@ -25,11 +25,11 @@ public:
     char * summarizeFile;
         
     ProblemFJSSP problem;
-    GlobalPool& global_pool;
-    HandlerContainer& global_grid;
+    //GlobalPool& global_pool;
+    /*HandlerContainer& global_grid;*/
     Interval branch_init;
     
-    ParallelBranchAndBound(const ProblemFJSSP& problem, GlobalPool& global_pool, HandlerContainer& global_grid);
+    ParallelBranchAndBound(const ProblemFJSSP& problem/*, GlobalPool& global_pool, HandlerContainer& global_grid*/);
     ~ParallelBranchAndBound();
     tbb::task* execute();
     

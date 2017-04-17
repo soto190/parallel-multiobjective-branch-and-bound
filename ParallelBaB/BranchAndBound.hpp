@@ -73,8 +73,8 @@ private:
     Solution bestObjectivesFound;
     IVMTree ivm_tree;
     Interval interval_to_solve;
-    GlobalPool& globalPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
-    HandlerContainer& paretoContainer;
+    //GlobalPool& globalPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
+    /*HandlerContainer& paretoContainer;*/
     std::vector<Solution> paretoFront; /** paretofFront. **/
     
     char * outputFile;
@@ -93,7 +93,7 @@ private:
     
 public:
     BranchAndBound(const BranchAndBound& branchAndBound);
-    BranchAndBound(int rank, const ProblemFJSSP& problem, const Interval & branch, GlobalPool& globa_pool, HandlerContainer& pareto_container);
+    BranchAndBound(int rank, const ProblemFJSSP& problem, const Interval & branch /*,GlobalPool& globa_pool, HandlerContainer& pareto_container*/);
     BranchAndBound& operator()(int rank, const ProblemFJSSP& problem, const Interval & branch);
 	~BranchAndBound();
     

@@ -82,6 +82,39 @@ HandlerContainer::~HandlerContainer() {
     paretoFront.clear();
 }
 
+HandlerContainer& HandlerContainer::operator()(int rows, int cols, double maxValX, double maxValY){
+    grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows);
+    if (maxValX < cols)
+        cols = maxValX;
+    if (maxValY < rows)
+        rows = maxValY;
+    
+    numberOfElements = 0;
+    unexploredBuckets = rows * cols;
+    activeBuckets = 0;
+    disabledBuckets = 0;
+    
+    rangeinx = new double[cols];
+    rangeiny = new double[rows];
+    maxinx = maxValX;
+    maxiny = maxValY;
+    int divs = 0;
+    
+    double rx = maxValX / cols;
+    double ry = maxValY / rows;
+    
+    rangeinx[divs] = 0;
+    rangeiny[divs] = 0;
+    
+    for (divs = 1; divs < cols; divs++)
+        rangeinx[divs] = rangeinx[divs - 1] + rx;
+    
+    for (divs = 1; divs < rows; divs++)
+        rangeiny[divs] = rangeiny[divs - 1] + ry;
+ 
+    return *this;
+}
+
 void HandlerContainer::checkCoordinate(const Solution &solution, int * coordinate) const {
     coordinate[0] = binarySearch(solution.getObjective(0), rangeinx, getCols());
     coordinate[1] = binarySearch(solution.getObjective(1), rangeiny, getRows());

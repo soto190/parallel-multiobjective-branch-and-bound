@@ -13,13 +13,15 @@
  *
  **/
 #include "BranchAndBound.hpp"
+GlobalPool globalPool;
+HandlerContainer paretoContainer;
 
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
     rank(toCopy.getRank()),
-    globalPool(toCopy.getGlobalPool()),
+//globalPool(toCopy.getGlobalPool()),
     problem(toCopy.getProblem()),
     fjssp_data(toCopy.getFJSSPdata()),
-    paretoContainer(toCopy.getParetoGrid()),
+//    paretoContainer(toCopy.getParetoGrid()),
     incumbent_s(toCopy.getIncumbentSolution()),
     ivm_tree(toCopy.getIVMTree()),
     currentLevel(toCopy.getCurrentLevel()),
@@ -45,7 +47,7 @@ BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
         std::strcpy(summarizeFile, toCopy.summarizeFile);
 }
 
-BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, const Interval & branch, GlobalPool &globa_pool, HandlerContainer& pareto_container):
+BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, const Interval & branch /*, GlobalPool &globa_pool, HandlerContainer& pareto_container*/):
     rank(rank),
     problem(problemToCopy),
 
@@ -53,9 +55,9 @@ BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, cons
                problemToCopy.getNumberOfOperations(),
                problemToCopy.getNumberOfMachines()),
 
-    globalPool(globa_pool),
+//globalPool(globa_pool),
     interval_to_solve(branch),
-    paretoContainer(pareto_container),
+//paretoContainer(pareto_container),
     currentLevel(0),
     totalLevels(problemToCopy.getNumberOfVariables()),
     totalNodes(0),
@@ -530,10 +532,16 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
  *  NOTE: Remember to avoid to split the intervals in the last levels.
  **/
 void BranchAndBound::initGlobaPoolWithInterval(Interval & branch_to_split) {
+    Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.createDefaultSolution(solution);
+    paretoContainer(100, 100, solution.getObjective(0), solution.getObjective(1));
     
+
     Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(1, temp);
     temp.print();
+    solution.print();
+    updateParetoGrid(solution);
     updateParetoGrid(temp);
     
 	int row = 0;
