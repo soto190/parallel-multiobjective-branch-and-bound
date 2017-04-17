@@ -13,7 +13,7 @@
  *
  **/
 #include "BranchAndBound.hpp"
-GlobalPool globalPool;
+tbb::concurrent_queue<Interval> globalPool;
 HandlerContainer paretoContainer;
 
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
@@ -698,7 +698,7 @@ const FJSSPdata& BranchAndBound::getFJSSPdata() const { return fjssp_data;}
 
 HandlerContainer& BranchAndBound::getParetoGrid() const { return paretoContainer;}
 HandlerContainer& BranchAndBound::getParetoContainer() {return paretoContainer;}
-GlobalPool& BranchAndBound::getGlobalPool() const { return globalPool;}
+//GlobalPool& BranchAndBound::getGlobalPool() const { return globalPool;}
 
 std::vector<Solution>& BranchAndBound::getParetoFront(){
     paretoFront = paretoContainer.getParetoFront();

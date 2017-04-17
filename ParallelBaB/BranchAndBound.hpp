@@ -39,14 +39,14 @@
  *   "There is internal synchronization in TBB that a tool can not recognize as correct. E.g. some common synchronization patterns (for example, test and test and set) might have benigndata races.Alsotools usually can not recognize synchronization that does not use "standard" primitives (such as pthread_mutex) and instead is uses carefully designed protocols based on atomic operations." - Alexey Kukanov (Intel)  Fri, 07/24/2009 - 05:20
  *
  **/
-struct GlobalPool{
+/*struct GlobalPool{
     tbb::concurrent_queue<Interval> Queue;
     unsigned long unsafe_size() const{ return Queue.unsafe_size(); }
     bool empty() const { return Queue.empty(); }
     void push(const Interval & interval){ Queue.push(interval);}
     bool try_pop(Interval& interval) { if(!Queue.try_pop(interval)) return false; return true;}
 };
-
+*/
 class BranchAndBound: public tbb::task {
 
 private:
@@ -131,7 +131,7 @@ public:
 
     const IVMTree& getIVMTree() const;
     const Interval& getStartingInterval() const;
-    GlobalPool& getGlobalPool() const;
+    //GlobalPool& getGlobalPool() const;
     const ProblemFJSSP& getProblem() const;
     HandlerContainer& getParetoGrid() const;
     const Solution& getIncumbentSolution() const;
