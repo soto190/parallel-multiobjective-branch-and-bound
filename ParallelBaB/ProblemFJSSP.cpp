@@ -974,17 +974,17 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     
     for (machine = 0; machine < totalMachines; ++machine) {
         printf("M%d  | ", machine);
-        for (time = 0; time < makespan; ++time)
+        for (time = 0; time <= makespan; ++time)
             printf("%3c", gantt[machine][time]);
         printf("| %3d\n", workload[machine]);
     }
      printf("----");
-    for (time = 0; time < makespan; ++time)
+    for (time = 0; time <= makespan; ++time)
         printf("---");
     printf("--\n");
 
     printf("Time:");
-    for (time = 0; time < makespan; ++time)
+    for (time = 0; time <= makespan; ++time)
         printf("%3d", (time));
     printf("\n");
     printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);

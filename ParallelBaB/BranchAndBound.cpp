@@ -216,7 +216,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     }
     
     for (row = build_up_to + 1; row <= totalLevels; ++row) {
-        tree.setStartExploration(row, 0);
+        tree.setStartExploration(row, -1);
         tree.resetNumberOfNodesAt(row);
     }
     
@@ -278,7 +278,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                         && branches_created > branches_to_move_to_global_pool
                         && currentLevel < deep_to_share) {
                         
-                        for (int var = 0; var <= currentLevel; ++var)
+                        for (int var = ivm_tree.getRootNode() + 1; var <= currentLevel; ++var)
                             branch_to_solve.setValueAt(var, incumbent_s.getVariable(var));
                         
                         branch_to_solve.increaseBuildUpTo();
@@ -287,7 +287,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                             globalPool.push(branch_to_solve);
                         }
                         branch_to_solve.setValueAt(currentLevel + 1, -1);
-                        branch_to_solve.setBuildUpTo(currentLevel - 1);
+                        branch_to_solve.setBuildUpTo(currentLevel);
                     }
                 } /** End testing code. **/
             

@@ -251,6 +251,7 @@ int IVMTree::pruneActiveNode() {
             return ivm[active_row][active_node[active_row]]; /** Return the active node. **/
         }
     }
+    active_node[active_row] = -1;
     active_row = root_row;
     hasBranches = 0; /** There are no more branches. **/
     return ivm[active_row][active_node[active_row]];
@@ -266,13 +267,17 @@ void IVMTree::print() {
      * N: Active node.
      * #: Number of nodes.
      */
-    printf("[Row]\tI\t N\t  #\n");
+    printf("[Row]\tS\tI\t N\t  #\n");
     for (r = 0; r < rows; ++r) {
         /** The integer vector. **/
-        if (active_node[r] == -1)
-            printf("[%3d] %3c ", r, sep);
+        if (active_node[r] == -1 && start_exploration[r] == -1)
+            printf("[%3d] %3c %3c ", r, sep, sep);
+        else if (active_node[r] == -1 && start_exploration[r] > -1)
+            printf("[%3d] %3d %3c ", r, start_exploration[r], sep);
+        else if (active_node[r] > -1 && start_exploration[r] == -1)
+            printf("[%3d] %3c %3d ", r, sep, active_node[r]);
         else
-            printf("[%3d] %3d ", r, active_node[r]);
+            printf("[%3d] %3d %3d ", r, start_exploration[r], active_node[r]);
         
         /** The solution. **/
         if (active_node[r] == -1
