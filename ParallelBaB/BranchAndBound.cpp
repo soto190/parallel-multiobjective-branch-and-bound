@@ -228,13 +228,14 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
         && branches_created > branches_to_move_to_global_pool
         && branch_init.getBuildUpTo() < deep_to_share) {
         
-        branch_init.increaseBuildUpTo();
+        //branch_init.increaseBuildUpTo();
         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
             branch_init.setValueAt(build_up_to + 1, ivm_tree.removeLastNodeAtRow(build_up_to + 1));
             globalPool.push(branch_init);
         }
-        branch_init.setValueAt(build_up_to + 1, -1);
-        branch_init.setBuildUpTo(build_up_to);
+        branch_init.removeValue();
+        //branch_init.setValueAt(build_up_to + 1, -1);
+        //branch_init.setBuildUpTo(build_up_to);
     }
 
     return 0;
@@ -272,7 +273,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                branches_created = branch(incumbent_s, currentLevel);
                 
                 /** Testing code. **/
-                if (globalPool.unsafe_size() < 10) {
+                if (globalPool.unsafe_size() < 60) {
                     int branches_to_move_to_global_pool = branches_created * percent_to_move;
                     if (rank > 0
                         && branches_created > branches_to_move_to_global_pool
@@ -281,13 +282,14 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                         for (int var = ivm_tree.getRootNode() + 1; var <= currentLevel; ++var)
                             branch_to_solve.setValueAt(var, incumbent_s.getVariable(var));
                         
-                        branch_to_solve.increaseBuildUpTo();
+                        //branch_to_solve.increaseBuildUpTo();
                         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
                             branch_to_solve.setValueAt(currentLevel + 1, ivm_tree.removeLastNodeAtRow(currentLevel + 1));
                             globalPool.push(branch_to_solve);
                         }
-                        branch_to_solve.setValueAt(currentLevel + 1, -1);
-                        branch_to_solve.setBuildUpTo(currentLevel);
+                        branch_to_solve.removeValue();
+                        //branch_to_solve.setValueAt(currentLevel + 1, -1);
+                        //branch_to_solve.setBuildUpTo(currentLevel);
                     }
                 } /** End testing code. **/
             
@@ -514,9 +516,6 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
 
 			if (isIn == 0) {
                 branch_to_compute.setValueAt(totalLevels, problem.getCodeMap(jobToCheck, problem.getTimesValueIsRepeated(0) - 1));
-
-                branch_to_compute.increaseBuildUpTo();
-
                 /** To finish the loop. **/
 				job = 0;
 			}
@@ -576,7 +575,7 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
 				if (improvesTheGrid(incumbent_s)) {
                     /** Gets the branch to add. */
                     branch_to_split.setValueAt(level_to_split, toAdd);
-                    branch_to_split.setBuildUpTo(level_to_split);
+                    //branch_to_split.setBuildUpTo(level_to_split);
 
 					/**Add it to pending intervals. **/
                     if (rank == 0)
@@ -585,11 +584,11 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
 					branches_created++;
 				} else
 					prunedNodes++;
-                
+                branch_to_split.removeValue();
                 problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, level_to_split);
 			}
     
-    branch_to_split.setValueAt(level_to_split, -1);
+    //branch_to_split.setValueAt(level_to_split, -1);
     branches += branches_created;
 }
 

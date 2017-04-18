@@ -79,8 +79,9 @@ int Interval::getBuildUpTo() const{ return build_up_to;}
 int Interval::getValueAt(int position) const{ return interval[position];}
 
 void Interval::setSize(int size){ max_size = size; }
-void Interval::setValueAt(int index, int value){ interval[index] = value; }
+void Interval::setValueAt(int index, int value){ interval[index] = value; build_up_to = index; }
 void Interval::setBuildUpTo(int newBuild){ build_up_to = newBuild; }
+void Interval::removeValue(){interval[build_up_to--] = -1;}
 int Interval::increaseBuildUpTo(){ return build_up_to++; }
 
 void Interval::print() const{
@@ -88,7 +89,7 @@ void Interval::print() const{
     int index_var = 0;
     char sep = '-';
     
-    printf("[");
+    printf("[%3d][", build_up_to);
     for (index_var = 0; index_var <= build_up_to; ++index_var)
         printf("%3d ", interval[index_var]);
     
