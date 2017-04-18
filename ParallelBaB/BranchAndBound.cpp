@@ -311,8 +311,9 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         /** If the branching operator doesnt creates branches or the prune
          function was called then we need to remove the evaluations.
          Also if a leave has been reached. **/
-        for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
-            problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, l);
+        if(ivm_tree.hasPendingBranches())
+            for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
+                problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, l);
     }
     
     t2 = std::chrono::high_resolution_clock::now();
