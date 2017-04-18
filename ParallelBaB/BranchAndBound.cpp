@@ -288,6 +288,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                             globalPool.push(branch_to_solve);
                         }
                         branch_to_solve.removeValue();
+
                         //branch_to_solve.setValueAt(currentLevel + 1, -1);
                         //branch_to_solve.setBuildUpTo(currentLevel);
                     }
@@ -580,11 +581,10 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
 					/**Add it to pending intervals. **/
                     if (rank == 0)
                         globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
-                    
+                    branch_to_split.removeValue();
 					branches_created++;
 				} else
 					prunedNodes++;
-                branch_to_split.removeValue();
                 problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, level_to_split);
 			}
     
