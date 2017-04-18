@@ -31,6 +31,7 @@
 #include "tbb/task.h"
 #include "tbb/cache_aligned_allocator.h"
 #include "tbb/concurrent_queue.h"
+#include "assert.h"
 //#include <memory.h> /** For the Ehecatl wich uses GCC 4.4.7, this activates the shared_ptr. **/
 /**
  *
@@ -47,6 +48,8 @@
     bool try_pop(Interval& interval) { if(!Queue.try_pop(interval)) return false; return true;}
 };
 */
+
+
 class BranchAndBound: public tbb::task {
 
 private:
@@ -84,7 +87,7 @@ private:
     int deep_to_share;
     
     float percent_to_move = 0.5f;
-    float percent_deep = 0.90f;
+    float percent_deep = 0.85f;
     
     double totalTime;
     std::clock_t start;
@@ -132,8 +135,8 @@ public:
     const IVMTree& getIVMTree() const;
     const Interval& getStartingInterval() const;
     //GlobalPool& getGlobalPool() const;
+    //HandlerContainer& getParetoGrid() const;
     const ProblemFJSSP& getProblem() const;
-    HandlerContainer& getParetoGrid() const;
     const Solution& getIncumbentSolution() const;
     const FJSSPdata& getFJSSPdata() const;
     
@@ -144,8 +147,8 @@ public:
 	int saveParetoFront();
 	int saveSummarize();
 	
-    void setParetoContainer(HandlerContainer & paretoContainer);
-    HandlerContainer& getParetoContainer();
+    //void setParetoContainer(HandlerContainer & paretoContainer);
+    //HandlerContainer& getParetoContainer();
     
     void printDebug();
     
@@ -165,7 +168,7 @@ private:
 	/** IVM functions. **/
 public:
 	void computeLastBranch(Interval & branch);
-	void initGlobaPoolWithInterval(Interval & branch);
+	void initGlobalPoolWithInterval(Interval & branch);
 
 private:
 	int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);

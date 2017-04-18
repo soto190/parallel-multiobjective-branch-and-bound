@@ -364,9 +364,9 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
         case ProblemType::permutation_with_repetition_and_combination:
             
             /** TODO: TEST parallel for?, solution is shared and each thread needs their own copy. **/
+            /** TODO: sort the branches. **/
             for (element = 0; element < problem.getTotalElements(); ++element)
                 if (fjssp_data.getNumberOfOperationsAllocatedInJob(element) < problem.getTimesValueIsRepeated(element))
-                /** TODO: sort the branches. **/
                     for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
                         toAdd = problem.getCodeMap(element, machine);
                         
@@ -380,32 +380,33 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             prunedNodes++;
                         problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
                     }
-
             branches += branches_created;
 
             if (branches_created > 0) { /** If a branch was created. **/
                 ivm_tree.moveToNextRow();
                 ivm_tree.setActiveNodeAt(ivm_tree.getActiveRow(), 0);
                 ivm_tree.setHasBranches(1);
+                
                 /** Testing code. **/
-               /* if (globalPool.unsafe_size() < 10) {
-                    Interval branch_init(problem.getNumberOfVariables());
-                    for (int var = 0; var <= currentLevel; ++var)
-                        branch_init.setValueAt(var, solution.getVariable(var));
-                    
-                    branch_init.setBuildUpTo(currentLevel);
+                if (globalPool.unsafe_size() < 10) {
                     int branches_to_move_to_global_pool = branches_created * percent_to_move;
                     if (rank > 0
                         && branches_created > branches_to_move_to_global_pool
-                        && branch_init.getBuildUpTo() < deep_to_share) {
+                        && currentLevel < deep_to_share) {
                         
+                        Interval branch_init(problem.getNumberOfVariables());
+                        for (int var = 0; var <= currentLevel; ++var)
+                            branch_init.setValueAt(var, solution.getVariable(var));
+                        
+                        branch_init.setBuildUpTo(currentLevel);
                         branch_init.increaseBuildUpTo();
                         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
                             branch_init.setValueAt(currentLevel + 1, ivm_tree.removeLastNodeAtRow(currentLevel + 1));
                             globalPool.push(branch_init);
                         }
                     }
-                }*/ /** End testing code. **/
+                } /** End testing code. **/
+                
             } else { /** If no branches were created then move to the next node. **/
                 ivm_tree.pruneActiveNode();
                 prunedNodes++;
@@ -531,7 +532,7 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
  *
  *  NOTE: Remember to avoid to split the intervals in the last levels.
  **/
-void BranchAndBound::initGlobaPoolWithInterval(Interval & branch_to_split) {
+void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
     paretoContainer(100, 100, solution.getObjective(0), solution.getObjective(1));
@@ -696,8 +697,8 @@ const Interval& BranchAndBound::getStartingInterval() const { return interval_to
 const ProblemFJSSP& BranchAndBound::getProblem() const { return problem;}
 const FJSSPdata& BranchAndBound::getFJSSPdata() const { return fjssp_data;}
 
-HandlerContainer& BranchAndBound::getParetoGrid() const { return paretoContainer;}
-HandlerContainer& BranchAndBound::getParetoContainer() {return paretoContainer;}
+//HandlerContainer& BranchAndBound::getParetoGrid() const { return paretoContainer;}
+//HandlerContainer& BranchAndBound::getParetoContainer() {return paretoContainer;}
 //GlobalPool& BranchAndBound::getGlobalPool() const { return globalPool;}
 
 std::vector<Solution>& BranchAndBound::getParetoFront(){

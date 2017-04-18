@@ -262,11 +262,11 @@ void IVMTree::print() {
     
     char sep = '-';
     /**
-     * AC: Active column.
-     * AN: Active node.
-     * NN: Number of nodes.
+     * I: Index column.
+     * N: Active node.
+     * #: Number of nodes.
      */
-    printf("[Row]\tAC\tAN\tNN\n");
+    printf("[Row]\tI\t N\t  #\n");
     for (r = 0; r < rows; ++r) {
         /** The integer vector. **/
         if (active_node[r] == -1)
