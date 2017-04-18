@@ -177,7 +177,7 @@ void BranchAndBound::initialize(int starts_tree) {
 		bestObjectivesFound.setObjective(nObj, incumbent_s.getObjective(nObj));
 
 //    updateParetoGrid(bestInObj2);
-    updateParetoGrid(incumbent_s);
+//    updateParetoGrid(incumbent_s);
 
 }
 
@@ -233,6 +233,8 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
             branch_init.setValueAt(build_up_to + 1, ivm_tree.removeLastNodeAtRow(build_up_to + 1));
             globalPool.push(branch_init);
         }
+        branch_init.setValueAt(build_up_to + 1, -1);
+        branch_init.setBuildUpTo(build_up_to);
     }
 
     return 0;
@@ -255,6 +257,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
 
     double timeUp = 0;
     int updated = 0;
+    int branches_created = 0;
     intializeIVM_data(branch_to_solve, ivm_tree);
     while (theTreeHasMoreBranches() && !timeUp) {
         
@@ -263,11 +266,32 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         /*printf("[B&B-%03d] ", rank);
         printCurrentSolution();
         printf("\n");*/
-        
+
         if (!aLeafHasBeenReached() && theTreeHasMoreBranches()){
-            if (improvesTheGrid(incumbent_s))
-                branch(incumbent_s, currentLevel);
-            else
+            if (improvesTheGrid(incumbent_s)){
+               branches_created = branch(incumbent_s, currentLevel);
+                
+                /** Testing code. **/
+                if (globalPool.unsafe_size() < 10) {
+                    int branches_to_move_to_global_pool = branches_created * percent_to_move;
+                    if (rank > 0
+                        && branches_created > branches_to_move_to_global_pool
+                        && currentLevel < deep_to_share) {
+                        
+                        for (int var = 0; var <= currentLevel; ++var)
+                            branch_to_solve.setValueAt(var, incumbent_s.getVariable(var));
+                        
+                        branch_to_solve.increaseBuildUpTo();
+                        for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
+                            branch_to_solve.setValueAt(currentLevel + 1, ivm_tree.removeLastNodeAtRow(currentLevel + 1));
+                            globalPool.push(branch_to_solve);
+                        }
+                        branch_to_solve.setValueAt(currentLevel + 1, -1);
+                        branch_to_solve.setBuildUpTo(currentLevel - 1);
+                    }
+                } /** End testing code. **/
+            
+            }else
                 prune(incumbent_s, currentLevel);
         }else {
             reachedLeaves++;
@@ -386,27 +410,6 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                 ivm_tree.moveToNextRow();
                 ivm_tree.setActiveNodeAt(ivm_tree.getActiveRow(), 0);
                 ivm_tree.setHasBranches(1);
-                
-                /** Testing code. **/
-                if (globalPool.unsafe_size() < 10) {
-                    int branches_to_move_to_global_pool = branches_created * percent_to_move;
-                    if (rank > 0
-                        && branches_created > branches_to_move_to_global_pool
-                        && currentLevel < deep_to_share) {
-                        
-                        Interval branch_init(problem.getNumberOfVariables());
-                        for (int var = 0; var <= currentLevel; ++var)
-                            branch_init.setValueAt(var, solution.getVariable(var));
-                        
-                        branch_init.setBuildUpTo(currentLevel);
-                        branch_init.increaseBuildUpTo();
-                        for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
-                            branch_init.setValueAt(currentLevel + 1, ivm_tree.removeLastNodeAtRow(currentLevel + 1));
-                            globalPool.push(branch_init);
-                        }
-                    }
-                } /** End testing code. **/
-                
             } else { /** If no branches were created then move to the next node. **/
                 ivm_tree.pruneActiveNode();
                 prunedNodes++;
