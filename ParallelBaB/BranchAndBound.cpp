@@ -272,7 +272,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                branches_created = branch(incumbent_s, currentLevel);
                 
                 /** Testing code. **/
-                if (globalPool.unsafe_size() < 10) {
+                if (globalPool.unsafe_size() < 60) {
                     int branches_to_move_to_global_pool = branches_created * percent_to_move;
                     if (rank > 0
                         && branches_created > branches_to_move_to_global_pool
