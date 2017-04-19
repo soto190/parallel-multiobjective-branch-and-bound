@@ -44,7 +44,7 @@ public:
     void setSize(int size);
     void setValueAt(int index, int value);
 
-    void removeValue();
+    void removeLastValue();
 	void print() const;
 };
 

@@ -81,7 +81,7 @@ int Interval::getValueAt(int position) const{ return interval[position];}
 void Interval::setSize(int size){ max_size = size; }
 void Interval::setValueAt(int index, int value){ interval[index] = value; build_up_to = index; }
 void Interval::setBuildUpTo(int newBuild){ build_up_to = newBuild; }
-void Interval::removeValue(){interval[build_up_to--] = -1;}
+void Interval::removeLastValue(){interval[build_up_to] = -1; build_up_to--;}
 int Interval::increaseBuildUpTo(){ return build_up_to++; }
 
 void Interval::print() const{

@@ -890,6 +890,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     int machine = 0;
     int numberOp = 0;
     
+    int operation_in_machine[totalOperations];
     int operationOfJob [totalJobs];
     int startingTime [totalOperations];
     int endingTime [totalOperations];
@@ -902,6 +903,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     for (operation = 0; operation < totalOperations; ++operation) {
         startingTime[operation] = 0;
         endingTime[operation] = 0;
+        operation_in_machine[operation] = 0;
     }
     
     for (job = 0; job < totalJobs; ++job)
@@ -924,6 +926,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
         machine = mapToJobMachine[map][1];
         
         numberOp = jobOperationHasNumber[job][operationOfJob[job]];
+        operation_in_machine[numberOp] = machine;
         
         /** With the number of operation and the machine we can continue. **/
         workload[machine] += processingTime[numberOp][machine];
@@ -970,7 +973,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     
     printf("\tOp :  M  ti -  tf\n");
     for (operation = 0; operation < totalOperations; ++operation)
-        printf("%3c %3d: %2d %3d - %3d \n", 'a' + operation, operation, mapToJobMachine[solution.getVariable(operation)][1], startingTime[operation], endingTime[operation]);
+        printf("%3c %3d: %2d %3d - %3d \n", 'a' + operation, operation, operation_in_machine[operation], startingTime[operation], endingTime[operation]);
     
     for (machine = 0; machine < totalMachines; ++machine) {
         printf("M%d  | ", machine);

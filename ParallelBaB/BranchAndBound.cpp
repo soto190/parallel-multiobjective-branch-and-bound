@@ -228,14 +228,11 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
         && branches_created > branches_to_move_to_global_pool
         && branch_init.getBuildUpTo() < deep_to_share) {
         
-        //branch_init.increaseBuildUpTo();
         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
             branch_init.setValueAt(build_up_to + 1, ivm_tree.removeLastNodeAtRow(build_up_to + 1));
             globalPool.push(branch_init);
         }
-        branch_init.removeValue();
-        //branch_init.setValueAt(build_up_to + 1, -1);
-        //branch_init.setBuildUpTo(build_up_to);
+        branch_init.removeLastValue();
     }
 
     return 0;
@@ -259,35 +256,47 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
     double timeUp = 0;
     int updated = 0;
     int branches_created = 0;
+    if(branch_to_solve.getValueAt(branch_to_solve.getBuildUpTo()) == -1)
+        printf("DEBUG\n");
     intializeIVM_data(branch_to_solve, ivm_tree);
     while (theTreeHasMoreBranches() && !timeUp) {
         
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
-        /*printf("[B&B-%03d] ", rank);
+        /* printf("[B&B-%03d] ", rank);
         printCurrentSolution();
-        printf("\n");*/
+        printf("\n"); */
 
         if (!aLeafHasBeenReached() && theTreeHasMoreBranches()){
             if (improvesTheGrid(incumbent_s)){
                branches_created = branch(incumbent_s, currentLevel);
                 
                 /** Testing code. **/
-                if (globalPool.unsafe_size() < 60) {
+                if (globalPool.unsafe_size() < 10) {
                     int branches_to_move_to_global_pool = branches_created * percent_to_move;
                     if (rank > 0
                         && branches_created > branches_to_move_to_global_pool
                         && currentLevel < deep_to_share) {
                         
+                        
+                        if(branch_to_solve.getValueAt(branch_to_solve.getBuildUpTo()) == -1)
+                            printf("DEBUG\n");
+
                         for (int var = ivm_tree.getRootNode() + 1; var <= currentLevel; ++var)
                             branch_to_solve.setValueAt(var, incumbent_s.getVariable(var));
                         
-                        //branch_to_solve.increaseBuildUpTo();
                         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
                             branch_to_solve.setValueAt(currentLevel + 1, ivm_tree.removeLastNodeAtRow(currentLevel + 1));
+                            if(branch_to_solve.getValueAt(branch_to_solve.getBuildUpTo()) == -1)
+                                printf("DEBUG\n");
                             globalPool.push(branch_to_solve);
+                            branch_to_solve.removeLastValue();
                         }
-                        branch_to_solve.removeValue();
+                        for (int var = currentLevel; var > ivm_tree.getRootNode(); --var)
+                            branch_to_solve.removeLastValue();
+                        
+                        if(branch_to_solve.getValueAt(branch_to_solve.getBuildUpTo()) == -1)
+                            printf("DEBUG\n");
 
                         //branch_to_solve.setValueAt(currentLevel + 1, -1);
                         //branch_to_solve.setBuildUpTo(currentLevel);
@@ -581,7 +590,7 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
                     /**Add it to pending intervals. **/
                     if (rank == 0)
                         globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
-                    branch_to_split.removeValue();
+                    branch_to_split.removeLastValue();
                     branches_created++;
                 } else
                     prunedNodes++;
