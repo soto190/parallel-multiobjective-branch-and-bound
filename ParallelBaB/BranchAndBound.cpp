@@ -225,6 +225,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     /** Send intervals to global_pool. **/
     int branches_to_move_to_global_pool = branches_created * percent_to_move;
     if (rank > 0
+        && branches_to_move_to_global_pool > 0
         && branches_created > branches_to_move_to_global_pool
         && branch_init.getBuildUpTo() < deep_to_share) {
         
@@ -275,6 +276,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                 if (globalPool.unsafe_size() < 60) {
                     int branches_to_move_to_global_pool = branches_created * percent_to_move;
                     if (rank > 0
+                        && branches_to_move_to_global_pool > 0
                         && branches_created > branches_to_move_to_global_pool
                         && currentLevel < deep_to_share) {
                         
@@ -301,7 +303,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                         //branch_to_solve.setValueAt(currentLevel + 1, -1);
                         //branch_to_solve.setBuildUpTo(currentLevel);
                     }
-                } /** End testing code. **/
+               } /** End testing code. **/
             
             }else
                 prune(incumbent_s, currentLevel);
