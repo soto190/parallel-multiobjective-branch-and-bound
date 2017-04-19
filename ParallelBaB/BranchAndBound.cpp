@@ -541,7 +541,7 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
     problem.createDefaultSolution(solution);
     paretoContainer(100, 100, solution.getObjective(0), solution.getObjective(1));
     
-
+    
     Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(1, temp);
     temp.print();
@@ -549,44 +549,44 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
     updateParetoGrid(solution);
     updateParetoGrid(temp);
     
-	int row = 0;
-	int level_to_split = branch_to_split.getBuildUpTo() + 1;
-	int branches_created = 0;
+    int row = 0;
+    int split_level = branch_to_split.getBuildUpTo() + 1;
+    int branches_created = 0;
     int num_elements = problem.getTotalElements();
-	int map = 0;
-	int element = 0;
+    int map = 0;
+    int element = 0;
     int machine = 0;
     int toAdd = 0;
     //fjssp_data.reset(); /** This function call is not necesary because the structuras starts empty.**/
     
-	for (row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
+    for (row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
         map = branch_to_split.getValueAt(row);
         incumbent_s.setVariable(row, map);
         problem.evaluateDynamic(incumbent_s, fjssp_data, row);
-	}
-
-	for (element = 0; element < num_elements; ++element)
+    }
+    
+    for (element = 0; element < num_elements; ++element)
         if (fjssp_data.getNumberOfOperationsAllocatedInJob(element) < problem.getTimesValueIsRepeated(element))
             for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
-
-				toAdd = problem.getCodeMap(element, machine);
-				incumbent_s.setVariable(level_to_split, toAdd);
-				problem.evaluateDynamic(incumbent_s, fjssp_data, level_to_split);
-
-				if (improvesTheGrid(incumbent_s)) {
+                
+                toAdd = problem.getCodeMap(element, machine);
+                incumbent_s.setVariable(split_level, toAdd);
+                problem.evaluateDynamic(incumbent_s, fjssp_data, split_level);
+                
+                if (improvesTheGrid(incumbent_s)) {
                     /** Gets the branch to add. */
-                    branch_to_split.setValueAt(level_to_split, toAdd);
+                    branch_to_split.setValueAt(split_level, toAdd);
                     //branch_to_split.setBuildUpTo(level_to_split);
-
-					/**Add it to pending intervals. **/
+                    
+                    /**Add it to pending intervals. **/
                     if (rank == 0)
                         globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
                     branch_to_split.removeValue();
-					branches_created++;
-				} else
-					prunedNodes++;
-                problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, level_to_split);
-			}
+                    branches_created++;
+                } else
+                    prunedNodes++;
+                problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, split_level);
+            }
     
     //branch_to_split.setValueAt(level_to_split, -1);
     branches += branches_created;
