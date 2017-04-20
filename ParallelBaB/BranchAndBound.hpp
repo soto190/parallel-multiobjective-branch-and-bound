@@ -41,15 +41,8 @@
  *
  **/
 
-struct GlobalPool{
-    tbb::concurrent_queue<Interval> Queue;
-    unsigned long unsafe_size() const{ return Queue.unsafe_size(); }
-    bool empty() const { return Queue.empty(); }
-    void push(const Interval & interval){ Queue.push(interval);}
-    bool try_pop(Interval& interval) { if(!Queue.try_pop(interval)) return false; return true;}
-};
-
-
+const float to_share = 0.5f;
+const float deep_limit_share = 0.90f;
 
 class BranchAndBound: public tbb::task {
 
@@ -86,9 +79,6 @@ private:
     
     int branches_to_move;
     int deep_to_share;
-    
-    float percent_to_move = 0.5f;
-    float percent_deep = 0.85f;
     
     double totalTime;
     std::clock_t start;
@@ -173,7 +163,6 @@ private:
 
 public:
 	task* execute();
-	void setGlobalPool(tbb::concurrent_queue<Interval>& globalPool);
 	/*void operator()(const Interval& branch) {
 		this->solve(branch);
 	};

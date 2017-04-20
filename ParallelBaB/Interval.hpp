@@ -69,31 +69,36 @@ class ReadySubproblems {
     tbb::concurrent_queue<Interval> level[P_Low + 1];
 
 public:
-    void push( const Interval & subproblem ) {
+    void push(const Interval & subproblem) {
         level[subproblem.getPriority()].push(subproblem);
         //tbb::task::enqueue(*new(tbb::task::allocate_root()) RunWorkItem);
     }
     
-    bool try_pop(Interval& interval ) {
+    bool try_pop(Interval& interval) {
         // Scan queues in priority order for an item.
-        for( int i = P_High; i <= P_Low; ++i )
-            if(level[i].try_pop(interval) )
+        for(int i = P_High; i <= P_Low; ++i)
+            if(level[i].try_pop(interval))
                 return true;
         return false;
     }
     
-    unsigned long unsafe_size(){
+    unsigned long unsafe_size() const{
         unsigned long size_tmp = 0;
-        for( int i=P_High; i<=P_Low; ++i )
+        for(int i=P_High; i<=P_Low; ++i)
             size_tmp += level[i].unsafe_size();
         return size_tmp;
     }
     
-    bool empty(){
-        for( int i = P_High; i <= P_Low; ++i )
+    bool empty() const{
+        for(int i = P_High; i <= P_Low; ++i)
             if (!level[i].empty())
                 return false;
         return true;
+    }
+    
+    void print() const{
+        unsigned long total_size = unsafe_size();
+        printf("T:%4lu\t[H:%4lu\tM:%4lu\tL:%4lu\t]\n", total_size, level[P_High].unsafe_size(), level[P_Medium].unsafe_size(), level[P_Low].unsafe_size());
     }
 };
 #endif /* Interval_hpp */

@@ -303,8 +303,8 @@ public:
 	BucketState getStateOf(int x, int y) const;
     
 	void setStateOf(BucketState state, int x, int y);
-	void printGridSize();
-	void printStates();
+	void printGridSize() const;
+	void printStates() const;
 
 	double getMaxIn(int dimension);
 

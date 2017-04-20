@@ -19,10 +19,8 @@ HandlerContainer paretoContainer;
 
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
     rank(toCopy.getRank()),
-//globalPool(toCopy.getGlobalPool()),
     problem(toCopy.getProblem()),
     fjssp_data(toCopy.getFJSSPdata()),
-//    paretoContainer(toCopy.getParetoGrid()),
     incumbent_s(toCopy.getIncumbentSolution()),
     ivm_tree(toCopy.getIVMTree()),
     currentLevel(toCopy.getCurrentLevel()),
@@ -41,8 +39,8 @@ BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
         outputFile = new char[255];
         summarizeFile = new char[255];
         
-        branches_to_move = problem.getUpperBound(0) * percent_to_move;
-        deep_to_share = totalLevels * percent_deep;
+        branches_to_move = problem.getUpperBound(0) * to_share;
+        deep_to_share = totalLevels * deep_limit_share;
     
         std::strcpy(outputFile, toCopy.outputFile);
         std::strcpy(summarizeFile, toCopy.summarizeFile);
@@ -72,8 +70,8 @@ totalTime(0){
     t1 = std::chrono::high_resolution_clock::now();
     t2 = std::chrono::high_resolution_clock::now();
     
-    branches_to_move = problem.getUpperBound(0) * percent_to_move;
-    deep_to_share = totalLevels * percent_deep;
+    branches_to_move = problem.getUpperBound(0) * to_share;
+    deep_to_share = totalLevels * deep_limit_share;
     
     int numberOfObjectives = problem.getNumberOfObjectives();
     int numberOfVariables = problem.getNumberOfVariables();
@@ -130,8 +128,8 @@ BranchAndBound& BranchAndBound::operator()(int rank_new, const ProblemFJSSP &pro
     ivm_tree(problem.getNumberOfVariables(), problem.getUpperBound(0) + 1);
     ivm_tree.setOwner(rank);
     
-    branches_to_move = problem.getUpperBound(0) * percent_to_move;
-    deep_to_share = totalLevels * percent_deep;
+    branches_to_move = problem.getUpperBound(0) * to_share;
+    deep_to_share = totalLevels * deep_limit_share;
     
     outputFile = new char[255];
     summarizeFile = new char[255];
@@ -217,7 +215,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     int branches_created = branch(incumbent_s, build_up_to);
     
     /** Send intervals to global_pool. **/
-    int branches_to_move_to_global_pool = branches_created * percent_to_move;
+    int branches_to_move_to_global_pool = branches_created * to_share;
     if (rank > 0
         && branches_to_move_to_global_pool > 0
         && branches_created > branches_to_move_to_global_pool
@@ -266,8 +264,8 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                branches_created = branch(incumbent_s, currentLevel);
                 
                 /** Testing code. **/
-                if (globalPool.unsafe_size() < 60) {
-                    int branches_to_move_to_global_pool = branches_created * percent_to_move;
+                if (globalPool.unsafe_size() < 120) {
+                    int branches_to_move_to_global_pool = branches_created * to_share;
                     if (rank > 0
                         && branches_to_move_to_global_pool > 0
                         && branches_created > branches_to_move_to_global_pool
