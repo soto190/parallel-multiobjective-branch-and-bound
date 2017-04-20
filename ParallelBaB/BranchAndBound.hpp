@@ -70,8 +70,6 @@ private:
     Solution bestObjectivesFound;
     IVMTree ivm_tree;
     Interval interval_to_solve;
-    //GlobalPool& globalPool;
-    /*HandlerContainer& paretoContainer;*/
     std::vector<Solution> paretoFront; /** paretofFront. **/
     
     char * outputFile;

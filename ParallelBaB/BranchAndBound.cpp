@@ -271,16 +271,16 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                         && branches_created > branches_to_move_to_global_pool
                         && currentLevel < deep_to_share) {
                         
-                        for (int var = ivm_tree.getRootNode() + 1; var <= currentLevel; ++var)
-                            branch_to_solve.setValueAt(var, incumbent_s.getVariable(var));
-                        
-                        for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
-                            branch_to_solve.setValueAt(currentLevel + 1, ivm_tree.removeLastNodeAtRow(currentLevel + 1));
-                            globalPool.push(branch_to_solve);
-                            branch_to_solve.removeLastValue();
+                        if(ivm_tree.getNumberOfNodesAt(ivm_tree.getRootNode() + 1) > 1){
+                            
+                            for (int moved = ivm_tree.getNumberOfNodesAt(ivm_tree.getRootNode() + 1); moved > 1; --moved) {
+                                branch_to_solve.setValueAt(ivm_tree.getRootNode() + 1, ivm_tree.removeLastNodeAtRow(ivm_tree.getRootNode() + 1));
+                                globalPool.push(branch_to_solve);
+                                branch_to_solve.removeLastValue();
+                            }
+                            //for (int var = currentLevel; var > ivm_tree.getRootNode(); --var)
+                            //branch_to_solve.removeLastValue();
                         }
-                        for (int var = currentLevel; var > ivm_tree.getRootNode(); --var)
-                            branch_to_solve.removeLastValue();
                     }
                } /** End testing code. **/
             
