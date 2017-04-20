@@ -10,6 +10,7 @@
 #define Interval_hpp
 
 #include <stdio.h>
+#include "tbb/concurrent_queue.h"
 
 /**
  *
@@ -18,34 +19,81 @@
  * level indicates the level of the interval.
  *
  **/
+extern const float low_size;
+extern const float high_size;
+
+enum Priority {
+    P_High,     /** Deeper branches.        **/
+    P_Medium,   /** Branches at middle.     **/
+    P_Low       /** Brancheas near to root. **/
+};
 
 class Interval {
 private:
     int build_up_to = -1;
     int * interval;
     int max_size = 0;
-
+    Priority priority;
+    
+    int low;
+    int high;
 public:
-	
+    
     Interval();
-	Interval(int max_size);
-	Interval(const Interval &toCopy);
-	~Interval();
-
-	Interval& operator=(const Interval& toCopy);
-	Interval& operator()(int size);
+    Interval(int max_size);
+    Interval(const Interval &toCopy);
+    ~Interval();
+    
+    Interval& operator=(const Interval& toCopy);
+    Interval& operator()(int size);
     
     int increaseBuildUpTo();
     int getSize() const;
     int getBuildUpTo() const;
     int getValueAt(int position) const;
+    int getLowSize() const;
+    int getHighSize() const;
+    
+    Priority getPriority() const;
     
     void setBuildUpTo(int newBuild);
     void setSize(int size);
     void setValueAt(int index, int value);
-
+    
     void removeLastValue();
-	void print() const;
+    void print() const;
 };
 
+class ReadySubproblems {
+    // One queue for each priority level
+    tbb::concurrent_queue<Interval> level[P_Low + 1];
+
+public:
+    void push( const Interval & subproblem ) {
+        level[subproblem.getPriority()].push(subproblem);
+        //tbb::task::enqueue(*new(tbb::task::allocate_root()) RunWorkItem);
+    }
+    
+    bool try_pop(Interval& interval ) {
+        // Scan queues in priority order for an item.
+        for( int i = P_High; i <= P_Low; ++i )
+            if(level[i].try_pop(interval) )
+                return true;
+        return false;
+    }
+    
+    unsigned long unsafe_size(){
+        unsigned long size_tmp = 0;
+        for( int i=P_High; i<=P_Low; ++i )
+            size_tmp += level[i].unsafe_size();
+        return size_tmp;
+    }
+    
+    bool empty(){
+        for( int i = P_High; i <= P_Low; ++i )
+            if (!level[i].empty())
+                return false;
+        return true;
+    }
+};
 #endif /* Interval_hpp */

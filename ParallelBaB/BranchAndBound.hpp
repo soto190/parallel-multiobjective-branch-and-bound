@@ -35,19 +35,20 @@
 //#include <memory.h> /** For the Ehecatl wich uses GCC 4.4.7, this activates the shared_ptr. **/
 /**
  *
- * If Data Race in Queu.tryPop(interval); read the next lines
+ * If Data Race in tbb::concurrent_queue<interval>; read the next lines
  * From https://software.intel.com/en-us/forums/intel-threading-building-blocks/topic/295293 :
  *   "There is internal synchronization in TBB that a tool can not recognize as correct. E.g. some common synchronization patterns (for example, test and test and set) might have benigndata races.Alsotools usually can not recognize synchronization that does not use "standard" primitives (such as pthread_mutex) and instead is uses carefully designed protocols based on atomic operations." - Alexey Kukanov (Intel)  Fri, 07/24/2009 - 05:20
  *
  **/
-/*struct GlobalPool{
+
+struct GlobalPool{
     tbb::concurrent_queue<Interval> Queue;
     unsigned long unsafe_size() const{ return Queue.unsafe_size(); }
     bool empty() const { return Queue.empty(); }
     void push(const Interval & interval){ Queue.push(interval);}
     bool try_pop(Interval& interval) { if(!Queue.try_pop(interval)) return false; return true;}
 };
-*/
+
 
 
 class BranchAndBound: public tbb::task {
@@ -76,7 +77,7 @@ private:
     Solution bestObjectivesFound;
     IVMTree ivm_tree;
     Interval interval_to_solve;
-    //GlobalPool& globalPool; /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
+    //GlobalPool& globalPool;
     /*HandlerContainer& paretoContainer;*/
     std::vector<Solution> paretoFront; /** paretofFront. **/
     
@@ -134,8 +135,6 @@ public:
 
     const IVMTree& getIVMTree() const;
     const Interval& getStartingInterval() const;
-    //GlobalPool& getGlobalPool() const;
-    //HandlerContainer& getParetoGrid() const;
     const ProblemFJSSP& getProblem() const;
     const Solution& getIncumbentSolution() const;
     const FJSSPdata& getFJSSPdata() const;
@@ -146,10 +145,7 @@ public:
     int setSummarizeFile(const char * outputFile);
 	int saveParetoFront();
 	int saveSummarize();
-	
-    //void setParetoContainer(HandlerContainer & paretoContainer);
-    //HandlerContainer& getParetoContainer();
-    
+
     void printDebug();
     
 private:

@@ -13,7 +13,8 @@
  *
  **/
 #include "BranchAndBound.hpp"
-tbb::concurrent_queue<Interval> globalPool;
+
+ReadySubproblems globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 HandlerContainer paretoContainer;
 
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
@@ -47,52 +48,48 @@ BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
         std::strcpy(summarizeFile, toCopy.summarizeFile);
 }
 
-BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, const Interval & branch /*, GlobalPool &globa_pool, HandlerContainer& pareto_container*/):
-    rank(rank),
-    problem(problemToCopy),
-
-    fjssp_data(problemToCopy.getNumberOfJobs(),
-               problemToCopy.getNumberOfOperations(),
-               problemToCopy.getNumberOfMachines()),
-
-//globalPool(globa_pool),
-    interval_to_solve(branch),
-//paretoContainer(pareto_container),
-    currentLevel(0),
-    totalLevels(problemToCopy.getNumberOfVariables()),
-    totalNodes(0),
-    branches(0),
-    exploredNodes(0),
-    reachedLeaves(0),
-    unexploredNodes(0),
-    prunedNodes(0),
-    callsToPrune(0),
-    callsToBranch(0),
-    totalUpdatesInLowerBound(0),
-    totalTime(0){
-        
-        start = std::clock();
-        t1 = std::chrono::high_resolution_clock::now();
-        t2 = std::chrono::high_resolution_clock::now();
-        
-        branches_to_move = problem.getUpperBound(0) * percent_to_move;
-        deep_to_share = totalLevels * percent_deep;
-        
-        int numberOfObjectives = problem.getNumberOfObjectives();
-        int numberOfVariables = problem.getNumberOfVariables();
-        
-        totalNodes.fetch_and_store(computeTotalNodes(numberOfVariables));
-        
-        bestObjectivesFound(numberOfObjectives, numberOfVariables);
-        incumbent_s(numberOfObjectives, numberOfVariables);
-        problem.createDefaultSolution(incumbent_s);
-        
-        int nObj = 0;
-        for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-            bestObjectivesFound.setObjective(nObj, incumbent_s.getObjective(nObj));
-        
-        ivm_tree(problem.getNumberOfVariables(), problem.getUpperBound(0) + 1);
-        ivm_tree.setOwner(rank);
+BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, const Interval & branch):
+rank(rank),
+problem(problemToCopy),
+fjssp_data(problemToCopy.getNumberOfJobs(),
+           problemToCopy.getNumberOfOperations(),
+           problemToCopy.getNumberOfMachines()),
+interval_to_solve(branch),
+currentLevel(0),
+totalLevels(problemToCopy.getNumberOfVariables()),
+totalNodes(0),
+branches(0),
+exploredNodes(0),
+reachedLeaves(0),
+unexploredNodes(0),
+prunedNodes(0),
+callsToPrune(0),
+callsToBranch(0),
+totalUpdatesInLowerBound(0),
+totalTime(0){
+    
+    start = std::clock();
+    t1 = std::chrono::high_resolution_clock::now();
+    t2 = std::chrono::high_resolution_clock::now();
+    
+    branches_to_move = problem.getUpperBound(0) * percent_to_move;
+    deep_to_share = totalLevels * percent_deep;
+    
+    int numberOfObjectives = problem.getNumberOfObjectives();
+    int numberOfVariables = problem.getNumberOfVariables();
+    
+    totalNodes.fetch_and_store(computeTotalNodes(numberOfVariables));
+    
+    bestObjectivesFound(numberOfObjectives, numberOfVariables);
+    incumbent_s(numberOfObjectives, numberOfVariables);
+    problem.createDefaultSolution(incumbent_s);
+    
+    int nObj = 0;
+    for (nObj = 0; nObj < numberOfObjectives; ++nObj)
+        bestObjectivesFound.setObjective(nObj, incumbent_s.getObjective(nObj));
+    
+    ivm_tree(problem.getNumberOfVariables(), problem.getUpperBound(0) + 1);
+    ivm_tree.setOwner(rank);
 }
 
 BranchAndBound& BranchAndBound::operator()(int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch){
@@ -176,9 +173,6 @@ void BranchAndBound::initialize(int starts_tree) {
 	for (nObj = 0; nObj < numberOfObjectives; ++nObj)
 		bestObjectivesFound.setObjective(nObj, incumbent_s.getObjective(nObj));
 
-//    updateParetoGrid(bestInObj2);
-//    updateParetoGrid(incumbent_s);
-
 }
 
 int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
@@ -257,8 +251,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
     double timeUp = 0;
     int updated = 0;
     int branches_created = 0;
-    if(branch_to_solve.getValueAt(branch_to_solve.getBuildUpTo()) == -1)
-        printf("DEBUG\n");
+
     intializeIVM_data(branch_to_solve, ivm_tree);
     while (theTreeHasMoreBranches() && !timeUp) {
         
@@ -280,28 +273,16 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                         && branches_created > branches_to_move_to_global_pool
                         && currentLevel < deep_to_share) {
                         
-                        
-                        if(branch_to_solve.getValueAt(branch_to_solve.getBuildUpTo()) == -1)
-                            printf("DEBUG\n");
-
                         for (int var = ivm_tree.getRootNode() + 1; var <= currentLevel; ++var)
                             branch_to_solve.setValueAt(var, incumbent_s.getVariable(var));
                         
                         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
                             branch_to_solve.setValueAt(currentLevel + 1, ivm_tree.removeLastNodeAtRow(currentLevel + 1));
-                            if(branch_to_solve.getValueAt(branch_to_solve.getBuildUpTo()) == -1)
-                                printf("DEBUG\n");
                             globalPool.push(branch_to_solve);
                             branch_to_solve.removeLastValue();
                         }
                         for (int var = currentLevel; var > ivm_tree.getRootNode(); --var)
                             branch_to_solve.removeLastValue();
-                        
-                        if(branch_to_solve.getValueAt(branch_to_solve.getBuildUpTo()) == -1)
-                            printf("DEBUG\n");
-
-                        //branch_to_solve.setValueAt(currentLevel + 1, -1);
-                        //branch_to_solve.setBuildUpTo(currentLevel);
                     }
                } /** End testing code. **/
             
@@ -548,10 +529,10 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
  *  NOTE: Remember to avoid to split the intervals in the last levels.
  **/
 void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
+    
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
     paretoContainer(100, 100, solution.getObjective(0), solution.getObjective(1));
-    
     
     Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(1, temp);
@@ -587,8 +568,6 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
                 if (improvesTheGrid(incumbent_s)) {
                     /** Gets the branch to add. */
                     branch_to_split.setValueAt(split_level, toAdd);
-                    //branch_to_split.setBuildUpTo(level_to_split);
-                    
                     /**Add it to pending intervals. **/
                     if (rank == 0)
                         globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
@@ -599,7 +578,6 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
                 problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, split_level);
             }
     
-    //branch_to_split.setValueAt(level_to_split, -1);
     branches += branches_created;
 }
 
@@ -710,10 +688,6 @@ const IVMTree& BranchAndBound::getIVMTree() const { return ivm_tree;}
 const Interval& BranchAndBound::getStartingInterval() const { return interval_to_solve;}
 const ProblemFJSSP& BranchAndBound::getProblem() const { return problem;}
 const FJSSPdata& BranchAndBound::getFJSSPdata() const { return fjssp_data;}
-
-//HandlerContainer& BranchAndBound::getParetoGrid() const { return paretoContainer;}
-//HandlerContainer& BranchAndBound::getParetoContainer() {return paretoContainer;}
-//GlobalPool& BranchAndBound::getGlobalPool() const { return globalPool;}
 
 std::vector<Solution>& BranchAndBound::getParetoFront(){
     paretoFront = paretoContainer.getParetoFront();

@@ -9,7 +9,8 @@
 #include "Interval.hpp"
 
 
-
+const float low_priority = 0.3f;
+const float high_priority = 0.5f;
 /**
  *
  * size is equals to the number of variables.
@@ -18,18 +19,26 @@
 Interval::Interval():
 max_size(1),
 build_up_to(-1),
-interval(nullptr){}
+interval(nullptr),
+low(0),
+high(0),
+priority(Priority::P_Low){}
 
 Interval::Interval(int max_size):
 max_size(max_size),
 build_up_to(-1),
-interval(new int[max_size]){
-}
+interval(new int[max_size]),
+low(max_size * low_priority),
+high(max_size * high_priority),
+priority(Priority::P_Low){}
 
 Interval::Interval(const Interval &toCopy):
 max_size(toCopy.getSize()),
 interval(new int[toCopy.getSize()]),
-build_up_to(toCopy.getBuildUpTo()){
+build_up_to(toCopy.getBuildUpTo()),
+priority(toCopy.getPriority()),
+low(toCopy.getLowSize()),
+high(toCopy.getHighSize()){
     
     int index = 0;
     for (index = 0; index < max_size; ++index)
@@ -41,6 +50,8 @@ Interval& Interval::operator()(int size){
     
     build_up_to = -1;
     max_size = size;
+    priority = Priority::P_Low;
+    
     
     int index = 0;
     
@@ -58,6 +69,9 @@ Interval& Interval::operator=(const Interval &toCopy){
     
     max_size = toCopy.getSize();
     build_up_to = toCopy.getBuildUpTo();
+    priority = toCopy.getPriority();
+    low = toCopy.getLowSize();
+    high = toCopy.getHighSize();
     
     if(interval != nullptr)
         delete [] interval; /** Freeing previously used memory. **/
@@ -77,9 +91,22 @@ Interval::~Interval(){
 int Interval::getSize() const{ return  max_size;}
 int Interval::getBuildUpTo() const{ return build_up_to;}
 int Interval::getValueAt(int position) const{ return interval[position];}
+Priority Interval::getPriority() const {return priority;}
+int Interval::getLowSize() const{return low;}
+int Interval::getHighSize() const{return high;}
 
 void Interval::setSize(int size){ max_size = size; }
-void Interval::setValueAt(int index, int value){ interval[index] = value; build_up_to = index; }
+void Interval::setValueAt(int index, int value){
+    interval[index] = value;
+    build_up_to = index;
+    
+    if (build_up_to >= high)
+        priority = Priority::P_High;
+    else if (build_up_to <= low)
+        priority = Priority::P_Low;
+    else
+        priority = Priority::P_Medium;
+}
 void Interval::setBuildUpTo(int newBuild){ build_up_to = newBuild; }
 void Interval::removeLastValue(){interval[build_up_to] = -1; build_up_to--;}
 int Interval::increaseBuildUpTo(){ return build_up_to++; }
