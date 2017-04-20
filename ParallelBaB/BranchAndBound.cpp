@@ -253,6 +253,19 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
     intializeIVM_data(branch_to_solve, ivm_tree);
     while (theTreeHasMoreBranches() && !timeUp) {
         
+        /** Testing code. **/
+        if (globalPool.unsafe_size() < 120)
+            if (rank > 0
+                && currentLevel < deep_to_share) {
+                int next_row = ivm_tree.getRootNode() + 1;
+                while(ivm_tree.getNumberOfNodesAt(next_row) > 1){
+                    branch_to_solve.setValueAt(next_row, ivm_tree.removeLastNodeAtRow(next_row));
+                    globalPool.push(branch_to_solve);
+                    branch_to_solve.removeLastValue();
+                }
+            }
+         /** End testing code. **/
+        
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
         /* printf("[B&B-%03d] ", rank);
@@ -262,28 +275,6 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         if (!aLeafHasBeenReached() && theTreeHasMoreBranches()){
             if (improvesTheGrid(incumbent_s)){
                branches_created = branch(incumbent_s, currentLevel);
-                
-                /** Testing code. **/
-                if (globalPool.unsafe_size() < 120) {
-                    int branches_to_move_to_global_pool = branches_created * to_share;
-                    if (rank > 0
-                        && branches_to_move_to_global_pool > 0
-                        && branches_created > branches_to_move_to_global_pool
-                        && currentLevel < deep_to_share) {
-                        
-                        if(ivm_tree.getNumberOfNodesAt(ivm_tree.getRootNode() + 1) > 1){
-                            
-                            for (int moved = ivm_tree.getNumberOfNodesAt(ivm_tree.getRootNode() + 1); moved > 1; --moved) {
-                                branch_to_solve.setValueAt(ivm_tree.getRootNode() + 1, ivm_tree.removeLastNodeAtRow(ivm_tree.getRootNode() + 1));
-                                globalPool.push(branch_to_solve);
-                                branch_to_solve.removeLastValue();
-                            }
-                            //for (int var = currentLevel; var > ivm_tree.getRootNode(); --var)
-                            //branch_to_solve.removeLastValue();
-                        }
-                    }
-               } /** End testing code. **/
-            
             }else
                 prune(incumbent_s, currentLevel);
         }else {
