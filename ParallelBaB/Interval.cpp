@@ -108,12 +108,18 @@ void Interval::setValueAt(int index, int value){
     else
         priority = Priority::P_Medium;
 }
+
 void Interval::setBuildUpTo(int newBuild){ build_up_to = newBuild; }
 void Interval::removeLastValue(){interval[build_up_to] = -1; build_up_to--;}
 int Interval::increaseBuildUpTo(){ return build_up_to++; }
 
+bool Interval::verify() const{
+    for (int in = build_up_to; in >= 0; --in)
+        if (interval[in] == -1) return false;
+    return true;
+}
+
 void Interval::print() const{
-    
     int index_var = 0;
     char sep = '-';
     
@@ -125,5 +131,4 @@ void Interval::print() const{
         printf("%3c ", sep);
     
     printf("]\n");
-    
 }

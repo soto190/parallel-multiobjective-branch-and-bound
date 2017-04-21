@@ -59,14 +59,14 @@ public:
     void setBuildUpTo(int newBuild);
     void setSize(int size);
     void setValueAt(int index, int value);
-    
     void setLowPriority();
     void setHighPriority();
     void setMediumPriority();
     
-    
     void removeLastValue();
     void print() const;
+    
+    bool verify() const;
 };
 
 class ReadySubproblems {

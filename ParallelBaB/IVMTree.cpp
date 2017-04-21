@@ -154,7 +154,7 @@ IVMTree::~IVMTree() {
     delete[] ivm;
 }
 
-void IVMTree::setRootRow(int node){ root_row = node; }
+void IVMTree::setRootRow(int row){ root_row = row; }
 void IVMTree::setIVMValueAt(int row, int col, int value){ ivm[row][col] = value; }
 void IVMTree::setActiveNodeAt(int row, int value){ active_column[row] = value; }
 void IVMTree::setStartingRow(int row){ starting_row = row; }
@@ -284,7 +284,7 @@ void IVMTree::print() {
         else
             printf(" %3d ", ivm[r][active_column[r]]);
         
-        /** Max nodes in level. **/
+        /** Max nodes in row. **/
         printf(" %3d | ", n_nodes_at_row[r]);
         
         /** The matrix. **/
@@ -294,11 +294,13 @@ void IVMTree::print() {
             else
                 printf("%3d", ivm[r][c]);
         
-        /** The active level. **/
-        if (active_row == r)
-            printf("|*\n");
-        else
-            printf("|\n");
+        /** The active row. **/
+        printf("|");
+        if (r == root_row)
+            printf("r");
+        if (r == active_row)
+            printf("*");
+        printf("\n");
     }
 }
 

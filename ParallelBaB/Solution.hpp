@@ -39,6 +39,7 @@ public:
     
     int setVariable(int index, int value);
     void setObjective(int index, double value);
+    void setBuildUpTo(int index);
     
     double getObjective(int nObjective) const;
     int getVariable(int index) const;

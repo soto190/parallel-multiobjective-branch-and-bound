@@ -146,6 +146,8 @@ Solution::~Solution() {
 	delete[] execTime;
 }
 
+
+void Solution::setBuildUpTo(int index){build_up_to = index;}
 void Solution::setObjective(int index, double value) { objective[index] = value; }
 int Solution::setVariable(int index, int value) {
     int last_value = variable[index];
