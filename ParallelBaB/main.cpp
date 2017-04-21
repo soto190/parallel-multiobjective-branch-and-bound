@@ -87,37 +87,16 @@ int main(int argc, const char * argv[]) {
 	 **/
 	std::string outputFile = argv[arg_output] + splited[0] + ".csv";
 	std::string summarizeFile = argv[arg_output] + splited[0] + ".txt";
-    
-    
-      /*
-       
-            Solution solution_test (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-            //    4    1    5    3    9   12   11   13   15    5   13   16
-            solution_test.setVariable(0, 4);
-            solution_test.setVariable(1, 1);
-            solution_test.setVariable(2, 5);
-            solution_test.setVariable(3, 3);
-            solution_test.setVariable(4, 9);
-            solution_test.setVariable(5, 12);
-            solution_test.setVariable(6, 11);
-            solution_test.setVariable(7, 13);
-            solution_test.setVariable(8, 15);
-            solution_test.setVariable(9, 5);
-            solution_test.setVariable(10, 13);
-            solution_test.setVariable(11, 16);
-            problem.printSchedule(solution_test);
-        +*/
+
 
     try {
         Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
         problem.createDefaultSolution(solution);
-        /*GlobalPool global_pool;*/
-        /*HandlerContainer global_grid(100, 100, solution.getObjective(0), solution.getObjective(1));*/
         
         int number_of_threads = stoi(argv[arg_num_threads]);//tbb::task_scheduler_init::default_num_threads();
 		tbb::task_scheduler_init init(number_of_threads);
 
-		ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(problem/*, global_pool, global_grid*/);
+		ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(problem);
 		pbb->setNumberOfThreads(number_of_threads);
 		pbb->setParetoFrontFile(outputFile.c_str());
 		pbb->setSummarizeFile(summarizeFile.c_str());

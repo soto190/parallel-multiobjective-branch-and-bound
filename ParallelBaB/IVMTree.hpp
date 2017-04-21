@@ -18,7 +18,7 @@ private:
 	int cols;
 	int whoIam = -1;
     int ** ivm;
-    int * active_node;
+    int * active_column;
     int * start_exploration; /** This is not used. **/
     int * end_exploration; /** This is not used. **/
     int active_row;
@@ -51,7 +51,7 @@ public:
     int getRootNode() const;
     int getNumberOfNodesAt(int row) const;
     int getIVMValue(int row, int col) const;
-    int getActiveNode(int row) const;
+    int getActiveColAt(int row) const;
     int getActiveRow() const;
     int getLastNodeAtRow(int row) const;
     int getStartingRow() const;

@@ -8,9 +8,6 @@
 
 #include "Interval.hpp"
 
-
-const float low_priority = 0.3f;
-const float high_priority = 0.5f;
 /**
  *
  * size is equals to the number of variables.
@@ -95,14 +92,18 @@ Priority Interval::getPriority() const {return priority;}
 int Interval::getLowSize() const{return low;}
 int Interval::getHighSize() const{return high;}
 
+void Interval::setLowPriority(){priority = Priority::P_Low;}
+void Interval::setHighPriority(){priority = Priority::P_High;}
+void Interval::setMediumPriority(){priority = Priority::P_Medium;}
+
 void Interval::setSize(int size){ max_size = size; }
 void Interval::setValueAt(int index, int value){
     interval[index] = value;
     build_up_to = index;
     
-    if (build_up_to >= high)
+    if (build_up_to <= high)
         priority = Priority::P_High;
-    else if (build_up_to <= low)
+    else if (build_up_to >= low)
         priority = Priority::P_Low;
     else
         priority = Priority::P_Medium;

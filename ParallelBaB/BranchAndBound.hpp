@@ -42,7 +42,7 @@
  **/
 
 const float to_share = 0.5f;
-const float deep_limit_share = 0.90f;
+const float deep_limit_share = 0.50f;
 
 class BranchAndBound: public tbb::task {
 
@@ -144,6 +144,7 @@ private:
 	unsigned long computeTotalNodes(unsigned long totalVariables) const;
 	unsigned long permut(unsigned long n, unsigned long i) const;
 
+    void shareWorkAndSendToGlobalPool(Interval& interval);
 	/** Grid functions. **/
 	int improvesTheGrid(const Solution & solution) const;
 	int updateParetoGrid(const Solution & solution);

@@ -19,8 +19,8 @@
  * level indicates the level of the interval.
  *
  **/
-extern const float low_size;
-extern const float high_size;
+const float low_priority  = 0.666f;
+const float high_priority = 0.333f;
 
 enum Priority {
     P_High,     /** Deeper branches.        **/
@@ -60,6 +60,11 @@ public:
     void setSize(int size);
     void setValueAt(int index, int value);
     
+    void setLowPriority();
+    void setHighPriority();
+    void setMediumPriority();
+    
+    
     void removeLastValue();
     void print() const;
 };
@@ -67,14 +72,14 @@ public:
 class ReadySubproblems {
     // One queue for each priority level
     tbb::concurrent_queue<Interval> level[P_Low + 1];
-
+    
 public:
     void push(const Interval & subproblem) {
         level[subproblem.getPriority()].push(subproblem);
         //tbb::task::enqueue(*new(tbb::task::allocate_root()) RunWorkItem);
     }
     
-    bool try_pop(Interval& interval) {
+    bool try_pop(Interval & interval) {
         // Scan queues in priority order for an item.
         for(int i = P_High; i <= P_Low; ++i)
             if(level[i].try_pop(interval))
@@ -84,7 +89,7 @@ public:
     
     unsigned long unsafe_size() const{
         unsigned long size_tmp = 0;
-        for(int i=P_High; i<=P_Low; ++i)
+        for(int i = P_High; i <= P_Low; ++i)
             size_tmp += level[i].unsafe_size();
         return size_tmp;
     }

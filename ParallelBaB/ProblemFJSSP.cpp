@@ -523,6 +523,8 @@ void ProblemFJSSP::createDefaultSolution(Solution & solution){
     int map = 0;
     int machine = 0;
     
+    FJSSPdata fjsspd(totalJobs, totalOperations, totalMachines);
+    
     for (job = 0; job < totalJobs; ++job)
         for (operation = 0; operation < numberOfOperationsInJob[job]; ++operation){
             map = jobMachineToMap[job][machine];

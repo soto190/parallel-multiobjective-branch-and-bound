@@ -336,17 +336,17 @@ public:
     
         for (machine = 0; machine < n_machines; ++machine) {
             printf("M%d  |", machine);
-            for (time = 0; time < makespan; ++time)
+            for (time = 0; time <= makespan; ++time)
                 printf("%3c", gantt[machine][time]);
             printf("| %3d %3d\n", workload_in_machine[machine], time_on_machine[machine]);
         }
         printf("----");
-        for (time = 0; time < makespan; ++time)
+        for (time = 0; time <= makespan; ++time)
             printf("---");
         printf("--\n");
         
         printf("Time:");
-        for (time = 0; time < makespan; ++time)
+        for (time = 0; time <= makespan; ++time)
             printf("%3d", (time));
         printf("\n");
     }

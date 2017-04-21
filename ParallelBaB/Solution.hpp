@@ -18,7 +18,6 @@ enum DominanceRelation {
 //template <class TypeVariable>
 class Solution{
     
-    
 private:
     double * objective;
     int * variable;

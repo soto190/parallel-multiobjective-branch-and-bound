@@ -248,41 +248,28 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
 
     double timeUp = 0;
     int updated = 0;
-    int branches_created = 0;
 
     intializeIVM_data(branch_to_solve, ivm_tree);
     while (theTreeHasMoreBranches() && !timeUp) {
-        
-        /** Testing code. **/
-        if (globalPool.unsafe_size() < 120)
-            if (rank > 0
-                && currentLevel < deep_to_share) {
-                int next_row = ivm_tree.getRootNode() + 1;
-                while(ivm_tree.getNumberOfNodesAt(next_row) > 1){
-                    branch_to_solve.setValueAt(next_row, ivm_tree.removeLastNodeAtRow(next_row));
-                    globalPool.push(branch_to_solve);
-                    branch_to_solve.removeLastValue();
-                }
-            }
-         /** End testing code. **/
-        
+    
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
-        /* printf("[B&B-%03d] ", rank);
-        printCurrentSolution();
-        printf("\n"); */
+      
+        /** Testing code. Sharing part of the IVM tree to the global pool.**/
+        shareWorkAndSendToGlobalPool(branch_to_solve);
+        /** End testing code. **/
 
         if (!aLeafHasBeenReached() && theTreeHasMoreBranches()){
-            if (improvesTheGrid(incumbent_s)){
-               branches_created = branch(incumbent_s, currentLevel);
-            }else
+            if (improvesTheGrid(incumbent_s))
+               branch(incumbent_s, currentLevel);
+            else
                 prune(incumbent_s, currentLevel);
         }else {
             reachedLeaves++;
             updated = updateParetoGrid(incumbent_s);
             totalUpdatesInLowerBound += updated;
             
-           /* if (updated) {
+            /*if (updated) {
                 printf("[B&B-%03d] ", rank);
                 printCurrentSolution();
                 printf(" + [%6lu] \n", paretoContainer.getSize());
@@ -290,7 +277,6 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             /** Go back and prepare to remove the evaluations. **/
             ivm_tree.pruneActiveNode();
         }
-        
         
         /** If the branching operator doesnt creates branches or the prune
          function was called then we need to remove the evaluations.
@@ -303,11 +289,9 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
     t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
     totalTime = time_span.count();
-
 }
 
 double BranchAndBound::getTotalTime() {
-
 	t2 = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<float> time_span = std::chrono::duration_cast<
 			std::chrono::milliseconds>(t2 - t1);
@@ -331,7 +315,7 @@ int BranchAndBound::explore(Solution & solution) {
  * Modifies the variable at built_up_to + 1 of the solution.
  *
  * TODO: When branching insert some branches in the global pool.
- * TODO: When branching consider copy the last row.
+ * TODO: When branching consider copy the root_row + 1.
  *
  */
 int BranchAndBound::branch(Solution& solution, int currentLevel) {
@@ -421,22 +405,28 @@ void BranchAndBound::prune(Solution & solution, int currentLevel) {
 	ivm_tree.pruneActiveNode();
 }
 
-int BranchAndBound::aLeafHasBeenReached() const {
-	if (currentLevel == totalLevels)
-		return 1;
-	return 0;
+int BranchAndBound::aLeafHasBeenReached() const { return (currentLevel == totalLevels)?1:0;}
+
+void BranchAndBound::shareWorkAndSendToGlobalPool(Interval &branch_to_solve){
+    /** Testing code. **/
+    if (globalPool.unsafe_size() < 120)
+        if (rank > 0
+            && currentLevel < deep_to_share) {
+            int next_row = ivm_tree.getRootNode() + 1;
+            while(ivm_tree.getNumberOfNodesAt(next_row) > 1){
+                branch_to_solve.setValueAt(next_row, ivm_tree.removeLastNodeAtRow(next_row));
+                globalPool.push(branch_to_solve);
+                branch_to_solve.removeLastValue();
+            }
+        }
+    /** End testing code. **/
 }
 
 /**
  * Check if the ivm has pending branches to be explored.
  */
-int BranchAndBound::theTreeHasMoreBranches() const {
-	return ivm_tree.hasPendingBranches();
-}
-
-int BranchAndBound::updateParetoGrid(const Solution & solution) {
-    return paretoContainer.add(solution);
-}
+int BranchAndBound::theTreeHasMoreBranches() const { return ivm_tree.hasPendingBranches(); }
+int BranchAndBound::updateParetoGrid(const Solution & solution) { return paretoContainer.add(solution); }
 
 /**
  * The solution improves the lowe bound if:
@@ -447,11 +437,8 @@ int BranchAndBound::updateParetoGrid(const Solution & solution) {
  *  5- It is not repeated.
  *  6- It is non-dominated.
  *
- *  NOTE: This doesnt modifies the solution. Can be const & solution.
  */
-int BranchAndBound::improvesTheGrid(const Solution & solution) const {
-	return paretoContainer.improvesTheGrid(solution);
-}
+int BranchAndBound::improvesTheGrid(const Solution & solution) const { return paretoContainer.improvesTheGrid(solution); }
 
 /**
  *
@@ -831,8 +818,15 @@ void BranchAndBound::saveEvery(double timeInSeconds) {
 
 void BranchAndBound::printDebug(){
     printf("DEBUG\n");
+    printf("GlobalPool:\n");
+    globalPool.print();
+    printf("Subproblem/interval:\n");
+    interval_to_solve.print();
+    printf("Incumbent solution:\n");
     incumbent_s.print();
+    printf("IVM Tree:\n");
     ivm_tree.print();
+    printf("FJSSP Data:\n");
     fjssp_data.print();
     printf("DEBUG\n");
 }

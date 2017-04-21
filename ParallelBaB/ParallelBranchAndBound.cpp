@@ -8,10 +8,8 @@
 
 #include "ParallelBranchAndBound.hpp"
 
-ParallelBranchAndBound::ParallelBranchAndBound(const ProblemFJSSP& problem/*, GlobalPool& global_pool, HandlerContainer& global_grid*/):
+ParallelBranchAndBound::ParallelBranchAndBound(const ProblemFJSSP& problem):
     problem(problem),
-    /*global_pool(global_pool),*/
-    /*global_grid(global_grid),*/
     branch_init(problem.getNumberOfVariables()){
         this->outputParetoFile = new char[255];
         this->summarizeFile = new char[255];
