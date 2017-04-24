@@ -280,13 +280,14 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         /** If the branching operator doesnt creates branches or the prune
          function was called then we need to remove the evaluations.
          Also if a leave has been reached. **/
-        if(ivm_tree.hasPendingBranches()){
-            for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
-                problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, l);
-            
-            /** Sharing part of the IVM tree to the global pool. This is done after branching and pruning any pending work of the three. **/
+        for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
+            problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, l);
+        
+        
+        /** Sharing part of the IVM tree to the global pool. This is done after branching and pruning any pending work of the three. **/
+        if(ivm_tree.hasPendingBranches())
             shareWorkAndSendToGlobalPool(branch_to_solve);
-        }
+        
         
     }
     
@@ -429,8 +430,13 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(Interval & branch_to_solve){
     if (globalPool.unsafe_size() < 120 && next_row < deep_to_share)
         while(ivm_tree.getNumberOfNodesAt(next_row) > 1){
             branch_to_solve.setValueAt(next_row, ivm_tree.removeLastNodeAtRow(next_row));
+            if(!branch_to_solve.verify())
+                printDebug();
             globalPool.push(branch_to_solve);
             branch_to_solve.removeLastValue();
+            if (!branch_to_solve.verify())
+                printDebug();
+            
         }
     /** End testing code. **/
 }

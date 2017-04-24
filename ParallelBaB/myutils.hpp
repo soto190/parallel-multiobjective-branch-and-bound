@@ -120,7 +120,7 @@ public:
                 int mid = m_data.size() * 0.5f;
                 size_t low = 0, high = m_data.size();
                 
-                if (data >= m_data.at(mid) && data <= m_data.at(mid + 1)) {
+                if (m_data.at(mid) <= data && data <= m_data.at(mid + 1)) {
                     m_data.insert(m_data.begin() + mid, data);
                 }
                 
