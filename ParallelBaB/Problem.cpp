@@ -9,11 +9,11 @@
 #include "Problem.hpp"
 
 Problem::Problem(const Problem& toCopy):
-    totalObjectives(toCopy.getNumberOfObjectives()),
-    totalVariables(toCopy.getNumberOfVariables()),
-    type(toCopy.getType()),
-    startingLevel(toCopy.getStartingRow()),
-    totalConstraints(toCopy.getNumberOfConstraints()){
+totalObjectives(toCopy.getNumberOfObjectives()),
+totalVariables(toCopy.getNumberOfVariables()),
+type(toCopy.getType()),
+startingLevel(toCopy.getStartingRow()),
+totalConstraints(toCopy.getNumberOfConstraints()){
     
         name = new char[255];
         std::strcpy(name, toCopy.name);
@@ -29,17 +29,17 @@ Problem::Problem(const Problem& toCopy):
 }
 
 Problem::Problem(int numberOfObjectives, int numberOfVariables):
-    totalObjectives(numberOfObjectives),
-    totalVariables(numberOfVariables),
-    type(ProblemType::XD),
-    startingLevel(0),
-    totalConstraints(0){
-        
+totalObjectives(numberOfObjectives),
+totalVariables(numberOfVariables),
+type(ProblemType::XD),
+startingLevel(0),
+totalConstraints(0){
+    
     name = new char[255];
-        /*
-        lowerBound = new int[numberOfVariables];
-        upperBound = new int[numberOfVariables];
-         */
+    /*
+     lowerBound = new int[numberOfVariables];
+     upperBound = new int[numberOfVariables];
+     */
 }
 
 Problem::~Problem(){

@@ -179,6 +179,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     int row = 0; /** Counter level.**/
     int build_value = 0;
     int build_up_to = branch_init.getBuildUpTo();
+    currentLevel = build_up_to;
     
     tree.setRootRow(build_up_to);/** root row of this tree**/
     tree.setStartingRow(build_up_to + 1); /** Level/row with the first branches of the tree. **/
@@ -220,7 +221,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     if (rank > 0
         && branches_to_move_to_global_pool > 0
         && branches_created > branches_to_move_to_global_pool
-        && branch_init.getBuildUpTo() < deep_to_share) {
+        && branch_init.getBuildUpTo() <= deep_to_share) {
         
         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
             branch_init.setValueAt(build_up_to + 1, ivm_tree.removeLastNodeAtRow(build_up_to + 1));
@@ -279,13 +280,14 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         /** If the branching operator doesnt creates branches or the prune
          function was called then we need to remove the evaluations.
          Also if a leave has been reached. **/
-        if(ivm_tree.hasPendingBranches())
+        if(ivm_tree.hasPendingBranches()){
             for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
                 problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, l);
+            
+            /** Sharing part of the IVM tree to the global pool. This is done after branching and pruning any pending work of the three. **/
+            shareWorkAndSendToGlobalPool(branch_to_solve);
+        }
         
-        /** Testing code. Sharing part of the IVM tree to the global pool.**/
-        shareWorkAndSendToGlobalPool(branch_to_solve);
-        /** End testing code. **/
     }
     
     t2 = std::chrono::high_resolution_clock::now();
@@ -308,7 +310,7 @@ double BranchAndBound::getTotalTime() {
 int BranchAndBound::explore(Solution & solution) {
 
 	exploredNodes++;
-	currentLevel = ivm_tree.getCurrentLevel();
+	currentLevel = ivm_tree.getActiveRow();
 	solution.setVariable(currentLevel, ivm_tree.getActiveNode());
 	return 0;
 }
@@ -316,8 +318,6 @@ int BranchAndBound::explore(Solution & solution) {
 /**
  * Modifies the variable at built_up_to + 1 of the solution.
  *
- * TODO: When branching insert some branches in the global pool.
- * TODO: When branching consider copy the root_row + 1.
  *
  */
 int BranchAndBound::branch(Solution& solution, int currentLevel) {
@@ -332,7 +332,8 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     int machine = 0;
     
     int branches_created = 0;
-	//vector<double [3]> elements_sorted;
+    //SortedVector elements_sorted;
+    //Data3 data;
 
     switch (problem.getType()) {
             
@@ -359,7 +360,6 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
         case ProblemType::permutation_with_repetition_and_combination:
             
             /** TODO: TEST parallel for?, solution is shared and each thread needs their own copy. **/
-            /** TODO: sort the branches. **/
             for (element = 0; element < problem.getTotalElements(); ++element)
                 if (fjssp_data.getNumberOfOperationsAllocatedInJob(element) < problem.getTimesValueIsRepeated(element))
                     for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
@@ -368,7 +368,11 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         solution.setVariable(currentLevel + 1, toAdd);
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
                         
+                        //data.setValue(toAdd);
+                        //data.setObjective(0, fjssp_data.getMakespan());
+                        //data.setObjective(1, fjssp_data.getMaxWorkload());
                         if (improvesTheGrid(solution)) {
+                            //elements_sorted.push(data);
                             ivm_tree.setNode(currentLevel + 1, toAdd);
                             branches_created++;
                         } else
@@ -409,10 +413,20 @@ void BranchAndBound::prune(Solution & solution, int currentLevel) {
 
 int BranchAndBound::aLeafHasBeenReached() const { return (currentLevel == totalLevels)?1:0;}
 
+/** 
+ * This function shares part of the ivm tree. The part corresponding to the root_row + 1 is sended to the global_pool if the next
+ * conditions are reached:
+ * 1) if the global pool has less than the indicated size.
+ * 2) if the root_row + 1 is less than deep_share and it has more than 1 element.
+ * 
+ * All the remanent of root_row + 1 is moved to the global pool.
+ *
+ * TODO: Send the next pending nodes to global pool, not only root_row + 1.
+ ***/
 void BranchAndBound::shareWorkAndSendToGlobalPool(Interval & branch_to_solve){
     /** Testing code. **/
-    int next_row = ivm_tree.getRootNode() + 1;
-    if (globalPool.unsafe_size() < 120 && next_row <= deep_to_share)
+    int next_row = ivm_tree.getRootRow() + 1;
+    if (globalPool.unsafe_size() < 120 && next_row < deep_to_share)
         while(ivm_tree.getNumberOfNodesAt(next_row) > 1){
             branch_to_solve.setValueAt(next_row, ivm_tree.removeLastNodeAtRow(next_row));
             globalPool.push(branch_to_solve);

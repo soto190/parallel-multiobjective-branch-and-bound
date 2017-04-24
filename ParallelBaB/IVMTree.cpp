@@ -165,7 +165,8 @@ int IVMTree::increaseNodesAt(int row){ return n_nodes_at_row[row]++; }
 int IVMTree::decreaseNodesAt(int row){ return n_nodes_at_row[row]--; }
 void IVMTree::resetNumberOfNodesAt(int row) { n_nodes_at_row[row] = 0;}
 void IVMTree::setHasBranches(int itHas){ hasBranches = itHas;}
-int IVMTree::getRootNode() const{ return root_row; }
+int IVMTree::getRootNode() const{ return ivm[root_row][active_column[root_row]];}
+int IVMTree::getRootRow() const { return root_row;}
 int IVMTree::getNumberOfNodesAt(int row) const{ return n_nodes_at_row[row]; }
 int IVMTree::getIVMValue(int row, int col) const{ return ivm[row][col]; }
 int IVMTree::getActiveColAt(int row) const{ return active_column[row]; }
@@ -180,11 +181,11 @@ int IVMTree::getOwner() const {return whoIam;}
 
 int IVMTree::getLastNodeAtRow(int row) const{ return ivm[row][n_nodes_at_row[row] - 1];}
 int IVMTree::removeLastNodeAtRow(int row){
-    int node = ivm[row][n_nodes_at_row[row] - 1];
+    int node_at_col = ivm[row][n_nodes_at_row[row] - 1];
     ivm[row][n_nodes_at_row[row] - 1] = -1;
     n_nodes_at_row[row]--;
     end_exploration[row]--;
-    return node;
+    return node_at_col;
 }
 
 void IVMTree::setActiveRow(int level) { active_row = level; }
@@ -216,11 +217,10 @@ void IVMTree::setNode(int level, int value) {
 }
 
 int IVMTree::hasPendingBranches() const { return hasBranches; }
-int IVMTree::getCurrentLevel() const { return active_row; }
 int IVMTree::moveToNextRow() { return active_row++; }
 int IVMTree::moveToNextNode() { return ivm[active_row][active_column[active_row]]; }
 int IVMTree::getActiveNode() const { return ivm[active_row][active_column[active_row]];}
-int IVMTree::getFatherNode() const { return ivm[active_row - 1][active_column[active_row - 1]]; }
+int IVMTree::getFatherNode() const { return root_row == 0 ? ivm[active_row - 1][active_column[active_row - 1]] : -1; }
 
 /** Prune the active node and set the active_level pointing a new active node. **/
 int IVMTree::pruneActiveNode() {

@@ -356,9 +356,9 @@ class ProblemFJSSP: public Problem {
 
 private:
     /**FJSSP functions**/
-    int totalJobs;
-    int totalOperations;
-    int totalMachines;
+    int n_jobs;
+    int n_operations;
+    int n_machines;
     int sumOfMinPij;
     int bestWorkloadFound;
     int * assignationMinPij;       /** Length equals to numberOfOperations. **/

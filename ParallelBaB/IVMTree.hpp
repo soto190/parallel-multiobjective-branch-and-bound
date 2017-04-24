@@ -49,6 +49,7 @@ public:
     void setHasBranches(int itHas);
     
     int getRootNode() const;
+    int getRootRow() const;
     int getNumberOfNodesAt(int row) const;
     int getIVMValue(int row, int col) const;
     int getActiveColAt(int row) const;
@@ -69,9 +70,7 @@ public:
 	int getActiveNode() const;
 	int getFatherNode() const;
 	int pruneActiveNode();
-
-	int getCurrentLevel() const;
-
+    
 	int moveToNextRow();
 	int moveToNextNode();
 
