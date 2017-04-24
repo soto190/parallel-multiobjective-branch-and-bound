@@ -179,10 +179,19 @@ int IVMTree::getNumberOfCols() const { return cols; }
 int IVMTree::getTreeDeep() const { return rows; }
 int IVMTree::getOwner() const {return whoIam;}
 
+/** TODO: Delete unused function. **/
 int IVMTree::getLastNodeAtRow(int row) const{ return ivm[row][n_nodes_at_row[row] - 1];}
 int IVMTree::removeLastNodeAtRow(int row){
-    int node_at_col = ivm[row][n_nodes_at_row[row] - 1];
-    ivm[row][n_nodes_at_row[row] - 1] = -1;
+    int last_col = active_column[row] + n_nodes_at_row[row] - 1;
+    if (ivm[row][last_col] == -1) {
+        printf("DEBUG: %d\n",last_col);
+    }
+    
+    if (active_column[row] == -1)
+        last_col = n_nodes_at_row[row];
+    
+    int node_at_col = ivm[row][last_col];
+    ivm[row][last_col] = -1;
     n_nodes_at_row[row]--;
     end_exploration[row]--;
     return node_at_col;
@@ -193,7 +202,7 @@ void IVMTree::setOwner(int idBB) { whoIam = idBB;}
 
 /**
  * Initialize th IVM with the given interval.
- *
+ * TODO: Delete unused function.
  */
 void IVMTree::setExplorationInterval(int set_starting_level, int *starts,
                                      int *ends) {
@@ -211,9 +220,10 @@ void IVMTree::setExplorationInterval(int set_starting_level, int *starts,
     
 }
 
-void IVMTree::setNode(int level, int value) {
-    ivm[level][n_nodes_at_row[level]] = value;
-    n_nodes_at_row[level]++;
+/** TODO: Check this function. **/
+void IVMTree::setNode(int row, int value) {
+    ivm[row][active_column[row] + n_nodes_at_row[row] + 1] = value;
+    n_nodes_at_row[row]++;
 }
 
 int IVMTree::hasPendingBranches() const { return hasBranches; }
@@ -224,7 +234,7 @@ int IVMTree::getFatherNode() const { return root_row == 0 ? ivm[active_row - 1][
 
 /** Prune the active node and set the active_level pointing a new active node. **/
 int IVMTree::pruneActiveNode() {
-    
+
     ivm[active_row][active_column[active_row]] = -1; /** Marks the node as removed. **/
     n_nodes_at_row[active_row]--; /** Reduces the number of nodes in the active level. **/
     

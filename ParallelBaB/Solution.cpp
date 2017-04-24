@@ -199,13 +199,17 @@ DominanceRelation Solution::dominates(const Solution & solution) const {
 
 void Solution::print() const {
 	int nObj, nVar;
+    char sep = '-';
 	for (nObj = 0; nObj < n_objectives; ++nObj)
-		printf("%f ", getObjective(nObj));
+		printf("%6.0f", getObjective(nObj));
 
 	printf("| ");
 
 	for (nVar = 0; nVar < n_variables; ++nVar)
-		printf("%d ", getVariable(nVar));
+        if (variable[nVar] == -1)
+            printf("%3c", sep);
+        else
+            printf("%3d", variable[nVar]);
 
 	printf("|\n");
 }

@@ -90,8 +90,6 @@ int main(int argc, const char * argv[]) {
 
 
     try {
-        Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-        problem.createDefaultSolution(solution);
         
         int number_of_threads = stoi(argv[arg_num_threads]);//tbb::task_scheduler_init::default_num_threads();
 		tbb::task_scheduler_init init(number_of_threads);

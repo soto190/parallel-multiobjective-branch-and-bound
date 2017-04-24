@@ -72,8 +72,13 @@ public:
 class ReadySubproblems {
     // One queue for each priority level
     tbb::concurrent_queue<Interval> level[P_Low + 1];
+    unsigned int size_empty;
     
 public:
+    
+    void setSizeEmpty(int size){ size_empty = size;}
+    unsigned int getSizeEmpty() const{return size_empty;}
+    
     void push(const Interval & subproblem) {
         level[subproblem.getPriority()].push(subproblem);
         //tbb::task::enqueue(*new(tbb::task::allocate_root()) RunWorkItem);

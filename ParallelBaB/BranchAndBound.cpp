@@ -209,7 +209,10 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     }
     
     for (row = build_up_to + 1; row <= totalLevels; ++row) {
+        for (col = 0; col < tree.getNumberOfCols(); ++col)
+            tree.setIVMValueAt(row, col, -1);
         tree.setStartExploration(row, -1);
+        tree.setActiveNodeAt(row, -1);
         tree.resetNumberOfNodesAt(row);
         incumbent_s.setVariable(row, -1);
     }
@@ -224,7 +227,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
         && branch_init.getBuildUpTo() <= deep_to_share) {
         
         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
-            branch_init.setValueAt(build_up_to + 1, ivm_tree.removeLastNodeAtRow(build_up_to + 1));
+            branch_init.setValueAt(build_up_to + 1, tree.removeLastNodeAtRow(build_up_to + 1));
             globalPool.push(branch_init);
             branch_init.removeLastValue();
         }
@@ -253,7 +256,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
 
     intializeIVM_data(branch_to_solve, ivm_tree);
     while (theTreeHasMoreBranches() && !timeUp) {
-    
+        
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
       
@@ -428,26 +431,11 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(Interval & branch_to_solve){
     /** Testing code. **/
     int next_row = ivm_tree.getRootRow() + 1;
     
-    if(!branch_to_solve.verify())
-        printDebug();
-    
-    if (globalPool.unsafe_size() < 120 && next_row < deep_to_share)
+    if (globalPool.unsafe_size() < 128 && next_row < deep_to_share)
         while(ivm_tree.getNumberOfNodesAt(next_row) > 1){
-            
-            if(!branch_to_solve.verify())
-                printDebug();
-            
             branch_to_solve.setValueAt(next_row, ivm_tree.removeLastNodeAtRow(next_row));
-            
-            if(!branch_to_solve.verify())
-                printDebug();
-            
             globalPool.push(branch_to_solve);
             branch_to_solve.removeLastValue();
-            
-            if (!branch_to_solve.verify())
-                printDebug();
-            
         }
     /** End testing code. **/
 }
@@ -847,7 +835,7 @@ void BranchAndBound::saveEvery(double timeInSeconds) {
 }
 
 void BranchAndBound::printDebug(){
-    printf("DEBUG\n");
+    printf("\nDEBUG\n");
     printf("GlobalPool:\n");
     globalPool.print();
     printf("Subproblem/interval:\n");
