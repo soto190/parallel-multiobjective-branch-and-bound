@@ -427,13 +427,24 @@ int BranchAndBound::aLeafHasBeenReached() const { return (currentLevel == totalL
 void BranchAndBound::shareWorkAndSendToGlobalPool(Interval & branch_to_solve){
     /** Testing code. **/
     int next_row = ivm_tree.getRootRow() + 1;
+    
+    if(!branch_to_solve.verify())
+        printDebug();
+    
     if (globalPool.unsafe_size() < 120 && next_row < deep_to_share)
         while(ivm_tree.getNumberOfNodesAt(next_row) > 1){
-            branch_to_solve.setValueAt(next_row, ivm_tree.removeLastNodeAtRow(next_row));
+            
             if(!branch_to_solve.verify())
                 printDebug();
+            
+            branch_to_solve.setValueAt(next_row, ivm_tree.removeLastNodeAtRow(next_row));
+            
+            if(!branch_to_solve.verify())
+                printDebug();
+            
             globalPool.push(branch_to_solve);
             branch_to_solve.removeLastValue();
+            
             if (!branch_to_solve.verify())
                 printDebug();
             
