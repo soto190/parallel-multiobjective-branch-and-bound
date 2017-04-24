@@ -226,8 +226,8 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
             branch_init.setValueAt(build_up_to + 1, ivm_tree.removeLastNodeAtRow(build_up_to + 1));
             globalPool.push(branch_init);
+            branch_init.removeLastValue();
         }
-        branch_init.removeLastValue();
     }
 
     return 0;
