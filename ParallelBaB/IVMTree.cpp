@@ -220,7 +220,9 @@ void IVMTree::setExplorationInterval(int set_starting_level, int *starts,
     
 }
 
-/** TODO: Check this function. **/
+/** TODO: Check this function. 
+ * Because active_column[row] is initialized with -1 it needs the +1 to store the next value.
+ **/
 void IVMTree::setNode(int row, int value) {
     ivm[row][active_column[row] + n_nodes_at_row[row] + 1] = value;
     n_nodes_at_row[row]++;

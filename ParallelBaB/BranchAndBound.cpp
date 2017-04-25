@@ -209,13 +209,12 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     }
     
     for (row = build_up_to + 1; row <= totalLevels; ++row) {
-        for (col = 0; col < tree.getNumberOfCols(); ++col)
-            tree.setIVMValueAt(row, col, -1);
         tree.setStartExploration(row, -1);
         tree.setActiveNodeAt(row, -1);
         tree.resetNumberOfNodesAt(row);
         incumbent_s.setVariable(row, -1);
     }
+    
     incumbent_s.setBuildUpTo(build_up_to);
     int branches_created = branch(incumbent_s, build_up_to);
     
@@ -240,10 +239,10 @@ tbb::task* BranchAndBound::execute() {
 
     initialize(interval_to_solve.getBuildUpTo());
     while (!globalPool.empty())
-        if(globalPool.try_pop(interval_to_solve))
-            //printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
+        if(globalPool.try_pop(interval_to_solve)){
+            // printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
             solve(interval_to_solve);
-    
+        }
     printf("[B&B-%03d] No more intervals in global pool. Going to sleep.\n", rank);
     
     return NULL;
@@ -270,12 +269,12 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             updated = updateParetoGrid(incumbent_s);
             totalUpdatesInLowerBound += updated;
             
-            /*if (updated) {
+          /*  if (updated) {
                 printf("[B&B-%03d] ", rank);
                 printCurrentSolution();
                 printf(" + [%6lu] \n", paretoContainer.getSize());
-            }*/
-            
+            }
+            */
             /** Go back and prepare to remove the evaluations. **/
             ivm_tree.pruneActiveNode();
         }
@@ -289,7 +288,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         
         /** Sharing part of the IVM tree to the global pool. This is done after branching and pruning any pending work of the three. **/
         if(ivm_tree.hasPendingBranches())
-            shareWorkAndSendToGlobalPool(branch_to_solve);
+          shareWorkAndSendToGlobalPool(branch_to_solve);
         
         
     }
@@ -431,7 +430,8 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(Interval & branch_to_solve){
     /** Testing code. **/
     int next_row = ivm_tree.getRootRow() + 1;
     
-    if (globalPool.unsafe_size() < 128 && next_row < deep_to_share)
+    /** This is relative to the number of threads to keep one pending for each thread. **/
+    if (globalPool.unsafe_size() < 40 && next_row < deep_to_share)
         while(ivm_tree.getNumberOfNodesAt(next_row) > 1){
             branch_to_solve.setValueAt(next_row, ivm_tree.removeLastNodeAtRow(next_row));
             globalPool.push(branch_to_solve);
