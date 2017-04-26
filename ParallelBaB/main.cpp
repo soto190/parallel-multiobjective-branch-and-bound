@@ -103,13 +103,10 @@ int main(int argc, const char * argv[]) {
 		tbb::task::spawn_root_and_wait(*pbb);
 
 	} catch (tbb::tbb_exception& e) {
-
-		std::cerr << "Intercepted exception\n" << e.name();
-
-		std::cerr << "Reason is\n" << e.what();
-
+		std::cerr << "Intercepted exception:\n" << e.name();
+		std::cerr << "Reason is:\n" << e.what();
 	}
-    
+ 
     printf("Done\n");
     
     delete [] files[0];

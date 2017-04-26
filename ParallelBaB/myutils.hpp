@@ -44,12 +44,15 @@ double roundToNearest(double value);
 double round_double(double value);
 int binarySearch(double value, const double * vector, int size);
 
+
+enum Dom {Domtes = 1, Domted = -1, Nondom = 0, Eq = 11};
+
 class Data3{
     int value;
     int obj[2];
 
 public:
-    Data3();
+    Data3(){}
     Data3(int var_value, int obj1, int obj2): value(var_value){
         obj[0] = obj1;
         obj[1] = obj2;
@@ -76,7 +79,7 @@ public:
     
     bool operator<(const Data3& rhs) const{
         for (int n_obj = 0; n_obj < 2; ++n_obj)
-            if (obj[n_obj] >= rhs.getObjective(n_obj))
+            if (obj[n_obj] > rhs.getObjective(n_obj))
                 return false;
         return true;
     }
@@ -102,32 +105,92 @@ public:
         return true;
     }
     
+    Dom dominance(const Data3& rhs) const{
+        int nObj = 0, objA = 0, objB = 0, localSolIsBetterIn = 0, exterSolIsBetterIn = 0, equals = 1;
+        
+        for (nObj = 0; nObj < 2; ++nObj) {
+            objA = obj[nObj];
+            objB = rhs.getObjective(nObj);
+            
+            if (objA < objB) {
+                localSolIsBetterIn++;
+                equals = 0;
+            } else if (objB < objA) {
+                exterSolIsBetterIn++;
+                equals = 0;
+            }
+        }
+        
+        if (equals == 1)
+            return Dom::Eq;
+        else if (localSolIsBetterIn > 0 && exterSolIsBetterIn == 0)
+            return Dom::Domtes;
+        else if (exterSolIsBetterIn > 0 && localSolIsBetterIn == 0)
+            return Dom::Domted;
+        else
+            return Dom::Nondom;
+        
+    }
 };
 
 class SortedVector{
     deque<Data3> m_data;
     
 public:
-    void push(const Data3 & data){
+    int push(const Data3 & data){
         if (m_data.empty())
             m_data.push_back(data);
         else{
-            if (data <= m_data.front())
+            Dom dominance = data.dominance(m_data.front());
+            Dom dominance2 = data.dominance(m_data.back());
+
+            if (dominance == Dom::Nondom || dominance == Dom::Domtes || dominance == Dom::Eq)
                 m_data.push_front(data);
-            else if(data >= m_data.back())
+            else if(dominance2 == Dom::Nondom || dominance2 == Dom::Domted || dominance2 == Dom::Eq)
                 m_data.push_back(data);
             else{/** Do a quick search splitting in two parts. **/
-                int mid = m_data.size() * 0.5f;
-                size_t low = 0, high = m_data.size();
                 
-                if (m_data.at(mid) <= data && data <= m_data.at(mid + 1)) {
-                    m_data.insert(m_data.begin() + mid, data);
+                if(m_data.size() == 2){
+                    m_data.insert(m_data.begin() + 1, data);
+                    return 1;
                 }
-                
-                m_data.at(mid);
+                size_t mid;
+                size_t low = 0, high = m_data.size();
+               
+                while (low <= high){
+                    mid = (low + high) * 0.5f;
+                    dominance = data.dominance(m_data.at(mid));
+                    
+                    if (dominance == Dom::Nondom || dominance == Dom::Eq) {
+                        m_data.insert(m_data.begin() + mid, data);
+                        return 1;
+                    }else if(dominance == Dom::Domtes)
+                        high = mid - 1;
+                    else if(dominance == Dom::Domted)
+                        low = mid + 1;
+                }
+                m_data.push_back(data);
+                return 0;
             }
         }
+        return 1;
     }
+    
+    std::deque<Data3>::iterator begin(){
+        return m_data.begin();
+    }
+    
+    std::deque<Data3>::iterator end(){
+        return m_data.end();
+    }
+    
+    void print() {
+        std::deque<Data3>::iterator it = m_data.begin();
+        int counter = 0;
+        for (it = m_data.begin(); it != m_data.end(); ++it)
+            printf("[%3d] %3d %3d %3d\n", counter++, it->getValue(), it->getObjective(0), it->getObjective(1));
+    }
+
 };
 
 #endif /* myutils_hpp */

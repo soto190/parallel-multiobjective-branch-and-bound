@@ -227,6 +227,14 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
         
         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
             branch_init.setValueAt(build_up_to + 1, tree.removeLastNodeAtRow(build_up_to + 1));
+            
+            if(moved < branches_to_move_to_global_pool * 0.33)
+                branch_init.setHighPriority();
+            else if(moved < branches_to_move_to_global_pool * 0.66)
+                branch_init.setMediumPriority();
+            else
+                branch_init.setLowPriority();
+            
             globalPool.push(branch_init);
             branch_init.removeLastValue();
         }
@@ -240,8 +248,10 @@ tbb::task* BranchAndBound::execute() {
     initialize(interval_to_solve.getBuildUpTo());
     while (!globalPool.empty())
         if(globalPool.try_pop(interval_to_solve)){
-            // printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
+//            printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
+//            globalPool.print();
             solve(interval_to_solve);
+            
         }
     printf("[B&B-%03d] No more intervals in global pool. Going to sleep.\n", rank);
     
@@ -252,7 +262,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
 
     double timeUp = 0;
     int updated = 0;
-
+    
     intializeIVM_data(branch_to_solve, ivm_tree);
     while (theTreeHasMoreBranches() && !timeUp) {
         
@@ -335,8 +345,8 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     int machine = 0;
     
     int branches_created = 0;
-    //SortedVector elements_sorted;
-    //Data3 data;
+    SortedVector elements_sorted;
+    Data3 data;
 
     switch (problem.getType()) {
             
@@ -371,13 +381,15 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         solution.setVariable(currentLevel + 1, toAdd);
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
                         
-                        //data.setValue(toAdd);
-                        //data.setObjective(0, fjssp_data.getMakespan());
-                        //data.setObjective(1, fjssp_data.getMaxWorkload());
                         if (improvesTheGrid(solution)) {
-                            //elements_sorted.push(data);
-                            ivm_tree.setNode(currentLevel + 1, toAdd);
+                            data.setValue(toAdd);
+                            data.setObjective(0, fjssp_data.getMakespan());
+                            data.setObjective(1, fjssp_data.getMaxWorkload());
+                            
+                            elements_sorted.push(data);
+                            //ivm_tree.setNode(currentLevel + 1, toAdd);
                             branches_created++;
+                            
                         } else
                             prunedNodes++;
                         problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
@@ -385,6 +397,10 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             branches += branches_created;
 
             if (branches_created > 0) { /** If a branch was created. **/
+                std::deque<Data3>::iterator it;
+                for (it = elements_sorted.begin(); it != elements_sorted.end(); ++it)
+                    ivm_tree.setNode(currentLevel + 1, (*it).getValue());
+                
                 ivm_tree.moveToNextRow();
                 ivm_tree.setActiveNodeAt(ivm_tree.getActiveRow(), 0);
                 ivm_tree.setHasBranches(1);

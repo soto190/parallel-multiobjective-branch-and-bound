@@ -101,12 +101,13 @@ void Interval::setValueAt(int index, int value){
     interval[index] = value;
     build_up_to = index;
     
-    if (build_up_to <= high)
+   /* if (build_up_to <= high)
         priority = Priority::P_High;
     else if (build_up_to >= low)
         priority = Priority::P_Low;
     else
         priority = Priority::P_Medium;
+    */
 }
 
 void Interval::setBuildUpTo(int newBuild){ build_up_to = newBuild; }

@@ -183,13 +183,14 @@ int IVMTree::getOwner() const {return whoIam;}
 int IVMTree::getLastNodeAtRow(int row) const{ return ivm[row][n_nodes_at_row[row] - 1];}
 int IVMTree::removeLastNodeAtRow(int row){
     int last_col = active_column[row] + n_nodes_at_row[row] - 1;
+/*
     if (ivm[row][last_col] == -1) {
         printf("DEBUG: %d\n",last_col);
     }
     
     if (active_column[row] == -1)
         last_col = n_nodes_at_row[row];
-    
+  */  
     int node_at_col = ivm[row][last_col];
     ivm[row][last_col] = -1;
     n_nodes_at_row[row]--;
