@@ -49,12 +49,9 @@ Interval& Interval::operator()(int size){
     max_size = size;
     priority = Priority::P_Low;
     
-    
-    int index = 0;
-    
     delete [] interval; /** Freeing previously used memory. **/
     interval = new int[size];
-    for (index = 0; index < max_size; ++index)
+    for (int index = 0; index < max_size; ++index)
         interval[index] = -1;
     
     return *this;
@@ -73,9 +70,8 @@ Interval& Interval::operator=(const Interval &toCopy){
     if(interval != nullptr)
         delete [] interval; /** Freeing previously used memory. **/
     interval = new int[max_size];
-    int index = 0;
     
-    for (index = 0; index < max_size; ++index)
+    for (int index = 0; index < max_size; ++index)
         interval[index] = toCopy.getValueAt(index);
     
     return *this;
@@ -115,7 +111,7 @@ void Interval::removeLastValue(){interval[build_up_to] = -1; build_up_to--;}
 int Interval::increaseBuildUpTo(){ return build_up_to++; }
 
 bool Interval::verify() const{
-    for (int in = build_up_to; in >= 0; --in)
+    for (int in = 0; in <= build_up_to; ++in)
         if (interval[in] == -1) return false;
     return true;
 }

@@ -129,7 +129,10 @@ public:
             return Dom::Domted;
         else
             return Dom::Nondom;
-        
+    }
+    
+    void print(){
+        printf("%3d %3d %3d\n", value, obj[0], obj[1]);
     }
 };
 
@@ -138,39 +141,67 @@ class SortedVector{
     
 public:
     int push(const Data3 & data){
+
         if (m_data.empty())
             m_data.push_back(data);
-        else{
-            Dom dominance = data.dominance(m_data.front());
-            Dom dominance2 = data.dominance(m_data.back());
-
-            if (dominance == Dom::Nondom || dominance == Dom::Domtes || dominance == Dom::Eq)
+        else if(m_data.size() == 1)
+            switch (data.dominance(m_data.front())) {
+                case Dom::Eq:
+                    m_data.push_front(data);
+                    break;
+                case Dom::Nondom:
+                    m_data.push_front(data);
+                    break;
+                case Dom::Domted:
+                    m_data.push_back(data);
+                    break;
+                case Dom::Domtes:
+                    m_data.push_front(data);
+                default:
+                    break;
+            }
+        else if(m_data.size() == 2){
+            Dom domF = data.dominance(m_data.front());
+            Dom domB = data.dominance(m_data.back());
+            
+            if (domF == Dom::Domtes)
                 m_data.push_front(data);
-            else if(dominance2 == Dom::Nondom || dominance2 == Dom::Domted || dominance2 == Dom::Eq)
+            else if(domB == Dom::Domted)
                 m_data.push_back(data);
-            else{/** Do a quick search splitting in two parts. **/
-                
-                if(m_data.size() == 2){
-                    m_data.insert(m_data.begin() + 1, data);
-                    return 1;
-                }
-                size_t mid;
-                size_t low = 0, high = m_data.size();
-               
-                while (low <= high){
-                    mid = (low + high) * 0.5f;
-                    dominance = data.dominance(m_data.at(mid));
-                    
-                    if (dominance == Dom::Nondom || dominance == Dom::Eq) {
-                        m_data.insert(m_data.begin() + mid, data);
-                        return 1;
-                    }else if(dominance == Dom::Domtes)
-                        high = mid - 1;
-                    else if(dominance == Dom::Domted)
-                        low = mid + 1;
-                }
+            else /** That means that can be non-dominated by the two solutions, or dominated by front and dominates back. In either case it goes to mid. **/
+                m_data.insert(m_data.begin() + 1, data);
+        }else{
+            Dom domF = data.dominance(m_data.front());
+            Dom domB = data.dominance(m_data.back());
+            if (domF == Dom::Domtes || domF == Dom::Nondom || domF == Dom::Eq)
+                m_data.push_front(data);
+            else if(domB == Dom::Domted || domB == Dom::Nondom || domB == Dom::Eq)
                 m_data.push_back(data);
-                return 0;
+            else{
+                bool inserted = 0;
+                for (size_t count = 1; count < m_data.size(); ++count)
+                    switch (data.dominance(m_data.at(count))) {
+                        case Dom::Eq:
+                            m_data.insert(m_data.begin() + count, data);
+                            count = m_data.size();
+                            inserted = 1;
+                            break;
+                        case Dom::Nondom:
+                            m_data.insert(m_data.begin() + count, data);
+                            count = m_data.size();
+                            inserted = 1;
+                            break;
+                        case Dom::Domtes:
+                            m_data.insert(m_data.begin() + count, data);
+                            count = m_data.size();
+                            inserted = 1;
+                        case Dom::Domted:
+                            break;
+                        default:
+                            break;
+                    }
+                if(inserted == 0)
+                    m_data.push_back(data);
             }
         }
         return 1;
