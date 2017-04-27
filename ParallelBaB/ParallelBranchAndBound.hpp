@@ -21,8 +21,8 @@ class ParallelBranchAndBound: public tbb::task{
 
 public:
     int number_of_threads;
-    char * outputParetoFile;
-    char * summarizeFile;
+    char outputParetoFile[255];
+    char summarizeFile[255];
         
     ProblemFJSSP problem;
     Interval branch_init;
@@ -32,8 +32,8 @@ public:
     tbb::task* execute();
     
     void setNumberOfThreads(int number_of_threads);
-    void setParetoFrontFile(const char * outputFile);
-    void setSummarizeFile(const char * outputFile);
+    void setParetoFrontFile(const char outputFile[255]);
+    void setSummarizeFile(const char outputFile[255]);
 };
 
 #endif /* ParallelBranchAndBound_hpp */

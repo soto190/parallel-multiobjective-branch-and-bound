@@ -50,7 +50,7 @@ public:
 
     void printInstance();
     void printProblemInfo();
-    void loadInstance(char* path[]);
+    void loadInstance(char filePath[2][255]);
     
     
 };

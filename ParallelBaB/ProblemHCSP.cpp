@@ -368,7 +368,7 @@ void ProblemHCSP::printProblemInfo() const{
     
 }
 
-void ProblemHCSP::loadInstance(char *filePath[]){
+void ProblemHCSP::loadInstance(char filePath[2][255]){
     
     std::ifstream infile(filePath[0]);
     std::string line;
@@ -409,7 +409,7 @@ void ProblemHCSP::loadInstance(char *filePath[]){
     this->readMachinesConfigurations(filePath[1]);
 }
 
-void ProblemHCSP::readMachinesConfigurations(char *filePath){
+void ProblemHCSP::readMachinesConfigurations(char filePath[255]){
     
     std::ifstream infile(filePath);
     std::string line;

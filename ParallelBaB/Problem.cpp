@@ -15,8 +15,7 @@ type(toCopy.getType()),
 startingLevel(toCopy.getStartingRow()),
 totalConstraints(toCopy.getNumberOfConstraints()){
     
-        name = new char[255];
-        std::strcpy(name, toCopy.name);
+    std::strcpy(name, toCopy.name);
     /*    lowerBound = new int[toCopy.getNumberOfVariables()];
         upperBound = new int[toCopy.getNumberOfVariables()];
     
@@ -34,8 +33,6 @@ totalVariables(numberOfVariables),
 type(ProblemType::XD),
 startingLevel(0),
 totalConstraints(0){
-    
-    name = new char[255];
     /*
      lowerBound = new int[numberOfVariables];
      upperBound = new int[numberOfVariables];
@@ -46,7 +43,7 @@ Problem::~Problem(){
     /*
     delete [] lowerBound;
     delete [] upperBound;
-    */delete [] name;
+    */
      
 }
 
@@ -63,10 +60,8 @@ Problem& Problem::operator=(const Problem &toCopy){
     if (lowerBound != nullptr) {
         delete[] lowerBound;
         delete[] upperBound;
-        delete[] name;
     }
     
-    name = new char[255];
     std::strcpy(name, toCopy.name);
    /*
     lowerBound = new int[toCopy.getNumberOfVariables()];
@@ -108,4 +103,4 @@ void Problem::printPartialSolution(const Solution & solution, int level) const{}
 void Problem::printInstance(){}
 void Problem::printProblemInfo()const{}
 void Problem::printSolutionInfo(Solution & solution)const{}
-void Problem::loadInstance(char * filePath[]){}
+void Problem::loadInstance(char filePath[2][255]){}

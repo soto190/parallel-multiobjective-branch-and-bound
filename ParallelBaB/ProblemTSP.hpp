@@ -69,7 +69,7 @@ public:
     
     double computeEuclideanDistance(int x1, int y1, int x2, int y2);
     
-    void loadInstance(char* pathsFile[]);
+    void loadInstance(char filePath[2][255]);
     
     /**Print information**/
     void printSolution(const Solution & solution) const;
@@ -80,7 +80,7 @@ public:
     void printProblemInfo() const;
 
 private:
-    void readCost(char * pathFile);
+    void readCost(char pathFile[255]);
 };
 
 #endif /* ProblemTSP_hpp */

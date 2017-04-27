@@ -60,10 +60,8 @@ int main(int argc, const char * argv[]) {
 //	}
 
     
-	char **files = new char*[2];
-	files[0] = new char[255];
-	files[1] = new char[255];
-	std::strcpy(files[0], argv[arg_input_file1]);
+	char files [2][255];
+    std::strcpy(files[0], argv[arg_input_file1]);
 	std::strcpy(files[1], argv[arg_input_file2]);
 
 	/** Get name of the instance. **/
@@ -88,7 +86,6 @@ int main(int argc, const char * argv[]) {
 	std::string outputFile = argv[arg_output] + splited[0] + ".csv";
 	std::string summarizeFile = argv[arg_output] + splited[0] + ".txt";
 
-
     try {
         
         int number_of_threads = stoi(argv[arg_num_threads]);//tbb::task_scheduler_init::default_num_threads();
@@ -108,10 +105,5 @@ int main(int argc, const char * argv[]) {
 	}
  
     printf("Done\n");
-    
-    delete [] files[0];
-    delete [] files[1];
-    delete [] files;
-
 	return 0;
 }

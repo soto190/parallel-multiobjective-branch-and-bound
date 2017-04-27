@@ -433,7 +433,7 @@ public:
     void printPartialSolution(const Solution & solution, int level) const;
     void printSolutionInfo(const Solution & solution) const;
     
-    void loadInstance(char** path);
+    void loadInstance(char path[2][255]);
     void printInstance();
     void printProblemInfo();
     void printSchedule(const Solution & solution) const;

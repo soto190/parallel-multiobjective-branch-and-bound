@@ -157,12 +157,10 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
         
         delete [] upperBound;
         delete [] lowerBound;
-        delete [] name;
     }
     
     lowerBound = new int[totalVariables];
     upperBound = new int[totalVariables];
-    name = new char[255];
     
     std::strcpy(name, toCopy.name);
     
@@ -687,7 +685,7 @@ int ProblemFJSSP::getLowerBoundInObj(int nObj) const{
     return INT_MAX;
 }
 
-void ProblemFJSSP::loadInstance(char** filePath){
+void ProblemFJSSP::loadInstance(char filePath[2][255]){
     
     std::ifstream infile(filePath[0]);
     if(infile.is_open()){

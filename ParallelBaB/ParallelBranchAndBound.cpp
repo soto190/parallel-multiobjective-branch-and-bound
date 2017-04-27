@@ -9,35 +9,29 @@
 #include "ParallelBranchAndBound.hpp"
 
 ParallelBranchAndBound::ParallelBranchAndBound(const ProblemFJSSP& problem):
-    problem(problem),
-    branch_init(problem.getNumberOfVariables()){
-        this->outputParetoFile = new char[255];
-        this->summarizeFile = new char[255];
-}
+problem(problem),
+branch_init(problem.getNumberOfVariables()){}
 
-ParallelBranchAndBound::~ParallelBranchAndBound(){
-    delete [] outputParetoFile;
-    delete [] summarizeFile;
-}
+ParallelBranchAndBound::~ParallelBranchAndBound(){}
 
 tbb::task * ParallelBranchAndBound::execute() {
 
     int counter_threads = 0;
     
-    BranchAndBound BB_container(0, this->problem, branch_init/*, global_pool, global_grid*/);
-    BB_container.setParetoFrontFile(this->outputParetoFile);
-    BB_container.setSummarizeFile(this->summarizeFile);
+    BranchAndBound BB_container(0, problem, branch_init/*, global_pool, global_grid*/);
+    BB_container.setParetoFrontFile(outputParetoFile);
+    BB_container.setSummarizeFile(summarizeFile);
     BB_container.initGlobalPoolWithInterval(branch_init);
     
-	this->set_ref_count(this->number_of_threads + 1);
+	set_ref_count(number_of_threads + 1);
 
 	tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
     vector<BranchAndBound *> bb_threads;
-	while (counter_threads++ < this->number_of_threads) {
+	while (counter_threads++ < number_of_threads) {
 
 		BranchAndBound * BaB_task =
 				new (tbb::task::allocate_child()) BranchAndBound(
-						counter_threads, this->problem, branch_init/*, global_pool, global_grid*/);
+						counter_threads, problem, branch_init/*, global_pool, global_grid*/);
 
         bb_threads.push_back(BaB_task);
 		tl.push_back(*BaB_task);
@@ -76,14 +70,14 @@ tbb::task * ParallelBranchAndBound::execute() {
 	return NULL;
 }
 
-void ParallelBranchAndBound::setNumberOfThreads(int number_of_threads) {
-	this->number_of_threads = number_of_threads;
+void ParallelBranchAndBound::setNumberOfThreads(int n_number_of_threads) {
+	number_of_threads = n_number_of_threads;
 }
 
-void ParallelBranchAndBound::setParetoFrontFile(const char * outputFile) {
-	std::strcpy(this->outputParetoFile, outputFile);
+void ParallelBranchAndBound::setParetoFrontFile(const char outputFile[255]) {
+	std::strcpy(outputParetoFile, outputFile);
 }
 
-void ParallelBranchAndBound::setSummarizeFile(const char * outputFile) {
-	std::strcpy(this->summarizeFile, outputFile);
+void ParallelBranchAndBound::setSummarizeFile(const char outputFile[255]) {
+	std::strcpy(summarizeFile, outputFile);
 }

@@ -307,7 +307,7 @@ double ProblemTSP::computeEuclideanDistance(int x1, int y1, int x2, int y2){
     return sqrt(pow(x, 2) + pow(y, 2));
 }
 
-void ProblemTSP::loadInstance(char *filePath[]){
+void ProblemTSP::loadInstance(char filePath[2][255]){
     
     std::ifstream infile(filePath[0]);
     std::string line;
@@ -386,7 +386,7 @@ void ProblemTSP::loadInstance(char *filePath[]){
     
 }
 
-void ProblemTSP::readCost(char *filePath){
+void ProblemTSP::readCost(char filePath[255]){
     
     std::ifstream infile(filePath);
     std::string line;
