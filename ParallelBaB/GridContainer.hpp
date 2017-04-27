@@ -42,26 +42,26 @@ typedef tbb::queuing_rw_mutex Lock;
  public:
      
      ParetoBucket():
-     size(0),
+     size(tbb::atomic<unsigned long> (0)),
      posx(0),
      posy(0),
-     state(BucketState::unexplored){
+     state(tbb::atomic<BucketState>(BucketState::unexplored)){
          m_vec.reserve(50);
      };
      
      ParetoBucket(unsigned long posx, unsigned long posy):
-     state(BucketState::unexplored),
+     state(tbb::atomic<BucketState> (BucketState::unexplored)),
      posx(posx),
      posy(posy),
-     size(0){
+     size(tbb::atomic<unsigned long> (0)){
          m_vec.reserve(50);
      };
      
      ParetoBucket(const ParetoBucket& toCopy):
-     state(toCopy.getState()),
+     state(tbb::atomic<BucketState> (toCopy.getState())),
      posx(toCopy.getPosx()),
      posy(toCopy.getPosy()),
-     size(toCopy.getSize()),
+     size(tbb::atomic<unsigned long> (toCopy.getSize())),
      m_vec(toCopy.getVectorToCopy()){
      };
      
@@ -191,7 +191,7 @@ public:
     GridContainer(unsigned int width, unsigned int height):
     cols(width),
     rows(height),
-    numberOfElements(0) {
+    numberOfElements(tbb::atomic<unsigned long> (0)) {
         m_Data.reserve(cols * rows);
         int index = 0, indey = 0;
         for (indey = 0; indey < rows; ++indey)
@@ -203,7 +203,7 @@ public:
     cols(toCopy.getCols()),
     rows(toCopy.getRows()),
     m_Data(toCopy.m_Data),
-    numberOfElements(toCopy.getSize()){
+    numberOfElements(tbb::atomic<unsigned long> (toCopy.getSize())){
     }
     
     ~GridContainer(){
