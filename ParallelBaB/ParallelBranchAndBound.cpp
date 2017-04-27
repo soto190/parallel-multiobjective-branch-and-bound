@@ -18,9 +18,7 @@ tbb::task * ParallelBranchAndBound::execute() {
 
     int counter_threads = 0;
     
-    BranchAndBound BB_container(0, problem, branch_init/*, global_pool, global_grid*/);
-    BB_container.setParetoFrontFile(outputParetoFile);
-    BB_container.setSummarizeFile(summarizeFile);
+    BranchAndBound BB_container(0, problem, branch_init);
     BB_container.initGlobalPoolWithInterval(branch_init);
     
 	set_ref_count(number_of_threads + 1);
@@ -29,9 +27,7 @@ tbb::task * ParallelBranchAndBound::execute() {
     vector<BranchAndBound *> bb_threads;
 	while (counter_threads++ < number_of_threads) {
 
-		BranchAndBound * BaB_task =
-				new (tbb::task::allocate_child()) BranchAndBound(
-						counter_threads, problem, branch_init/*, global_pool, global_grid*/);
+		BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(counter_threads, problem, branch_init);
 
         bb_threads.push_back(BaB_task);
 		tl.push_back(*BaB_task);
@@ -60,6 +56,9 @@ tbb::task * ParallelBranchAndBound::execute() {
     
 	printf("Data recollected.\n");
 
+    BB_container.setParetoFrontFile(outputParetoFile);
+    BB_container.setSummarizeFile(summarizeFile);
+    
 	BB_container.getParetoFront();
 	BB_container.printParetoFront();
 	BB_container.saveParetoFront();

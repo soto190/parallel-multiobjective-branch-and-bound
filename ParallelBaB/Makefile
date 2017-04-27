@@ -8,7 +8,7 @@ DEBUGGER = gdb-ia
 LIBS = -tbb -ltbbmalloc -ltbbmalloc_proxy
 LIBS_DEBUG = -tbb -ltbbmalloc -ltbbmalloc_proxy_debug
 
-LDFLAGS = -O0 -std=c++11
+LDFLAGS = -O0 -shared-intel -std=c++11
 LDFLAGS_DEBUG = -O0 -std=c++11 -g -traceback -debug parallel -shared-intel
 
 src = $(wildcard *.cpp)
