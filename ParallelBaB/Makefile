@@ -16,11 +16,11 @@ obj = $(src:.cpp = .o)
 all: branchAndBound
 
 debug: LIBS = $(LIBS_DEBUG)
-debug: LDFLAGS = -O0 -std=c++11 -g -debug parallel -traceback -shared-intel
+debug: LDFLAGS = -g -debug parallel -traceback -shared-intel -O0 -std=c++11
 debug: branchAndBound
 
 branchAndBound: $(obj)
-	$(CXX) $(LIBS) -o $@ $^ $(LDFLAGS)
+	$(CXX) $(LIBS) $(LDFLAGS) -o $@ $^
 
 .BOOM: clean
 
