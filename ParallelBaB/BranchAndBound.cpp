@@ -18,23 +18,23 @@ ReadySubproblems globalPool;  /** intervals are the pending branches/subproblems
 HandlerContainer paretoContainer;
 
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
-rank(toCopy.getRank()),
-problem(toCopy.getProblem()),
-fjssp_data(toCopy.getFJSSPdata()),
-incumbent_s(toCopy.getIncumbentSolution()),
-ivm_tree(toCopy.getIVMTree()),
-currentLevel(toCopy.getCurrentLevel()),
-totalLevels(tbb::atomic<unsigned long>(toCopy.getNumberOfLevels())),
-totalNodes(tbb::atomic<unsigned long>(toCopy.getNumberOfNodes())),
-branches(tbb::atomic<unsigned long>(toCopy.getNumberOfBranches())),
-exploredNodes(tbb::atomic<unsigned long>(toCopy.getNumberOfExploredNodes())),
-reachedLeaves(tbb::atomic<unsigned long>(toCopy.getNumberOfReachedLeaves())),
-unexploredNodes(tbb::atomic<unsigned long>(toCopy.getNumberOfUnexploredNodes())),
-prunedNodes(tbb::atomic<unsigned long>(toCopy.getNumberOfPrunedNodes())),
-callsToPrune(tbb::atomic<unsigned long>(toCopy.getNumberOfCallsToPrune())),
-callsToBranch(tbb::atomic<unsigned long>(toCopy.getNumberOfCallsToBranch())),
-totalUpdatesInLowerBound(tbb::atomic<unsigned long>(toCopy.getNumberOfUpdatesInLowerBound())){
-    
+    rank(toCopy.getRank()),
+    problem(toCopy.getProblem()),
+    fjssp_data(toCopy.getFJSSPdata()),
+    incumbent_s(toCopy.getIncumbentSolution()),
+    ivm_tree(toCopy.getIVMTree()),
+    currentLevel(toCopy.getCurrentLevel()),
+    totalLevels(toCopy.getNumberOfLevels()),
+    totalNodes(toCopy.getNumberOfNodes()),
+    branches(toCopy.getNumberOfBranches()),
+    exploredNodes(toCopy.getNumberOfExploredNodes()),
+    reachedLeaves(toCopy.getNumberOfReachedLeaves()),
+    unexploredNodes(toCopy.getNumberOfUnexploredNodes()),
+    prunedNodes(toCopy.getNumberOfPrunedNodes()),
+    callsToPrune(toCopy.getNumberOfCallsToPrune()),
+    callsToBranch(toCopy.getNumberOfCallsToBranch()),
+    totalUpdatesInLowerBound(toCopy.getNumberOfUpdatesInLowerBound()){
+        
         start = toCopy.start;
         outputFile = new char[255];
         summarizeFile = new char[255];
@@ -54,16 +54,16 @@ fjssp_data(problemToCopy.getNumberOfJobs(),
            problemToCopy.getNumberOfMachines()),
 interval_to_solve(branch),
 currentLevel(0),
-totalLevels(tbb::atomic<unsigned long>(problemToCopy.getNumberOfVariables())),
-totalNodes(tbb::atomic<unsigned long>(0)),
-branches(tbb::atomic<unsigned long>(0)),
-exploredNodes(tbb::atomic<unsigned long>(0)),
-reachedLeaves(tbb::atomic<unsigned long>(0)),
-unexploredNodes(tbb::atomic<unsigned long>(0)),
-prunedNodes(tbb::atomic<unsigned long>(0)),
-callsToPrune(tbb::atomic<unsigned long>(0)),
-callsToBranch(tbb::atomic<unsigned long>(0)),
-totalUpdatesInLowerBound(tbb::atomic<unsigned long>(0)),
+totalLevels(problemToCopy.getNumberOfVariables()),
+totalNodes(0),
+branches(0),
+exploredNodes(0),
+reachedLeaves(0),
+unexploredNodes(0),
+prunedNodes(0),
+callsToPrune(0),
+callsToBranch(0),
+totalUpdatesInLowerBound(0),
 totalTime(0){
     
     start = std::clock();
