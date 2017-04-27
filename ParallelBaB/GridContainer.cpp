@@ -43,7 +43,7 @@ disabledBuckets(toCopy.disabledBuckets){
     
 }
 
-HandlerContainer::HandlerContainer(int rows, int cols, double maxValX, double maxValY):
+HandlerContainer::HandlerContainer(unsigned int rows, unsigned int cols, double maxValX, double maxValY):
 grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows) {
     
     if (maxValX < cols)
@@ -81,7 +81,7 @@ HandlerContainer::~HandlerContainer() {
     paretoFront.clear();
 }
 
-HandlerContainer& HandlerContainer::operator()(int rows, int cols, double maxValX, double maxValY){
+HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int cols, double maxValX, double maxValY){
     grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows);
     if (maxValX < cols)
         cols = maxValX;

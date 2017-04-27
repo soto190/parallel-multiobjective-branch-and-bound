@@ -188,7 +188,7 @@ private:
 
 public:
 
-    GridContainer(int width, int height):
+    GridContainer(unsigned int width, unsigned int height):
     cols(width),
     rows(height),
     numberOfElements(0) {
@@ -209,7 +209,7 @@ public:
     ~GridContainer(){
     }
 
-	GridContainer& operator()(int width, int height) {
+	GridContainer& operator()(unsigned int width, unsigned int height) {
         cols = width;
         rows = height;
         numberOfElements.store(0);
@@ -235,8 +235,8 @@ public:
 		return m_Data[y * cols + x].getVector();
 	}
 
-	int getCols() const { return cols; }
-	int getRows() const { return rows; }
+	unsigned int getCols() const { return cols; }
+	unsigned int getRows() const { return rows; }
     unsigned long getSize() const{ return numberOfElements; }
     
     BucketState getStateOf(size_t x, size_t y) const{
@@ -284,11 +284,11 @@ private:
 public:
     
     HandlerContainer():grid(0,0){};
-    HandlerContainer(int width, int height, double maxValX, double maxValY);
+    HandlerContainer(unsigned int width, unsigned int height, double maxValX, double maxValY);
     HandlerContainer(const HandlerContainer& toCopy);
 	~HandlerContainer();
     
-    HandlerContainer& operator()(int width, int height, double maxValX, double maxValY);
+    HandlerContainer& operator()(unsigned int width, unsigned int height, double maxValX, double maxValY);
     
 	int add(const Solution & solution);
     int set(const Solution & solution, int x, int y);

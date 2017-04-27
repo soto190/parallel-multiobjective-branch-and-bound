@@ -138,7 +138,6 @@ public:
 
 class SortedVector{
     deque<Data3> m_data;
-    
 public:
     int push(const Data3 & data){
 
@@ -152,11 +151,11 @@ public:
                 case Dom::Nondom:
                     m_data.push_front(data);
                     break;
+                case Dom::Domtes:
+                    m_data.push_front(data);
                 case Dom::Domted:
                     m_data.push_back(data);
                     break;
-                case Dom::Domtes:
-                    m_data.push_front(data);
                 default:
                     break;
             }
@@ -204,7 +203,7 @@ public:
                     m_data.push_back(data);
             }
         }
-        return 1;
+        return 0; /** This should not be reached**/
     }
     
     std::deque<Data3>::iterator begin(){

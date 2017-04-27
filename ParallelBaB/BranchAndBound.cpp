@@ -444,7 +444,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(Interval & branch_to_solve){
     int next_row = ivm_tree.getRootRow() + 1;
     
     /** This is relative to the number of threads to keep one pending for each thread. **/
-    if (globalPool.unsafe_size() < 40 && next_row < deep_to_share)
+    if (globalPool.unsafe_size() < 120 && next_row < deep_to_share)
         while(ivm_tree.getNumberOfNodesAt(next_row) > 1){
             branch_to_solve.setValueAt(next_row, ivm_tree.removeLastNodeAtRow(next_row));
             globalPool.push(branch_to_solve);
@@ -539,7 +539,7 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
     
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
-    paretoContainer(100, 100, solution.getObjective(0), solution.getObjective(1));
+    paretoContainer(100, 100, static_cast<unsigned int>(solution.getObjective(0)), static_cast<unsigned int>(solution.getObjective(1)));
     
     Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(1, temp);
