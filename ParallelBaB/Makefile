@@ -9,7 +9,7 @@ LIBS = -tbb -ltbbmalloc -ltbbmalloc_proxy
 LIBS_DEBUG = -tbb -ltbbmalloc -ltbbmalloc_proxy_debug
 
 LDFLAGS = -O0 -std=c++11
-LDFLAGS_DEBUG = -g -traceback -debug parallel -shared-intel
+LDFLAGS_DEBUG = -O0 -std=c++11 -g -traceback -debug parallel -shared-intel
 
 src = $(wildcard *.cpp)
 obj = $(src:.cpp = .o)
@@ -17,7 +17,7 @@ obj = $(src:.cpp = .o)
 all: branchAndBound
 
 debug: LIBS = $(LIBS_DEBUG)
-debug: LDFLAGS = $(LDFLAGS) $(LDFLAGS_DEBUG)
+debug: LDFLAGS = $(LDFLAGS_DEBUG)
 debug: branchAndBound
 
 branchAndBound: $(obj)
