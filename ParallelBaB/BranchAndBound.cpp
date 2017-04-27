@@ -36,8 +36,6 @@ BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
         callsToBranch.store(toCopy.getNumberOfCallsToBranch());
         totalUpdatesInLowerBound.store(toCopy.getNumberOfUpdatesInLowerBound());
         start = toCopy.start;
-        outputFile = new char[255];
-        summarizeFile = new char[255];
         
         branches_to_move = problem.getUpperBound(0) * to_share;
         deep_to_share = totalLevels * deep_limit_share;
@@ -132,16 +130,10 @@ BranchAndBound& BranchAndBound::operator()(int rank_new, const ProblemFJSSP &pro
     branches_to_move = problem.getUpperBound(0) * to_share;
     deep_to_share = totalLevels * deep_limit_share;
     
-    outputFile = new char[255];
-    summarizeFile = new char[255];
-    
     return *this;
 }
 
 BranchAndBound::~BranchAndBound() {
-	delete[] outputFile;
-	delete[] summarizeFile;
-
     paretoFront.clear();
 }
 
@@ -654,14 +646,12 @@ void BranchAndBound::printParetoFront(int withVariables) {
 	}
 }
 
-int BranchAndBound::setParetoFrontFile(const char * setOutputFile) {
-	outputFile = new char[255];
+int BranchAndBound::setParetoFrontFile(const char setOutputFile[255]) {
 	std::strcpy(outputFile, setOutputFile);
 	return 0;
 }
 
-int BranchAndBound::setSummarizeFile(const char * outputFile) {
-	summarizeFile = new char[255];
+int BranchAndBound::setSummarizeFile(const char outputFile[255]) {
 	std::strcpy(summarizeFile, outputFile);
 	return 0;
 }

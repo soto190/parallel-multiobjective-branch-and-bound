@@ -72,8 +72,8 @@ private:
     Interval interval_to_solve;
     std::vector<Solution> paretoFront; /** paretofFront. **/
     
-    char * outputFile;
-    char * summarizeFile;
+    char outputFile[255];
+    char summarizeFile[255];
     
     int branches_to_move;
     int deep_to_share;
@@ -129,8 +129,8 @@ public:
     
     void saveEvery(double timeInSeconds);
     void setParetoFront(const std::vector<Solution>& front);
-	int setParetoFrontFile(const char * outputFile);
-    int setSummarizeFile(const char * outputFile);
+	int setParetoFrontFile(const char outputFile[255]);
+    int setSummarizeFile(const char outputFile[255]);
 	int saveParetoFront();
 	int saveSummarize();
 
