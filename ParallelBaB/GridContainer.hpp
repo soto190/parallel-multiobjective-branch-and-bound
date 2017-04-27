@@ -42,26 +42,26 @@ typedef tbb::queuing_rw_mutex Lock;
  public:
      
      ParetoBucket():
-     size(0),
      posx(0),
-     posy(0),
-     state(BucketState::unexplored){
+     posy(0){
+         size.store(0);
+         state.store(BucketState::unexplored);
          m_vec.reserve(50);
      };
      
      ParetoBucket(unsigned long posx, unsigned long posy):
-     state(BucketState::unexplored),
      posx(posx),
-     posy(posy),
-     size(0){
+     posy(posy){
+         size.store(0);
+         state.store(BucketState::unexplored),
          m_vec.reserve(50);
      };
      
      ParetoBucket(const ParetoBucket& toCopy):
-     state(toCopy.getState()),
+     state(toCopy.getStateAtomic()),
      posx(toCopy.getPosx()),
      posy(toCopy.getPosy()),
-     size(toCopy.getSize()),
+     size(toCopy.getSizeAtomic()),
      m_vec(toCopy.getVectorToCopy()){
      };
      
@@ -78,6 +78,10 @@ typedef tbb::queuing_rw_mutex Lock;
      unsigned long getPosy() const{ return posy; }
      unsigned long getSize() const{ return size; }
      BucketState getState() const{ return state; }
+     
+     tbb::atomic<unsigned long> getSizeAtomic() const{return size;}
+     tbb::atomic<BucketState> getStateAtomic() const{return state;}
+
      std::vector<Solution>& getVector() {return m_vec;}
      const std::vector<Solution>& getVectorToCopy() const {return m_vec;}
      
@@ -190,8 +194,8 @@ public:
 
     GridContainer(unsigned int width, unsigned int height):
     cols(width),
-    rows(height),
-    numberOfElements(0) {
+    rows(height) {
+        numberOfElements.store(0);
         m_Data.reserve(cols * rows);
         int index = 0, indey = 0;
         for (indey = 0; indey < rows; ++indey)
@@ -203,7 +207,7 @@ public:
     cols(toCopy.getCols()),
     rows(toCopy.getRows()),
     m_Data(toCopy.m_Data),
-    numberOfElements(toCopy.getSize()){
+    numberOfElements(toCopy.getSizeAtomic()){
     }
     
     ~GridContainer(){
@@ -238,6 +242,8 @@ public:
 	unsigned int getCols() const { return cols; }
 	unsigned int getRows() const { return rows; }
     unsigned long getSize() const{ return numberOfElements; }
+    
+    tbb::atomic<unsigned long> getSizeAtomic() const{ return numberOfElements;}
     
     BucketState getStateOf(size_t x, size_t y) const{
         return m_Data[y * cols + x].getState();

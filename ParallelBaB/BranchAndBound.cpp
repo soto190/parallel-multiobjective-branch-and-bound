@@ -23,18 +23,18 @@ BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
     fjssp_data(toCopy.getFJSSPdata()),
     incumbent_s(toCopy.getIncumbentSolution()),
     ivm_tree(toCopy.getIVMTree()),
-    currentLevel(toCopy.getCurrentLevel()),
-    totalLevels(toCopy.getNumberOfLevels()),
-    totalNodes(toCopy.getNumberOfNodes()),
-    branches(toCopy.getNumberOfBranches()),
-    exploredNodes(toCopy.getNumberOfExploredNodes()),
-    reachedLeaves(toCopy.getNumberOfReachedLeaves()),
-    unexploredNodes(toCopy.getNumberOfUnexploredNodes()),
-    prunedNodes(toCopy.getNumberOfPrunedNodes()),
-    callsToPrune(toCopy.getNumberOfCallsToPrune()),
-    callsToBranch(toCopy.getNumberOfCallsToBranch()),
-    totalUpdatesInLowerBound(toCopy.getNumberOfUpdatesInLowerBound()){
+    currentLevel(toCopy.getCurrentLevel()){
         
+        totalLevels.store(toCopy.getNumberOfLevels());
+        totalNodes.store(toCopy.getNumberOfNodes());
+        branches.store(toCopy.getNumberOfBranches());
+        exploredNodes.store(toCopy.getNumberOfExploredNodes());
+        reachedLeaves.store(toCopy.getNumberOfReachedLeaves());
+        unexploredNodes.store(toCopy.getNumberOfUnexploredNodes());
+        prunedNodes.store(toCopy.getNumberOfPrunedNodes());
+        callsToPrune.store(toCopy.getNumberOfCallsToPrune());
+        callsToBranch.store(toCopy.getNumberOfCallsToBranch());
+        totalUpdatesInLowerBound.store(toCopy.getNumberOfUpdatesInLowerBound());
         start = toCopy.start;
         outputFile = new char[255];
         summarizeFile = new char[255];
@@ -54,17 +54,18 @@ fjssp_data(problemToCopy.getNumberOfJobs(),
            problemToCopy.getNumberOfMachines()),
 interval_to_solve(branch),
 currentLevel(0),
-totalLevels(problemToCopy.getNumberOfVariables()),
-totalNodes(0),
-branches(0),
-exploredNodes(0),
-reachedLeaves(0),
-unexploredNodes(0),
-prunedNodes(0),
-callsToPrune(0),
-callsToBranch(0),
-totalUpdatesInLowerBound(0),
 totalTime(0){
+    
+    totalLevels.store(problemToCopy.getNumberOfVariables());
+    totalNodes.store(0);
+    branches.store(0);
+    exploredNodes.store(0);
+    reachedLeaves.store(0);
+    unexploredNodes.store(0);
+    prunedNodes.store(0);
+    callsToPrune.store(0);
+    callsToBranch.store(0);
+    totalUpdatesInLowerBound.store(0);
     
     start = std::clock();
     t1 = std::chrono::high_resolution_clock::now();
