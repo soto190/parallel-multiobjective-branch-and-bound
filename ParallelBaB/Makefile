@@ -6,7 +6,7 @@ DEBUGGER = gdb-ia
 #INC_DIR = -I/opt/intel/compilers_and_libraries_2017.1.132/linux/tbb/include
 #LIB_DIR = -L/opt/intel/compilers_and_libraries_2017/linux/tbb/lib/intel64_lin/gcc4.7
 LIBS = -tbb -ltbbmalloc -ltbbmalloc_proxy
-LIBS_DEBUG = -tbb -ltbbmalloc -ltbbmalloc_proxy_debug
+LIBS_DEBUG = -tbb -ltbbmalloc_debug -ltbbmalloc_proxy_debug
 
 LDFLAGS = -O0 -shared-intel -std=c++11
 LDFLAGS_DEBUG = -O0 -std=c++11 -g -traceback -debug parallel -shared-intel

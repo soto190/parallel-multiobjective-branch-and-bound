@@ -334,7 +334,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     int machine = 0;
     
     int branches_created = 0;
-    SortedVector elements_sorted;
+    SortedVector sorted_elements;
     Data3 data;
 
     switch (problem.getType()) {
@@ -374,8 +374,8 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             data.setValue(toAdd);
                             data.setObjective(0, fjssp_data.getMakespan());
                             data.setObjective(1, fjssp_data.getMaxWorkload());
-                        
-                            elements_sorted.push(data);
+                            sorted_elements.push(data);
+                            
                             //ivm_tree.setNode(currentLevel + 1, toAdd);
                             branches_created++;
                             
@@ -386,9 +386,8 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             branches += branches_created;
 
             if (branches_created > 0) { /** If a branch was created. **/
-                
                 std::deque<Data3>::iterator it;
-                for (it = elements_sorted.begin(); it != elements_sorted.end(); ++it)
+                for (it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
                     ivm_tree.setNode(currentLevel + 1, (*it).getValue());
                 
                 ivm_tree.moveToNextRow();

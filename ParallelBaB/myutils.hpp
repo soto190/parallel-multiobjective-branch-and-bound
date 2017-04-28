@@ -44,7 +44,6 @@ double roundToNearest(double value);
 double round_double(double value);
 int binarySearch(double value, const double * vector, int size);
 
-
 enum Dom {Domtes = 1, Domted = -1, Nondom = 0, Eq = 11};
 
 class Data3{
@@ -138,81 +137,88 @@ public:
 
 class SortedVector{
     deque<Data3> m_data;
+
 public:
     int push(const Data3 & data){
 
-        if (m_data.empty())
-            m_data.push_back(data);
-        else if(m_data.size() == 1)
-            switch (data.dominance(m_data.front())) {
-                case Dom::Eq:
-                    m_data.push_front(data);
-                    break;
-                case Dom::Nondom:
-                    m_data.push_front(data);
-                    break;
-                case Dom::Domtes:
-                    m_data.push_front(data);
-                case Dom::Domted:
-                    m_data.push_back(data);
-                    break;
-                default:
-                    break;
-            }
-        else if(m_data.size() == 2){
-            Dom domF = data.dominance(m_data.front());
-            Dom domB = data.dominance(m_data.back());
-            
-            if (domF == Dom::Domtes)
-                m_data.push_front(data);
-            else if(domB == Dom::Domted)
+        Dom domF, domB;
+        bool inserted = 0;
+
+        switch (m_data.size()) {
+            case 0:
                 m_data.push_back(data);
-            else /** That means that can be non-dominated by the two solutions, or dominated by front and dominates back. In either case it goes to mid. **/
-                m_data.insert(m_data.begin() + 1, data);
-        }else{
-            Dom domF = data.dominance(m_data.front());
-            Dom domB = data.dominance(m_data.back());
-            if (domF == Dom::Domtes || domF == Dom::Nondom || domF == Dom::Eq)
-                m_data.push_front(data);
-            else if(domB == Dom::Domted || domB == Dom::Nondom || domB == Dom::Eq)
-                m_data.push_back(data);
-            else{
-                bool inserted = 0;
-                for (size_t count = 1; count < m_data.size(); ++count)
-                    switch (data.dominance(m_data.at(count))) {
-                        case Dom::Eq:
-                            m_data.insert(m_data.begin() + count, data);
-                            count = m_data.size();
-                            inserted = 1;
-                            break;
-                        case Dom::Nondom:
-                            m_data.insert(m_data.begin() + count, data);
-                            count = m_data.size();
-                            inserted = 1;
-                            break;
-                        case Dom::Domtes:
-                            m_data.insert(m_data.begin() + count, data);
-                            count = m_data.size();
-                            inserted = 1;
-                        case Dom::Domted:
-                            break;
-                        default:
-                            break;
-                    }
-                if(inserted == 0)
+                break;
+                
+            case 1:
+                switch (data.dominance(m_data.front())) {
+                    case Dom::Eq:
+                        m_data.push_front(data);
+                        break;
+                    case Dom::Nondom:
+                        m_data.push_front(data);
+                        break;
+                    case Dom::Domtes:
+                        m_data.push_front(data);
+                        break;
+                    case Dom::Domted:
+                        m_data.push_back(data);
+                        break;
+                    default:
+                        break;
+                }
+                break;
+                
+            case 2:
+                domF = data.dominance(m_data.front());
+                domB = data.dominance(m_data.back());
+                if (domF == Dom::Domtes)
+                    m_data.push_front(data);
+                else if(domB == Dom::Domted)
                     m_data.push_back(data);
-            }
+                else /** That means that can be non-dominated by the two solutions, or dominated by front and dominates back. In either case it goes to mid. **/
+                    m_data.insert(m_data.begin() + 1, data);
+                break;
+                
+            default:
+                domF = data.dominance(m_data.front());
+                domB = data.dominance(m_data.back());
+                if (domF == Dom::Domtes || domF == Dom::Nondom || domF == Dom::Eq)
+                    m_data.push_front(data);
+                else if(domB == Dom::Domted || domB == Dom::Nondom || domB == Dom::Eq)
+                    m_data.push_back(data);
+                else{
+                    for (size_t count = 1; count < m_data.size(); ++count)
+                        switch (data.dominance(m_data[count])) {
+                            case Dom::Eq:
+                                m_data.insert(m_data.begin() + count, data);
+                                count = m_data.size();
+                                inserted = 1;
+                                break;
+                            case Dom::Nondom:
+                                m_data.insert(m_data.begin() + count, data);
+                                count = m_data.size();
+                                inserted = 1;
+                                break;
+                            case Dom::Domtes:
+                                m_data.insert(m_data.begin() + count, data);
+                                count = m_data.size();
+                                inserted = 1;
+                                break;
+                            case Dom::Domted:
+                                break;
+                            default:
+                                break;
+                        }
+                    if(inserted == 0)
+                        m_data.push_back(data);
+                }
+                break;
         }
-        return 0; /** This should not be reached**/
+        return 1;
     }
     
-    std::deque<Data3>::iterator begin(){
-        return m_data.begin();
-    }
-    
-    std::deque<Data3>::iterator end(){
-        return m_data.end();
-    }
+    std::deque<Data3>::iterator begin(){return m_data.begin();}
+    std::deque<Data3>::iterator end(){return m_data.end();}
     
     void print() {
         std::deque<Data3>::iterator it = m_data.begin();
