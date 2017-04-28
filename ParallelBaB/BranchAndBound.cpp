@@ -432,17 +432,24 @@ int BranchAndBound::aLeafHasBeenReached() const { return (currentLevel == totalL
  * TODO: Send the next pending nodes to global pool, not only root_row + 1.
  ***/
 void BranchAndBound::shareWorkAndSendToGlobalPool(Interval & branch_to_solve){
-    /** Testing code. **/
+
     int next_row = ivm_tree.getRootRow() + 1;
-    
+    int branches_to_move_to_global_pool = ivm_tree.getNumberOfNodesAt(next_row) - 1;
     /** This is relative to the number of threads to keep one pending for each thread. **/
-    if (globalPool.unsafe_size() < 120 && next_row < deep_to_share)
-        while(ivm_tree.getNumberOfNodesAt(next_row) > 1){
+    if (globalPool.unsafe_size() < 120 && next_row < deep_to_share && branches_to_move_to_global_pool > 1){
+        for(int moved = 0; moved < branches_to_move_to_global_pool; ++moved){
             branch_to_solve.setValueAt(next_row, ivm_tree.removeLastNodeAtRow(next_row));
+            
+            if(moved < branches_to_move_to_global_pool * 0.333f)
+                branch_to_solve.setHighPriority();
+            else if(moved < branches_to_move_to_global_pool * 0.666f)
+                branch_to_solve.setMediumPriority();
+            else
+                branch_to_solve.setLowPriority();
             globalPool.push(branch_to_solve);
             branch_to_solve.removeLastValue();
         }
-    /** End testing code. **/
+    }
 }
 
 /**
@@ -838,6 +845,7 @@ void BranchAndBound::saveEvery(double timeInSeconds) {
 }
 
 void BranchAndBound::printDebug(){
+    
     printf("\nDEBUG\n");
     printf("GlobalPool:\n");
     globalPool.print();
