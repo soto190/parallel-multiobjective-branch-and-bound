@@ -182,12 +182,14 @@ int IVMTree::getOwner() const {return whoIam;}
 
 int IVMTree::getLastNodeAtRow(int row) const{ return ivm[row][n_nodes_at_row[row] - 1];}
 int IVMTree::removeLastNodeAtRow(int row){
-    int node = ivm[row][n_nodes_at_row[row] - 1];
-    ivm[row][n_nodes_at_row[row] - 1] = -1;
+    
+    int last_col = active_node[row] + n_nodes_at_row[row] - 1;
+
+    int node_at_col = ivm[row][last_col];
+    ivm[row][last_col] = -1;
     n_nodes_at_row[row]--;
     end_exploration[row]--;
-    return node;
-}
+    return node_at_col;}
 
 void IVMTree::setActiveRow(int level) { active_row = level; }
 void IVMTree::setOwner(int idBB) { whoIam = idBB;}
@@ -212,9 +214,9 @@ void IVMTree::setExplorationInterval(int set_starting_level, int *starts,
     
 }
 
-void IVMTree::setNode(int level, int value) {
-    ivm[level][n_nodes_at_row[level]] = value;
-    n_nodes_at_row[level]++;
+void IVMTree::setNode(int row, int value) {
+    ivm[row][active_node[row] + n_nodes_at_row[row] + 1] = value;
+    n_nodes_at_row[row]++;
 }
 
 int IVMTree::hasPendingBranches() const { return hasBranches; }
@@ -251,6 +253,8 @@ int IVMTree::pruneActiveNode() {
             return ivm[active_row][active_node[active_row]]; /** Return the active node. **/
         }
     }
+    active_node[active_row] = -1;
+
     active_row = root_row;
     hasBranches = 0; /** There are no more branches. **/
     return ivm[active_row][active_node[active_row]];

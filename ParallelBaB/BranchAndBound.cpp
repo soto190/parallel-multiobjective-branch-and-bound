@@ -214,6 +214,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     }
     
     for (row = build_up_to + 1; row <= totalLevels; ++row) {
+        tree.setActiveNodeAt(row, -1);
         tree.setStartExploration(row, 0);
         tree.resetNumberOfNodesAt(row);
     }
