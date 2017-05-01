@@ -261,7 +261,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
-      
+        
         if (!aLeafHasBeenReached() && theTreeHasMoreBranches()){
             if (improvesTheGrid(incumbent_s))
                 branch(incumbent_s, currentLevel);

@@ -493,8 +493,6 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
         
         if(data.getTempBestWorkloadInMachine(machine) > temp)
             temp = data.getTempBestWorkloadInMachine(machine);
-        
-        
     }
     
     if (temp < max_workload)
