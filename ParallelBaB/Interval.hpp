@@ -65,45 +65,39 @@ public:
     
     void removeLastValue();
     void print() const;
-    
     bool verify() const;
 };
 
 class ReadySubproblems {
     // One queue for each priority level
     tbb::concurrent_queue<Interval> level[P_Low + 1];
+    tbb::atomic<unsigned int> size;
     unsigned int size_empty;
     
 public:
-    
+    ReadySubproblems(){size.store(0);}
     void setSizeEmpty(int size){ size_empty = size;}
     unsigned int getSizeEmpty() const{return size_empty;}
+    unsigned long unsafe_size() const{ return size; }
+    bool empty() const{ return size > 0?false:true;}
     
     void push(const Interval & subproblem) {
         level[subproblem.getPriority()].push(subproblem);
-        //tbb::task::enqueue(*new(tbb::task::allocate_root()) RunWorkItem);
+        size.fetch_and_increment();
+        /**
+         TODO: Test the next line to launch one thread per subproblem.
+         tbb::task::enqueue(*new(tbb::task::allocate_root()) RunWorkItem);
+         **/
     }
     
     bool try_pop(Interval & interval) {
-        // Scan queues in priority order for an item.
+        // Scan queues in priority order for a subproblem.
         for(int i = P_High; i <= P_Low; ++i)
-            if(level[i].try_pop(interval))
+            if(level[i].try_pop(interval)){
+                size.fetch_and_decrement();
                 return true;
+            }
         return false;
-    }
-    
-    unsigned long unsafe_size() const{
-        unsigned long size_tmp = 0;
-        for(int i = P_High; i <= P_Low; ++i)
-            size_tmp += level[i].unsafe_size();
-        return size_tmp;
-    }
-    
-    bool empty() const{
-        for(int i = P_High; i <= P_Low; ++i)
-            if (!level[i].empty())
-                return false;
-        return true;
     }
     
     void print() const{

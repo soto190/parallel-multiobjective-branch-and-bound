@@ -203,7 +203,7 @@ void Solution::print() const {
 	for (nObj = 0; nObj < n_objectives; ++nObj)
 		printf("%6.0f", getObjective(nObj));
 
-	printf("| ");
+	printf(" | ");
 
 	for (nVar = 0; nVar < n_variables; ++nVar)
         if (variable[nVar] == -1)
@@ -211,7 +211,7 @@ void Solution::print() const {
         else
             printf("%3d", variable[nVar]);
 
-	printf("|\n");
+	printf(" |\n");
 }
 
 void Solution::printObjectives() const {

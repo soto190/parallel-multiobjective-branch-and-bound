@@ -89,16 +89,32 @@ typedef tbb::queuing_rw_mutex Lock;
 
          tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, false);
         
-         DominanceRelation domination;
          unsigned long index = 0, size_vec = m_vec.size();
          int improves = 1;
-         for (index = 0; index < size_vec; ++index) {
-             domination = obj.dominates(m_vec.at(index));
-             if (domination == DominanceRelation::Dominated || domination == DominanceRelation::Equals){
-                 improves = 0;
-                 index = size_vec;
+         for (index = 0; index < size_vec; ++index)
+            switch (obj.dominates(m_vec[index])) {
+                
+                case DominanceRelation::Dominated:
+                    improves = 0;
+                    index = size_vec;
+                    break;
+                
+                case DominanceRelation::Equals:
+                    improves = 0;
+                    index = size_vec;
+                    break;
+                    
+                case DominanceRelation::Dominates:
+                    improves = 1;
+                    index = size_vec;
+                    break;
+                
+                case DominanceRelation::Nondominated:
+                    break;
+                
+                default:
+                    break;
              }
-         }
 
          return improves;
      }
@@ -119,13 +135,9 @@ typedef tbb::queuing_rw_mutex Lock;
          std::vector<Solution>::iterator begin = m_vec.begin();
          int wasAdded = 0;
          unsigned long nSol = 0;
-         int domination;
 
-         for (nSol = 0; nSol < m_vec.size(); ++nSol) {
-             
-             domination = obj.dominates(m_vec.at(nSol));
-             
-             switch (domination) {
+         for (nSol = 0; nSol < m_vec.size(); ++nSol)
+             switch (obj.dominates(m_vec.at(nSol))) {
                      
                  case DominanceRelation::Dominates:
                      m_vec.erase(begin + nSol);
@@ -149,7 +161,6 @@ typedef tbb::queuing_rw_mutex Lock;
                      nSol = m_vec.size();
                      break;
              }
-         }
          
          if (equals == 0
             && (m_vec.size() == 0

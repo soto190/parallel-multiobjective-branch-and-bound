@@ -77,7 +77,7 @@ private:
     int* ending_time; /** Size = n_operations. Contains the ending time of the n_operation. **/
     int* time_on_machine; /** Size = n_machines. Contains the ending time of the last computed job. **/
     int* workload_in_machine; /** Size = n_machines. Contains the acumulated processing time. **/
-    int* best_workloads_machines; /** Size = n_machines.**/
+    int* best_workloads_in_machine; /** Size = n_machines.**/
     int* temp_best_wl_m; /** Size = n_machines.**/
     std::vector<std::deque<int>> machine_allocations;
     
@@ -96,7 +96,7 @@ public:
         ending_time = new int[n_operations];
         time_on_machine = new int[n_machines];
         workload_in_machine = new int[n_machines];
-        best_workloads_machines = new int[n_machines];
+        best_workloads_in_machine = new int[n_machines];
         temp_best_wl_m = new int[n_machines];
 
         machine_allocations.resize(n_machines);
@@ -107,7 +107,7 @@ public:
         for (int m = 0; m < n_machines; ++m){
             time_on_machine[m] = 0;
             workload_in_machine[m] = 0;
-            best_workloads_machines[m] = 0;
+            best_workloads_in_machine[m] = 0;
             temp_best_wl_m[m] = 0;
         }
         
@@ -143,7 +143,7 @@ public:
         for (int m = 0; m < n_machines; ++m){
             time_on_machine[m] = toCopy.getTimeOnMachine(m);
             workload_in_machine[m] = toCopy.getWorkloadOnMachine(m);
-            best_workloads_machines[m] = toCopy.getBestWorkloadInMachine(m);
+            best_workloads_in_machine[m] = toCopy.getBestWorkloadInMachine(m);
             temp_best_wl_m[m] = toCopy.getTempBestWorkloadInMachine(m);
         }
         
@@ -162,7 +162,7 @@ public:
         delete [] ending_time;
         delete [] time_on_machine;
         delete [] workload_in_machine;
-        delete [] best_workloads_machines;
+        delete [] best_workloads_in_machine;
         delete [] temp_best_wl_m;
         
         for(int m = 0; m < n_machines; ++m)
@@ -227,7 +227,7 @@ public:
     int getMaxWorkload() const {return max_workload;}
     int getMinTotalWorkload() const{return min_total_workload;}
     
-    int getBestWorkloadInMachine(int machine) const{return best_workloads_machines[machine];}
+    int getBestWorkloadInMachine(int machine) const{return best_workloads_in_machine[machine];}
     int getTempBestWorkloadInMachine(int machine) const{return temp_best_wl_m[machine];}
 
     size_t getNumberOfOperationsAllocatedIn(int machine) const { return machine_allocations[machine].size();}
@@ -254,7 +254,7 @@ public:
     void setMaxWorkload(int workload) { max_workload = workload;}
     
     void setTempBestWorkloadInMachine(int machine, int value){temp_best_wl_m[machine] = value;}
-    void setBestWorkloadInMachine(int machine, int value){best_workloads_machines[machine] = value;}
+    void setBestWorkloadInMachine(int machine, int value){best_workloads_in_machine[machine] = value;}
     void setMinTotalWorkload(int value){min_total_workload = value;}
 
     void increaseTempWorkloadIn(int machine, int time){temp_best_wl_m[machine] += time;}
@@ -299,7 +299,7 @@ public:
         for (int m = 0; m < n_machines; ++m){
             time_on_machine[m] = 0;
             workload_in_machine[m] = 0;//best_workloads_machines[n_machines];
-            temp_best_wl_m[m] = best_workloads_machines[m];
+            temp_best_wl_m[m] = best_workloads_in_machine[m];
             machine_allocations[m].clear();
         }
     
@@ -310,7 +310,7 @@ public:
         }
     }
     
-    void print(){
+    void print() const{
         char gantt[n_machines][255];
         int time = 0;
         int machine = 0;
@@ -323,7 +323,7 @@ public:
             else
                 printf("%3c %3d:  - %3d - %3d \n", 'a' + operation, operation, starting_time[operation], ending_time[operation]);
 
-        printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, max_workload, total_workload);
+       
 
         /**creates an empty gantt**/
         for (machine = 0; machine < n_machines; ++machine)
@@ -349,6 +349,11 @@ public:
         for (time = 0; time <= makespan; ++time)
             printf("%3d", (time));
         printf("\n");
+        
+        for (machine = 0; machine < n_machines; ++machine)
+            printf("BestWL: %6d Temp: %6d\n", best_workloads_in_machine[machine], temp_best_wl_m[machine]);
+
+        printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, max_workload, total_workload);
     }
 };
 
@@ -408,7 +413,8 @@ public:
     int getTimesValueIsRepeated(int value);
     
     Solution goodSolutionWithMaxWorkload;
-   
+    void updateBestMaxWorkloadSolution(FJSSPdata& data);
+    
     int getNumberOfJobs() const;
     int getNumberOfOperations() const;
     int getNumberOfMachines() const;

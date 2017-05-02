@@ -237,7 +237,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
 }
 
 tbb::task* BranchAndBound::execute() {
-
+    t1 = std::chrono::high_resolution_clock::now();
     initialize(interval_to_solve.getBuildUpTo());
     while (!globalPool.empty())
         if(globalPool.try_pop(interval_to_solve)){
@@ -246,7 +246,8 @@ tbb::task* BranchAndBound::execute() {
             solve(interval_to_solve);
             
         }
-    printf("[B&B-%03d] No more intervals in global pool. Going to sleep.\n", rank);
+    double elapsed_time =  getTotalTime();
+    printf("[B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f ms]\n", rank, elapsed_time);
     
     return NULL;
 }
@@ -272,11 +273,13 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             updated = updateParetoGrid(incumbent_s);
             totalUpdatesInLowerBound += updated;
             
-            /*if (updated) {
-                printf("[B&B-%03d] ", rank);
+            if (updated){
+                /*printf("[B&B-%03d] ", rank);
                 printCurrentSolution();
-                printf(" + [%6lu] \n", paretoContainer.getSize());
-            }*/
+                printf(" + [%6lu] \n", paretoContainer.getSize());*/
+                if (fjssp_data.getMaxWorkload() < problem.getBestWorkloadFound())
+                    problem.updateBestMaxWorkloadSolution(fjssp_data);
+            }
             /** Go back and prepare to remove the evaluations. **/
             ivm_tree.pruneActiveNode();
         }
@@ -556,7 +559,14 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
     int machine = 0;
     int toAdd = 0;
     //fjssp_data.reset(); /** This function call is not necesary because the structuras starts empty.**/
-    
+   /** TODO: Test this.**/
+    fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
+    for (int m = 0; m < problem.getNumberOfMachines(); ++m){
+        fjssp_data.setBestWorkloadInMachine(m, problem.getBestWorkload(m));
+        fjssp_data.setTempBestWorkloadInMachine(m, problem.getBestWorkload(m));
+    }
+    /** TODO: Remove or keep after test.**/
+
     for (row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
         map = branch_to_split.getValueAt(row);
         incumbent_s.setVariable(row, map);

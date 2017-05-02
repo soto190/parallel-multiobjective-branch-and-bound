@@ -54,8 +54,6 @@ tbb::task * ParallelBranchAndBound::execute() {
         BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());
 	}
     
-	printf("Data recollected.\n");
-
     BB_container.setParetoFrontFile(outputParetoFile);
     BB_container.setSummarizeFile(summarizeFile);
     
@@ -63,8 +61,9 @@ tbb::task * ParallelBranchAndBound::execute() {
 	BB_container.printParetoFront();
 	BB_container.saveParetoFront();
 	BB_container.saveSummarize();
-    
     bb_threads.clear();
+
+    printf("Data swarm recollected and saved.\n");
 	printf("Parallel Branch And Bound ended.\n");
 	return NULL;
 }

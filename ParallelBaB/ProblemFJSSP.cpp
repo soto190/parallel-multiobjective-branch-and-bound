@@ -398,12 +398,10 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     
     int makespan = 0;
     int max_workload = 0;
-    int temp = 0;
     int map = solution.getVariable(level);
     int job = getDecodeMap(map, 0);
     int machine = getDecodeMap(map, 1);
     int numberOp = getOperationInJobIsNumber(job, data.getNumberOfOperationsAllocatedInJob(job));
-    
     
     /** With the operation number and the machine we can continue. **/
     int proccessingTime = getProccessingTime(numberOp, machine);
@@ -411,9 +409,8 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     
     data.decreaseTempWorkloadIn(getAssignatioBestWorkload(numberOp), getProccessingTime(numberOp, getAssignatioBestWorkload(numberOp)));
     data.increaseTempWorkloadIn(machine, proccessingTime);
-    
     data.setOperationAllocation(job, numberOp, machine, proccessingTime);
-
+    
     if (data.getLastOperationAllocatedInJob(job) == 0) { /** If it is the first operation of the job.**/
         if(data.getTimeOnMachine(machine) >= getReleaseTimeOfJob(job)){
             
@@ -449,14 +446,12 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
         
         if(data.getWorkloadOnMachine(machine) > max_workload)
             max_workload = data.getWorkloadOnMachine(machine);
-    
-        if(data.getTempBestWorkloadInMachine(machine) > temp)
-            temp = data.getTempBestWorkloadInMachine(machine);
+        
+        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
+            max_workload = data.getTempBestWorkloadInMachine(machine);
     }
     
-    if (temp < max_workload)
-        max_workload = temp;
-    
+
     data.setMakespan(makespan);
     data.setMaxWorkload(max_workload);
     
@@ -468,11 +463,10 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
 void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, int level){
     int makespan = 0;
     int max_workload = 0;
-    int temp = 0;
     
     int map = solution.getVariable(level);
     int job = getDecodeMap(map, 0);
-    int machine = 0;
+    int machine = getDecodeMap(map, 1);
     int numberOp = getOperationInJobIsNumber(job, data.getLastOperationAllocatedInJob(job));
     
     /** With the operation number and the machine we can continue. **/
@@ -490,14 +484,11 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
         
         if(data.getWorkloadOnMachine(machine) > max_workload)
             max_workload = data.getWorkloadOnMachine(machine);
-        
-        if(data.getTempBestWorkloadInMachine(machine) > temp)
-            temp = data.getTempBestWorkloadInMachine(machine);
+
+        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
+            max_workload = data.getTempBestWorkloadInMachine(machine);
     }
-    
-    if (temp < max_workload)
-        max_workload = temp;
-    
+  
     data.setMakespan(makespan);
     data.setMaxWorkload(max_workload);
     
@@ -531,6 +522,14 @@ void ProblemFJSSP::createDefaultSolution(Solution & solution){
         }
     
     evaluate(solution);
+}
+
+void ProblemFJSSP::updateBestMaxWorkloadSolution(FJSSPdata& data){
+    bestWorkloadFound = data.getMaxWorkload();
+    for (int n_op = 0; n_op < n_operations; ++n_op)
+        assignationBestWorkload[n_op] = data.getOperationAllocation(n_op);
+    for (int m_mach = 0; m_mach < n_machines; ++m_mach)
+        data.setBestWorkloadInMachine(m_mach, data.getWorkloadOnMachine(m_mach));
 }
 
 void ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){
@@ -660,10 +659,12 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
             maxWorkloadIsReduced = 0;
         }
     }
-    
-    getBestWorkload(maxWorkloadObj);// bestWorkloadFound = maxWorkloadObj;
-    for (nMachine = 0; nMachine < getNumberOfMachines(); ++nMachine)
+    bestWorkloadFound = 0;
+    for (nMachine = 0; nMachine < getNumberOfMachines(); ++nMachine){
         bestWorkloads[nMachine] = workload[nMachine];
+        if(bestWorkloads[nMachine] > bestWorkloadFound)
+            bestWorkloadFound = bestWorkloads[nMachine];
+    }
 
 }
 
