@@ -366,11 +366,13 @@ private:
     int n_machines;
     int sumOfMinPij;
     int bestWorkloadFound;
+    int bestMakespanFound;
     int * assignationMinPij;       /** Length equals to numberOfOperations. **/
-    int * assignationBestWorkload; /** Length equals to numberOfOperations. */
+    int * assignationBestWorkload; /** Length equals to numberOfOperations. **/
+    int * assignationBestMakespan; /** Lenght equals to numberOfOperations. **/
     int * bestWorkloads;           /** Length equals to number of machines. **/
     int * minWorkload;             /** Length equals to number of machines. **/
-    int * numberOfOperationsInJob; /** Length equals to number of Jobs. **/
+    int * n_operations_in_job; /** Length equals to number of Jobs. **/
     int * releaseTime;             /** Length equals to number of Jobs. **/
     int * operationIsFromJob;      /** Length equals to numberOfOperations. **/
     int ** processingTime;         /** Length equals to numberOfOperations x numberOfMachines. **/
@@ -378,6 +380,16 @@ private:
     int ** jobMachineToMap;        /** Length equals to numberOfJobs x numberOfMachines. **/
     int ** jobOperationHasNumber;  /** Length equals to job x numberOfOperationsInJob. **/
     
+    int * earliest_starting_time;  /** Length equals to number of operations. **/
+    int * earliest_ending_time;    /** Length equals to number of operations. **/
+    int * eet_of_job;              /** Length equals to number of jobs. **/
+    int * sum_shortest_proc_times; /** D^{k}_{Ñ}. Length equals to number of machines.**/
+    int avg_op_per_machine;        /** Ñ parameter (N tilde).  **/
+    int min_sum_shortest_proc_times; /** D_{{k_0}, Ñ}. **/
+    int max_eet_of_jobs;            /** Maximum earliest ending time of jobs. **/
+    int sum_M_smallest_est;         /** R_MSum of the M smallest starting times (est). **/
+    int bestBound_maxWorkload;
+    int bestBound_makespan;
 public:
     // ProblemFJSSP();
     ProblemFJSSP(const ProblemFJSSP& toCopy);
@@ -414,14 +426,21 @@ public:
     
     Solution goodSolutionWithMaxWorkload;
     void updateBestMaxWorkloadSolution(FJSSPdata& data);
+    void updateBestMakespanSolution(FJSSPdata& data);
+    void updateBestMakespanSolutionWith(const Solution& solution);
+    void updateBestMaxWorkloadSolutionWith(const Solution& solution);
+    
+
     
     int getNumberOfJobs() const;
     int getNumberOfOperations() const;
     int getNumberOfMachines() const;
     int getSumOfMinPij() const;
     int getBestWorkloadFound() const;
+    int getBestMakespanFound() const;
     int getAssignationMinPij(int n_operation) const;
-    int getAssignatioBestWorkload(int n_operation) const;
+    int getAssignationBestWorkload(int n_operation) const;
+    int getAssignationBestMakespan(int n_opeartion) const;
     int getBestWorkload(int n_machine) const;
     int getMinWorkload(int n_machinen) const;
     int getMapOfJobMachine(int job, int machine) const;
@@ -432,7 +451,29 @@ public:
     int getNumberOfOperationsInJob(int job) const;
     int getReleaseTimeOfJob(int job) const;
     int getLowerBoundInObj(int nObj) const;
+    int getBestBoundMaxWorkload() const;
+    int getBestBoundMakespan() const;
     
+    int getEarliestStartingTime(int nOperation) const;
+    int getEarliestEndingTime(int nOperation) const;
+    int getEarliestEndingJobTime(int nObj) const;
+    int getSumShortestProcTimeInMachine(int nMachine) const;
+    int getAvgOperationPerMachine() const;
+    int getMinSumShortestProcTime() const;
+    int getMaxEarliestEndingTime() const;
+    int getSumOf_M_smallestEST() const;
+    
+    
+    void setEarliestStartingTime(int nOperation, int nValue);
+    void setEarliestEndingTime(int nOperation, int nValue);
+    void setEarliestEndingJobTime(int nObj, int nValue);
+    void setSumShortestProcTimeInMachine(int nMachine, int nValue);
+    void setAvgOperationPerMachine(int nValue);
+    void setMinShortestProcTime(int nValue);
+    void setMaxEarliestEndingTime(int nValue);
+    void setSumOf_M_smallestEST(int nValue);
+    
+
     double evaluatePartialTest4(Solution & solution, int currentLevel);
 
     void printSolution(const Solution & solution) const;
@@ -445,6 +486,7 @@ public:
     void printSchedule(const Solution & solution) const;
     void buildSolutionWithGoodMaxWorkload(Solution & solution);
     void buildSolutionWithGoodMaxWorkloadv2(Solution & solution);
+    int e_function(double value) const;
     
 };
 

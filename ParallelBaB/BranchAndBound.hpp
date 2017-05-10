@@ -149,7 +149,9 @@ private:
 	int improvesTheGrid(const Solution & solution) const;
 	int updateParetoGrid(const Solution & solution);
 	/** End Grid functions. **/
-
+    void updateBounds(const Solution & solution, FJSSPdata& data);
+    void updateBoundsWithSolution(const Solution & solution);
+    
 	/** IVM functions. **/
 public:
 	void computeLastBranch(Interval & branch);

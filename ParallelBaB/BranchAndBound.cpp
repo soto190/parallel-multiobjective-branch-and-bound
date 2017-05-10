@@ -196,7 +196,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
         tree.setActiveNodeAt(row, build_value);
         tree.setIVMValueAt(row, build_value, build_value);
         
-        /** TODO: Check this part. The interval is equivalent to the solution?. **/
+        /** The interval is equivalent to the solution. **/
         incumbent_s.setVariable(row, build_value);
         problem.evaluateDynamic(incumbent_s, fjssp_data, row);
     }
@@ -240,12 +240,9 @@ tbb::task* BranchAndBound::execute() {
     t1 = std::chrono::high_resolution_clock::now();
     initialize(interval_to_solve.getBuildUpTo());
     while (!globalPool.empty())
-        if(globalPool.try_pop(interval_to_solve)){
-//            printf("[B&B-%03d] Picking from global pool. Pool size is %lu\n", rank, globalPool.unsafe_size());
-//            globalPool.print();
+        if(globalPool.try_pop(interval_to_solve))
             solve(interval_to_solve);
-            
-        }
+    
     double elapsed_time =  getTotalTime();
     printf("[B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f ms]\n", rank, elapsed_time);
     
@@ -255,14 +252,12 @@ tbb::task* BranchAndBound::execute() {
 void BranchAndBound::solve(Interval& branch_to_solve) {
 
     double timeUp = 0;
-    int updated = 0;
    
     intializeIVM_data(branch_to_solve, ivm_tree);
     while (theTreeHasMoreBranches() && !timeUp) {
         
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
-        
         if (!aLeafHasBeenReached() && theTreeHasMoreBranches()){
             if (improvesTheGrid(incumbent_s))
                 branch(incumbent_s, currentLevel);
@@ -270,28 +265,23 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                 prune(incumbent_s, currentLevel);
         }else {
             reachedLeaves++;
-            updated = updateParetoGrid(incumbent_s);
-            totalUpdatesInLowerBound += updated;
-            
-            if (updated){
-                /*printf("[B&B-%03d] ", rank);
+            if (updateParetoGrid(incumbent_s)){
+                totalUpdatesInLowerBound++;
+                
+              /*printf("[B&B-%03d] ", rank);
                 printCurrentSolution();
                 printf(" + [%6lu] \n", paretoContainer.getSize());*/
-                if (fjssp_data.getMaxWorkload() < problem.getBestWorkloadFound())
-                    problem.updateBestMaxWorkloadSolution(fjssp_data);
             }
-            /** Go back and prepare to remove the evaluations. **/
-            ivm_tree.pruneActiveNode();
+            updateBounds(incumbent_s, fjssp_data);
+
+            ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
         }
         
-        /** If the branching operator doesnt creates branches or the prune
-         function was called then we need to remove the evaluations.
-         Also if a leave has been reached. **/
+        /** If the branching operator doesnt creates branches or the prune function was called then we need to remove the evaluations. Also if a leave has been reached. **/
         for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
             problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, l);
         
-        /** Sharing part of the IVM tree to the global pool. This is done after branching and pruning any pending work of the three. **/
-        if(ivm_tree.hasPendingBranches())
+        if(ivm_tree.hasPendingBranches()) /** Sharing part of the IVM tree to the global pool. This is done after branching and pruning any pending work of the three. **/
           shareWorkAndSendToGlobalPool(branch_to_solve);
     }
     
@@ -323,7 +313,7 @@ int BranchAndBound::explore(Solution & solution) {
 /**
  * Modifies the variable at built_up_to + 1 of the solution.
  *
- *
+ * return the number of branches created.
  */
 int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
@@ -419,6 +409,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
 void BranchAndBound::prune(Solution & solution, int currentLevel) {
 	callsToPrune++;
+    prunedNodes++;
 	ivm_tree.pruneActiveNode();
 }
 
@@ -438,8 +429,11 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(Interval & branch_to_solve){
 
     int next_row = ivm_tree.getRootRow() + 1;
     int branches_to_move_to_global_pool = ivm_tree.getNumberOfNodesAt(next_row) - 1;
-    /** This is relative to the number of threads to keep one pending for each thread. **/
-    if (globalPool.unsafe_size() < 120 && next_row < deep_to_share && branches_to_move_to_global_pool > 1){
+    
+    /** This is relative to the number of threads to keep one pending for each thread. 
+     * n_threads x 2;
+     **/
+    if (globalPool.unsafe_size() < 256 && next_row < deep_to_share && branches_to_move_to_global_pool > 1){
         for(int moved = 0; moved < branches_to_move_to_global_pool; ++moved){
             branch_to_solve.setValueAt(next_row, ivm_tree.removeLastNodeAtRow(next_row));
             
@@ -549,6 +543,8 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
     solution.print();
     updateParetoGrid(solution);
     updateParetoGrid(temp);
+    updateBoundsWithSolution(solution);
+    updateBoundsWithSolution(temp);
     
     int row = 0;
     int split_level = branch_to_split.getBuildUpTo() + 1;
@@ -559,14 +555,13 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
     int machine = 0;
     int toAdd = 0;
     //fjssp_data.reset(); /** This function call is not necesary because the structuras starts empty.**/
-   /** TODO: Test this.**/
+
     fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
     for (int m = 0; m < problem.getNumberOfMachines(); ++m){
         fjssp_data.setBestWorkloadInMachine(m, problem.getBestWorkload(m));
         fjssp_data.setTempBestWorkloadInMachine(m, problem.getBestWorkload(m));
     }
-    /** TODO: Remove or keep after test.**/
-
+    
     for (row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
         map = branch_to_split.getValueAt(row);
         incumbent_s.setVariable(row, map);
@@ -672,8 +667,24 @@ int BranchAndBound::setSummarizeFile(const char outputFile[255]) {
 	return 0;
 }
 
-void BranchAndBound::setParetoFront(const std::vector<Solution> &front){
-    paretoFront = front;
+void BranchAndBound::setParetoFront(const std::vector<Solution> &front){paretoFront = front;}
+
+void BranchAndBound::updateBounds(const Solution& sol, FJSSPdata& data){
+    
+    if (data.getMakespan() < problem.getBestMakespanFound())
+        problem.updateBestMakespanSolution(data);
+    
+    if (data.getMaxWorkload() < problem.getBestWorkloadFound())
+        problem.updateBestMaxWorkloadSolution(data);
+}
+
+void BranchAndBound::updateBoundsWithSolution(const Solution & solution){
+
+    if (solution.getObjective(0) < problem.getBestMakespanFound())
+        problem.updateBestMakespanSolutionWith(solution);
+    
+    if (solution.getObjective(1) < problem.getBestWorkloadFound())
+        problem.updateBestMaxWorkloadSolutionWith(solution);
 }
 
 int BranchAndBound::getRank() const{ return rank; }

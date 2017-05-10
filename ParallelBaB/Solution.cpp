@@ -207,9 +207,9 @@ void Solution::print() const {
 
 	for (nVar = 0; nVar < n_variables; ++nVar)
         if (variable[nVar] == -1)
-            printf("%3c", sep);
+            printf("%5c", sep);
         else
-            printf("%3d", variable[nVar]);
+            printf("%5d", variable[nVar]);
 
 	printf(" |\n");
 }

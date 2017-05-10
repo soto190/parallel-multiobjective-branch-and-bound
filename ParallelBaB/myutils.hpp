@@ -139,6 +139,10 @@ class SortedVector{
     deque<Data3> m_data;
 
 public:
+    /**
+     * The elements are sorted by dominance. It also stores the dominated solutions at the end.
+     * returns 1.
+     **/
     int push(const Data3 & data){
 
         Dom domF, domB;
