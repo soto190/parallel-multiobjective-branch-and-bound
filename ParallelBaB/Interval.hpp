@@ -23,17 +23,23 @@ const float low_priority  = 0.666f;
 const float high_priority = 0.333f;
 
 enum Priority {
-    P_High,     /** Deeper branches.        **/
-    P_Medium,   /** Branches at middle.     **/
-    P_Low       /** Brancheas near to root. **/
+    P_High,     /** Deeper branches | branches at bottom.        **/
+    P_Medium,   /** Branches at middle. **/
+    P_Low       /** Brancheas near to root | branches at top. **/
 };
+
+enum Deep{TOP, MID, BOTTOM};
 
 class Interval {
 private:
     int build_up_to = -1;
     int * interval;
     int max_size = 0;
+    
     Priority priority;
+    Deep deep;
+
+    float distance[2];
     
     int low;
     int high;
@@ -54,14 +60,19 @@ public:
     int getLowSize() const;
     int getHighSize() const;
     
-    Priority getPriority() const;
+    float getDistance(int n_dim) const;
     
+    Priority getPriority() const;
+    Deep getDeep() const;
     void setBuildUpTo(int newBuild);
     void setSize(int size);
     void setValueAt(int index, int value);
+    
     void setLowPriority();
     void setHighPriority();
     void setMediumPriority();
+    
+    void setDistance(int n_dim, float n_val);
     
     void removeLastValue();
     void print() const;

@@ -49,6 +49,7 @@ enum Dom {Domtes = 1, Domted = -1, Nondom = 0, Eq = 11};
 class Data3{
     int value;
     int obj[2];
+    double distance[2];
 
 public:
     Data3(){}
@@ -59,15 +60,19 @@ public:
     
     Data3(const Data3 & toCopy){
         value = toCopy.getValue();
-        for (int n_obj = 0; n_obj < 2; ++n_obj)
+        for (int n_obj = 0; n_obj < 2; ++n_obj){
             obj[n_obj] = toCopy.getObjective(n_obj);
+            distance[n_obj] = toCopy.getDistance(n_obj);
+        }
     }
     
     void setValue(int n_value){ value = n_value;}
     void setObjective(int n_objective, int value){obj[n_objective] = value;}
+    void setDistance(int n_obj, double n_dist){distance[n_obj] = n_dist;}
     
     int getValue() const{ return value;}
     int getObjective(int n_obj) const{return obj[n_obj];}
+    double getDistance(int n_obj) const{return distance[n_obj];}
     
     bool operator==(const Data3& rhs) const{
         for (int n_obj = 0; n_obj < 2; ++n_obj)
@@ -131,7 +136,7 @@ public:
     }
     
     void print(){
-        printf("%3d %3d %3d\n", value, obj[0], obj[1]);
+        printf("%3d | %3d %3d | %3.3f %3.3f |\n", value, obj[0], obj[1], distance[0], distance[1]);
     }
 };
 

@@ -19,7 +19,8 @@ build_up_to(-1),
 interval(nullptr),
 low(0),
 high(0),
-priority(Priority::P_Low){}
+priority(Priority::P_Low),
+deep(Deep::TOP){}
 
 Interval::Interval(int max_size):
 max_size(max_size),
@@ -27,18 +28,22 @@ build_up_to(-1),
 interval(new int[max_size]),
 low(max_size * low_priority),
 high(max_size * high_priority),
-priority(Priority::P_Low){}
+priority(Priority::P_Low),
+deep(Deep::TOP){}
 
 Interval::Interval(const Interval &toCopy):
 max_size(toCopy.getSize()),
 interval(new int[toCopy.getSize()]),
 build_up_to(toCopy.getBuildUpTo()),
 priority(toCopy.getPriority()),
+deep(toCopy.getDeep()),
 low(toCopy.getLowSize()),
 high(toCopy.getHighSize()){
     
-    int index = 0;
-    for (index = 0; index < max_size; ++index)
+    distance[0] = toCopy.getDistance(0);
+    distance[1] = toCopy.getDistance(1);
+    
+    for (int index = 0; index < max_size; ++index)
         interval[index] = toCopy.getValueAt(index);
 
 }
@@ -48,6 +53,7 @@ Interval& Interval::operator()(int size){
     build_up_to = -1;
     max_size = size;
     priority = Priority::P_Low;
+    deep = Deep::TOP;
     
     delete [] interval; /** Freeing previously used memory. **/
     interval = new int[size];
@@ -66,6 +72,10 @@ Interval& Interval::operator=(const Interval &toCopy){
     priority = toCopy.getPriority();
     low = toCopy.getLowSize();
     high = toCopy.getHighSize();
+    deep = toCopy.getDeep();
+    
+    distance[0] = toCopy.getDistance(0);
+    distance[1] = toCopy.getDistance(1);
     
     if(interval != nullptr)
         delete [] interval; /** Freeing previously used memory. **/
@@ -87,26 +97,31 @@ int Interval::getValueAt(int position) const{ return interval[position];}
 Priority Interval::getPriority() const {return priority;}
 int Interval::getLowSize() const{return low;}
 int Interval::getHighSize() const{return high;}
+Deep Interval::getDeep() const{return deep;}
+float Interval::getDistance(int n_dim) const {return distance[n_dim];}
 
 void Interval::setLowPriority(){priority = Priority::P_Low;}
 void Interval::setHighPriority(){priority = Priority::P_High;}
 void Interval::setMediumPriority(){priority = Priority::P_Medium;}
 
+void Interval::setDistance(int n_dim, float n_val){distance[n_dim] = n_val;}
+
 void Interval::setSize(int size){ max_size = size; }
 void Interval::setValueAt(int index, int value){
     interval[index] = value;
-    build_up_to = index;
-    
-   /* if (build_up_to <= high)
-        priority = Priority::P_High;
-    else if (build_up_to >= low)
-        priority = Priority::P_Low;
-    else
-        priority = Priority::P_Medium;
-    */
+    setBuildUpTo(index);
 }
 
-void Interval::setBuildUpTo(int newBuild){ build_up_to = newBuild; }
+void Interval::setBuildUpTo(int n_build){
+    build_up_to = n_build;
+    if (build_up_to < max_size * 0.333f)
+        deep = Deep::TOP;
+    else if(build_up_to < max_size * 0.666f)
+        deep = Deep::MID;
+    else
+        deep = Deep::BOTTOM;
+}
+
 void Interval::removeLastValue(){interval[build_up_to] = -1; build_up_to--;}
 int Interval::increaseBuildUpTo(){ return build_up_to++; }
 
@@ -127,5 +142,5 @@ void Interval::print() const{
     for (index_var = build_up_to + 1; index_var < max_size; ++index_var)
         printf("%3c ", sep);
     
-    printf("]\n");
+    printf("] [%3.3f, %3.3f] [%1d, %1d]\n", distance[0], distance[1], deep, priority);
 }

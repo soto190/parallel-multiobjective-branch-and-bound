@@ -144,7 +144,7 @@ private:
 	unsigned long computeTotalNodes(unsigned long totalVariables) const;
 	unsigned long permut(unsigned long n, unsigned long i) const;
 
-    void shareWorkAndSendToGlobalPool(Interval& interval);
+    void shareWorkAndSendToGlobalPool(const Interval& interval);
 	/** Grid functions. **/
 	int improvesTheGrid(const Solution & solution) const;
 	int updateParetoGrid(const Solution & solution);
@@ -152,6 +152,7 @@ private:
     void updateBounds(const Solution & solution, FJSSPdata& data);
     void updateBoundsWithSolution(const Solution & solution);
     
+    void setPriorityTo(Interval & interval, int mov, int tot) const;
 	/** IVM functions. **/
 public:
 	void computeLastBranch(Interval & branch);

@@ -135,6 +135,7 @@ public:
         ending_time = new int[n_operations];
         time_on_machine = new int[n_machines];
         workload_in_machine = new int[n_machines];
+        best_workloads_in_machine = new int[n_machines];
         temp_best_wl_m = new int[n_machines];
         
         for (int j = 0; j < n_jobs; ++j)
@@ -177,6 +178,7 @@ public:
             delete [] ending_time;
             delete [] time_on_machine;
             delete [] workload_in_machine;
+            delete [] best_workloads_in_machine;
         }
         
         n_jobs = numberOfJobs;
@@ -323,8 +325,6 @@ public:
             else
                 printf("%3c %3d:  - %3d - %3d \n", 'a' + operation, operation, starting_time[operation], ending_time[operation]);
 
-       
-
         /**creates an empty gantt**/
         for (machine = 0; machine < n_machines; ++machine)
             for (time = 0; time < 255; ++time)
@@ -340,6 +340,7 @@ public:
                 printf("%3c", gantt[machine][time]);
             printf("| %3d %3d\n", workload_in_machine[machine], time_on_machine[machine]);
         }
+        
         printf("----");
         for (time = 0; time <= makespan; ++time)
             printf("---");

@@ -26,6 +26,7 @@ private:
     int hasBranches = 1;
     int root_row = 0; /** Root row. **/
     int * n_nodes_at_row;
+    unsigned long pending_nodes = 0;
 
 public:
 	IVMTree();
@@ -62,6 +63,7 @@ public:
 	int getOwner() const;
     int getStartExploration(int row) const;
     int getEndExploration(int row) const;
+    unsigned long getPendingNodes() const;
     
     int removeLastNodeAtRow(int row);
     
