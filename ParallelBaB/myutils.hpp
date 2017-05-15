@@ -45,11 +45,13 @@ double round_double(double value);
 int binarySearch(double value, const double * vector, int size);
 
 enum Dom {Domtes = 1, Domted = -1, Nondom = 0, Eq = 11};
+enum SORTING_TYPES{DIST_1 = 0, DIST_2 = 1, DIST_COMB = 3, DOMINANCE = 4};
 
 class Data3{
     int value;
     int obj[2];
-    double distance[2];
+    float distance[2];
+    float combination;
 
 public:
     Data3(){}
@@ -68,11 +70,41 @@ public:
     
     void setValue(int n_value){ value = n_value;}
     void setObjective(int n_objective, int value){obj[n_objective] = value;}
-    void setDistance(int n_obj, double n_dist){distance[n_obj] = n_dist;}
+    void setDistance(int n_obj, float n_dist){distance[n_obj] = n_dist;}
     
     int getValue() const{ return value;}
     int getObjective(int n_obj) const{return obj[n_obj];}
-    double getDistance(int n_obj) const{return distance[n_obj];}
+    float getDistance(int n_obj) const{return distance[n_obj];}
+    
+    float getCombination() const{
+        return distance[0] + distance[1];
+    }
+    
+    float getSomethingToSort(const SORTING_TYPES sort) const{
+    
+        switch (sort) {
+            case SORTING_TYPES::DOMINANCE:
+                return 0; /** DOESNT APPLY**/
+                break;
+                
+            case SORTING_TYPES::DIST_1:
+                return distance[0];
+                break;
+                
+            case SORTING_TYPES::DIST_2:
+                return distance[1];
+                break;
+                
+            case SORTING_TYPES::DIST_COMB: /** This part can be used to combine the distances. **/
+                return distance[0] + distance[1];
+                break;
+                
+            default:
+                return 0;
+                break;
+        }
+
+    }
     
     bool operator==(const Data3& rhs) const{
         for (int n_obj = 0; n_obj < 2; ++n_obj)
@@ -135,6 +167,8 @@ public:
             return Dom::Nondom;
     }
     
+    
+    
     void print(){
         printf("%3d | %3d %3d | %3.3f %3.3f |\n", value, obj[0], obj[1], distance[0], distance[1]);
     }
@@ -148,11 +182,114 @@ public:
      * The elements are sorted by dominance. It also stores the dominated solutions at the end.
      * returns 1.
      **/
-    int push(const Data3 & data){
+    int push(const Data3 & data, const SORTING_TYPES sort_type){
 
+        switch (sort_type) {
+            case SORTING_TYPES::DOMINANCE:
+                push_dominance(data);
+                break;
+                
+            case SORTING_TYPES::DIST_1:
+                push_dist1(data);
+                break;
+                
+            case SORTING_TYPES::DIST_2:
+                push_dist2(data);
+                break;
+                
+            case SORTING_TYPES::DIST_COMB:
+                push_dist_comb(data);
+                break;
+                
+            default:
+                m_data.push_back(data);
+                break;
+        }
+        return 1;
+    }
+    
+    int push_dist1(const Data3& data){
+        
+        switch (m_data.size()) {
+            case 0:
+                m_data.push_back(data);
+                break;
+            case 1:
+                if(data.getDistance(0) > m_data.front().getDistance(0))
+                    m_data.push_front(data);
+                else if(data.getDistance(0) < m_data.front().getDistance(0))
+                    m_data.push_back(data);
+                else
+                    m_data.push_back(data);
+                break;
+                
+            case 2:
+                if(data.getDistance(0) >= m_data.front().getDistance(0))
+                    m_data.push_front(data);
+                else if(data.getDistance(0) <= m_data.back().getDistance(0))
+                    m_data.push_back(data);
+                else
+                    m_data.insert(m_data.begin() + 1, data);
+                break;
+            default:
+                if(data.getDistance(0) >= m_data.front().getDistance(0))
+                    m_data.push_front(data);
+                else if(data.getDistance(0) <= m_data.back().getDistance(0))
+                    m_data.push_back(data);
+                else
+                    m_data.insert(m_data.begin() + binarySearchDecrement(data, SORTING_TYPES::DIST_1), data);
+                
+                break;
+        }
+        
+        return 1;
+    }
+    
+    int push_dist2(const Data3& data){
+        switch (m_data.size()) {
+            case 0:
+                m_data.push_back(data);
+                break;
+            case 1:
+                if(data.getDistance(1) > m_data.front().getDistance(1))
+                    m_data.push_front(data);
+                else if(data.getDistance(1) < m_data.front().getDistance(1))
+                    m_data.push_back(data);
+                else
+                    m_data.push_back(data);
+                break;
+                
+            case 2:
+                if(data.getDistance(1) >= m_data.front().getDistance(1))
+                    m_data.push_front(data);
+                else if(data.getDistance(1) <= m_data.back().getDistance(1))
+                    m_data.push_back(data);
+                else
+                    m_data.insert(m_data.begin() + 1, data);
+                break;
+                
+            default:
+                if(data.getDistance(1) >= m_data.front().getDistance(1))
+                    m_data.push_front(data);
+                else if(data.getDistance(1) <= m_data.back().getDistance(1))
+                    m_data.push_back(data);
+                else
+                    m_data.insert(m_data.begin() + binarySearchDecrement(data, SORTING_TYPES::DIST_2), data);
+                
+                break;
+        }
+        
+        return 1;
+    }
+    
+    int push_dist_comb(const Data3& data){
+        return 1;
+    }
+    
+    int push_dominance(const Data3& data){
         Dom domF, domB;
         bool inserted = 0;
-
+        
         switch (m_data.size()) {
             case 0:
                 m_data.push_back(data);
@@ -229,11 +366,57 @@ public:
     std::deque<Data3>::iterator begin(){return m_data.begin();}
     std::deque<Data3>::iterator end(){return m_data.end();}
     
+    
+    unsigned long binarySearchIncrement(const Data3 & data, const SORTING_TYPES sort){
+        unsigned long low, high, mid;
+        
+        float value = data.getSomethingToSort(sort);
+        low = 0;
+        high = m_data.size() - 1;
+        
+        if (value >= m_data[high].getSomethingToSort(sort))
+            return high;
+        
+        while (low <= high) {
+            mid = (low + high) * 0.5f;
+            if (m_data[mid].getSomethingToSort(sort) <= value && value <= m_data[mid + 1].getSomethingToSort(sort))
+                return mid;
+            else if (value < m_data[mid].getSomethingToSort(sort))
+                high = mid - 1;
+            else if (value > m_data[mid].getSomethingToSort(sort))
+                low = mid + 1;
+        }
+        return high;
+    }
+    
+    unsigned long binarySearchDecrement(const Data3 & data, const SORTING_TYPES sort){
+        unsigned long low, high, mid;
+        float value = data.getSomethingToSort(sort);
+        low = 0;
+        high = m_data.size() - 1;
+        
+        if (value >= m_data[low].getSomethingToSort(sort))
+            return low;
+        
+        while (low <= high) {
+            mid = (low + high) * 0.5f;
+            if (m_data[mid - 1].getSomethingToSort(sort) >= value && value >= m_data[mid].getSomethingToSort(sort))
+                return mid;
+            else if (value > m_data[mid].getSomethingToSort(sort))
+                high = mid - 1;
+            else if (value < m_data[mid].getSomethingToSort(sort))
+                low = mid + 1;
+        }
+        return low;
+    }
+    
     void print() {
         std::deque<Data3>::iterator it = m_data.begin();
         int counter = 0;
-        for (it = m_data.begin(); it != m_data.end(); ++it)
-            printf("[%3d] %3d %3d %3d\n", counter++, it->getValue(), it->getObjective(0), it->getObjective(1));
+        for (it = m_data.begin(); it != m_data.end(); ++it){
+            printf("[%3d] ", counter++);
+            (*it).print();
+        }
     }
 
 };

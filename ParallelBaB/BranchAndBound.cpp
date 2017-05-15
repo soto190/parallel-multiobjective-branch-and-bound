@@ -308,7 +308,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
             branch_init.setDistance(0, (problem.getLowerBoundInObj(0) - fjssp_data.getMakespan()) / (float) problem.getLowerBoundInObj(0));
             branch_init.setDistance(1, (problem.getLowerBoundInObj(1) - fjssp_data.getMaxWorkload()) / (float) problem.getLowerBoundInObj(1));
             
-            setPriorityTo(branch_init, moved, branches_to_move_to_global_pool);
+            setPriorityTo(branch_init);
             globalPool.push(branch_init);
             
             branch_init.removeLastValue();
@@ -458,7 +458,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             data.setDistance(0, distance_error_1);
                             data.setDistance(1, distance_error_2);
 
-                            sorted_elements.push(data);
+                            sorted_elements.push(data, SORTING_TYPES::DIST_1);
                             
                             //ivm_tree.setNode(currentLevel + 1, toAdd);
                             branches_created++;
@@ -470,6 +470,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             branches += branches_created;
 
             if (branches_created > 0) { /** If a branch was created. **/
+
                 for (std::deque<Data3>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
                     ivm_tree.setNode(currentLevel + 1, (*it).getValue());
                 
@@ -518,24 +519,33 @@ int BranchAndBound::aLeafHasBeenReached() const { return (currentLevel == totalL
 void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_solve){
 
     int next_row = ivm_tree.getRootRow() + 1;
-    int branches_to_move_to_global_pool = ivm_tree.getNumberOfNodesAt(next_row) - 1;
+    unsigned long branches_to_move_to_global_pool = ivm_tree.getActiveRow() - ivm_tree.getPendingNodes() - 1;
     
-    /** This is relative to the number of threads to keep one pending for each thread. 
-     * n_threads x 2;
-     **/
-    if (globalPool.unsafe_size() < 256 && next_row < deep_to_share && branches_to_move_to_global_pool > 1){
+    
+    int safe_size = 128 * 2; /** This is relative to the number of threads to keep one pending for each thread. (n_threads x 2) **/
+    /**
+     * To start sharing we have to consider:
+     * - If the global pool has enough subproblems to keep feeding the other threads.
+     * - If the level at which we are going to share is not too deep.
+     * - If we have branches to share.
+     */
+    if (globalPool.unsafe_size() < safe_size && next_row < deep_to_share && branches_to_move_to_global_pool > 1){
+        
         Solution temp(incumbent_s.getNumberOfObjectives(), incumbent_s.getNumberOfVariables());
         FJSSPdata data(fjssp_data);
         Interval branch_to_send(branch_to_solve);
+        
         data.reset();
         for (int l = 0; l <= ivm_tree.getRootRow() ; ++l) {
             temp.setVariable(l, incumbent_s.getVariable(l));
             problem.evaluateDynamic(temp, data, l);
         }
        
-        printDebug();
+        /* In case we need to sort the intervals.
+         * std::vector<Interval> intervals_to_send;
+         */
         int total_moved = 0;
-        while(globalPool.unsafe_size() < 256 && next_row < deep_to_share && next_row <= ivm_tree.getActiveRow()
+        while(globalPool.unsafe_size() < safe_size && next_row < deep_to_share && next_row <= ivm_tree.getActiveRow()
               && total_moved < ivm_tree.getActiveRow() - ivm_tree.getPendingNodes() - 1){
             
             branches_to_move_to_global_pool = ivm_tree.getNumberOfNodesAt(next_row) - 1;
@@ -549,22 +559,28 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
                 branch_to_send.setDistance(0, (problem.getLowerBoundInObj(0) - data.getMakespan()) / (float) problem.getLowerBoundInObj(0));
                 branch_to_send.setDistance(1, (problem.getLowerBoundInObj(1) - data.getMaxWorkload()) / (float) problem.getLowerBoundInObj(1));
                 
-                setPriorityTo(branch_to_send, moved, branches_to_move_to_global_pool);
+                setPriorityTo(branch_to_send);
                 globalPool.push(branch_to_send);
+                
+                //intervals_to_send.push_back(branch_to_send);
                 
                 branch_to_send.removeLastValue();
                 problem.evaluateRemoveDynamic(temp, data, next_row);
                 
             }
+            
             if (next_row > ivm_tree.getRootRow() && next_row <= ivm_tree.getActiveRow() ) {
                 branch_to_send.setValueAt(next_row, ivm_tree.getIVMValue(next_row, ivm_tree.getActiveColAt(next_row)));
                 temp.setVariable(next_row, ivm_tree.getIVMValue(next_row, ivm_tree.getActiveColAt(next_row)));
                 problem.evaluateDynamic(temp, data, next_row);
             }
             next_row++;
-
         }
-        printDebug();
+        /* In we need to sort the intervals.
+        while(!intervals_to_send.empty()){
+            globalPool.push(intervals_to_send.back());
+            intervals_to_send.pop_back();
+        }*/
     }
 }
 
@@ -699,10 +715,42 @@ void BranchAndBound::updateBoundsWithSolution(const Solution & solution){
     if (solution.getObjective(1) < problem.getBestWorkloadFound())
         problem.updateBestMaxWorkloadSolutionWith(solution);
 }
+/**
+ *
+ * The priority needs to consider the Deep of the branch and the distance to the lower bound.
+ *
+ **/
+void BranchAndBound::setPriorityTo(Interval& interval) const{
 
-void BranchAndBound::setPriorityTo(Interval& interval, int moved, int branches_to_move_to_global_pool) const{
-
-    if(moved < branches_to_move_to_global_pool * 0.333f)
+    switch (interval.getDeep()) {
+        case Deep::TOP:
+            interval.setLowPriority();
+            if (interval.getDistance(0) >= 0.6f) /** Good distance. **/
+                interval.setHighPriority();
+            else if(interval.getDistance(0) >= 0.3f) /** Moderate distance. **/
+                interval.setMediumPriority();
+            
+            break;
+            
+        case Deep::MID:
+            interval.setMediumPriority();
+            
+            if (interval.getDistance(0) >= 0.6f) /** Good distance. **/
+                interval.setHighPriority();
+            else if(interval.getDistance(0) <= 0.3f) /** Bad distance. **/
+                interval.setLowPriority();
+            break;
+            
+        case Deep::BOTTOM:
+            interval.setHighPriority();
+            break;
+            
+        default:
+            break;
+    }
+    
+    /****/
+    /*if(moved < branches_to_move_to_global_pool * 0.333f)
         interval.setHighPriority();
     else if(moved < branches_to_move_to_global_pool * 0.666f)
         interval.setMediumPriority();
@@ -710,7 +758,7 @@ void BranchAndBound::setPriorityTo(Interval& interval, int moved, int branches_t
         interval.setLowPriority();
         if(interval.getDeep() == Deep::BOTTOM)
             interval.setHighPriority();
-    }
+    }*/
 
 }
 

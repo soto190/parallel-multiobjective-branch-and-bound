@@ -152,7 +152,7 @@ private:
     void updateBounds(const Solution & solution, FJSSPdata& data);
     void updateBoundsWithSolution(const Solution & solution);
     
-    void setPriorityTo(Interval & interval, int mov, int tot) const;
+    void setPriorityTo(Interval & interval) const;
 	/** IVM functions. **/
 public:
 	void computeLastBranch(Interval & branch);
