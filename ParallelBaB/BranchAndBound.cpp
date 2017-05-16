@@ -350,13 +350,13 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             reachedLeaves++;
             if (updateParetoGrid(incumbent_s)){
                 totalUpdatesInLowerBound++;
-                
-              /*printf("[B&B-%03d] ", rank);
+                /*
+                printf("[B&B-%03d] ", rank);
                 printCurrentSolution();
-                printf(" + [%6lu] \n", paretoContainer.getSize());*/
+                printf(" + [%6lu] \n", paretoContainer.getSize());
+                */
             }
             updateBounds(incumbent_s, fjssp_data);
-
             ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
         }
         
@@ -458,7 +458,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             data.setDistance(0, distance_error_1);
                             data.setDistance(1, distance_error_2);
 
-                            sorted_elements.push(data, SORTING_TYPES::DIST_1);
+                            sorted_elements.push(data, SORTING_TYPES::DIST_1); /** sorting the nodes to give priority to promising nodes. **/
                             
                             //ivm_tree.setNode(currentLevel + 1, toAdd);
                             branches_created++;
@@ -470,7 +470,6 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             branches += branches_created;
 
             if (branches_created > 0) { /** If a branch was created. **/
-
                 for (std::deque<Data3>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
                     ivm_tree.setNode(currentLevel + 1, (*it).getValue());
                 
@@ -748,18 +747,6 @@ void BranchAndBound::setPriorityTo(Interval& interval) const{
         default:
             break;
     }
-    
-    /****/
-    /*if(moved < branches_to_move_to_global_pool * 0.333f)
-        interval.setHighPriority();
-    else if(moved < branches_to_move_to_global_pool * 0.666f)
-        interval.setMediumPriority();
-    else{
-        interval.setLowPriority();
-        if(interval.getDeep() == Deep::BOTTOM)
-            interval.setHighPriority();
-    }*/
-
 }
 
 int BranchAndBound::getRank() const{ return rank; }
@@ -831,12 +818,6 @@ int BranchAndBound::saveSummarize() {
 	printf("\tunexplored buckets:%ld\n",
 			paretoContainer.getNumberOfUnexploredBuckets());
 	printf("\tTotal elements in: %ld\n", paretoContainer.getSize());
-    
-    /*
-    problem.printSolution(paretoFront.front());
-    printf("\n");
-    problem.printSchedule(paretoFront.front());
-    */
 	
     std::ofstream myfile(summarizeFile);
 	if (myfile.is_open()) {

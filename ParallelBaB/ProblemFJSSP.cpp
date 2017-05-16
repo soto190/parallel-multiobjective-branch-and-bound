@@ -962,10 +962,8 @@ void ProblemFJSSP::loadInstance(char filePath[2][255]){
                 for (int n = 0; n < avg_op_per_machine; ++n)
                     sum_shortest_proc_times[machine] += sorted_processing[machine][n];
                 
-                if (sum_shortest_proc_times[machine] < min_sum_shortest_proc_times){
+                if (sum_shortest_proc_times[machine] < min_sum_shortest_proc_times)
                     min_sum_shortest_proc_times = sum_shortest_proc_times[machine];
-                }
-                
             }
             
             totalVariables = n_operations;
@@ -1233,14 +1231,14 @@ void ProblemFJSSP::printPartialSolution(const Solution & solution, int level) co
     int withVariables = 1;
     
     for (indexVar = 0; indexVar < getNumberOfObjectives(); indexVar++)
-        printf("%7.0f ", solution.getObjective(indexVar));
+        printf("%3.0f ", solution.getObjective(indexVar));
     
     if (withVariables == 1) {
         
         printf(" | ");
         
         for (indexVar = 0; indexVar <= level; indexVar++)
-            printf("%5d ", solution.getVariable(indexVar));
+            printf("%4d ", solution.getVariable(indexVar));
         
         for (indexVar = level + 1; indexVar < n_operations; indexVar ++)
             printf("  - ");
