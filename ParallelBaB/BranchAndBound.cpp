@@ -189,6 +189,7 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
     problem.getSolutionWithLowerBoundInObj(1, temp);
     temp.print();
     solution.print();
+    
     updateParetoGrid(solution);
     updateParetoGrid(temp);
     updateBoundsWithSolution(solution);
@@ -327,7 +328,7 @@ tbb::task* BranchAndBound::execute() {
             solve(interval_to_solve);
     
     double elapsed_time =  getTotalTime();
-    printf("[B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f ms]\n", rank, elapsed_time);
+    printf("[B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", rank, elapsed_time);
     
     return NULL;
 }
@@ -412,7 +413,9 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     int branches_created = 0;
     SortedVector sorted_elements;
     Data3 data;
-
+    double distance_error_1 = 0;
+    double distance_error_2 = 0;
+    
     switch (problem.getType()) {
             
         case ProblemType::permutation:
@@ -453,8 +456,8 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             data.setObjective(0, fjssp_data.getMakespan());
                             data.setObjective(1, fjssp_data.getMaxWorkload());
                             
-                            double distance_error_1 = (problem.getLowerBoundInObj(0) - data.getObjective(0)) / (float) problem.getLowerBoundInObj(0);
-                            double distance_error_2 = (problem.getLowerBoundInObj(1) - data.getObjective(1)) / (float) problem.getLowerBoundInObj(1);
+                            distance_error_1 = (problem.getLowerBoundInObj(0) - data.getObjective(0)) / (float) problem.getLowerBoundInObj(0);
+                            distance_error_2 = (problem.getLowerBoundInObj(1) - data.getObjective(1)) / (float) problem.getLowerBoundInObj(1);
                             data.setDistance(0, distance_error_1);
                             data.setDistance(1, distance_error_2);
 
@@ -462,7 +465,6 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             
                             //ivm_tree.setNode(currentLevel + 1, toAdd);
                             branches_created++;
-                            
                         } else
                             prunedNodes++;
                         problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
@@ -651,8 +653,6 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
 		}
 }
 
-
-
 unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) const {
 	unsigned long result = 1;
 	for (long j = n; j > n - i; --j)
@@ -662,7 +662,6 @@ unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) const {
 
 /**
  * This functions compute the number of nodes.
- *
  */
 unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) const {
 	long n_nodes = 0;
@@ -955,7 +954,6 @@ void BranchAndBound::printParetoFront(int withVariables) {
 }
 
 void BranchAndBound::printDebug(){
-    
     printf("\nDEBUG\n");
     printf("GlobalPool:\n");
     globalPool.print();

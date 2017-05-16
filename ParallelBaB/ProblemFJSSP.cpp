@@ -574,7 +574,7 @@ void ProblemFJSSP::createDefaultSolution(Solution & solution){
     int map = 0;
     int machine = 0;
     
-    FJSSPdata fjsspd(n_jobs, n_operations, n_machines);
+    FJSSPdata fjssp(n_jobs, n_operations, n_machines);
     
     for (job = 0; job < n_jobs; ++job)
         for (operation = 0; operation < n_operations_in_job[job]; ++operation){
@@ -594,9 +594,10 @@ void ProblemFJSSP::updateBestMaxWorkloadSolution(FJSSPdata& data){
     if(bestWorkloadFound < bestBound_maxWorkload)
         bestBound_maxWorkload = bestWorkloadFound;
     
-    for (int n_op = 0; n_op < n_operations; ++n_op)
+    for (int n_op = 0; n_op < n_operations; ++n_op){
         assignationBestWorkload[n_op] = data.getOperationAllocation(n_op);
-    
+        goodSolutionWithMaxWorkload.setVariable(n_op, getCodeMap(getOperationIsFromJob(n_op), data.getOperationAllocation(n_op)));
+    }
     for (int m_mach = 0; m_mach < n_machines; ++m_mach)
         data.setBestWorkloadInMachine(m_mach, data.getWorkloadOnMachine(m_mach));
 }
@@ -628,14 +629,18 @@ void ProblemFJSSP::updateBestMaxWorkloadSolutionWith(const Solution& solution){
     if(bestWorkloadFound < bestBound_maxWorkload)
         bestBound_maxWorkload = bestWorkloadFound;
     
-    for (int n_op = 0; n_op < n_operations; ++n_op)
+    for (int n_op = 0; n_op < n_operations; ++n_op){
         assignationBestWorkload[n_op] = getDecodeMap(solution.getVariable(n_op), 1);
+        goodSolutionWithMaxWorkload.setVariable(n_op, solution.getVariable(n_op));
+    }
 }
 
 void ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){
     
-    if(nObj == 0)
+    if(nObj == -1)
         createDefaultSolution(solution);
+    else if(nObj == 0)
+        solution = goodSolutionWithMakespan;
     else if(nObj == 1)
         solution = goodSolutionWithMaxWorkload;
     else if(nObj == 2){
@@ -643,6 +648,35 @@ void ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){
         for (operation = 0; operation < n_operations; ++operation)
             solution.setVariable(operation, jobMachineToMap[operationIsFromJob[operation]][assignationMinPij[operation]]);
     }
+    evaluate(solution);
+}
+
+void ProblemFJSSP::buildSolutionWithGoodMakespan(Solution & solution){
+    
+    //int n_op__in_machine[n_machines];
+    int n_est[n_operations];
+    int n_eet[n_operations];
+    int n_job_est[n_jobs];
+    int n_job_eet[n_jobs];
+    int best_alloc[n_operations];
+    int alloc_eet[n_operations];
+    
+    int ee_job = 0, eet = INT_MAX;
+    
+    for (int n_job = 0; n_job < n_jobs; ++n_job) {
+        n_job_est[n_job] = releaseTime[n_job];
+        n_job_eet[n_job] = eet_of_job[n_job];
+        if (n_job_eet[n_job] < eet)
+            ee_job = n_job;
+    }
+    
+    for (int n_op = 0; n_op < n_operations; ++n_op) {
+        n_eet[n_op] = earliest_starting_time[n_op];
+        n_est[n_op] = earliest_ending_time[n_op];
+        best_alloc[n_op] = assignationMinPij[n_op];
+        alloc_eet[n_op] = assignationMinPij[n_op];
+    }
+ 
     evaluate(solution);
 }
 

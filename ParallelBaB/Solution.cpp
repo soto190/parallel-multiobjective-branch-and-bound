@@ -201,15 +201,15 @@ void Solution::print() const {
 	int nObj, nVar;
     char sep = '-';
 	for (nObj = 0; nObj < n_objectives; ++nObj)
-		printf("%6.0f", getObjective(nObj));
+		printf("%4.0f", getObjective(nObj));
 
 	printf(" | ");
 
 	for (nVar = 0; nVar < n_variables; ++nVar)
         if (variable[nVar] == -1)
-            printf("%5c", sep);
+            printf("%4c", sep);
         else
-            printf("%5d", variable[nVar]);
+            printf("%4d", variable[nVar]);
 
 	printf(" |\n");
 }
