@@ -223,7 +223,7 @@ void IVMTree::setExplorationInterval(int set_starting_level, int *starts,
     
 }
 
-/** TODO: Check this function. 
+/**
  * Because active_column[row] is initialized with -1 it needs the +1 to store the next value.
  **/
 void IVMTree::setNode(int row, int value) {
@@ -247,10 +247,7 @@ int IVMTree::pruneActiveNode() {
     pending_nodes--;
     
     if (n_nodes_at_row[active_row] > 0) { /** If there are more nodes in the active level, then move to the next node. **/
-        
-        /** TODO: Re-think if we always move to the right or if we can search for another node. **/
-        
-        active_column[active_row]++; /** Moves to the node of the right. **/
+        active_column[active_row]++; /** Moves to the node of the right. The nodes are sorted by their priority.**/
         return ivm[active_row][active_column[active_row]];
     }
     

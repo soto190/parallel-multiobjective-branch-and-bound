@@ -38,7 +38,7 @@ double round_double(double value) {
 int binarySearch(double value, const double * array, int size) {
 	int low, high, mid;
 
-	low = 0;
+	low = 1;
 	high = size - 1;
 
 	if (value >= array[high])

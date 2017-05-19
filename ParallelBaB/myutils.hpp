@@ -96,7 +96,7 @@ public:
                 break;
                 
             case SORTING_TYPES::DIST_COMB: /** This part can be used to combine the distances. **/
-                return distance[0] + distance[1];
+                return sqrt(pow(distance[0], 2) + pow(distance[1], 2));
                 break;
                 
             default:

@@ -338,7 +338,6 @@ double ProblemFJSSP::evaluatePartial(Solution & solution, int levelEvaluation){
 
 /**
  *
- * TODO: improve the evaluation function.
  *
  * This representation use a mapping:
  * solution [ 0, 0, 0, 6, 7, 6, 3, 4, 5]
@@ -511,17 +510,16 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
         if(data.getWorkloadOnMachine(machine) > max_workload)
             max_workload = data.getWorkloadOnMachine(machine);
         
-        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
+      /*  if(data.getTempBestWorkloadInMachine(machine) > max_workload)
             max_workload = data.getTempBestWorkloadInMachine(machine);
+       */
     }
-    
 
     data.setMakespan(makespan);
     data.setMaxWorkload(max_workload);
     
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
-//    solution.setObjective(1, data.getTotalWorkload());
 }
 
 void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, int level){
@@ -549,8 +547,9 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
         if(data.getWorkloadOnMachine(machine) > max_workload)
             max_workload = data.getWorkloadOnMachine(machine);
 
-        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
+/*        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
             max_workload = data.getTempBestWorkloadInMachine(machine);
+ */
     }
   
     data.setMakespan(makespan);
@@ -559,7 +558,6 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
     solution.setVariable(level, -1);
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
-//    solution.setObjective(1, data.getTotalWorkload());
 }
 
 double ProblemFJSSP::evaluateLastLevel(Solution * solution){ return 0.0;}
@@ -575,7 +573,7 @@ void ProblemFJSSP::createDefaultSolution(Solution & solution){
     int machine = 0;
     
     FJSSPdata fjssp(n_jobs, n_operations, n_machines);
-    
+    /** Allocates one operation in each machine, creates a solution with a distribuited number of operations in each machine.**/
     for (job = 0; job < n_jobs; ++job)
         for (operation = 0; operation < n_operations_in_job[job]; ++operation){
             map = jobMachineToMap[job][machine];
@@ -671,8 +669,8 @@ void ProblemFJSSP::buildSolutionWithGoodMakespan(Solution & solution){
     }
     
     for (int n_op = 0; n_op < n_operations; ++n_op) {
-        n_eet[n_op] = earliest_starting_time[n_op];
-        n_est[n_op] = earliest_ending_time[n_op];
+        n_est[n_op] = earliest_starting_time[n_op];
+        n_eet[n_op] = earliest_ending_time[n_op];
         best_alloc[n_op] = assignationMinPij[n_op];
         alloc_eet[n_op] = assignationMinPij[n_op];
     }
@@ -1107,7 +1105,7 @@ void ProblemFJSSP::printProblemInfo(){
     printf("| EST EET\n");
     for (operation = 0; operation < n_operations; ++operation) {
         
-        printf("[J%-2d] %2c %2d:", operationIsFromJob[operation], 'a' + operation, operation);
+        printf("[J%-2d] %2c %2d:", operationIsFromJob[operation], 'A' + operation, operation);
         for (machine = 0; machine < n_machines; ++machine)
             printf("%3d ", processingTime[operation][machine]);
         printf(" | %3d %3d\n", earliest_starting_time[operation], earliest_ending_time[operation]);
@@ -1221,7 +1219,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
         }
         
         for (time = startingTime[numberOp]; time < endingTime[numberOp]; time++)
-            gantt[machine][time] = 'a' + numberOp;
+            gantt[machine][time] = 'A' + numberOp;
         
         operationOfJob[job]++;
         
@@ -1234,7 +1232,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     
     printf("\tOp :  M  ti -  tf\n");
     for (operation = 0; operation < n_operations; ++operation)
-        printf("%3c %3d: %2d %3d - %3d \n", 'a' + operation, operation, operation_in_machine[operation], startingTime[operation], endingTime[operation]);
+        printf("%3c %3d: %2d %3d - %3d \n", 'A' + operation, operation, operation_in_machine[operation], startingTime[operation], endingTime[operation]);
     
     for (machine = 0; machine < n_machines; ++machine) {
         printf("M%d  | ", machine);

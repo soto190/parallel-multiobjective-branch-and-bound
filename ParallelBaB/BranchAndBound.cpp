@@ -7,8 +7,6 @@
 //
 
 /**
- * TODO: Sort the branches considering the objective values.
- * TODO: Create a structure to store the objective values in each level of the tree (in the solution class or in the B&B class?).
  * TODO: Decide if the grid is shared or each B&B has their own grid.
  *
  **/
@@ -203,7 +201,12 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
     int element = 0;
     int machine = 0;
     int toAdd = 0;
-    //fjssp_data.reset(); /** This function call is not necesary because the structuras starts empty.**/
+    float distance_error_1 = 0, distance_error_2 = 0;
+    
+    
+    SortedVector sorted_elements;
+    Data3 data;
+    //fjssp_data.reset(); /** This function call is not necesary because the structures starts empty.**/
     
     fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
     for (int m = 0; m < problem.getNumberOfMachines(); ++m){
@@ -228,21 +231,38 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
                 if (improvesTheGrid(incumbent_s)) {
                     /** Gets the branch to add. */
                     branch_to_split.setValueAt(split_level, toAdd);
-                    float distance_error_1 = (problem.getLowerBoundInObj(0) - fjssp_data.getMakespan()) / (float) problem.getLowerBoundInObj(0);
-                    float distance_error_2 = (problem.getLowerBoundInObj(1) - fjssp_data.getMaxWorkload()) / (float) problem.getLowerBoundInObj(1);
+                    
+                   
+                    
+                    distance_error_1 = (problem.getLowerBoundInObj(0) - fjssp_data.getMakespan()) / (float) problem.getLowerBoundInObj(0);
+                    distance_error_2 = (problem.getLowerBoundInObj(1) - fjssp_data.getMaxWorkload()) / (float) problem.getLowerBoundInObj(1);
                     
                     branch_to_split.setDistance(0, distance_error_1);
                     branch_to_split.setDistance(1, distance_error_2);
                     
+                    data.setValue(toAdd);
+                    data.setObjective(0, fjssp_data.getMakespan());
+                    data.setObjective(1, fjssp_data.getMaxWorkload());
+                    data.setDistance(0, distance_error_1);
+                    data.setDistance(1, distance_error_2);
+                    sorted_elements.push(data, SORTING_TYPES::DIST_1);
                     /** Add it to pending intervals. **/
-                    if (rank == 0)
-                        globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
+                    //if (rank == 0)
+                    //  globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
                     branch_to_split.removeLastValue();
                     branches_created++;
                 } else
                     prunedNodes++;
                 problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, split_level);
             }
+    
+    for (std::deque<Data3>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it){
+        branch_to_split.setValueAt(split_level, (*it).getValue());
+        branch_to_split.setDistance(0, (*it).getDistance(0));
+        branch_to_split.setDistance(1, (*it).getDistance(1));
+        setPriorityTo(branch_to_split);        
+        globalPool.push(branch_to_split);
+    }
     
     branches += branches_created;
 }
@@ -351,11 +371,12 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             reachedLeaves++;
             if (updateParetoGrid(incumbent_s)){
                 totalUpdatesInLowerBound++;
-                /*
+               
                 printf("[B&B-%03d] ", rank);
                 printCurrentSolution();
+                //problem.printSchedule(incumbent_s);
                 printf(" + [%6lu] \n", paretoContainer.getSize());
-                */
+                
             }
             updateBounds(incumbent_s, fjssp_data);
             ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
@@ -367,6 +388,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         
         if(ivm_tree.hasPendingBranches()) /** Sharing part of the IVM tree to the global pool. This is done after branching and pruning any pending work of the three. **/
           shareWorkAndSendToGlobalPool(branch_to_solve);
+        saveEvery(3600);
     }
     
     t2 = std::chrono::high_resolution_clock::now();
@@ -413,8 +435,8 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     int branches_created = 0;
     SortedVector sorted_elements;
     Data3 data;
-    double distance_error_1 = 0;
-    double distance_error_2 = 0;
+    float distance_error_1 = 0, distance_error_best_1 = 0;
+    float distance_error_2 = 0, distance_error_best_2 = 0;
     
     switch (problem.getType()) {
             
@@ -449,17 +471,24 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         solution.setVariable(currentLevel + 1, toAdd);
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
                         
-                        if (improvesTheGrid(solution)) {
+                        
+                        data.setValue(toAdd);
+                        data.setObjective(0, fjssp_data.getMakespan());
+                        data.setObjective(1, fjssp_data.getMaxWorkload());
+                        
+                        distance_error_1 = (problem.getLowerBoundInObj(0) - data.getObjective(0)) / (float) problem.getLowerBoundInObj(0);
+                        distance_error_2 = (problem.getLowerBoundInObj(1) - data.getObjective(1)) / (float) problem.getLowerBoundInObj(1);
+                        
+                        distance_error_best_1 = (problem.getBestMakespanFound() - data.getObjective(0)) / (float) problem.getBestMakespanFound();
+                        distance_error_best_2 = (problem.getBestWorkloadFound() - data.getObjective(1)) / (float) problem.getBestWorkloadFound();
+                        
+                        data.setDistance(0, distance_error_1);
+                        data.setDistance(1, distance_error_2);
+
+                        /** If the distance to LB is negative in both objectives then it cannot produce improvement. if ) **/
+                        if ((distance_error_best_1 >= 0 || distance_error_best_2 >= 0) && improvesTheGrid(solution)) {
                             
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
-                            data.setValue(toAdd);
-                            data.setObjective(0, fjssp_data.getMakespan());
-                            data.setObjective(1, fjssp_data.getMaxWorkload());
-                            
-                            distance_error_1 = (problem.getLowerBoundInObj(0) - data.getObjective(0)) / (float) problem.getLowerBoundInObj(0);
-                            distance_error_2 = (problem.getLowerBoundInObj(1) - data.getObjective(1)) / (float) problem.getLowerBoundInObj(1);
-                            data.setDistance(0, distance_error_1);
-                            data.setDistance(1, distance_error_2);
 
                             sorted_elements.push(data, SORTING_TYPES::DIST_1); /** sorting the nodes to give priority to promising nodes. **/
                             
@@ -515,7 +544,6 @@ int BranchAndBound::aLeafHasBeenReached() const { return (currentLevel == totalL
  * 
  * All the remanent of root_row + 1 is moved to the global pool.
  *
- * TODO: Send the next pending nodes to global pool, not only root_row + 1.
  ***/
 void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_solve){
 
@@ -523,7 +551,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
     unsigned long branches_to_move_to_global_pool = ivm_tree.getActiveRow() - ivm_tree.getPendingNodes() - 1;
     
     
-    int safe_size = 128 * 2; /** This is relative to the number of threads to keep one pending for each thread. (n_threads x 2) **/
+    int safe_size = 4 * 2; /** This is relative to the number of threads to keep one pending for each thread. (n_threads x 2) **/
     /**
      * To start sharing we have to consider:
      * - If the global pool has enough subproblems to keep feeding the other threads.
@@ -954,7 +982,7 @@ void BranchAndBound::printParetoFront(int withVariables) {
 }
 
 void BranchAndBound::printDebug(){
-    printf("\nDEBUG\n");
+    printf("\n==========DEBUG==========\n");
     printf("GlobalPool:\n");
     globalPool.print();
     printf("Subproblem/interval:\n");
@@ -965,5 +993,5 @@ void BranchAndBound::printDebug(){
     ivm_tree.print();
     printf("FJSSP Data:\n");
     fjssp_data.print();
-    printf("DEBUG\n");
+    printf("==========DEBUG==========\n");
 }
