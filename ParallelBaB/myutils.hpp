@@ -374,8 +374,12 @@ public:
         low = 0;
         high = m_data.size() - 1;
         
+        if (value <= m_data[low].getSomethingToSort(sort))
+            return low;
         if (value >= m_data[high].getSomethingToSort(sort))
             return high;
+        low++;
+        high--;
         
         while (low <= high) {
             mid = (low + high) * 0.5f;
@@ -397,6 +401,11 @@ public:
         
         if (value >= m_data[low].getSomethingToSort(sort))
             return low;
+        if (value <= m_data[high].getSomethingToSort(sort))
+            return high;
+        
+        low++;
+        high--;
         
         while (low <= high) {
             mid = (low + high) * 0.5f;

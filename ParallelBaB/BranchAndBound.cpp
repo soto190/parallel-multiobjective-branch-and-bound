@@ -232,7 +232,7 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
                     
                     branch_to_split.setDistance(0, distance_error_1);
                     branch_to_split.setDistance(1, distance_error_2);
-                    
+                    setPriorityTo(branch_to_split);
                     /** Add it to pending intervals. **/
                     if (rank == 0)
                         globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
@@ -327,7 +327,7 @@ tbb::task* BranchAndBound::execute() {
             solve(interval_to_solve);
     
     double elapsed_time =  getTotalTime();
-    printf("[B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f ms]\n", rank, elapsed_time);
+    printf("[B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", rank, elapsed_time);
     
     return NULL;
 }
@@ -351,12 +351,11 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             if (updateParetoGrid(incumbent_s)){
                 totalUpdatesInLowerBound++;
                 
-              /*printf("[B&B-%03d] ", rank);
+                printf("[B&B-%03d] ", rank);
                 printCurrentSolution();
-                printf(" + [%6lu] \n", paretoContainer.getSize());*/
+                printf(" + [%6lu] \n", paretoContainer.getSize());
             }
             updateBounds(incumbent_s, fjssp_data);
-
             ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
         }
         
@@ -410,6 +409,9 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     int machine = 0;
     
     int branches_created = 0;
+    
+    float distance_error_1 = 0, distance_error_2 = 0;
+    float distance_error_best_1 = 0, distance_error_best_2 = 0;
     SortedVector sorted_elements;
     Data3 data;
 
@@ -446,6 +448,9 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         solution.setVariable(currentLevel + 1, toAdd);
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
                         
+                        /** If the distance to LB is negative in both objectives then it cannot produce improvement. **/
+                        // if ((distance_error_best_1 >= 0 || distance_error_best_2 >= 0) && improvesTheGrid(solution)) {
+                        
                         if (improvesTheGrid(solution)) {
                             
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
@@ -453,12 +458,16 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             data.setObjective(0, fjssp_data.getMakespan());
                             data.setObjective(1, fjssp_data.getMaxWorkload());
                             
-                            double distance_error_1 = (problem.getLowerBoundInObj(0) - data.getObjective(0)) / (float) problem.getLowerBoundInObj(0);
-                            double distance_error_2 = (problem.getLowerBoundInObj(1) - data.getObjective(1)) / (float) problem.getLowerBoundInObj(1);
+                            distance_error_1 = (problem.getLowerBoundInObj(0) - data.getObjective(0)) / (float) problem.getLowerBoundInObj(0);
+                            distance_error_2 = (problem.getLowerBoundInObj(1) - data.getObjective(1)) / (float) problem.getLowerBoundInObj(1);
+                            
+                            distance_error_best_1 = (problem.getBestMakespanFound() - data.getObjective(0)) / (float) problem.getBestMakespanFound();
+                            distance_error_best_2 = (problem.getBestWorkloadFound() - data.getObjective(1)) / (float) problem.getBestWorkloadFound();
+                        
                             data.setDistance(0, distance_error_1);
                             data.setDistance(1, distance_error_2);
 
-                            sorted_elements.push(data, SORTING_TYPES::DIST_1);
+                            sorted_elements.push(data, SORTING_TYPES::DIST_1);/** sorting the nodes to give priority to promising nodes. **/
                             
                             //ivm_tree.setNode(currentLevel + 1, toAdd);
                             branches_created++;
@@ -470,7 +479,6 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             branches += branches_created;
 
             if (branches_created > 0) { /** If a branch was created. **/
-
                 for (std::deque<Data3>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
                     ivm_tree.setNode(currentLevel + 1, (*it).getValue());
                 
@@ -748,17 +756,6 @@ void BranchAndBound::setPriorityTo(Interval& interval) const{
         default:
             break;
     }
-    
-    /****/
-    /*if(moved < branches_to_move_to_global_pool * 0.333f)
-        interval.setHighPriority();
-    else if(moved < branches_to_move_to_global_pool * 0.666f)
-        interval.setMediumPriority();
-    else{
-        interval.setLowPriority();
-        if(interval.getDeep() == Deep::BOTTOM)
-            interval.setHighPriority();
-    }*/
 
 }
 
@@ -831,12 +828,6 @@ int BranchAndBound::saveSummarize() {
 	printf("\tunexplored buckets:%ld\n",
 			paretoContainer.getNumberOfUnexploredBuckets());
 	printf("\tTotal elements in: %ld\n", paretoContainer.getSize());
-    
-    /*
-    problem.printSolution(paretoFront.front());
-    printf("\n");
-    problem.printSchedule(paretoFront.front());
-    */
 	
     std::ofstream myfile(summarizeFile);
 	if (myfile.is_open()) {

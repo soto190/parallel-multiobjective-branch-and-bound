@@ -511,8 +511,8 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
         if(data.getWorkloadOnMachine(machine) > max_workload)
             max_workload = data.getWorkloadOnMachine(machine);
         
-        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
-            max_workload = data.getTempBestWorkloadInMachine(machine);
+/*        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
+            max_workload = data.getTempBestWorkloadInMachine(machine);*/
     }
     
 
@@ -549,8 +549,8 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
         if(data.getWorkloadOnMachine(machine) > max_workload)
             max_workload = data.getWorkloadOnMachine(machine);
 
-        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
-            max_workload = data.getTempBestWorkloadInMachine(machine);
+/*        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
+            max_workload = data.getTempBestWorkloadInMachine(machine);*/
     }
   
     data.setMakespan(makespan);
@@ -962,9 +962,8 @@ void ProblemFJSSP::loadInstance(char filePath[2][255]){
                 for (int n = 0; n < avg_op_per_machine; ++n)
                     sum_shortest_proc_times[machine] += sorted_processing[machine][n];
                 
-                if (sum_shortest_proc_times[machine] < min_sum_shortest_proc_times){
+                if (sum_shortest_proc_times[machine] < min_sum_shortest_proc_times)
                     min_sum_shortest_proc_times = sum_shortest_proc_times[machine];
-                }
                 
             }
             
@@ -1075,7 +1074,7 @@ void ProblemFJSSP::printProblemInfo(){
     printf("| EST EET\n");
     for (operation = 0; operation < n_operations; ++operation) {
         
-        printf("[J%-2d] %2c %2d:", operationIsFromJob[operation], 'a' + operation, operation);
+        printf("[J%-2d] %2c %2d:", operationIsFromJob[operation], 'A' + operation, operation);
         for (machine = 0; machine < n_machines; ++machine)
             printf("%3d ", processingTime[operation][machine]);
         printf(" | %3d %3d\n", earliest_starting_time[operation], earliest_ending_time[operation]);
@@ -1189,7 +1188,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
         }
         
         for (time = startingTime[numberOp]; time < endingTime[numberOp]; time++)
-            gantt[machine][time] = 'a' + numberOp;
+            gantt[machine][time] = 'A' + numberOp;
         
         operationOfJob[job]++;
         
@@ -1202,7 +1201,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     
     printf("\tOp :  M  ti -  tf\n");
     for (operation = 0; operation < n_operations; ++operation)
-        printf("%3c %3d: %2d %3d - %3d \n", 'a' + operation, operation, operation_in_machine[operation], startingTime[operation], endingTime[operation]);
+        printf("%3c %3d: %2d %3d - %3d \n", 'A' + operation, operation, operation_in_machine[operation], startingTime[operation], endingTime[operation]);
     
     for (machine = 0; machine < n_machines; ++machine) {
         printf("M%d  | ", machine);
@@ -1233,14 +1232,14 @@ void ProblemFJSSP::printPartialSolution(const Solution & solution, int level) co
     int withVariables = 1;
     
     for (indexVar = 0; indexVar < getNumberOfObjectives(); indexVar++)
-        printf("%7.0f ", solution.getObjective(indexVar));
+        printf("%4.0f ", solution.getObjective(indexVar));
     
     if (withVariables == 1) {
         
         printf(" | ");
         
         for (indexVar = 0; indexVar <= level; indexVar++)
-            printf("%5d ", solution.getVariable(indexVar));
+            printf("%4d ", solution.getVariable(indexVar));
         
         for (indexVar = level + 1; indexVar < n_operations; indexVar ++)
             printf("  - ");
