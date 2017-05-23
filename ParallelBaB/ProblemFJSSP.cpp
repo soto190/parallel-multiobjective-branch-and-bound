@@ -594,9 +594,10 @@ void ProblemFJSSP::updateBestMaxWorkloadSolution(FJSSPdata& data){
     if(bestWorkloadFound < bestBound_maxWorkload)
         bestBound_maxWorkload = bestWorkloadFound;
     
-    for (int n_op = 0; n_op < n_operations; ++n_op)
+    for (int n_op = 0; n_op < n_operations; ++n_op){
         assignationBestWorkload[n_op] = data.getOperationAllocation(n_op);
-    
+        goodSolutionWithMaxWorkload.setVariable(n_op,  assignationBestWorkload[n_op]);
+    }
     for (int m_mach = 0; m_mach < n_machines; ++m_mach)
         data.setBestWorkloadInMachine(m_mach, data.getWorkloadOnMachine(m_mach));
 }
@@ -628,8 +629,10 @@ void ProblemFJSSP::updateBestMaxWorkloadSolutionWith(const Solution& solution){
     if(bestWorkloadFound < bestBound_maxWorkload)
         bestBound_maxWorkload = bestWorkloadFound;
     
-    for (int n_op = 0; n_op < n_operations; ++n_op)
+    for (int n_op = 0; n_op < n_operations; ++n_op){
         assignationBestWorkload[n_op] = getDecodeMap(solution.getVariable(n_op), 1);
+        goodSolutionWithMaxWorkload.setVariable(n_op,  assignationBestWorkload[n_op]);
+    }
 }
 
 void ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){

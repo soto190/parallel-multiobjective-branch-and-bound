@@ -448,10 +448,11 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         solution.setVariable(currentLevel + 1, toAdd);
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
                         
-                        /** If the distance to LB is negative in both objectives then it cannot produce improvement. **/
-                        // if ((distance_error_best_1 >= 0 || distance_error_best_2 >= 0) && improvesTheGrid(solution)) {
+                        distance_error_best_1 = (problem.getBestMakespanFound() - solution.getObjective(0)) / (float) problem.getBestMakespanFound();
+                        distance_error_best_2 = (problem.getBestWorkloadFound() - solution.getObjective(1)) / (float) problem.getBestWorkloadFound();
                         
-                        if (improvesTheGrid(solution)) {
+                        /** If the distance to LB is negative in both objectives then it cannot produce improvement. **/
+                        if ((distance_error_best_1 >= 0 || distance_error_best_2 >= 0) && improvesTheGrid(solution)) {
                             
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
                             data.setValue(toAdd);
@@ -460,9 +461,6 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             
                             distance_error_1 = (problem.getLowerBoundInObj(0) - data.getObjective(0)) / (float) problem.getLowerBoundInObj(0);
                             distance_error_2 = (problem.getLowerBoundInObj(1) - data.getObjective(1)) / (float) problem.getLowerBoundInObj(1);
-                            
-                            distance_error_best_1 = (problem.getBestMakespanFound() - data.getObjective(0)) / (float) problem.getBestMakespanFound();
-                            distance_error_best_2 = (problem.getBestWorkloadFound() - data.getObjective(1)) / (float) problem.getBestWorkloadFound();
                         
                             data.setDistance(0, distance_error_1);
                             data.setDistance(1, distance_error_2);
