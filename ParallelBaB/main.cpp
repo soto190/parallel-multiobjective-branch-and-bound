@@ -58,7 +58,9 @@ int main(int argc, const char * argv[]) {
 //		printf("Problem no found.\n");
 //		return 0;
 //	}
-
+    int number_of_threads = stoi(argv[arg_num_threads]);
+    printf("Number of threads:%3d\n", number_of_threads);
+    printf("Deep sharing: %0.2f\n", deep_limit_share);
     
 	char files [2][255];
     std::strcpy(files[0], argv[arg_input_file1]);
@@ -88,7 +90,7 @@ int main(int argc, const char * argv[]) {
 
     try {
         
-        int number_of_threads = stoi(argv[arg_num_threads]);//tbb::task_scheduler_init::default_num_threads();
+        //tbb::task_scheduler_init::default_num_threads();
 		tbb::task_scheduler_init init(number_of_threads);
 
 		ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(problem);

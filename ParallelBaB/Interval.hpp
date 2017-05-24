@@ -83,14 +83,15 @@ class ReadySubproblems {
     // One queue for each priority level
     tbb::concurrent_queue<Interval> level[P_Low + 1];
     tbb::atomic<unsigned int> size;
-    unsigned int size_empty;
+    unsigned long size_emptying = 10;
     
 public:
     ReadySubproblems(){size.store(0);}
-    void setSizeEmpty(int size){ size_empty = size;}
-    unsigned int getSizeEmpty() const{return size_empty;}
+    void setSizeEmptying(unsigned long size){ size_emptying = size;}
+    unsigned long getSizeEmptying() const{return size_emptying;}
     unsigned long unsafe_size() const{ return size; }
-    bool empty() const{ return size > 0?false:true;}
+    bool empty() const{ return size > 0 ? false : true;}
+    bool isEmptying() const{ return size < size_emptying ? true : false;}
     
     void push(const Interval & subproblem) {
         level[subproblem.getPriority()].push(subproblem);

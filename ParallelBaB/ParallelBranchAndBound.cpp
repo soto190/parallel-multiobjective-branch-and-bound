@@ -16,7 +16,7 @@ ParallelBranchAndBound::~ParallelBranchAndBound(){}
 
 tbb::task * ParallelBranchAndBound::execute() {
 
-    int counter_threads = 0;
+    globalPool.setSizeEmptying((unsigned long) (number_of_threads * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
     
     BranchAndBound BB_container(0, problem, branch_init);
     BB_container.initGlobalPoolWithInterval(branch_init);
@@ -25,6 +25,7 @@ tbb::task * ParallelBranchAndBound::execute() {
 
 	tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
     vector<BranchAndBound *> bb_threads;
+    int counter_threads = 0;
 	while (counter_threads++ < number_of_threads) {
 
 		BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(counter_threads, problem, branch_init);
@@ -36,12 +37,12 @@ tbb::task * ParallelBranchAndBound::execute() {
     printf("Spawning the swarm...\nWaiting for all...\n");
     tbb::task::spawn_and_wait_for_all(tl);
     printf("Job done...\n");
-    
-	/** Recollects the data. **/
+
+    /** Recollects the data. **/
 	BB_container.getTotalTime();
 	BranchAndBound* bb_in;
 	while (!bb_threads.empty()) {
-
+        
         bb_in = bb_threads.back();
         bb_threads.pop_back();
     

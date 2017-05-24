@@ -13,7 +13,6 @@
  *
  **/
 #include "BranchAndBound.hpp"
-
 ReadySubproblems globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 HandlerContainer paretoContainer;
 
@@ -528,14 +527,13 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
     unsigned long branches_to_move_to_global_pool = ivm_tree.getActiveRow() - ivm_tree.getPendingNodes() - 1;
     
     
-    int safe_size = 128 * 2; /** This is relative to the number of threads to keep one pending for each thread. (n_threads x 2) **/
     /**
      * To start sharing we have to consider:
      * - If the global pool has enough subproblems to keep feeding the other threads.
      * - If the level at which we are going to share is not too deep.
      * - If we have branches to share.
      */
-    if (globalPool.unsafe_size() < safe_size && next_row < deep_to_share && branches_to_move_to_global_pool > 1){
+    if (globalPool.isEmptying() && next_row < deep_to_share && branches_to_move_to_global_pool > 1){
         
         Solution temp(incumbent_s.getNumberOfObjectives(), incumbent_s.getNumberOfVariables());
         FJSSPdata data(fjssp_data);
@@ -551,7 +549,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
          * std::vector<Interval> intervals_to_send;
          */
         int total_moved = 0;
-        while(globalPool.unsafe_size() < safe_size && next_row < deep_to_share && next_row <= ivm_tree.getActiveRow()
+        while(globalPool.isEmptying() && next_row < deep_to_share && next_row <= ivm_tree.getActiveRow()
               && total_moved < ivm_tree.getActiveRow() - ivm_tree.getPendingNodes() - 1){
             
             branches_to_move_to_global_pool = ivm_tree.getNumberOfNodesAt(next_row) - 1;
