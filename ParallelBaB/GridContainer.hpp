@@ -182,6 +182,12 @@ typedef tbb::queuing_rw_mutex Lock;
          m_vec.resize(0);
      }
      
+     void print() const{
+         printf("[%3lu %3lu] [%luu %d]:\n", posx, posy, (unsigned long) size, (BucketState) state);
+         for (int nSol = 0; nSol < m_vec.size(); ++nSol)
+             m_vec[nSol].print();
+     }
+     
      /*
       //Join two buckets;
       Bucket<T> operator+(const Bucket<T>& bucket){
@@ -279,6 +285,12 @@ public:
         numberOfElements.fetch_and_add(-size_before);
         return size_before;
 	}
+    
+    void print() const{
+        for (int index = 0; index < rows * cols; ++index)
+            if (m_Data[index].getState() == BucketState::nondominated)
+                m_Data[index].print();
+    }
 
 };
 
@@ -327,6 +339,7 @@ public:
 	void setStateOf(BucketState state, int x, int y);
 	void printGridSize() const;
 	void printStates() const;
+    void print() const;
 
 	double getMaxIn(int dimension);
 

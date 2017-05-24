@@ -42,7 +42,7 @@
  **/
 
 const float to_share = 0.5f;
-const float deep_limit_share = 0.80f;
+const float deep_limit_share = 0.90f;
 
 class BranchAndBound: public tbb::task {
 

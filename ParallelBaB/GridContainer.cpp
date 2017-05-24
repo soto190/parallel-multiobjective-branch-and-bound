@@ -206,6 +206,7 @@ unsigned long HandlerContainer::getNumberOfUnexploredBuckets() const{ return une
 unsigned long HandlerContainer::getNumberOfDisabledBuckets() const{ return disabledBuckets; }
 
 void HandlerContainer::setStateOf(BucketState state, int x, int y) { grid.setStateOf(state, x, y); }
+void HandlerContainer::print() const{grid.print();}
 
 void HandlerContainer::printGridSize() const{
     int nCol = 0;
