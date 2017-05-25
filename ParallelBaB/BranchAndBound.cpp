@@ -17,12 +17,13 @@ ReadySubproblems globalPool;  /** intervals are the pending branches/subproblems
 HandlerContainer paretoContainer;
 
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
-    rank(toCopy.getRank()),
-    problem(toCopy.getProblem()),
-    fjssp_data(toCopy.getFJSSPdata()),
-    incumbent_s(toCopy.getIncumbentSolution()),
-    ivm_tree(toCopy.getIVMTree()),
-    currentLevel(toCopy.getCurrentLevel()){
+rank(toCopy.getRank()),
+problem(toCopy.getProblem()),
+fjssp_data(toCopy.getFJSSPdata()),
+incumbent_s(toCopy.getIncumbentSolution()),
+ivm_tree(toCopy.getIVMTree()),
+currentLevel(toCopy.getCurrentLevel()),
+shared_work(toCopy.getSharedWork()){
         
         totalLevels.store(toCopy.getNumberOfLevels());
         totalNodes.store(toCopy.getNumberOfNodes());
@@ -51,7 +52,8 @@ fjssp_data(problemToCopy.getNumberOfJobs(),
            problemToCopy.getNumberOfMachines()),
 interval_to_solve(branch),
 currentLevel(0),
-totalTime(0){
+totalTime(0),
+shared_work(0){
     
     totalLevels.store(problemToCopy.getNumberOfVariables());
     totalNodes.store(0);
@@ -76,13 +78,9 @@ totalTime(0){
     
     totalNodes.fetch_and_store(computeTotalNodes(numberOfVariables));
     
-    bestObjectivesFound(numberOfObjectives, numberOfVariables);
     incumbent_s(numberOfObjectives, numberOfVariables);
     problem.createDefaultSolution(incumbent_s);
-    
-    int nObj = 0;
-    for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-        bestObjectivesFound.setObjective(nObj, incumbent_s.getObjective(nObj));
+    updateBoundsWithSolution(incumbent_s);
     
     ivm_tree(problem.getNumberOfVariables(), problem.getUpperBound(0) + 1);
     ivm_tree.setOwner(rank);
@@ -109,6 +107,7 @@ BranchAndBound& BranchAndBound::operator()(int rank_new, const ProblemFJSSP &pro
     callsToBranch = 0;
     totalUpdatesInLowerBound = 0;
     totalTime = 0;
+    shared_work = 0;
     
     interval_to_solve = branch; /** Copy the branch. **/
     
@@ -116,12 +115,7 @@ BranchAndBound& BranchAndBound::operator()(int rank_new, const ProblemFJSSP &pro
     int numberOfVariables = problem.getNumberOfVariables();
     
     incumbent_s(numberOfObjectives, numberOfVariables);
-    bestObjectivesFound(numberOfObjectives, numberOfVariables);
     problem.createDefaultSolution(incumbent_s);
-    
-    int nObj = 0;
-    for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-        bestObjectivesFound.setObjective(nObj, incumbent_s.getObjective(nObj));
 
     ivm_tree(problem.getNumberOfVariables(), problem.getUpperBound(0) + 1);
     ivm_tree.setOwner(rank);
@@ -140,9 +134,6 @@ void BranchAndBound::initialize(int starts_tree) {
 
 	start = std::clock();
 
-	int numberOfObjectives = problem.getNumberOfObjectives();
-	int numberOfVariables = problem.getNumberOfVariables();
-
 	if (starts_tree == -1)
 		currentLevel = 0;
 	else
@@ -156,12 +147,7 @@ void BranchAndBound::initialize(int starts_tree) {
 	callsToBranch = 0;
 	totalUpdatesInLowerBound = 0;
 	totalNodes = computeTotalNodes(totalLevels);
-
-	bestObjectivesFound(numberOfObjectives, numberOfVariables);
-
-	int nObj = 0;
-	for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-		bestObjectivesFound.setObjective(nObj, incumbent_s.getObjective(nObj));
+    shared_work = 0;
 
 }
 
@@ -201,6 +187,8 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
     int element = 0;
     int machine = 0;
     int toAdd = 0;
+    
+    float distance_error[2];
     //fjssp_data.reset(); /** This function call is not necesary because the structuras starts empty.**/
     
     fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
@@ -226,15 +214,18 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
                 if (improvesTheGrid(incumbent_s)) {
                     /** Gets the branch to add. */
                     branch_to_split.setValueAt(split_level, toAdd);
-                    float distance_error_1 = (problem.getLowerBoundInObj(0) - fjssp_data.getMakespan()) / (float) problem.getLowerBoundInObj(0);
-                    float distance_error_2 = (problem.getLowerBoundInObj(1) - fjssp_data.getMaxWorkload()) / (float) problem.getLowerBoundInObj(1);
                     
-                    branch_to_split.setDistance(0, distance_error_1);
-                    branch_to_split.setDistance(1, distance_error_2);
+                    distance_error[0] = (problem.getLowerBoundInObj(0) - fjssp_data.getMakespan()) / (float) problem.getLowerBoundInObj(0);
+                    distance_error[1] = (problem.getLowerBoundInObj(1) - fjssp_data.getMaxWorkload()) / (float) problem.getLowerBoundInObj(1);
+                    
+                    branch_to_split.setDistance(0, distance_error[0]);
+                    branch_to_split.setDistance(1, distance_error[1]);
                     setPriorityTo(branch_to_split);
                     /** Add it to pending intervals. **/
-                    if (rank == 0)
+                    if (rank == 0){
                         globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
+                        shared_work++;
+                    }
                     branch_to_split.removeLastValue();
                     branches_created++;
                 } else
@@ -309,6 +300,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
             
             setPriorityTo(branch_init);
             globalPool.push(branch_init);
+            shared_work++;
             
             branch_init.removeLastValue();
             problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, currentLevel + 1);
@@ -325,8 +317,7 @@ tbb::task* BranchAndBound::execute() {
         if(globalPool.try_pop(interval_to_solve))
             solve(interval_to_solve);
     
-    double elapsed_time =  getTotalTime();
-    printf("[B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", rank, elapsed_time);
+    printf("[B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", rank, getTotalTime());
     
     return NULL;
 }
@@ -409,11 +400,16 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     
     int branches_created = 0;
     
-    float distance_error_1 = 0, distance_error_2 = 0;
-    float distance_error_best_1 = 0, distance_error_best_2 = 0;
+    float distance_error[2];
+    float distance_error_best[2];
+    
     SortedVector sorted_elements;
     Data3 data;
 
+    int best_values_found[2];
+    for (int obj = 0; obj < 2; ++obj)
+        best_values_found[obj] = paretoContainer.getBestValueFoundIn(obj);
+    
     switch (problem.getType()) {
             
         case ProblemType::permutation:
@@ -447,22 +443,22 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         solution.setVariable(currentLevel + 1, toAdd);
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
                         
-                        distance_error_best_1 = (problem.getBestMakespanFound() - solution.getObjective(0)) / (float) problem.getBestMakespanFound();
-                        distance_error_best_2 = (problem.getBestWorkloadFound() - solution.getObjective(1)) / (float) problem.getBestWorkloadFound();
+                        distance_error_best[0] = (best_values_found[0] - fjssp_data.getMakespan()) / (float) best_values_found[0];
+                        distance_error_best[1] = (best_values_found[1] - fjssp_data.getMaxWorkload()) / (float) best_values_found[1];
                         
-                        /** If the distance to LB is negative in both objectives then it cannot produce improvement. **/
-                        if ((distance_error_best_1 >= 0 || distance_error_best_2 >= 0) && improvesTheGrid(solution)) {
-                            
+                        /** If distance in obj1 is greater  or distance in ob2 is smaller the can produce an improvement. **/
+                        if ((distance_error_best[0] >= 0 || distance_error_best[1] <= 0) && improvesTheGrid(solution)) {
+                        
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
                             data.setValue(toAdd);
                             data.setObjective(0, fjssp_data.getMakespan());
                             data.setObjective(1, fjssp_data.getMaxWorkload());
                             
-                            distance_error_1 = (problem.getLowerBoundInObj(0) - data.getObjective(0)) / (float) problem.getLowerBoundInObj(0);
-                            distance_error_2 = (problem.getLowerBoundInObj(1) - data.getObjective(1)) / (float) problem.getLowerBoundInObj(1);
+                            distance_error[0] = (problem.getLowerBoundInObj(0) - data.getObjective(0)) / (float) problem.getLowerBoundInObj(0);
+                            distance_error[1] = (problem.getLowerBoundInObj(1) - data.getObjective(1)) / (float) problem.getLowerBoundInObj(1);
                         
-                            data.setDistance(0, distance_error_1);
-                            data.setDistance(1, distance_error_2);
+                            data.setDistance(0, distance_error[0]);
+                            data.setDistance(1, distance_error[1]);
 
                             sorted_elements.push(data, SORTING_TYPES::DIST_1);/** sorting the nodes to give priority to promising nodes. **/
                             
@@ -565,6 +561,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
                 
                 setPriorityTo(branch_to_send);
                 globalPool.push(branch_to_send);
+                shared_work++;
                 
                 //intervals_to_send.push_back(branch_to_send);
                 
@@ -580,7 +577,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
             }
             next_row++;
         }
-        /* In we need to sort the intervals.
+        /* If we need to sort the intervals.
         while(!intervals_to_send.empty()){
             globalPool.push(intervals_to_send.back());
             intervals_to_send.pop_back();
@@ -767,6 +764,7 @@ unsigned long BranchAndBound::getNumberOfUnexploredNodes( ) const{ return unexpl
 unsigned long BranchAndBound::getNumberOfPrunedNodes( ) const{ return prunedNodes; }
 unsigned long BranchAndBound::getNumberOfCallsToPrune( ) const{ return callsToPrune; }
 unsigned long BranchAndBound::getNumberOfUpdatesInLowerBound( ) const{ return totalUpdatesInLowerBound; }
+unsigned long BranchAndBound::getSharedWork() const{return shared_work;}
 
 void BranchAndBound::increaseNumberOfExploredNodes(unsigned long value){ exploredNodes.fetch_and_add(value); }
 void BranchAndBound::increaseNumberOfCallsToBranch(unsigned long value){ callsToBranch.fetch_and_add(value);}

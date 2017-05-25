@@ -16,6 +16,7 @@ ParallelBranchAndBound::~ParallelBranchAndBound(){}
 
 tbb::task * ParallelBranchAndBound::execute() {
 
+    unsigned long  shared_work = 0;
     globalPool.setSizeEmptying((unsigned long) (number_of_threads * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
     
     BranchAndBound BB_container(0, problem, branch_init);
@@ -53,6 +54,7 @@ tbb::task * ParallelBranchAndBound::execute() {
         BB_container.increaseNumberOfPrunedNodes(bb_in->getNumberOfPrunedNodes());
         BB_container.increaseNumberOfReachedLeaves(bb_in->getNumberOfReachedLeaves());
         BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());
+        shared_work += bb_in->getSharedWork();
 	}
     
     BB_container.setParetoFrontFile(outputParetoFile);
@@ -63,7 +65,7 @@ tbb::task * ParallelBranchAndBound::execute() {
 	BB_container.saveParetoFront();
 	BB_container.saveSummarize();
     bb_threads.clear();
-
+    printf("Shared work: %lu\n", shared_work);
     printf("Data swarm recollected and saved.\n");
 	printf("Parallel Branch And Bound ended.\n");
 	return NULL;

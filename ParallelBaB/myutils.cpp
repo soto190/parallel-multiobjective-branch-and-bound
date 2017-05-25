@@ -36,15 +36,15 @@ double round_double(double value) {
 }
 
 int binarySearch(double value, const double * array, int size) {
-	int low, high, mid;
-
-	low = 0;
-	high = size - 1;
+	int low = 0, high = size - 1, mid;
 
 	if (value >= array[high])
 		return high;
     if(value <= array[low])
         return low;
+    
+    low++;
+    high--;
 
 	while (low <= high) {
 		mid = (low + high) * 0.5f;

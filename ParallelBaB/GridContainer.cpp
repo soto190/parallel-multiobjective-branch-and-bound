@@ -41,6 +41,9 @@ disabledBuckets(toCopy.disabledBuckets){
     for (indexx = 0; indexx < toCopy.getCols(); indexx++)
         rangeinx[indexx] = toCopy.rangeinx[indexx];
     
+    for (int obj = 0; obj < 2; ++obj)
+        best_value_found_in_obj[obj].fetch_and_store(toCopy.getBestValueFoundIn(obj));
+    
 }
 
 HandlerContainer::HandlerContainer(unsigned int rows, unsigned int cols, double maxValX, double maxValY):
@@ -73,6 +76,9 @@ grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows) {
     
     for (divs = 1; divs < rows; divs++)
         rangeiny[divs] = rangeiny[divs - 1] + ry;
+    
+    for (int obj = 0; obj < 2; ++obj)
+        best_value_found_in_obj[obj].fetch_and_store(999999999);
 }
 
 HandlerContainer::~HandlerContainer() {
@@ -110,6 +116,9 @@ HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int c
     
     for (divs = 1; divs < rows; divs++)
         rangeiny[divs] = rangeiny[divs - 1] + ry;
+    
+    for (int obj = 0; obj < 2; ++obj)
+        best_value_found_in_obj[obj].fetch_and_store(999999999);
     
     return *this;
 }
@@ -167,8 +176,15 @@ int HandlerContainer::set(const Solution & solution, int x, int y) {
             break;
     }
     
+    if(updated)
+        for (int i = 0; i < 2; ++i)
+            if (solution.getObjective(i) < best_value_found_in_obj[i])
+                best_value_found_in_obj[i].fetch_and_store(solution.getObjective(i));
+    
     return updated;
 }
+
+int HandlerContainer::getBestValueFoundIn(int obj) const{return best_value_found_in_obj[obj];}
 
 /**
  * It uses a binary search tree locate the bucket which will contain the new solution.

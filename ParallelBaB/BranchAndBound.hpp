@@ -63,6 +63,7 @@ private:
     tbb::atomic<unsigned long> callsToPrune;
     tbb::atomic<unsigned long> totalUpdatesInLowerBound;
     tbb::atomic<unsigned long> totalLevels; /** Number of tree levels. **/
+    unsigned long shared_work;
     
     int currentLevel; /** Active level **/
     
@@ -70,7 +71,6 @@ private:
     FJSSPdata fjssp_data;
     
     Solution incumbent_s;
-    Solution bestObjectivesFound;
     IVMTree ivm_tree;
     Interval interval_to_solve;
     std::vector<Solution> paretoFront; /** paretofFront. **/
@@ -115,6 +115,7 @@ public:
     unsigned long getNumberOfPrunedNodes() const;
     unsigned long getNumberOfCallsToPrune() const;
     unsigned long getNumberOfUpdatesInLowerBound() const;
+    unsigned long getSharedWork() const;
     
     void increaseNumberOfExploredNodes(unsigned long value);
     void increaseNumberOfCallsToBranch(unsigned long value);

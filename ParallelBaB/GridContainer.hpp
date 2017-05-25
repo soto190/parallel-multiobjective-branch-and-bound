@@ -306,7 +306,8 @@ private:
     tbb::atomic<unsigned long> activeBuckets;
     tbb::atomic<unsigned long> unexploredBuckets;
     tbb::atomic<unsigned long> disabledBuckets;
-	
+    tbb::atomic<int> best_value_found_in_obj [2]; /** for two objectives **/
+    
 	GridContainer grid;
 	std::vector<Solution> paretoFront;
 
@@ -342,7 +343,8 @@ public:
     void print() const;
 
 	double getMaxIn(int dimension);
-
+    int getBestValueFoundIn(int obj) const;
+    
 	std::vector<Solution>& getParetoFront();
 };
 
