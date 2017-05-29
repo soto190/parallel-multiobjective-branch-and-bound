@@ -6,4 +6,3 @@
 #SBATCH -e parallelBB.%j.out
 
 ~/parallel-multiobjective-branch-and-bound/ParallelBaB/branchAndBound 15 FJSSP ~/instances/fjssp/kacem/Kacem-I1.txt ~/instances/fjssp/kacem/Kacem-I0.txt ~/results/
-~                                                                               

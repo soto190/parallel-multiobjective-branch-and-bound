@@ -62,6 +62,7 @@
 		2119FB471E41E14C00197CE4 /* Interval.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Interval.hpp; sourceTree = "<group>"; };
 		2119FB4E1E434B4200197CE4 /* libtbb.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtbb.dylib; path = ../../../../Libraries/tbb2017_20161128oss/build/macos_intel64_clang_cc8.0.0_os10.11.6_release/libtbb.dylib; sourceTree = "<group>"; };
 		2119FB4F1E434B4200197CE4 /* libtbbmalloc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtbbmalloc.dylib; path = ../../../../Libraries/tbb2017_20161128oss/build/macos_intel64_clang_cc8.0.0_os10.11.6_release/libtbbmalloc.dylib; sourceTree = "<group>"; };
+		212A26C71ED70C7B00648EC9 /* submit-uca.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "submit-uca.sh"; sourceTree = "<group>"; };
 		216F69B01E5AE5FD00589E5D /* submit-multiple.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "submit-multiple.sh"; sourceTree = "<group>"; };
 		216F69B11E5AE66600589E5D /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProblemFJSSP.cpp; sourceTree = "<group>"; };
@@ -137,6 +138,7 @@
 				211282581D639AB30038DBEE /* Solution.cpp */,
 				211282591D639AB30038DBEE /* Solution.hpp */,
 				2112824C1D639AB30038DBEE /* main.cpp */,
+				212A26C71ED70C7B00648EC9 /* submit-uca.sh */,
 				216F69B01E5AE5FD00589E5D /* submit-multiple.sh */,
 				216F69B11E5AE66600589E5D /* Makefile */,
 			);

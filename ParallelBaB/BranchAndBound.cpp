@@ -725,7 +725,7 @@ void BranchAndBound::setPriorityTo(Interval& interval) const{
 
     switch (interval.getDeep()) {
         case Deep::TOP:
-            interval.setLowPriority();
+            interval.setHighPriority();
             if (interval.getDistance(0) >= 0.6f) /** Good distance. **/
                 interval.setHighPriority();
             else if(interval.getDistance(0) >= 0.3f) /** Moderate distance. **/
@@ -743,7 +743,9 @@ void BranchAndBound::setPriorityTo(Interval& interval) const{
             break;
             
         case Deep::BOTTOM:
-            interval.setHighPriority();
+            interval.setLowPriority();
+            if (interval.getDistance(0) >= 0.8f) /** Good distance. **/
+                interval.setHighPriority();
             break;
             
         default:
