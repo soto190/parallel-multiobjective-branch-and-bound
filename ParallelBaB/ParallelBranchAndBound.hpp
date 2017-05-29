@@ -27,7 +27,7 @@ public:
     ProblemFJSSP problem;
     Interval branch_init;
     
-    ParallelBranchAndBound(const ProblemFJSSP& problem);
+    ParallelBranchAndBound(int n_threads, const ProblemFJSSP& problem);
     ~ParallelBranchAndBound();
     tbb::task* execute();
     

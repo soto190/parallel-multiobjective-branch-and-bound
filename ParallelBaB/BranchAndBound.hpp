@@ -63,7 +63,7 @@ private:
     tbb::atomic<unsigned long> callsToPrune;
     tbb::atomic<unsigned long> totalUpdatesInLowerBound;
     tbb::atomic<unsigned long> totalLevels; /** Number of tree levels. **/
-    unsigned long shared_work;
+    tbb::atomic<unsigned long> shared_work;
     
     int currentLevel; /** Active level **/
     
@@ -124,6 +124,7 @@ public:
     void increaseNumberOfPrunedNodes(unsigned long value);
     void increaseNumberOfReachedLeaves(unsigned long value);
     void increaseNumberOfUpdatesInLowerBound(unsigned long value);
+    void increaseSharedWork(unsigned long value);
 
     const IVMTree& getIVMTree() const;
     const Interval& getStartingInterval() const;

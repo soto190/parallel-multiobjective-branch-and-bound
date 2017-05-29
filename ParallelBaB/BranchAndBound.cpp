@@ -22,26 +22,25 @@ problem(toCopy.getProblem()),
 fjssp_data(toCopy.getFJSSPdata()),
 incumbent_s(toCopy.getIncumbentSolution()),
 ivm_tree(toCopy.getIVMTree()),
-currentLevel(toCopy.getCurrentLevel()),
-shared_work(toCopy.getSharedWork()){
-        
-        totalLevels.store(toCopy.getNumberOfLevels());
-        totalNodes.store(toCopy.getNumberOfNodes());
-        branches.store(toCopy.getNumberOfBranches());
-        exploredNodes.store(toCopy.getNumberOfExploredNodes());
-        reachedLeaves.store(toCopy.getNumberOfReachedLeaves());
-        unexploredNodes.store(toCopy.getNumberOfUnexploredNodes());
-        prunedNodes.store(toCopy.getNumberOfPrunedNodes());
-        callsToPrune.store(toCopy.getNumberOfCallsToPrune());
-        callsToBranch.store(toCopy.getNumberOfCallsToBranch());
-        totalUpdatesInLowerBound.store(toCopy.getNumberOfUpdatesInLowerBound());
-        start = toCopy.start;
-        
-        branches_to_move = problem.getUpperBound(0) * to_share;
-        deep_to_share = totalLevels * deep_limit_share;
+currentLevel(toCopy.getCurrentLevel()){
+    shared_work.store(toCopy.getSharedWork());
+    totalLevels.store(toCopy.getNumberOfLevels());
+    totalNodes.store(toCopy.getNumberOfNodes());
+    branches.store(toCopy.getNumberOfBranches());
+    exploredNodes.store(toCopy.getNumberOfExploredNodes());
+    reachedLeaves.store(toCopy.getNumberOfReachedLeaves());
+    unexploredNodes.store(toCopy.getNumberOfUnexploredNodes());
+    prunedNodes.store(toCopy.getNumberOfPrunedNodes());
+    callsToPrune.store(toCopy.getNumberOfCallsToPrune());
+    callsToBranch.store(toCopy.getNumberOfCallsToBranch());
+    totalUpdatesInLowerBound.store(toCopy.getNumberOfUpdatesInLowerBound());
+    start = toCopy.start;
     
-        std::strcpy(outputFile, toCopy.outputFile);
-        std::strcpy(summarizeFile, toCopy.summarizeFile);
+    branches_to_move = problem.getUpperBound(0) * to_share;
+    deep_to_share = totalLevels * deep_limit_share;
+    
+    std::strcpy(outputFile, toCopy.outputFile);
+    std::strcpy(summarizeFile, toCopy.summarizeFile);
 }
 
 BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, const Interval & branch):
@@ -52,9 +51,8 @@ fjssp_data(problemToCopy.getNumberOfJobs(),
            problemToCopy.getNumberOfMachines()),
 interval_to_solve(branch),
 currentLevel(0),
-totalTime(0),
-shared_work(0){
-    
+totalTime(0){
+    shared_work.store(0);
     totalLevels.store(problemToCopy.getNumberOfVariables());
     totalNodes.store(0);
     branches.store(0);
@@ -775,6 +773,7 @@ void BranchAndBound::increaseNumberOfCallsToPrune(unsigned long value){ callsToP
 void BranchAndBound::increaseNumberOfPrunedNodes(unsigned long value){ prunedNodes.fetch_and_add(value); }
 void BranchAndBound::increaseNumberOfReachedLeaves(unsigned long value){ reachedLeaves.fetch_and_add(value); }
 void BranchAndBound::increaseNumberOfUpdatesInLowerBound(unsigned long value){ totalUpdatesInLowerBound.fetch_and_add(value); }
+void BranchAndBound::increaseSharedWork(unsigned long value){shared_work.fetch_and_add(value);}
 
 const Solution& BranchAndBound::getIncumbentSolution() const { return incumbent_s;}
 const IVMTree& BranchAndBound::getIVMTree() const { return ivm_tree;}
@@ -823,7 +822,8 @@ int BranchAndBound::saveSummarize() {
 			paretoContainer.getNumberOfDisabledBuckets());
 	printf("\tunexplored buckets:%ld\n",
 			paretoContainer.getNumberOfUnexploredBuckets());
-	printf("\tTotal elements in: %ld\n", paretoContainer.getSize());
+	printf("\tNumber of elements in: %ld\n", paretoContainer.getSize());
+    printf("Shared work: %ld\n", getSharedWork());
 	
     std::ofstream myfile(summarizeFile);
 	if (myfile.is_open()) {
@@ -841,6 +841,7 @@ int BranchAndBound::saveSummarize() {
 		myfile << "Leaves reached:      " << reachedLeaves << "\n";
 		myfile << "Updates in PF:       " << totalUpdatesInLowerBound
 				<< "\n";
+        myfile << "Shared work:         " << shared_work << "\n";
 		myfile << "Total time:          " << totalTime << "\n";
 
 		myfile << "Grid data:\n";
@@ -854,7 +855,6 @@ int BranchAndBound::saveSummarize() {
 				<< paretoContainer.getNumberOfUnexploredBuckets() << "\n";
 		myfile << "\tnumber of elements:\t" << paretoContainer.getSize()
 				<< "\n";
-
 		myfile << "The pareto front found is: \n";
 
 		int numberOfObjectives = problem.getNumberOfObjectives();
@@ -873,14 +873,14 @@ int BranchAndBound::saveSummarize() {
 					<< ++counterSolutions << " ";
 
 			for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-				myfile << std::fixed << std::setw(26) << std::setprecision(16)
+				myfile << std::fixed << std::setw(6) << std::setprecision(0)
 						<< std::setfill(' ') << (*it).getObjective(nObj) << " ";
 
 			myfile << " | ";
 
 			for (nVar = 0; nVar < numberOfVariables; ++nVar)
 				myfile << std::fixed << std::setw(4) << std::setfill(' ')
-						<< (*it).getVariable(nVar) << " "; //printf("%3d ", (*it)->getVariable(nVar));
+						<< (*it).getVariable(nVar) << " ";
 
 			myfile << " |\n";
 		}
