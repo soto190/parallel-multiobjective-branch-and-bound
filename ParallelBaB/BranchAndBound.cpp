@@ -813,7 +813,8 @@ int BranchAndBound::saveSummarize() {
 	printf("Leaves reached:      %ld\n", getNumberOfReachedLeaves());
 	printf("Updates in PF:       %ld\n", getNumberOfUpdatesInLowerBound());
 	printf("Total time:          %f\n", getTotalTime());
-	printf("Grid data:\n");
+    printf("Shared work: %ld\n", getSharedWork());
+    printf("Grid data:\n");
 	printf("\tGrid dimension:    %d x %d\n", paretoContainer.getCols(),
 			paretoContainer.getRows());
 	printf("\tnon-dominated buckets:    %ld\n",
@@ -823,7 +824,6 @@ int BranchAndBound::saveSummarize() {
 	printf("\tunexplored buckets:%ld\n",
 			paretoContainer.getNumberOfUnexploredBuckets());
 	printf("\tNumber of elements in: %ld\n", paretoContainer.getSize());
-    printf("Shared work: %ld\n", getSharedWork());
 	
     std::ofstream myfile(summarizeFile);
 	if (myfile.is_open()) {

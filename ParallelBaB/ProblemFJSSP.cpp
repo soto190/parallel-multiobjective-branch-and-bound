@@ -8,22 +8,22 @@
 
 #include "ProblemFJSSP.hpp"
 /*
-ProblemFJSSP::ProblemFJSSP():Problem(){
-    
-    jobMachineToMap = nullptr;
-    mapToJobMachine = nullptr;
-    numberOfOperationsInJob = nullptr;
-    releaseTime = nullptr;
-    operationIsFromJob = nullptr;
-    assignationMinPij = nullptr;
-    assignationBestWorkload = nullptr;
-    bestWorkloads = nullptr;
-    minWorkload = nullptr;
-    jobOperationHasNumber = nullptr;
-    processingTime = nullptr;
-
-}
-**/
+ ProblemFJSSP::ProblemFJSSP():Problem(){
+ 
+ jobMachineToMap = nullptr;
+ mapToJobMachine = nullptr;
+ numberOfOperationsInJob = nullptr;
+ releaseTime = nullptr;
+ operationIsFromJob = nullptr;
+ assignationMinPij = nullptr;
+ assignationBestWorkload = nullptr;
+ bestWorkloads = nullptr;
+ minWorkload = nullptr;
+ jobOperationHasNumber = nullptr;
+ processingTime = nullptr;
+ 
+ }
+ **/
 ProblemFJSSP::ProblemFJSSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
     
     n_jobs = 0;
@@ -62,7 +62,7 @@ goodSolutionWithMaxWorkload(toCopy.goodSolutionWithMaxWorkload),
 sumOfMinPij(toCopy.getSumOfMinPij()),
 bestWorkloadFound(toCopy.getBestWorkloadFound()),
 bestMakespanFound(toCopy.getBestMakespanFound()){
-
+    
     lowerBound = new int[totalVariables];
     upperBound = new int[totalVariables];
     
@@ -76,7 +76,7 @@ bestMakespanFound(toCopy.getBestMakespanFound()){
     
     std::strcpy(name, toCopy.name);
     
-        
+    
     jobMachineToMap = new int * [n_jobs];
     mapToJobMachine = new int * [n_jobs * n_machines];
     processingTime = new int * [n_operations];
@@ -234,7 +234,7 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
         n_operations_in_job[job] = toCopy.getNumberOfOperationsInJob(job);
         releaseTime[job] = toCopy.getReleaseTimeOfJob(job);
         eet_of_job[job] = toCopy.getEarliestEndingJobTime(job);
-
+        
         jobMachineToMap[job] = new int[n_machines];
         
         for (machine = 0; machine < n_machines; ++machine) {
@@ -269,7 +269,7 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy){
         assignationMinPij[operation] = toCopy.getAssignationMinPij(operation);
         assignationBestWorkload[operation] = toCopy.getAssignationBestWorkload(operation);
         assignationBestMakespan[operation] = toCopy.getAssignationBestMakespan(operation);
-
+        
     }
     
     for (job = 0; job < n_jobs; ++job) {
@@ -293,7 +293,7 @@ ProblemFJSSP::~ProblemFJSSP(){
     
     for (job = 0; job < n_jobs * n_machines; ++job)
         delete [] mapToJobMachine[job];
-
+    
     for (operation = 0; operation < n_operations; ++operation)
         delete [] processingTime[operation];
     
@@ -409,17 +409,17 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
         
         if (operationOfJob[job] == 0) { /** If it is the first operation of the job.**/
             if(timeInMachine[machine] >= getReleaseTimeOfJob(job)){
-             
+                
                 startingTime[numberOp] = timeInMachine[machine];
                 timeInMachine[machine] += proccesingTime;
                 endingTime[numberOp] = timeInMachine[machine];
-            
+                
             }else{ /** If the job has to wait for the release time.**/
                 
                 startingTime[numberOp] = getReleaseTimeOfJob(job);
                 timeInMachine[machine] = getReleaseTimeOfJob(job) + proccesingTime;
                 endingTime[numberOp] = timeInMachine[machine];
-            
+                
             }
         }else{
             if(endingTime[numberOp - 1] > timeInMachine[machine]){ /** The operation starts inmediatly after their precedent operation.**/
@@ -453,7 +453,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
     
     solution.setObjective(0, makespan);
     solution.setObjective(1, maxWorkload);
-//    solution.setObjective(1, totalWorkload + minPij);
+    //    solution.setObjective(1, totalWorkload + minPij);
     
     return 0.0;
 }
@@ -504,7 +504,7 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     }
     
     for (machine = 0; machine < n_machines; ++machine){
-
+        
         if (data.getTimeOnMachine(machine) > makespan)
             makespan = data.getTimeOnMachine(machine);
         
@@ -514,13 +514,13 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
         if(data.getTempBestWorkloadInMachine(machine) > max_workload)
             max_workload = data.getTempBestWorkloadInMachine(machine);
     }
-
+    
     data.setMakespan(makespan);
     data.setMaxWorkload(max_workload);
     
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
-//    solution.setObjective(1, data.getTotalWorkload());
+    //    solution.setObjective(1, data.getTotalWorkload());
 }
 
 void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, int level){
@@ -537,7 +537,7 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
     
     data.increaseTempWorkloadIn(getAssignationBestWorkload(numberOp), getProccessingTime(numberOp, getAssignationBestWorkload(numberOp)));
     data.decreaseTempWorkloadIn(machine, getProccessingTime(numberOp, machine));
-
+    
     data.deallocateOperation(job, numberOp);
     
     for (machine = 0; machine < n_machines; ++machine){
@@ -547,18 +547,18 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
         
         if(data.getWorkloadOnMachine(machine) > max_workload)
             max_workload = data.getWorkloadOnMachine(machine);
-
+        
         if(data.getTempBestWorkloadInMachine(machine) > max_workload)
             max_workload = data.getTempBestWorkloadInMachine(machine);
     }
-  
+    
     data.setMakespan(makespan);
     data.setMaxWorkload(max_workload);
     
     solution.setVariable(level, -1);
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
-//    solution.setObjective(1, data.getTotalWorkload());
+    //    solution.setObjective(1, data.getTotalWorkload());
 }
 
 double ProblemFJSSP::evaluateLastLevel(Solution * solution){ return 0.0;}
@@ -613,7 +613,7 @@ void ProblemFJSSP::updateBestMakespanSolution(FJSSPdata& data){
 }
 
 void ProblemFJSSP::updateBestMakespanSolutionWith(const Solution& solution){
-     bestMakespanFound = solution.getObjective(0);
+    bestMakespanFound = solution.getObjective(0);
     
     if(bestMakespanFound < bestBound_makespan)
         bestBound_makespan = bestMakespanFound;
@@ -658,8 +658,8 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkload(Solution & solution){
 }
 
 void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
-   
-
+    
+    
     int procTiOp = 0;
     int maxWorkloadIsReduced = 1;
     
@@ -723,7 +723,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
         /** Applies the change. **/
         totalWorkload -= processingTime[bestOperation][maxWorkloadedMachine];
         workload[maxWorkloadedMachine] -= processingTime[bestOperation][maxWorkloadedMachine];
-      
+        
         totalWorkload += processingTime[bestOperation][bestMachine];
         workload[bestMachine] += processingTime[bestOperation][bestMachine];
         
@@ -741,7 +741,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
             }
         
         solution.setObjective(1, workload[maxWorkloadedMachine]);
-
+        
         if(maxWorkload < maxWorkloadObj)
             maxWorkloadObj = maxWorkload;
         else{
@@ -756,7 +756,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
             solution.setObjective(1, workload[lastMaxWorkloadedMachine]);
             
             assignationBestWorkload[bestOperation] = lastMaxWorkloadedMachine;
-
+            
             maxWorkloadIsReduced = 0;
         }
     }
@@ -766,13 +766,13 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution){
         if(bestWorkloads[nMachine] > bestWorkloadFound)
             bestWorkloadFound = bestWorkloads[nMachine];
     }
-
+    
 }
 
 /** For all the variables the lower bound is 0. **/
 int ProblemFJSSP::getLowerBound(int indexVar) const{ return 0; }
 
-/** 
+/**
  *
  * The Range of variables is the number of maps.
  *
@@ -797,8 +797,56 @@ int ProblemFJSSP::getLowerBoundInObj(int nObj) const{
     return -1;
 }
 
-void ProblemFJSSP::loadInstance(char filePath[2][255]){
-    
+void ProblemFJSSP::loadInstance(char filePath[2][255], char file_extension[10]){
+    if(strcmp(file_extension, "txt") == 0){
+        loadInstanceTXT(filePath, file_extension);
+    } else if(strcmp(file_extension, "fjs") == 0){
+        loadInstanceFJS(filePath, file_extension);
+    }
+}
+
+void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10]){
+    std::ifstream infile(filePath[0]);
+    if(infile.is_open()){
+        if(processingTime != nullptr){
+            int job = 0, operation = 0;
+            for(job = 0; job < n_jobs; ++job){
+                delete [] jobOperationHasNumber[job];
+                delete [] jobMachineToMap[job];
+            }
+            
+            for (job = 0; job < n_jobs * n_machines; ++job)
+                delete [] mapToJobMachine[job];
+            
+            for (operation = 0; operation < n_operations; ++operation)
+                delete[] processingTime[operation];
+            
+            delete [] jobMachineToMap;
+            delete [] mapToJobMachine;
+            delete [] processingTime;
+            delete [] n_operations_in_job;
+            delete [] releaseTime;
+            delete [] jobOperationHasNumber;
+            delete [] operationIsFromJob;
+            delete [] assignationMinPij;
+            delete [] minWorkload;
+            delete [] assignationBestWorkload;
+            delete [] assignationBestMakespan;
+            delete [] bestWorkloads;
+            
+            delete [] earliest_starting_time;
+            delete [] earliest_ending_time;
+            delete [] eet_of_job;
+            delete [] sum_shortest_proc_times;
+        }
+
+    }else{
+        printf("File not found\n");
+        exit(1);
+    }
+}
+
+void ProblemFJSSP::loadInstanceTXT(char filePath[2][255], char file_extension[10]){
     std::ifstream infile(filePath[0]);
     if(infile.is_open()){
         
@@ -849,7 +897,7 @@ void ProblemFJSSP::loadInstance(char filePath[2][255]){
         std::getline(infile, line);
         elemens = split(line, ' ');
         n_operations = 0;
-        if(n_jobs > 0 && n_machines > 0){
+        // if(n_jobs > 0 && n_machines > 0){
             for(int job = 0; job < n_jobs; ++job){
                 n_operations_in_job[job] = std::stoi(elemens.at(job));
                 n_operations += n_operations_in_job[job];
@@ -903,8 +951,8 @@ void ProblemFJSSP::loadInstance(char filePath[2][255]){
                 }
             }
             
-            int sorted_processing[n_machines][n_operations];
-            int sorted_est[n_operations];
+            int sorted_processing [n_machines][n_operations]; //new int * [n_machines];/** Stores the processing times from min to max for each machine. **/
+            int sorted_est [n_operations];// new int [n_operations];
             
             for (int machine = 0; machine < n_machines; ++machine)
                 minWorkload[machine] = 0;
@@ -927,72 +975,70 @@ void ProblemFJSSP::loadInstance(char filePath[2][255]){
                 minWorkload[minMachine] += processingTime[operation][minMachine];
                 assignationMinPij[operation] = minMachine;
             }
-            
-            infile.close();
-            
-            earliest_starting_time[0] = releaseTime[0];
-            int op_allocated = 0;
-            int next_op = 0;
-            for (int job = 0; job < n_jobs; ++job) {
-                earliest_starting_time[op_allocated] = releaseTime[job];
-                earliest_ending_time[op_allocated] = earliest_starting_time[op_allocated] + processingTime[op_allocated][assignationMinPij[op_allocated]];
-                sorted_est[op_allocated] = earliest_starting_time[op_allocated];
-                for (int operation = 1; operation < n_operations_in_job[job]; ++operation) {
-                    next_op = op_allocated + operation;
-                    earliest_starting_time[next_op] = earliest_ending_time[next_op - 1];
-                    earliest_ending_time[next_op] = earliest_starting_time[next_op] + processingTime[next_op][assignationMinPij[next_op]];
-                    sorted_est[next_op] = earliest_starting_time[next_op];
-                }
-                op_allocated += n_operations_in_job[job];
-                eet_of_job[job] = earliest_ending_time[op_allocated - 1];
-                
-                if (eet_of_job[job] > max_eet_of_jobs)
-                    max_eet_of_jobs = eet_of_job[job];
+        
+        infile.close();
+        earliest_starting_time[0] = releaseTime[0];
+        int op_allocated = 0;
+        int next_op = 0;
+        /** Computes the earlist starting time and the earlist ending time for each job. **/
+        for (int job = 0; job < n_jobs; ++job) {
+            earliest_starting_time[op_allocated] = releaseTime[job];
+            earliest_ending_time[op_allocated] = earliest_starting_time[op_allocated] + processingTime[op_allocated][assignationMinPij[op_allocated]];
+            sorted_est[op_allocated] = earliest_starting_time[op_allocated];
+            for (int operation = 1; operation < n_operations_in_job[job]; ++operation) {
+                next_op = op_allocated + operation;
+                earliest_starting_time[next_op] = earliest_ending_time[next_op - 1];
+                earliest_ending_time[next_op] = earliest_starting_time[next_op] + processingTime[next_op][assignationMinPij[next_op]];
+                sorted_est[next_op] = earliest_starting_time[next_op];
             }
+            op_allocated += n_operations_in_job[job];
+            eet_of_job[job] = earliest_ending_time[op_allocated - 1];
             
-            std::sort(sorted_est, sorted_est + n_operations);
-            for (int machine = 0; machine < n_machines; ++machine)
-                std::sort(sorted_processing[machine], sorted_processing[machine] + n_operations);
-            
-            sum_M_smallest_est = 0;
-            min_sum_shortest_proc_times = INT_MAX;
-            for (int machine = 0; machine < n_machines; ++machine) {
-                
-                sum_M_smallest_est += sorted_est[machine];
-                sum_shortest_proc_times[machine] = 0;
-                
-                for (int n = 0; n < avg_op_per_machine; ++n)
-                    sum_shortest_proc_times[machine] += sorted_processing[machine][n];
-                
-                if (sum_shortest_proc_times[machine] < min_sum_shortest_proc_times)
-                    min_sum_shortest_proc_times = sum_shortest_proc_times[machine];
-                
-            }
-            
-            totalVariables = n_operations;
-            
-            int operationCounter = 0;
-            for (int job = 0; job < n_jobs; ++job) {
-                jobOperationHasNumber[job] = new int[n_operations_in_job[job]];
-                for(int operation = 0; operation < n_operations_in_job[job]; ++operation){
-                    jobOperationHasNumber[job][operation] = operationCounter;
-                    operationIsFromJob[operationCounter++] = job;
-                }
-            }
-            
-            int temp_f2 = e_function(sumOfMinPij / n_machines);
-            int temp_f1 = e_function((sum_M_smallest_est + sumOfMinPij) / n_machines);
-            
-            bestBound_maxWorkload = temp_f2 >= min_sum_shortest_proc_times ? temp_f2: min_sum_shortest_proc_times;
-            bestBound_makespan = max_eet_of_jobs >= temp_f1 ? max_eet_of_jobs : temp_f1;
-
-            goodSolutionWithMaxWorkload (getNumberOfObjectives(), getNumberOfVariables());
-            buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
-            
-            /*if (goodSolutionWithMaxWorkload.getObjective(1) < bestBound_maxWorkload)
-                bestBound_maxWorkload = goodSolutionWithMaxWorkload.getObjective(1);
-             */
+            if (eet_of_job[job] > max_eet_of_jobs)
+                max_eet_of_jobs = eet_of_job[job];
         }
+        
+        std::sort(sorted_est, sorted_est + n_operations);
+        for (int machine = 0; machine < n_machines; ++machine)
+            std::sort(sorted_processing[machine], sorted_processing[machine] + n_operations);
+        
+        sum_M_smallest_est = 0;
+        min_sum_shortest_proc_times = INT_MAX;
+        for (int machine = 0; machine < n_machines; ++machine) {
+            
+            sum_M_smallest_est += sorted_est[machine];
+            sum_shortest_proc_times[machine] = 0;
+            
+            for (int n = 0; n < avg_op_per_machine; ++n)
+                sum_shortest_proc_times[machine] += sorted_processing[machine][n];
+            
+            if (sum_shortest_proc_times[machine] < min_sum_shortest_proc_times)
+                min_sum_shortest_proc_times = sum_shortest_proc_times[machine];
+        }
+        
+        totalVariables = n_operations;
+        
+        int operationCounter = 0;
+        for (int job = 0; job < n_jobs; ++job) {
+            jobOperationHasNumber[job] = new int[n_operations_in_job[job]];
+            for(int operation = 0; operation < n_operations_in_job[job]; ++operation){
+                jobOperationHasNumber[job][operation] = operationCounter;
+                operationIsFromJob[operationCounter++] = job;
+            }
+        }
+        
+        int temp_f2 = e_function(sumOfMinPij / n_machines);
+        int temp_f1 = e_function((sum_M_smallest_est + sumOfMinPij) / n_machines);
+        
+        bestBound_maxWorkload = temp_f2 >= min_sum_shortest_proc_times ? temp_f2: min_sum_shortest_proc_times;
+        bestBound_makespan = max_eet_of_jobs >= temp_f1 ? max_eet_of_jobs : temp_f1;
+        
+        goodSolutionWithMaxWorkload (getNumberOfObjectives(), getNumberOfVariables());
+        buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
+        
+        /*if (goodSolutionWithMaxWorkload.getObjective(1) < bestBound_maxWorkload)
+         bestBound_maxWorkload = goodSolutionWithMaxWorkload.getObjective(1);
+         */
     }else{
         printf("File not found\n");
         exit(1);
@@ -1056,7 +1102,7 @@ void ProblemFJSSP::printProblemInfo(){
     printf("Total jobs: %d\n", n_jobs);
     printf("Total machines: %d\n", n_machines);
     printf("Total operations: %d\n", n_operations);
-
+    
     printf("Operations in each job:\n");
     
     int job = 0, machine = 0, operation = 0;
@@ -1068,7 +1114,7 @@ void ProblemFJSSP::printProblemInfo(){
     for (job = 0; job < n_jobs; ++job)
         printf("%2d ", releaseTime[job]);
     printf("\n");
-
+    
     printf("Processing times: \n");
     printf("\t\t\t");
     for (machine = 0; machine < n_machines; ++machine)
@@ -1205,23 +1251,23 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     for (operation = 0; operation < n_operations; ++operation)
         printf("%3c %3d: %2d %3d - %3d \n", 'A' + operation, operation, operation_in_machine[operation], startingTime[operation], endingTime[operation]);
     
-    for (machine = 0; machine < n_machines; ++machine) {
+    for (machine = n_machines - 1;  machine >= 0; --machine) {
         printf("M%d  | ", machine);
         for (time = 0; time <= makespan; ++time)
             printf("%3c", gantt[machine][time]);
         printf("| %3d\n", workload[machine]);
     }
-     printf("----");
+    printf("----");
     for (time = 0; time <= makespan; ++time)
         printf("---");
     printf("--\n");
-
+    
     printf("Time:");
     for (time = 0; time <= makespan; ++time)
         printf("%3d", (time));
     printf("\n");
     printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
-
+    
 }
 
 void ProblemFJSSP::printSolution(const Solution & solution) const{

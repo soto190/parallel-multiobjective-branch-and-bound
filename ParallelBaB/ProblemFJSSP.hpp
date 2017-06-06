@@ -71,8 +71,8 @@ private:
     
     int min_total_workload;
     
-    int* operation_allocated_in; /** Size = n_operations. **/
-    int* n_operations_allocated; /** Size = n_jobs. Contains the number of the allocated operations from n job. **/
+    int* operation_allocated_in; /** Size = n_operations. Indicates the machine where the operation is allocated. **/
+    int* n_operations_allocated; /** Size = n_jobs. Counts the number of the allocated operations from job n. **/
     int* starting_time; /** Size = n_operations. Contains the starting time of the n_operation. **/
     int* ending_time; /** Size = n_operations. Contains the ending time of the n_operation. **/
     int* time_on_machine; /** Size = n_machines. Contains the ending time of the last computed job. **/
@@ -483,7 +483,9 @@ public:
     void printPartialSolution(const Solution & solution, int level) const;
     void printSolutionInfo(const Solution & solution) const;
     
-    void loadInstance(char path[2][255]);
+    void loadInstance(char path[2][255], char file_extension[10]);
+    void loadInstanceFJS(char path[2][255], char file_extension[10]);
+    void loadInstanceTXT(char path[2][255], char file_extension[10]);
     void printInstance();
     void printProblemInfo();
     void printSchedule(const Solution & solution) const;

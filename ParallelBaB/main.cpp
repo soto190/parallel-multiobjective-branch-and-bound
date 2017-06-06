@@ -62,7 +62,7 @@ int main(int argc, const char * argv[]) {
     printf("Number of threads:%3d\n", number_of_threads);
     printf("Deep sharing: %0.2f\n", deep_limit_share);
     
-	char files [2][255];
+	char files [2][255], extension[10];
     std::strcpy(files[0], argv[arg_input_file1]);
 	std::strcpy(files[1], argv[arg_input_file2]);
 
@@ -74,10 +74,12 @@ int main(int argc, const char * argv[]) {
 	unsigned long int sizeOfElems = elemens.size();
 	splited = split(elemens[sizeOfElems - 1], '.');
 	printf("Name: %s\n", splited[0].c_str());
-
+    printf("File extension: %s\n", splited[1].c_str());
+    std::strcpy(extension, splited[1].c_str());
+    
 	printf("Files:\n\t%s\n\t%s\n", files[0], files[1]);
 	problem.setName(splited[0].c_str());
-	problem.loadInstance(files);
+	problem.loadInstance(files, extension);
 	problem.printProblemInfo();
 	/** End **/
 
