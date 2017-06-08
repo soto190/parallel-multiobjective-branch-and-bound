@@ -166,7 +166,7 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
     
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
-    paretoContainer(100, 100, static_cast<unsigned int>(solution.getObjective(0)), static_cast<unsigned int>(solution.getObjective(1)));
+    paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
     Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(1, temp);
@@ -445,7 +445,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         distance_error_best[1] = (best_values_found[1] - fjssp_data.getMaxWorkload()) / (float) best_values_found[1];
                         
                         /** If distance in obj1 is greater  or distance in ob2 is smaller the can produce an improvement. **/
-                        if ((distance_error_best[0] >= 0 || distance_error_best[1] <= 0) && improvesTheGrid(solution)) {
+                        if ((distance_error_best[0] >= 0 || distance_error_best[1] >= 0) && improvesTheGrid(solution)) {
                         
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
                             data.setValue(toAdd);
@@ -650,8 +650,6 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
 			}
 		}
 }
-
-
 
 unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) const {
 	unsigned long result = 1;

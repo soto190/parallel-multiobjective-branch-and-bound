@@ -67,7 +67,7 @@ tbb::task * ParallelBranchAndBound::execute() {
     bb_threads.clear();
     printf("Data swarm recollected and saved.\n");
 	printf("Parallel Branch And Bound ended.\n");
-	return NULL;
+    return NULL;
 }
 
 void ParallelBranchAndBound::setNumberOfThreads(int n_number_of_threads) {

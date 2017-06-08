@@ -47,13 +47,14 @@ disabledBuckets(toCopy.disabledBuckets){
 }
 
 HandlerContainer::HandlerContainer(unsigned int rows, unsigned int cols, double maxValX, double maxValY):
-grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows) {
-    
+grid(cols, rows){
+    //    grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows) {
+    /*
     if (maxValX < cols)
         cols = maxValX;
     if (maxValY < rows)
         rows = maxValY;
-    
+    */
     numberOfElements = 0;
     unexploredBuckets = rows * cols;
     activeBuckets = 0;
@@ -87,13 +88,18 @@ HandlerContainer::~HandlerContainer() {
     paretoFront.clear();
 }
 
-HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int cols, double maxValX, double maxValY){
-    grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows);
+HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int cols, double maxValX, double maxValY, int minValX, int minValY ){
+   /*
     if (maxValX < cols)
         cols = maxValX;
     if (maxValY < rows)
         rows = maxValY;
-    
+    */
+    grid(cols, rows);
+
+    //grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows);
+
+
     numberOfElements = 0;
     unexploredBuckets = rows * cols;
     activeBuckets = 0;
@@ -108,13 +114,13 @@ HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int c
     double rx = maxValX / cols;
     double ry = maxValY / rows;
     
-    rangeinx[divs] = 0;
-    rangeiny[divs] = 0;
+    rangeinx[divs] = minValX;
+    rangeiny[divs] = minValY;
     
-    for (divs = 1; divs < cols; divs++)
+    for (divs = 1; divs < cols; ++divs)
         rangeinx[divs] = rangeinx[divs - 1] + rx;
     
-    for (divs = 1; divs < rows; divs++)
+    for (divs = 1; divs < rows; ++divs)
         rangeiny[divs] = rangeiny[divs - 1] + ry;
     
     for (int obj = 0; obj < 2; ++obj)

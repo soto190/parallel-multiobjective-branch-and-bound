@@ -447,10 +447,10 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
         
     }
     
-    for (machine = 0; machine < n_machines; ++machine)
+    /*for (machine = 0; machine < n_machines; ++machine)
         if(workload[machine] + bestWL[machine] > maxWorkload)
             maxWorkload = workload[machine] + bestWL[machine];
-    
+    */
     solution.setObjective(0, makespan);
     solution.setObjective(1, maxWorkload);
     //    solution.setObjective(1, totalWorkload + minPij);
@@ -511,8 +511,8 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
         if(data.getWorkloadOnMachine(machine) > max_workload)
             max_workload = data.getWorkloadOnMachine(machine);
         
-        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
-            max_workload = data.getTempBestWorkloadInMachine(machine);
+//        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
+//            max_workload = data.getTempBestWorkloadInMachine(machine);
     }
     
     data.setMakespan(makespan);
@@ -548,8 +548,8 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
         if(data.getWorkloadOnMachine(machine) > max_workload)
             max_workload = data.getWorkloadOnMachine(machine);
         
-        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
-            max_workload = data.getTempBestWorkloadInMachine(machine);
+//        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
+//            max_workload = data.getTempBestWorkloadInMachine(machine);
     }
     
     data.setMakespan(makespan);
@@ -798,11 +798,10 @@ int ProblemFJSSP::getLowerBoundInObj(int nObj) const{
 }
 
 void ProblemFJSSP::loadInstance(char filePath[2][255], char file_extension[10]){
-    if(strcmp(file_extension, "txt") == 0){
+    if(strcmp(file_extension, "txt") == 0)
         loadInstanceTXT(filePath, file_extension);
-    } else if(strcmp(file_extension, "fjs") == 0){
+    else if(strcmp(file_extension, "fjs") == 0)
         loadInstanceFJS(filePath, file_extension);
-    }
 }
 
 void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10]){
@@ -910,7 +909,7 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
                 processingTime[op_counter] = new int[n_machines];
                 
                 for (int n_machine = 0; n_machine < n_machines; ++n_machine)
-                    processingTime[op_counter][n_machine] = -1;
+                    processingTime[op_counter][n_machine] = 9999999;
                 
                 for (int n_mach = 0; n_mach < op_can_be_proc_in_n_mach; ++n_mach) {
                     int machine = std::stoi(elemens.at(token++));

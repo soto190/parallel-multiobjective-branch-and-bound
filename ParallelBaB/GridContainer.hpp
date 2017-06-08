@@ -318,7 +318,7 @@ public:
     HandlerContainer(const HandlerContainer& toCopy);
 	~HandlerContainer();
     
-    HandlerContainer& operator()(unsigned int width, unsigned int height, double maxValX, double maxValY);
+    HandlerContainer& operator()(unsigned int width, unsigned int height, double maxValX, double maxValY, int minValX, int minValY);
     
 	int add(const Solution & solution);
     int set(const Solution & solution, int x, int y);
