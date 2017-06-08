@@ -448,9 +448,9 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
     }
     
     /*for (machine = 0; machine < n_machines; ++machine)
-        if(workload[machine] + bestWL[machine] > maxWorkload)
-            maxWorkload = workload[machine] + bestWL[machine];
-    */
+     if(workload[machine] + bestWL[machine] > maxWorkload)
+     maxWorkload = workload[machine] + bestWL[machine];
+     */
     solution.setObjective(0, makespan);
     solution.setObjective(1, maxWorkload);
     //    solution.setObjective(1, totalWorkload + minPij);
@@ -511,8 +511,8 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
         if(data.getWorkloadOnMachine(machine) > max_workload)
             max_workload = data.getWorkloadOnMachine(machine);
         
-//        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
-//            max_workload = data.getTempBestWorkloadInMachine(machine);
+        //        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
+        //            max_workload = data.getTempBestWorkloadInMachine(machine);
     }
     
     data.setMakespan(makespan);
@@ -548,8 +548,8 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
         if(data.getWorkloadOnMachine(machine) > max_workload)
             max_workload = data.getWorkloadOnMachine(machine);
         
-//        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
-//            max_workload = data.getTempBestWorkloadInMachine(machine);
+        //        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
+        //            max_workload = data.getTempBestWorkloadInMachine(machine);
     }
     
     data.setMakespan(makespan);
@@ -798,47 +798,63 @@ int ProblemFJSSP::getLowerBoundInObj(int nObj) const{
 }
 
 void ProblemFJSSP::loadInstance(char filePath[2][255], char file_extension[10]){
-    if(strcmp(file_extension, "txt") == 0)
+    if(strcmp(file_extension, "txt") == 0){
         loadInstanceTXT(filePath, file_extension);
-    else if(strcmp(file_extension, "fjs") == 0)
+    }else if(strcmp(file_extension, "fjs") == 0){
         loadInstanceFJS(filePath, file_extension);
+    }
 }
 
 void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10]){
     std::ifstream infile(filePath[0]);
     if(infile.is_open()){
+        int job = 0, operation = 0;
+        
         if(processingTime != nullptr){
-            int job = 0, operation = 0;
-            for(job = 0; job < n_jobs; ++job){
-                delete [] jobOperationHasNumber[job];
-                delete [] jobMachineToMap[job];
-            }
-            
-            for (job = 0; job < n_jobs * n_machines; ++job)
-                delete [] mapToJobMachine[job];
-            
             for (operation = 0; operation < n_operations; ++operation)
                 delete[] processingTime[operation];
-            
-            delete [] jobMachineToMap;
-            delete [] mapToJobMachine;
             delete [] processingTime;
-            delete [] n_operations_in_job;
-            delete [] releaseTime;
-            delete [] jobOperationHasNumber;
-            delete [] operationIsFromJob;
-            delete [] assignationMinPij;
-            delete [] minWorkload;
-            delete [] assignationBestWorkload;
-            delete [] assignationBestMakespan;
-            delete [] bestWorkloads;
-            
-            delete [] earliest_starting_time;
-            delete [] earliest_ending_time;
-            delete [] eet_of_job;
-            delete [] sum_shortest_proc_times;
         }
-
+        if(jobOperationHasNumber != nullptr){
+            for(job = 0; job < n_jobs; ++job)
+                delete [] jobOperationHasNumber[job];
+            delete [] jobOperationHasNumber;
+        }
+        if(jobMachineToMap != nullptr){
+            for(job = 0; job < n_jobs; ++job)
+                delete [] jobMachineToMap[job];
+            delete [] jobMachineToMap;
+        }
+        if(mapToJobMachine != nullptr){
+            for (job = 0; job < n_jobs * n_machines; ++job)
+                delete [] mapToJobMachine[job];
+            delete [] mapToJobMachine;
+        }
+        if (n_operations_in_job != nullptr)
+            delete [] n_operations_in_job;
+        if (releaseTime != nullptr)
+            delete [] releaseTime;
+        if(operationIsFromJob != nullptr)
+            delete [] operationIsFromJob;
+        if (assignationMinPij != nullptr)
+            delete [] assignationMinPij;
+        if(minWorkload != nullptr)
+            delete [] minWorkload;
+        if(assignationBestWorkload != nullptr)
+            delete [] assignationBestWorkload;
+        if(assignationBestMakespan != nullptr)
+            delete [] assignationBestMakespan;
+        if (bestWorkloads != nullptr)
+            delete [] bestWorkloads;
+        if(earliest_starting_time != nullptr)
+            delete [] earliest_starting_time;
+        if(earliest_ending_time != nullptr)
+            delete [] earliest_ending_time;
+        if(eet_of_job != nullptr)
+            delete [] eet_of_job;
+        if(sum_shortest_proc_times != nullptr)
+            delete [] sum_shortest_proc_times;
+        
         sumOfMinPij = 0;
         bestWorkloadFound = INT_MAX;
         n_operations = 0;
@@ -848,158 +864,161 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
         elemens = split(line, ' ');
         n_jobs = std::stoi(elemens.at(0));
         n_machines = std::stoi(elemens.at(1));
-        n_operations_in_job = new int[n_jobs];
-        releaseTime = new int[n_jobs];
         
-        std::string * job_line = new std::string[n_jobs];
-        for (int n_job = 0; n_job < n_jobs; ++n_job){
-            std::getline(infile, job_line[n_job]);
-            split(job_line[n_job], ' ', elemens);
-            n_operations_in_job[n_job] = std::stoi(elemens.at(0));
-            n_operations += n_operations_in_job[n_job];
-            releaseTime[n_job] = 0;
-        }
-        
-        operationIsFromJob = new int[n_operations];
-        assignationMinPij = new int [n_operations];
-        minWorkload = new int[n_machines];
-        assignationBestWorkload = new int [n_operations];
-        assignationBestMakespan = new int [n_operations];
-        bestWorkloads = new int[n_machines];
-        jobOperationHasNumber = new int * [n_jobs];
-        processingTime = new int * [n_operations];
-        jobMachineToMap = new int * [n_jobs];
-        mapToJobMachine = new int * [n_jobs * n_machines];
-        
-        earliest_starting_time = new int[n_operations];/** Length equals to number of operations. **/
-        earliest_ending_time = new int[n_operations];  /** Length equals to number of operations. **/
-        eet_of_job = new int[n_jobs];                  /** Length equals to number of jobs. **/
-        sum_shortest_proc_times = new int[n_machines]; /** D^{k}_{Ñ}. Length equals to number of machines.**/
-        
-        avg_op_per_machine = e_function(n_operations / n_machines);        /** Ñ parameter (N tilde).  **/
-        min_sum_shortest_proc_times = 0; /** D_{{k_0}, Ñ}. **/
-        max_eet_of_jobs = 0;
-        sum_M_smallest_est = 0;
-        
-        int minPij = INT_MAX;
-        int minMachine = 0;
-        int map = 0;
-        
-        for (int job = 0; job < n_jobs; ++job) {
-            jobMachineToMap[job] = new int[n_machines];
+        if (n_jobs > 0 && n_machines > 0) {
+            
+            n_operations_in_job = new int[n_jobs];
+            releaseTime = new int[n_jobs];
+            
+            std::string * job_line = new std::string[n_jobs];
+            for (int n_job = 0; n_job < n_jobs; ++n_job){
+                std::getline(infile, job_line[n_job]);
+                split(job_line[n_job], ' ', elemens);
+                n_operations_in_job[n_job] = std::stoi(elemens.at(0));
+                n_operations += n_operations_in_job[n_job];
+                releaseTime[n_job] = 0;
+            }
+            
+            operationIsFromJob = new int[n_operations];
+            assignationMinPij = new int [n_operations];
+            minWorkload = new int[n_machines];
+            assignationBestWorkload = new int [n_operations];
+            assignationBestMakespan = new int [n_operations];
+            bestWorkloads = new int[n_machines];
+            jobOperationHasNumber = new int * [n_jobs];
+            processingTime = new int * [n_operations];
+            jobMachineToMap = new int * [n_jobs];
+            mapToJobMachine = new int * [n_jobs * n_machines];
+            
+            earliest_starting_time = new int[n_operations];/** Length equals to number of operations. **/
+            earliest_ending_time = new int[n_operations];  /** Length equals to number of operations. **/
+            eet_of_job = new int[n_jobs];                  /** Length equals to number of jobs. **/
+            sum_shortest_proc_times = new int[n_machines]; /** D^{k}_{Ñ}. Length equals to number of machines.**/
+            
+            avg_op_per_machine = e_function(n_operations / n_machines);        /** Ñ parameter (N tilde).  **/
+            min_sum_shortest_proc_times = 0; /** D_{{k_0}, Ñ}. **/
+            max_eet_of_jobs = 0;
+            sum_M_smallest_est = 0;
+            
+            int minPij = INT_MAX;
+            int minMachine = 0;
+            int map = 0;
+            
+            for (int job = 0; job < n_jobs; ++job) {
+                jobMachineToMap[job] = new int[n_machines];
+                for (int machine = 0; machine < n_machines; ++machine) {
+                    mapToJobMachine[map] = new int[2];
+                    mapToJobMachine[map][0] = job;
+                    mapToJobMachine[map][1] = machine;
+                    jobMachineToMap[job][machine] = map;
+                    map++;
+                }
+            }
+            int sorted_processing [n_machines][n_operations]; //new int * [n_machines];/** Stores the processing times from min to max for each machine. **/
+            int sorted_est [n_operations];// new int [n_operations];
+            
+            for (int machine = 0; machine < n_machines; ++machine)
+                minWorkload[machine] = 0;
+            int op_counter = 0;
+            for (int n_job = 0; n_job < n_jobs; ++n_job) {
+                int token = 1;
+                split(job_line[n_job], ' ', elemens);
+                for (int n_op_in_job = 0; n_op_in_job < n_operations_in_job[n_job]; ++n_op_in_job) {
+                    int op_can_be_proc_in_n_mach = std::stoi(elemens.at(token++));
+                    processingTime[op_counter] = new int[n_machines];
+                    
+                    for (int n_machine = 0; n_machine < n_machines; ++n_machine)
+                        processingTime[op_counter][n_machine] = 9999999;
+                    
+                    for (int n_mach = 0; n_mach < op_can_be_proc_in_n_mach; ++n_mach) {
+                        int machine = std::stoi(elemens.at(token++));
+                        int proc_ti = std::stoi(elemens.at(token++));
+                        processingTime[op_counter][machine - 1] = proc_ti;
+                    }
+                    op_counter++;
+                }
+            }
+            
+            for (int operation = 0; operation < n_operations; ++operation) {
+                //elemens = split(job_line, ' ');
+                minPij = INT_MAX;
+                minMachine = 0;
+                for (int machine = 0; machine < n_machines; ++machine){
+                    //processingTime[operation][machine] = std::stoi(elemens.at(machine));
+                    sorted_processing[machine][operation] = processingTime[operation][machine];
+                    if (processingTime[operation][machine] < minPij){
+                        minPij = processingTime[operation][machine];
+                        minMachine = machine;
+                    }
+                }
+                sumOfMinPij += minPij;
+                minWorkload[minMachine] += processingTime[operation][minMachine];
+                assignationMinPij[operation] = minMachine;
+            }
+            
+            infile.close();
+            earliest_starting_time[0] = releaseTime[0];
+            int op_allocated = 0;
+            int next_op = 0;
+            /** Computes the earlist starting time and the earlist ending time for each job. **/
+            for (int job = 0; job < n_jobs; ++job) {
+                earliest_starting_time[op_allocated] = releaseTime[job];
+                earliest_ending_time[op_allocated] = earliest_starting_time[op_allocated] + processingTime[op_allocated][assignationMinPij[op_allocated]];
+                sorted_est[op_allocated] = earliest_starting_time[op_allocated];
+                for (int operation = 1; operation < n_operations_in_job[job]; ++operation) {
+                    next_op = op_allocated + operation;
+                    earliest_starting_time[next_op] = earliest_ending_time[next_op - 1];
+                    earliest_ending_time[next_op] = earliest_starting_time[next_op] + processingTime[next_op][assignationMinPij[next_op]];
+                    sorted_est[next_op] = earliest_starting_time[next_op];
+                }
+                op_allocated += n_operations_in_job[job];
+                eet_of_job[job] = earliest_ending_time[op_allocated - 1];
+                
+                if (eet_of_job[job] > max_eet_of_jobs)
+                    max_eet_of_jobs = eet_of_job[job];
+            }
+            
+            std::sort(sorted_est, sorted_est + n_operations);
+            for (int machine = 0; machine < n_machines; ++machine)
+                std::sort(sorted_processing[machine], sorted_processing[machine] + n_operations);
+            
+            sum_M_smallest_est = 0;
+            min_sum_shortest_proc_times = INT_MAX;
             for (int machine = 0; machine < n_machines; ++machine) {
-                mapToJobMachine[map] = new int[2];
-                mapToJobMachine[map][0] = job;
-                mapToJobMachine[map][1] = machine;
-                jobMachineToMap[job][machine] = map;
-                map++;
-            }
-        }
-        int sorted_processing [n_machines][n_operations]; //new int * [n_machines];/** Stores the processing times from min to max for each machine. **/
-        int sorted_est [n_operations];// new int [n_operations];
-        
-        for (int machine = 0; machine < n_machines; ++machine)
-            minWorkload[machine] = 0;
-        int op_counter = 0;
-        for (int n_job = 0; n_job < n_jobs; ++n_job) {
-            int token = 1;
-            split(job_line[n_job], ' ', elemens);
-            for (int n_op_in_job = 0; n_op_in_job < n_operations_in_job[n_job]; ++n_op_in_job) {
-                int op_can_be_proc_in_n_mach = std::stoi(elemens.at(token++));
-                processingTime[op_counter] = new int[n_machines];
                 
-                for (int n_machine = 0; n_machine < n_machines; ++n_machine)
-                    processingTime[op_counter][n_machine] = 9999999;
+                sum_M_smallest_est += sorted_est[machine];
+                sum_shortest_proc_times[machine] = 0;
                 
-                for (int n_mach = 0; n_mach < op_can_be_proc_in_n_mach; ++n_mach) {
-                    int machine = std::stoi(elemens.at(token++));
-                    int proc_ti = std::stoi(elemens.at(token++));
-                    processingTime[op_counter][machine - 1] = proc_ti;
-                }
-                op_counter++;
+                for (int n = 0; n < avg_op_per_machine; ++n)
+                    sum_shortest_proc_times[machine] += sorted_processing[machine][n];
+                
+                if (sum_shortest_proc_times[machine] < min_sum_shortest_proc_times)
+                    min_sum_shortest_proc_times = sum_shortest_proc_times[machine];
             }
-        }
-        
-        for (int operation = 0; operation < n_operations; ++operation) {
-            //elemens = split(job_line, ' ');
-            minPij = INT_MAX;
-            minMachine = 0;
-            for (int machine = 0; machine < n_machines; ++machine){
-                //processingTime[operation][machine] = std::stoi(elemens.at(machine));
-                sorted_processing[machine][operation] = processingTime[operation][machine];
-                if (processingTime[operation][machine] < minPij){
-                    minPij = processingTime[operation][machine];
-                    minMachine = machine;
+            
+            totalVariables = n_operations;
+            
+            int operationCounter = 0;
+            for (int job = 0; job < n_jobs; ++job) {
+                jobOperationHasNumber[job] = new int[n_operations_in_job[job]];
+                for(int operation = 0; operation < n_operations_in_job[job]; ++operation){
+                    jobOperationHasNumber[job][operation] = operationCounter;
+                    operationIsFromJob[operationCounter++] = job;
                 }
             }
-            sumOfMinPij += minPij;
-            minWorkload[minMachine] += processingTime[operation][minMachine];
-            assignationMinPij[operation] = minMachine;
-        }
-
-        infile.close();
-        earliest_starting_time[0] = releaseTime[0];
-        int op_allocated = 0;
-        int next_op = 0;
-        /** Computes the earlist starting time and the earlist ending time for each job. **/
-        for (int job = 0; job < n_jobs; ++job) {
-            earliest_starting_time[op_allocated] = releaseTime[job];
-            earliest_ending_time[op_allocated] = earliest_starting_time[op_allocated] + processingTime[op_allocated][assignationMinPij[op_allocated]];
-            sorted_est[op_allocated] = earliest_starting_time[op_allocated];
-            for (int operation = 1; operation < n_operations_in_job[job]; ++operation) {
-                next_op = op_allocated + operation;
-                earliest_starting_time[next_op] = earliest_ending_time[next_op - 1];
-                earliest_ending_time[next_op] = earliest_starting_time[next_op] + processingTime[next_op][assignationMinPij[next_op]];
-                sorted_est[next_op] = earliest_starting_time[next_op];
-            }
-            op_allocated += n_operations_in_job[job];
-            eet_of_job[job] = earliest_ending_time[op_allocated - 1];
             
-            if (eet_of_job[job] > max_eet_of_jobs)
-                max_eet_of_jobs = eet_of_job[job];
-        }
-        
-        std::sort(sorted_est, sorted_est + n_operations);
-        for (int machine = 0; machine < n_machines; ++machine)
-            std::sort(sorted_processing[machine], sorted_processing[machine] + n_operations);
-        
-        sum_M_smallest_est = 0;
-        min_sum_shortest_proc_times = INT_MAX;
-        for (int machine = 0; machine < n_machines; ++machine) {
+            int temp_f2 = e_function(sumOfMinPij / n_machines);
+            int temp_f1 = e_function((sum_M_smallest_est + sumOfMinPij) / n_machines);
             
-            sum_M_smallest_est += sorted_est[machine];
-            sum_shortest_proc_times[machine] = 0;
+            bestBound_maxWorkload = temp_f2 >= min_sum_shortest_proc_times ? temp_f2: min_sum_shortest_proc_times;
+            bestBound_makespan = max_eet_of_jobs >= temp_f1 ? max_eet_of_jobs : temp_f1;
             
-            for (int n = 0; n < avg_op_per_machine; ++n)
-                sum_shortest_proc_times[machine] += sorted_processing[machine][n];
+            goodSolutionWithMaxWorkload (getNumberOfObjectives(), getNumberOfVariables());
+            buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
             
-            if (sum_shortest_proc_times[machine] < min_sum_shortest_proc_times)
-                min_sum_shortest_proc_times = sum_shortest_proc_times[machine];
+            
+            delete [] job_line;
         }
-        
-        totalVariables = n_operations;
-        
-        int operationCounter = 0;
-        for (int job = 0; job < n_jobs; ++job) {
-            jobOperationHasNumber[job] = new int[n_operations_in_job[job]];
-            for(int operation = 0; operation < n_operations_in_job[job]; ++operation){
-                jobOperationHasNumber[job][operation] = operationCounter;
-                operationIsFromJob[operationCounter++] = job;
-            }
-        }
-        
-        int temp_f2 = e_function(sumOfMinPij / n_machines);
-        int temp_f1 = e_function((sum_M_smallest_est + sumOfMinPij) / n_machines);
-        
-        bestBound_maxWorkload = temp_f2 >= min_sum_shortest_proc_times ? temp_f2: min_sum_shortest_proc_times;
-        bestBound_makespan = max_eet_of_jobs >= temp_f1 ? max_eet_of_jobs : temp_f1;
-        
-        goodSolutionWithMaxWorkload (getNumberOfObjectives(), getNumberOfVariables());
-        buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
-        
-        
-        delete [] job_line;
-        
     }else{
         printf("File not found\n");
         exit(1);
@@ -1057,7 +1076,7 @@ void ProblemFJSSP::loadInstanceTXT(char filePath[2][255], char file_extension[10
         std::getline(infile, line);
         elemens = split(line, ' ');
         n_operations = 0;
-        // if(n_jobs > 0 && n_machines > 0){
+        if(n_jobs > 0 && n_machines > 0){
             for(int job = 0; job < n_jobs; ++job){
                 n_operations_in_job[job] = std::stoi(elemens.at(job));
                 n_operations += n_operations_in_job[job];
@@ -1135,70 +1154,71 @@ void ProblemFJSSP::loadInstanceTXT(char filePath[2][255], char file_extension[10
                 minWorkload[minMachine] += processingTime[operation][minMachine];
                 assignationMinPij[operation] = minMachine;
             }
-        
-        infile.close();
-        earliest_starting_time[0] = releaseTime[0];
-        int op_allocated = 0;
-        int next_op = 0;
-        /** Computes the earlist starting time and the earlist ending time for each job. **/
-        for (int job = 0; job < n_jobs; ++job) {
-            earliest_starting_time[op_allocated] = releaseTime[job];
-            earliest_ending_time[op_allocated] = earliest_starting_time[op_allocated] + processingTime[op_allocated][assignationMinPij[op_allocated]];
-            sorted_est[op_allocated] = earliest_starting_time[op_allocated];
-            for (int operation = 1; operation < n_operations_in_job[job]; ++operation) {
-                next_op = op_allocated + operation;
-                earliest_starting_time[next_op] = earliest_ending_time[next_op - 1];
-                earliest_ending_time[next_op] = earliest_starting_time[next_op] + processingTime[next_op][assignationMinPij[next_op]];
-                sorted_est[next_op] = earliest_starting_time[next_op];
+            
+            infile.close();
+            earliest_starting_time[0] = releaseTime[0];
+            int op_allocated = 0;
+            int next_op = 0;
+            /** Computes the earlist starting time and the earlist ending time for each job. **/
+            for (int job = 0; job < n_jobs; ++job) {
+                earliest_starting_time[op_allocated] = releaseTime[job];
+                earliest_ending_time[op_allocated] = earliest_starting_time[op_allocated] + processingTime[op_allocated][assignationMinPij[op_allocated]];
+                sorted_est[op_allocated] = earliest_starting_time[op_allocated];
+                for (int operation = 1; operation < n_operations_in_job[job]; ++operation) {
+                    next_op = op_allocated + operation;
+                    earliest_starting_time[next_op] = earliest_ending_time[next_op - 1];
+                    earliest_ending_time[next_op] = earliest_starting_time[next_op] + processingTime[next_op][assignationMinPij[next_op]];
+                    sorted_est[next_op] = earliest_starting_time[next_op];
+                }
+                op_allocated += n_operations_in_job[job];
+                eet_of_job[job] = earliest_ending_time[op_allocated - 1];
+                
+                if (eet_of_job[job] > max_eet_of_jobs)
+                    max_eet_of_jobs = eet_of_job[job];
             }
-            op_allocated += n_operations_in_job[job];
-            eet_of_job[job] = earliest_ending_time[op_allocated - 1];
             
-            if (eet_of_job[job] > max_eet_of_jobs)
-                max_eet_of_jobs = eet_of_job[job];
-        }
-        
-        std::sort(sorted_est, sorted_est + n_operations);
-        for (int machine = 0; machine < n_machines; ++machine)
-            std::sort(sorted_processing[machine], sorted_processing[machine] + n_operations);
-        
-        sum_M_smallest_est = 0;
-        min_sum_shortest_proc_times = INT_MAX;
-        for (int machine = 0; machine < n_machines; ++machine) {
+            std::sort(sorted_est, sorted_est + n_operations);
+            for (int machine = 0; machine < n_machines; ++machine)
+                std::sort(sorted_processing[machine], sorted_processing[machine] + n_operations);
             
-            sum_M_smallest_est += sorted_est[machine];
-            sum_shortest_proc_times[machine] = 0;
-            
-            for (int n = 0; n < avg_op_per_machine; ++n)
-                sum_shortest_proc_times[machine] += sorted_processing[machine][n];
-            
-            if (sum_shortest_proc_times[machine] < min_sum_shortest_proc_times)
-                min_sum_shortest_proc_times = sum_shortest_proc_times[machine];
-        }
-        
-        totalVariables = n_operations;
-        
-        int operationCounter = 0;
-        for (int job = 0; job < n_jobs; ++job) {
-            jobOperationHasNumber[job] = new int[n_operations_in_job[job]];
-            for(int operation = 0; operation < n_operations_in_job[job]; ++operation){
-                jobOperationHasNumber[job][operation] = operationCounter;
-                operationIsFromJob[operationCounter++] = job;
+            sum_M_smallest_est = 0;
+            min_sum_shortest_proc_times = INT_MAX;
+            for (int machine = 0; machine < n_machines; ++machine) {
+                
+                sum_M_smallest_est += sorted_est[machine];
+                sum_shortest_proc_times[machine] = 0;
+                
+                for (int n = 0; n < avg_op_per_machine; ++n)
+                    sum_shortest_proc_times[machine] += sorted_processing[machine][n];
+                
+                if (sum_shortest_proc_times[machine] < min_sum_shortest_proc_times)
+                    min_sum_shortest_proc_times = sum_shortest_proc_times[machine];
             }
+            
+            totalVariables = n_operations;
+            
+            int operationCounter = 0;
+            for (int job = 0; job < n_jobs; ++job) {
+                jobOperationHasNumber[job] = new int[n_operations_in_job[job]];
+                for(int operation = 0; operation < n_operations_in_job[job]; ++operation){
+                    jobOperationHasNumber[job][operation] = operationCounter;
+                    operationIsFromJob[operationCounter++] = job;
+                }
+            }
+            
+            int temp_f2 = e_function(sumOfMinPij / n_machines);
+            int temp_f1 = e_function((sum_M_smallest_est + sumOfMinPij) / n_machines);
+            
+            bestBound_maxWorkload = temp_f2 >= min_sum_shortest_proc_times ? temp_f2: min_sum_shortest_proc_times;
+            bestBound_makespan = max_eet_of_jobs >= temp_f1 ? max_eet_of_jobs : temp_f1;
+            
+            goodSolutionWithMaxWorkload (getNumberOfObjectives(), getNumberOfVariables());
+            buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
+            
+            /*if (goodSolutionWithMaxWorkload.getObjective(1) < bestBound_maxWorkload)
+             bestBound_maxWorkload = goodSolutionWithMaxWorkload.getObjective(1);
+             */
         }
-        
-        int temp_f2 = e_function(sumOfMinPij / n_machines);
-        int temp_f1 = e_function((sum_M_smallest_est + sumOfMinPij) / n_machines);
-        
-        bestBound_maxWorkload = temp_f2 >= min_sum_shortest_proc_times ? temp_f2: min_sum_shortest_proc_times;
-        bestBound_makespan = max_eet_of_jobs >= temp_f1 ? max_eet_of_jobs : temp_f1;
-        
-        goodSolutionWithMaxWorkload (getNumberOfObjectives(), getNumberOfVariables());
-        buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
-        
-        /*if (goodSolutionWithMaxWorkload.getObjective(1) < bestBound_maxWorkload)
-         bestBound_maxWorkload = goodSolutionWithMaxWorkload.getObjective(1);
-         */
     }else{
         printf("File not found\n");
         exit(1);
