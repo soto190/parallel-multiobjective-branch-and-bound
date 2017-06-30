@@ -79,12 +79,16 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "/Users/carlossoto/Documents/workspace/Instances/FJSSP/set-BehnkeGeiger/6_Fattahi/Fattahi3.fjs"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "/Users/carlossoto/Documents/workspace/Instances/FJSSP/set-BehnkeGeiger/5_Kacem/Kacem0.fjs"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/Documents/workspace/Instances/FJSSP/Kacem/Kacem-I0.txt"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/Documents/workspace/Instances/FJSSP/Kacem/Kacem-I00.txt"
@@ -96,38 +100,6 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/Documents/workspace/Instances/TSP/ClusterB15.tsp"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Rahmani_3_7_0.txt"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Liu_2_8_364.txt"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/SahB_3_6_76.txt"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Ahmad_3_9_28.txt "
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Demiroz_3_7_47.txt "
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Demiroz_3_7_47.txt "
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Smallset/Zhao_3_10_143.txt "
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "/Users/carlossoto/Documents/workspace/Instances/HCSP/Machines/Machines_3_7_.conf"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument

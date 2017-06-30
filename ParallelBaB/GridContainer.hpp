@@ -261,22 +261,10 @@ public:
     unsigned long getSize() const{ return numberOfElements; }
     
     tbb::atomic<unsigned long> getSizeAtomic() const{ return numberOfElements;}
-    
-    BucketState getStateOf(size_t x, size_t y) const{
-        return m_Data[y * cols + x].getState();
-    }
-
-	unsigned long getSizeOf(size_t x, size_t y) const {
-		return m_Data[y * cols + x].getSize();
-	}
-    
-    int improvesBucket(const Solution& obj, size_t x, size_t y){
-        return m_Data[y * cols + x].produceImprovement(obj);
-    }
-    
-    void setStateOf(BucketState new_state, size_t x, size_t y){
-        m_Data[y * cols + x].setState(new_state);
-    }
+    BucketState getStateOf(size_t x, size_t y) const{return m_Data[y * cols + x].getState();}
+	unsigned long getSizeOf(size_t x, size_t y) const{return m_Data[y * cols + x].getSize();}
+    int improvesBucket(const Solution& obj, size_t x, size_t y){return m_Data[y * cols + x].produceImprovement(obj);}
+    void setStateOf(BucketState new_state, size_t x, size_t y){m_Data[y * cols + x].setState(new_state);}
 
 	unsigned long clear(size_t x, size_t y) {
         unsigned long size_before = m_Data[y * cols + x].getSize();

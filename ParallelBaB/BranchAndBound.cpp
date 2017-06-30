@@ -558,7 +558,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
                 branch_to_send.setDistance(1, (problem.getLowerBoundInObj(1) - data.getMaxWorkload()) / (float) problem.getLowerBoundInObj(1));
                 
                 setPriorityTo(branch_to_send);
-                globalPool.push(branch_to_send);
+                globalPool.push(branch_to_send); /** This stores a copy.**/
                 shared_work++;
                 
                 //intervals_to_send.push_back(branch_to_send);
@@ -568,6 +568,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
                 
             }
             
+            /** Resets / Clears the interval. **/
             if (next_row > ivm_tree.getRootRow() && next_row <= ivm_tree.getActiveRow() ) {
                 branch_to_send.setValueAt(next_row, ivm_tree.getIVMValue(next_row, ivm_tree.getActiveColAt(next_row)));
                 temp.setVariable(next_row, ivm_tree.getIVMValue(next_row, ivm_tree.getActiveColAt(next_row)));
@@ -719,6 +720,7 @@ void BranchAndBound::updateBoundsWithSolution(const Solution & solution){
  **/
 void BranchAndBound::setPriorityTo(Interval& interval) const{
 
+    /** TODO: This can be replaced by a Fuzzy Logic Controller. **/
     switch (interval.getDeep()) {
         case Deep::TOP:
             interval.setHighPriority();

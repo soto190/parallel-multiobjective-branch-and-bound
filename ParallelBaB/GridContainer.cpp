@@ -160,7 +160,7 @@ int HandlerContainer::set(const Solution & solution, int x, int y) {
             for (nRow = y + 1; nRow < grid.getRows(); nRow++)
                 for (nCol = x + 1; nCol < grid.getCols(); nCol++)
                     if (grid.getStateOf(nCol, nRow) == BucketState::dominated)
-                    /** If the bucket in (nCol, nRow) is dominated the exploration continue to the next row**/
+                    /** If the bucket in (nCol, nRow) is dominated then the exploration continue to the next row. **/
                         nCol = grid.getCols();
                     else
                         clearContainer(nCol, nRow);
@@ -178,7 +178,7 @@ int HandlerContainer::set(const Solution & solution, int x, int y) {
             break;
             
         case BucketState::dominated:
-            /**If the bucket is dominated (State = 2) the element is not added. Then do nothing**/
+            /** If the bucket is dominated (State = 2) the element is not added. Then do nothing**/
             break;
     }
     
@@ -193,7 +193,7 @@ int HandlerContainer::set(const Solution & solution, int x, int y) {
 int HandlerContainer::getBestValueFoundIn(int obj) const{return best_value_found_in_obj[obj];}
 
 /**
- * It uses a binary search tree locate the bucket which will contain the new solution.
+ * It uses a binary search tree to locate the bucket which will contain the new solution.
  **/
 int HandlerContainer::add(const Solution & solution) {
     int coordinate[2];
