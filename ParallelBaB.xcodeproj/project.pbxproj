@@ -18,9 +18,9 @@
 		2119FB481E41E14C00197CE4 /* Interval.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2119FB461E41E14C00197CE4 /* Interval.cpp */; };
 		2119FB501E434B4200197CE4 /* libtbb.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2119FB4E1E434B4200197CE4 /* libtbb.dylib */; };
 		2119FB511E434B4200197CE4 /* libtbbmalloc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 2119FB4F1E434B4200197CE4 /* libtbbmalloc.dylib */; };
-		2119FB521E434B7000197CE4 /* libtbb.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2119FB4E1E434B4200197CE4 /* libtbb.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		2119FB531E434B7000197CE4 /* libtbbmalloc.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2119FB4F1E434B4200197CE4 /* libtbbmalloc.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		212AFB1E1E3F35CE004FC057 /* Dominance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21F4CBA51DAE97CC004A308F /* Dominance.cpp */; };
+		21390E601F30CEB800C96853 /* libtbb.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 21390E5E1F30CEB800C96853 /* libtbb.dylib */; };
+		21390E611F30CEB800C96853 /* libtbbmalloc.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 21390E5F1F30CEB800C96853 /* libtbbmalloc.dylib */; };
 		21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */; };
 		217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */; };
 		218B0DB91E2D769F000B52F4 /* IVMTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 218B0DB71E2D769F000B52F4 /* IVMTree.cpp */; };
@@ -34,8 +34,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
-				2119FB521E434B7000197CE4 /* libtbb.dylib in CopyFiles */,
-				2119FB531E434B7000197CE4 /* libtbbmalloc.dylib in CopyFiles */,
+				21390E601F30CEB800C96853 /* libtbb.dylib in CopyFiles */,
+				21390E611F30CEB800C96853 /* libtbbmalloc.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -63,6 +63,8 @@
 		2119FB4E1E434B4200197CE4 /* libtbb.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtbb.dylib; path = ../../../../Libraries/tbb2017_20161128oss/build/macos_intel64_clang_cc8.0.0_os10.11.6_release/libtbb.dylib; sourceTree = "<group>"; };
 		2119FB4F1E434B4200197CE4 /* libtbbmalloc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtbbmalloc.dylib; path = ../../../../Libraries/tbb2017_20161128oss/build/macos_intel64_clang_cc8.0.0_os10.11.6_release/libtbbmalloc.dylib; sourceTree = "<group>"; };
 		212A26C71ED70C7B00648EC9 /* submit-uca.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "submit-uca.sh"; sourceTree = "<group>"; };
+		21390E5E1F30CEB800C96853 /* libtbb.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libtbb.dylib; sourceTree = "<group>"; };
+		21390E5F1F30CEB800C96853 /* libtbbmalloc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libtbbmalloc.dylib; sourceTree = "<group>"; };
 		216F69B01E5AE5FD00589E5D /* submit-multiple.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "submit-multiple.sh"; sourceTree = "<group>"; };
 		216F69B11E5AE66600589E5D /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ProblemFJSSP.cpp; sourceTree = "<group>"; };
@@ -93,6 +95,8 @@
 		2112821E1D63988D0038DBEE = {
 			isa = PBXGroup;
 			children = (
+				21390E5E1F30CEB800C96853 /* libtbb.dylib */,
+				21390E5F1F30CEB800C96853 /* libtbbmalloc.dylib */,
 				216F69AF1E5AE5A900589E5D /* results */,
 				211282291D63988E0038DBEE /* ParallelBaB */,
 				211282281D63988E0038DBEE /* Products */,

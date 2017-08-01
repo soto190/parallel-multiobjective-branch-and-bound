@@ -1279,6 +1279,7 @@ void ProblemFJSSP::setSumOf_M_smallestEST(int nValue){sum_M_smallest_est = nValu
 void ProblemFJSSP::printInstance(){}
 
 void ProblemFJSSP::printProblemInfo(){
+    char sep = '-';
     printf("Total jobs: %d\n", n_jobs);
     printf("Total machines: %d\n", n_machines);
     printf("Total operations: %d\n", n_operations);
@@ -1298,43 +1299,46 @@ void ProblemFJSSP::printProblemInfo(){
     printf("Processing times: \n");
     printf("\t\t\t");
     for (machine = 0; machine < n_machines; ++machine)
-        printf("M%-2d ", machine);
+        printf("M%-4d ", machine);
     printf("| EST EET\n");
     for (operation = 0; operation < n_operations; ++operation) {
         
         printf("[J%-2d] %2c %2d:", operationIsFromJob[operation], 'A' + operation, operation);
         for (machine = 0; machine < n_machines; ++machine)
-            printf("%3d ", processingTime[operation][machine]);
-        printf(" | %3d %3d\n", earliest_starting_time[operation], earliest_ending_time[operation]);
+            if (processingTime[operation][machine] == 9999999)
+                printf("%4c", sep);
+            else
+                printf("%4d ", processingTime[operation][machine]);
+        printf(" | %4d %4d\n", earliest_starting_time[operation], earliest_ending_time[operation]);
     }
     
-    printf("Avg operations per machine (Ñ): %3d\n", avg_op_per_machine);
+    printf("Avg operations per machine (Ñ): %4d\n", avg_op_per_machine);
     printf("Sum of the Ñ shortest processing times (D^{k}_{Ñ}):\n");
     for (machine = 0; machine < n_machines; ++machine)
-        printf("%3d ", sum_shortest_proc_times[machine]);
+        printf("%4d ", sum_shortest_proc_times[machine]);
     
     printf("\nEarliest ending time of each job (EET_j):\n");
     for (job = 0; job < n_jobs; ++job)
-        printf("%3d ", eet_of_job[job]);
+        printf("%4d ", eet_of_job[job]);
     
     int temp_f2 = e_function(sumOfMinPij / n_machines);
     int temp_f1 = e_function((sum_M_smallest_est + sumOfMinPij) / n_machines);
     
-    printf("\nSum of the minimun processing times (sum_i sum_j Gamma_{i,j}): %3d\n", sumOfMinPij);
-    printf("Minimum D^{k}_{Ñ}: %3d\n", min_sum_shortest_proc_times);
-    printf("Maximum EET from jobs: %3d\n", max_eet_of_jobs);
-    printf("Sum of the M smallest EST (R_{M}): %3d\n", sum_M_smallest_est);
-    printf("E((R_M + Gamma_{i,j}) / M): %3d\n", temp_f1);
-    printf("E(Gamma_{i,j} / M): %3d\n", temp_f2);
-    printf("f^'_1 (bound): max(%3d, %3d, ) = %3d\n", max_eet_of_jobs, e_function((sum_M_smallest_est + sumOfMinPij) / n_machines), bestBound_makespan);
-    printf("f^'_2 (bound): max(%3d, %3d) =  %3d\n", e_function(sumOfMinPij / n_machines), min_sum_shortest_proc_times, bestBound_maxWorkload);
-    printf("f^*_3: %3d\n", sumOfMinPij);
+    printf("\nSum of the minimun processing times (sum_i sum_j Gamma_{i,j}): %4d\n", sumOfMinPij);
+    printf("Minimum D^{k}_{Ñ}: %4d\n", min_sum_shortest_proc_times);
+    printf("Maximum EET from jobs: %4d\n", max_eet_of_jobs);
+    printf("Sum of the M smallest EST (R_{M}): %4d\n", sum_M_smallest_est);
+    printf("E((R_M + Gamma_{i,j}) / M): %4d\n", temp_f1);
+    printf("E(Gamma_{i,j} / M): %4d\n", temp_f2);
+    printf("f^'_1 (bound): max(%4d, %4d, ) = %4d\n", max_eet_of_jobs, e_function((sum_M_smallest_est + sumOfMinPij) / n_machines), bestBound_makespan);
+    printf("f^'_2 (bound): max(%4d, %4d) =  %4d\n", e_function(sumOfMinPij / n_machines), min_sum_shortest_proc_times, bestBound_maxWorkload);
+    printf("f^*_3: %4d\n", sumOfMinPij);
 }
 
 void ProblemFJSSP::printSolutionInfo(const Solution &solution) const{ printSchedule(solution);}
 
 void ProblemFJSSP::printSchedule(const Solution & solution) const {
-    
+
     int makespan = 0;
     int maxWorkload = 0;
     int totalWorkload = 0;
@@ -1352,7 +1356,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     int timeInMachine [n_machines];
     int workload [n_machines];
     
-    char gantt[n_machines][255];
+    char gantt[n_machines][MAX_GANTT_LIMIT];
     int time = 0;
     
     for (operation = 0; operation < n_operations; ++operation) {
@@ -1369,7 +1373,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
         workload[machine] = 0;
         
         /**creates an empty gantt**/
-        for (time = 0; time < 255; time++) {
+        for (time = 0; time < MAX_GANTT_LIMIT; time++) {
             gantt[machine][time] = ' ';
         }
     }
@@ -1431,7 +1435,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     for (operation = 0; operation < n_operations; ++operation)
         printf("%3c %3d: %2d %3d - %3d \n", 'A' + operation, operation, operation_in_machine[operation], startingTime[operation], endingTime[operation]);
     
-    for (machine = n_machines - 1;  machine >= 0; --machine) {
+    /*for (machine = n_machines - 1;  machine >= 0; --machine) {
         printf("M%d  | ", machine);
         for (time = 0; time <= makespan; ++time)
             printf("%3c", gantt[machine][time]);
@@ -1446,7 +1450,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     for (time = 0; time <= makespan; ++time)
         printf("%3d", (time));
     printf("\n");
-    printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
+    */printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
     
 }
 
