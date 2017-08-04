@@ -170,8 +170,8 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
     
     Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(1, temp);
-    temp.print();
     solution.print();
+    temp.print();
     updateParetoGrid(solution);
     updateParetoGrid(temp);
     updateBoundsWithSolution(solution);

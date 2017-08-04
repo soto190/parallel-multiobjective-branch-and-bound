@@ -577,11 +577,18 @@ void ProblemFJSSP::createDefaultSolution(Solution & solution){
     
     for (job = 0; job < n_jobs; ++job)
         for (operation = 0; operation < n_operations_in_job[job]; ++operation){
+           
+            while (processingTime[countOperations][machine] == INF_PROC_TIME)
+                if (machine++ == n_machines - 1)
+                    machine = 0;
+            
             map = jobMachineToMap[job][machine];
-            solution.setVariable(countOperations++, map);
-            machine++;
-            if (machine == n_machines)
+            solution.setVariable(countOperations, map);
+            
+            if (machine++ == n_machines - 1)
                 machine = 0;
+            
+            countOperations++;
         }
     
     evaluate(solution);
@@ -928,7 +935,7 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
                     processingTime[op_counter] = new int[n_machines];
                     
                     for (int n_machine = 0; n_machine < n_machines; ++n_machine)
-                        processingTime[op_counter][n_machine] = 9999999;
+                        processingTime[op_counter][n_machine] = INF_PROC_TIME;
                     
                     for (int n_mach = 0; n_mach < op_can_be_proc_in_n_mach; ++n_mach) {
                         int machine = std::stoi(elemens.at(token++));
@@ -985,11 +992,11 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
             sum_M_smallest_est = 0;
             min_sum_shortest_proc_times = INT_MAX;
             for (int machine = 0; machine < n_machines; ++machine) {
-                
+            
                 sum_M_smallest_est += sorted_est[machine];
                 sum_shortest_proc_times[machine] = 0;
                 
-                for (int n = 0; n < avg_op_per_machine; ++n)
+                for (int n = 0; n < avg_op_per_machine && sorted_processing[machine][n] != INF_PROC_TIME; ++n) /** Some times the machines can compute less jobs than the average. **/
                     sum_shortest_proc_times[machine] += sorted_processing[machine][n];
                 
                 if (sum_shortest_proc_times[machine] < min_sum_shortest_proc_times)
@@ -1299,16 +1306,16 @@ void ProblemFJSSP::printProblemInfo(){
     printf("Processing times: \n");
     printf("\t\t\t");
     for (machine = 0; machine < n_machines; ++machine)
-        printf("M%-4d ", machine);
+        printf("M%-3d", machine);
     printf("| EST EET\n");
     for (operation = 0; operation < n_operations; ++operation) {
         
         printf("[J%-2d] %2c %2d:", operationIsFromJob[operation], 'A' + operation, operation);
         for (machine = 0; machine < n_machines; ++machine)
-            if (processingTime[operation][machine] == 9999999)
+            if (processingTime[operation][machine] == INF_PROC_TIME)
                 printf("%4c", sep);
             else
-                printf("%4d ", processingTime[operation][machine]);
+                printf("%4d", processingTime[operation][machine]);
         printf(" | %4d %4d\n", earliest_starting_time[operation], earliest_ending_time[operation]);
     }
     
@@ -1479,5 +1486,3 @@ void ProblemFJSSP::printPartialSolution(const Solution & solution, int level) co
         printf("|");
     }
 }
-
-

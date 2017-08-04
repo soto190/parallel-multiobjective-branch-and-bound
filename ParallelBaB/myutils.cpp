@@ -11,13 +11,18 @@
 using namespace std;
 
 vector<string> &split(const string &s, char delim, vector<string> &elems) {
-	stringstream ss(s);
+	istringstream buffer(s);
 	string item;
     elems.clear();
-	while (getline(ss, item, delim))
-		if (!item.empty())
-			elems.push_back(item);
-
+    if (delim == ' ' || delim == '\t')
+        std::copy(std::istream_iterator<std::string>(buffer),
+                  std::istream_iterator<std::string>(),
+                  std::back_inserter(elems));
+    else
+        while (getline(buffer, item, delim))
+            if (!item.empty())
+                elems.push_back(item);
+    
 	return elems;
 }
 

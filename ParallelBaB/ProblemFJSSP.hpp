@@ -20,7 +20,8 @@
 #include "Problem.hpp"
 #include "myutils.hpp"
 
-//#define MAX_GANTT_TIME 4096
+#define INF_PROC_TIME 9999999
+#define MAX_GANTT_LIMIT 262144
 
 //#define MAKESPAN  0;
 //#define MAXWORKLOAD 1;
@@ -366,7 +367,7 @@ class ProblemFJSSP: public Problem {
 
 private:
     /**FJSSP functions**/
-    const unsigned int MAX_GANTT_LIMIT = 4096;
+//    const unsigned int MAX_GANTT_LIMIT = 4096;
     int n_jobs;
     int n_operations;
     int n_machines;
