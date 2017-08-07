@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <sstream>
+#include <iterator>
 #include <vector>
 #include <deque>
 #include <cmath>
