@@ -14,6 +14,7 @@
 #include <vector>
 #include <deque>
 #include <fstream>
+#include <iterator>
 #include <string>
 #include <math.h>
 #include <regex>
