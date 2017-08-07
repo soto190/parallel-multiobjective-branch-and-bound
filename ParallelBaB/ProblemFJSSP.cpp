@@ -1441,11 +1441,11 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     printf("\tOp :  M  ti -  tf\n");
     for (operation = 0; operation < n_operations; ++operation)
         printf("%3c %3d: %2d %3d - %3d \n", 'A' + operation, operation, operation_in_machine[operation], startingTime[operation], endingTime[operation]);
-    
-    /*for (machine = n_machines - 1;  machine >= 0; --machine) {
+  /*
+    for (machine = n_machines - 1;  machine >= 0; --machine) {
         printf("M%d  | ", machine);
         for (time = 0; time <= makespan; ++time)
-            printf("%3c", gantt[machine][time]);
+            printf("%4c", gantt[machine][time]);
         printf("| %3d\n", workload[machine]);
     }
     printf("----");
@@ -1455,9 +1455,10 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     
     printf("Time:");
     for (time = 0; time <= makespan; ++time)
-        printf("%3d", (time));
+        printf("%4d", (time));
     printf("\n");
-    */printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
+   */
+   printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, maxWorkload, totalWorkload);
     
 }
 
