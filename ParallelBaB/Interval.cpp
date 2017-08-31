@@ -17,8 +17,6 @@ Interval::Interval():
 max_size(1),
 build_up_to(-1),
 interval(nullptr),
-low(0),
-high(0),
 priority(Priority::P_Low),
 deep(Deep::TOP){}
 
@@ -26,8 +24,6 @@ Interval::Interval(int max_size):
 max_size(max_size),
 build_up_to(-1),
 interval(new int[max_size]),
-low(max_size * low_priority),
-high(max_size * high_priority),
 priority(Priority::P_Low),
 deep(Deep::TOP){}
 
@@ -36,10 +32,8 @@ max_size(toCopy.getSize()),
 interval(new int[toCopy.getSize()]),
 build_up_to(toCopy.getBuildUpTo()),
 priority(toCopy.getPriority()),
-deep(toCopy.getDeep()),
-low(toCopy.getLowSize()),
-high(toCopy.getHighSize()){
-    
+deep(toCopy.getDeep()){
+
     distance[0] = toCopy.getDistance(0);
     distance[1] = toCopy.getDistance(1);
     
@@ -70,8 +64,6 @@ Interval& Interval::operator=(const Interval &toCopy){
     max_size = toCopy.getSize();
     build_up_to = toCopy.getBuildUpTo();
     priority = toCopy.getPriority();
-    low = toCopy.getLowSize();
-    high = toCopy.getHighSize();
     deep = toCopy.getDeep();
     
     distance[0] = toCopy.getDistance(0);
@@ -95,8 +87,6 @@ int Interval::getSize() const{ return  max_size;}
 int Interval::getBuildUpTo() const{ return build_up_to;}
 int Interval::getValueAt(int position) const{ return interval[position];}
 Priority Interval::getPriority() const {return priority;}
-int Interval::getLowSize() const{return low;}
-int Interval::getHighSize() const{return high;}
 Deep Interval::getDeep() const{return deep;}
 float Interval::getDistance(int n_dim) const {return distance[n_dim];}
 
@@ -114,14 +104,15 @@ void Interval::setValueAt(int index, int value){
 
 void Interval::setBuildUpTo(int n_build){
     build_up_to = n_build;
-    if (build_up_to < max_size * 0.333f)
+    if (build_up_to < max_size * short_branch)
         deep = Deep::TOP;
-    else if(build_up_to < max_size * 0.666f)
+    else if(build_up_to < max_size * large_branch)
         deep = Deep::MID;
     else
         deep = Deep::BOTTOM;
 }
 
+/** TODO: Verify if we try to remove a value when it doesn't has values. **/
 void Interval::removeLastValue(){interval[build_up_to] = -1; build_up_to--;}
 int Interval::increaseBuildUpTo(){ return build_up_to++; }
 

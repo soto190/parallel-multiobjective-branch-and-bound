@@ -19,13 +19,13 @@
  * level indicates the level of the interval.
  *
  **/
-const float low_priority  = 0.666f;
-const float high_priority = 0.333f;
+const float large_branch  = 0.666f;
+const float short_branch = 0.333f;
 
 enum Priority {
-    P_High,     /** Deeper branches | branches at bottom.        **/
-    P_Medium,   /** Branches at middle. **/
-    P_Low       /** Brancheas near to root | branches at top. **/
+    P_High,     /** Deeper branches | branches at bottom | large branches. **/
+    P_Medium,   /** Branches at middle | medium size branches. **/
+    P_Low       /** Brancheas near to root | branches at top | short branches. **/
 };
 
 enum Deep{TOP, MID, BOTTOM};
@@ -41,8 +41,6 @@ private:
 
     float distance[2];
     
-    int low;
-    int high;
 public:
     
     Interval();
