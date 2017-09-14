@@ -23,30 +23,30 @@ const float large_branch  = 0.666f;
 const float short_branch = 0.333f;
 
 enum Priority {
-    P_High,     /** Deeper branches | branches at bottom | large branches. **/
-    P_Medium,   /** Branches at middle | medium size branches. **/
-    P_Low       /** Brancheas near to root | branches at top | short branches. **/
+    P_High = 0,     /** Deeper branches | branches at bottom | large branches. **/
+    P_Medium = 1,   /** Branches at middle | medium size branches. **/
+    P_Low = 2       /** Brancheas near to root | branches at top | short branches. **/
 };
 
-enum Deep{TOP, MID, BOTTOM};
+enum Deep{TOP = 0, MID = 1, BOTTOM = 2};
 
 class Interval {
 private:
-    int build_up_to = -1;
-    int * interval;
-    int max_size = 0;
-    
     Priority priority;
     Deep deep;
-
+    
+    int build_up_to = -1;
+    int max_size = 0;
+    
     float distance[2];
+    int * interval;
     
 public:
     
     Interval();
     Interval(int max_size);
     Interval(const Interval &toCopy);
-    ~Interval();
+    virtual ~Interval();
     
     Interval& operator=(const Interval& toCopy);
     Interval& operator()(int size);

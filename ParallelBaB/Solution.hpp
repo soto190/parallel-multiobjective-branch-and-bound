@@ -19,18 +19,16 @@ enum DominanceRelation {
 class Solution{
     
 private:
+    int n_objectives;
+    int n_variables;
+    int build_up_to = -1;
     double * objective;
     int * variable;
     
-    int build_up_to = -1;
-    
-    int n_variables;
-    int n_objectives;
-    
 public:
     
-    int machineWithMakespan;
-    double * execTime;
+    int machineWithMakespan; /** TODO: this can be removed and all the related functions. **/
+    double * execTime; /** TODO: this can be removed and all the related functions. **/
     
     Solution();
     Solution(int totalObjectives, int totalVariables);

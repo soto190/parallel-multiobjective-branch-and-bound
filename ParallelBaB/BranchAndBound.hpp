@@ -10,7 +10,6 @@
 #define BranchAndBound_hpp
 
 #include <stdio.h>
-//#include <libiomp/omp.h>
 #include <vector>
 #include <queue>
 #include <math.h>
@@ -73,7 +72,7 @@ private:
     Solution incumbent_s;
     IVMTree ivm_tree;
     Interval interval_to_solve;
-    std::vector<Solution> paretoFront; /** paretofFront. **/
+    std::vector<Solution> paretoFront; /** paretoFront. **/
     
     char outputFile[255];
     char summarizeFile[255];

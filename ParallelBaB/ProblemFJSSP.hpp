@@ -366,7 +366,6 @@ public:
 class ProblemFJSSP: public Problem {
 
 private:
-    /**FJSSP functions**/
 //    const unsigned int MAX_GANTT_LIMIT = 4096;
     int n_jobs;
     int n_operations;
@@ -409,13 +408,10 @@ public:
     double evaluate(Solution & solution);
     double evaluatePartial(Solution & solution, int levelEvaluation);
     double evaluateLastLevel(Solution * solution);
-    
     double removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel);
     double removeLastLevelEvaluation(Solution * solution, int newLevel);
-    
     void evaluateDynamic(Solution & solution, FJSSPdata& data, int level);
     void evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, int level);
-    
     void createDefaultSolution(Solution & solution);
     void getSolutionWithLowerBoundInObj(int nObj, Solution& solution);
     int getLowerBound(int indexVar) const;
@@ -423,10 +419,8 @@ public:
     ProblemType getType() const;
     int getStartingRow();
     int getFinalLevel();
-    
     int * getElemensToRepeat();
     int getTotalElements();
-    
     int getDecodeMap(int map, int position);
     int getCodeMap(int value1, int value2);
     int getTimesValueIsRepeated(int value);
@@ -436,8 +430,6 @@ public:
     void updateBestMakespanSolution(FJSSPdata& data);
     void updateBestMakespanSolutionWith(const Solution& solution);
     void updateBestMaxWorkloadSolutionWith(const Solution& solution);
-    
-
     
     int getNumberOfJobs() const;
     int getNumberOfOperations() const;
@@ -460,7 +452,6 @@ public:
     int getLowerBoundInObj(int nObj) const;
     int getBestBoundMaxWorkload() const;
     int getBestBoundMakespan() const;
-    
     int getEarliestStartingTime(int nOperation) const;
     int getEarliestEndingTime(int nOperation) const;
     int getEarliestEndingJobTime(int nObj) const;
@@ -469,7 +460,6 @@ public:
     int getMinSumShortestProcTime() const;
     int getMaxEarliestEndingTime() const;
     int getSumOf_M_smallestEST() const;
-    
     
     void setEarliestStartingTime(int nOperation, int nValue);
     void setEarliestEndingTime(int nOperation, int nValue);
@@ -480,7 +470,6 @@ public:
     void setMaxEarliestEndingTime(int nValue);
     void setSumOf_M_smallestEST(int nValue);
     
-
     double evaluatePartialTest4(Solution & solution, int currentLevel);
 
     void printSolution(const Solution & solution) const;
