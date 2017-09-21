@@ -294,7 +294,6 @@ public:
         total_workload -= procceessiinngg;
         workload_in_machine[machine] -= procceessiinngg;
     }
-    
 
     void reset(){
         total_workload = min_total_workload;
@@ -378,7 +377,7 @@ private:
     int * assignationBestMakespan; /** Lenght equals to numberOfOperations. **/
     int * bestWorkloads;           /** Length equals to number of machines. **/
     int * minWorkload;             /** Length equals to number of machines. **/
-    int * n_operations_in_job; /** Length equals to number of Jobs. **/
+    int * n_operations_in_job;     /** Length equals to number of Jobs. **/
     int * releaseTime;             /** Length equals to number of Jobs. **/
     int * operationIsFromJob;      /** Length equals to numberOfOperations. **/
     int ** processingTime;         /** Length equals to numberOfOperations x numberOfMachines. **/

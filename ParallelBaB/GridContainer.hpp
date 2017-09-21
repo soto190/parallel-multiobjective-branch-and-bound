@@ -20,6 +20,11 @@
 #include "tbb/queuing_rw_mutex.h"
 #include "tbb/concurrent_vector.h"
 
+/**
+ * An example of the Grid vectorization: 
+ *  https://stackoverflow.com/questions/14015556/how-to-map-the-indexes-of-a-matrix-to-a-1-dimensional-array-c
+ **/
+
 enum BucketState {
 	unexplored = 0, nondominated = 1, dominated = 2
 };

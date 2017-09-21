@@ -880,7 +880,7 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
             std::string * job_line = new std::string[n_jobs];
             for (int n_job = 0; n_job < n_jobs; ++n_job){
                 std::getline(infile, job_line[n_job]);
-                split(job_line[n_job], ' ', elemens);
+                split(job_line[n_job], ' ', elemens); /** Stores the text corresponding to the processing times of each jobs. **/
                 n_operations_in_job[n_job] = std::stoi(elemens.at(0));
                 n_operations += n_operations_in_job[n_job];
                 releaseTime[n_job] = 0;
