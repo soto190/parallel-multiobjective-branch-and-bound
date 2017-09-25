@@ -85,6 +85,9 @@ void MasterWorker::runMasterProcess(){
 void MasterWorker::runWorkerProcess(){
     
     int source = MASTER_RANK;
+
+    ProblemFJSSP problem(payload_problem);
+    problem.printProblemInfo();
     
     MPI::COMM_WORLD.Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL);
     
@@ -105,6 +108,7 @@ void MasterWorker::runWorkerProcess(){
 
 void MasterWorker::loadInstance(Payload_problem_fjssp& problem, const char *filePath){
     char extension[4];
+    problem.n_objectives = 2;
     problem.n_jobs = 0;
     problem.n_machines = 0;
     problem.n_operations = 0;
@@ -167,35 +171,38 @@ void MasterWorker::loadInstance(Payload_problem_fjssp& problem, const char *file
 }
 
 void MasterWorker::preparePayloadProblemPart1(const Payload_problem_fjssp& problem, MPI_Datatype& datatype_problem){
-    const int n_blocks = 3;
-    int blocks[n_blocks] = { 1, 1, 1 };
+    const int n_blocks = 4;
+    int blocks[n_blocks] = { 1, 1, 1, 1};
     MPI_Aint displacements_interval[n_blocks];
-    MPI_Datatype types[n_blocks] = { MPI_INT, MPI_INT, MPI_INT };
-    MPI_Aint addr_base, addr_n_jobs, addr_n_operations, addr_n_machines;
+    MPI_Datatype types[n_blocks] = {MPI_INT, MPI_INT, MPI_INT, MPI_INT };
+    MPI_Aint addr_base, addr_objectives, addr_n_jobs, addr_n_operations, addr_n_machines;
     
     MPI_Get_address(&payload_problem, &addr_base);
+    MPI_Get_address(&(payload_problem.n_objectives), &addr_objectives);
     MPI_Get_address(&(payload_problem.n_jobs), &addr_n_jobs);
     MPI_Get_address(&(payload_problem.n_operations), &addr_n_operations);
     MPI_Get_address(&(payload_problem.n_machines), &addr_n_machines);
     
     displacements_interval[0] = static_cast<MPI_Aint>(0);
-    displacements_interval[1] = addr_n_operations - addr_base;
-    displacements_interval[2] = addr_n_machines - addr_base;
+    displacements_interval[1] = addr_n_jobs - addr_base;
+    displacements_interval[2] = addr_n_operations - addr_base;
+    displacements_interval[3] = addr_n_machines - addr_base;
     
     MPI_Type_create_struct(n_blocks, blocks, displacements_interval, types, &datatype_problem);
     MPI_Type_commit(&datatype_problem);
 }
 
 void MasterWorker::preparePayloadProblemPart2(const Payload_problem_fjssp& problem, MPI_Datatype& datatype_problem){
-    const int n_blocks = 6;
-    int blocks[n_blocks] = { 1, 1, 1, payload_problem.n_jobs, payload_problem.n_jobs, payload_problem.n_operations
+    const int n_blocks = 7;
+    int blocks[n_blocks] = {1, 1, 1, 1, payload_problem.n_jobs, payload_problem.n_jobs, payload_problem.n_operations
         * payload_problem.n_machines };
     MPI_Aint displacements_interval[n_blocks];
-    MPI_Datatype types[n_blocks] = { MPI_INT, MPI_INT, MPI_INT, MPI_INT, MPI_INT, MPI_INT };
-    MPI_Aint addr_base, addr_n_jobs, addr_n_operations, addr_n_machines, addr_release_times, addr_n_oper_in_job,
+    MPI_Datatype types[n_blocks] = {MPI_INT, MPI_INT, MPI_INT, MPI_INT, MPI_INT, MPI_INT, MPI_INT };
+    MPI_Aint addr_base, addr_objectives, addr_n_jobs, addr_n_operations, addr_n_machines, addr_release_times, addr_n_oper_in_job,
     addr_processing_times;
     
     MPI_Get_address(&payload_problem, &addr_base);
+    MPI_Get_address(&(payload_problem.n_objectives), &addr_objectives);
     MPI_Get_address(&(payload_problem.n_jobs), &addr_n_jobs);
     MPI_Get_address(&(payload_problem.n_operations), &addr_n_operations);
     MPI_Get_address(&(payload_problem.n_machines), &addr_n_machines);
@@ -204,11 +211,12 @@ void MasterWorker::preparePayloadProblemPart2(const Payload_problem_fjssp& probl
     MPI_Get_address(payload_problem.processing_times, &addr_processing_times);
     
     displacements_interval[0] = static_cast<MPI_Aint>(0);
-    displacements_interval[1] = addr_n_operations - addr_base;
-    displacements_interval[2] = addr_n_machines - addr_base;
-    displacements_interval[3] = addr_release_times - addr_base;
-    displacements_interval[4] = addr_n_oper_in_job - addr_base;
-    displacements_interval[5] = addr_processing_times - addr_base;
+    displacements_interval[1] = addr_n_jobs - addr_base;
+    displacements_interval[2] = addr_n_operations - addr_base;
+    displacements_interval[3] = addr_n_machines - addr_base;
+    displacements_interval[4] = addr_release_times - addr_base;
+    displacements_interval[5] = addr_n_oper_in_job - addr_base;
+    displacements_interval[6] = addr_processing_times - addr_base;
     
     MPI_Type_create_struct(n_blocks, blocks, displacements_interval, types, &datatype_problem);
     MPI_Type_commit(&datatype_problem);

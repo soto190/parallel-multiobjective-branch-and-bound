@@ -65,6 +65,7 @@
 /** Structs used in MPI. **/
 
 typedef struct {
+    int n_objectives;
     int n_jobs;
     int n_operations;
     int n_machines;
@@ -131,7 +132,6 @@ public:
             ending_time[o] = 0;
             operation_allocated_in[o] = -1;
         }
-        
     }
     
     FJSSPdata(const FJSSPdata& toCopy):
@@ -410,6 +410,7 @@ private:
 public:
     // ProblemFJSSP();
     ProblemFJSSP(const ProblemFJSSP& toCopy);
+    ProblemFJSSP(const Payload_problem_fjssp& payload_problem);
     ProblemFJSSP(int totalObjectives, int totalVariables);
    
     ~ProblemFJSSP();
