@@ -15,6 +15,14 @@ enum DominanceRelation {
     Dominates = 1, Dominated = -1, Nondominated = 0, Equals = 11
 };
 
+typedef struct {
+    int n_objectives;
+    int n_variables;
+    int build_up_to;
+    double * objective;
+    int * variable;
+} Payload_solution;
+
 //template <class TypeVariable>
 class Solution{
     

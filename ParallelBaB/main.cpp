@@ -34,32 +34,6 @@
 
 using namespace std;
 
-typedef struct {
-    int priority;
-    int deep;
-    int build_up_to;
-    int max_size;
-    float distance[2];
-    int * interval;
-} Payload_interval;
-
-typedef struct {
-    int n_objectives;
-    int n_variables;
-    int build_up_to;
-    double * objective;
-    int * variable;
-} Payload_solution;
-
-typedef struct {
-    int n_jobs;
-    int n_operations;
-    int n_machines;
-    int * release_times;
-    int * n_operations_in_job;
-    int * processing_times; /** length is n_operations x n_machines **/
-} Payload_problem_fjssp;
-
 int my_rank; /* number of process */
 int n_processes; /* number of processes */
 
@@ -154,6 +128,7 @@ void unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& inte
     interval.max_size = problem.n_operations;
     interval.interval = new int[problem.n_operations];
 }
+
 void slave_unpack_payload_part2(Payload_problem_fjssp& problem) {
     
     printf("[%d] Jobs: %d Operations: %d Machines: %d\n", my_rank, problem.n_jobs, problem.n_operations,

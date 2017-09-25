@@ -23,6 +23,7 @@
 		21390E611F30CEB800C96853 /* libtbbmalloc.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 21390E5F1F30CEB800C96853 /* libtbbmalloc.dylib */; };
 		21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */; };
 		217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */; };
+		217D170F1F744B33004CECD8 /* MasterWorker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217D170D1F744B33004CECD8 /* MasterWorker.cpp */; };
 		218B0DB91E2D769F000B52F4 /* IVMTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 218B0DB71E2D769F000B52F4 /* IVMTree.cpp */; };
 		21E8EF8C1E48BD0800A716C6 /* ParallelBranchAndBound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21E8EF8A1E48BD0800A716C6 /* ParallelBranchAndBound.cpp */; };
 /* End PBXBuildFile section */
@@ -71,6 +72,8 @@
 		21780F1D1DD9B7D80032EECA /* ProblemFJSSP.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ProblemFJSSP.hpp; sourceTree = "<group>"; };
 		217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GridContainer.cpp; sourceTree = "<group>"; };
 		217A2E8F1D944DBB00A4E9EA /* GridContainer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = GridContainer.hpp; sourceTree = "<group>"; };
+		217D170D1F744B33004CECD8 /* MasterWorker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MasterWorker.cpp; sourceTree = "<group>"; };
+		217D170E1F744B33004CECD8 /* MasterWorker.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MasterWorker.hpp; sourceTree = "<group>"; };
 		218B0DB71E2D769F000B52F4 /* IVMTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IVMTree.cpp; sourceTree = "<group>"; };
 		218B0DB81E2D769F000B52F4 /* IVMTree.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IVMTree.hpp; sourceTree = "<group>"; };
 		21E8EF8A1E48BD0800A716C6 /* ParallelBranchAndBound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParallelBranchAndBound.cpp; sourceTree = "<group>"; };
@@ -116,6 +119,8 @@
 			isa = PBXGroup;
 			children = (
 				2112824A1D639AB30038DBEE /* BranchAndBound.cpp */,
+				217D170D1F744B33004CECD8 /* MasterWorker.cpp */,
+				217D170E1F744B33004CECD8 /* MasterWorker.hpp */,
 				2112824B1D639AB30038DBEE /* BranchAndBound.hpp */,
 				21E8EF8A1E48BD0800A716C6 /* ParallelBranchAndBound.cpp */,
 				21E8EF8B1E48BD0800A716C6 /* ParallelBranchAndBound.hpp */,
@@ -224,6 +229,7 @@
 				212AFB1E1E3F35CE004FC057 /* Dominance.cpp in Sources */,
 				217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */,
 				211282621D639AB30038DBEE /* Solution.cpp in Sources */,
+				217D170F1F744B33004CECD8 /* MasterWorker.cpp in Sources */,
 				21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */,
 				211282611D639AB30038DBEE /* ProblemVRP.cpp in Sources */,
 				211282601D639AB30038DBEE /* ProblemTSP.cpp in Sources */,
@@ -275,7 +281,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				GCC_VERSION = /opt/local/bin/mpicxx;
+				GCC_VERSION = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/mpicxx;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -322,7 +328,7 @@
 				FRAMEWORK_SEARCH_PATHS = /Users/carlossoto/Libraries/tbb2017_20161128oss/build/macos_intel64_clang_cc8.0.0_os10.11.6_release;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_VERSION = /opt/local/bin/mpicxx;
+				GCC_VERSION = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/mpicxx;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;

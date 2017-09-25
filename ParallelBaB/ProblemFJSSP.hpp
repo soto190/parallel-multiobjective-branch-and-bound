@@ -61,6 +61,18 @@
  Operation 6 is from job 2: [6] = 2
  Operation 7 is from job 2: [7] = 2
  **/
+
+/** Structs used in MPI. **/
+
+typedef struct {
+    int n_jobs;
+    int n_operations;
+    int n_machines;
+    int * release_times;
+    int * n_operations_in_job;
+    int * processing_times; /** length is n_operations x n_machines **/
+} Payload_problem_fjssp;
+
 class FJSSPdata{
 
 private:

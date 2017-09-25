@@ -30,6 +30,15 @@ enum Priority {
 
 enum Deep{TOP = 0, MID = 1, BOTTOM = 2};
 
+typedef struct {
+    int priority;
+    int deep;
+    int build_up_to;
+    int max_size;
+    float distance[2];
+    int * interval;
+} Payload_interval;
+
 class Interval {
 private:
     Priority priority;
