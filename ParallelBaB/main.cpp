@@ -19,6 +19,7 @@
 #include "ParallelBranchAndBound.hpp"
 #include "myutils.hpp"
 #include "GridContainer.hpp"
+#include "MasterWorker.hpp"
 #include <tbb/task_scheduler_init.h>
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
@@ -322,8 +323,19 @@ void run_slave_node(int num_threads, Payload_problem_fjssp problem, Payload_inte
  * argv[4] = Second input file of instance.
  * argv[5] = output folder for Pareto front, the file name is given by the instance name.
  */
+int main(int argc, char* argv[]) {
+    
+    const int arg_num_threads = 1;
+    //    const int arg_problem = 2;
+    const int arg_input_file = 3;
+    MPI_Init(&argc, &argv);
+    
+    MasterWorker *  mw = new MasterWorker (2, stoi(argv[arg_num_threads]), argv[arg_input_file]);
+    mw->run();
+    MPI_Finalize();
+}
 
-int main(int argc, char * argv[]) {
+int main2(int argc, char * argv[]) {
 
     const int arg_num_threads = 1;
     //const int arg_problem = 2;

@@ -17,8 +17,6 @@ threads_per_node(num_threads){
 }
 
 MasterWorker::~MasterWorker(){
-    MPI_Type_free(&datatype_interval);
-    MPI_Type_free(&datatype_problem);
 }
 
 void MasterWorker::run(){
@@ -41,6 +39,9 @@ void MasterWorker::run(){
         runMasterProcess();
     else
         runWorkerProcess();
+    
+    MPI_Type_free(&datatype_interval);
+    MPI_Type_free(&datatype_problem);
 }
 
 void MasterWorker::runMasterProcess(){
@@ -174,7 +175,7 @@ void MasterWorker::preparePayloadProblemPart1(const Payload_problem_fjssp& probl
     const int n_blocks = 4;
     int blocks[n_blocks] = { 1, 1, 1, 1};
     MPI_Aint displacements_interval[n_blocks];
-    MPI_Datatype types[n_blocks] = {MPI_INT, MPI_INT, MPI_INT, MPI_INT };
+    MPI_Datatype types[n_blocks] = {MPI_INT, MPI_INT, MPI_INT, MPI_INT};
     MPI_Aint addr_base, addr_objectives, addr_n_jobs, addr_n_operations, addr_n_machines;
     
     MPI_Get_address(&payload_problem, &addr_base);
