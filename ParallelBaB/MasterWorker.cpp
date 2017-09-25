@@ -87,9 +87,6 @@ void MasterWorker::runWorkerProcess(){
     
     int source = MASTER_RANK;
 
-    ProblemFJSSP problem(payload_problem);
-    problem.printProblemInfo();
-    
     MPI::COMM_WORLD.Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL);
     
     printf("[%d] Receiving: %d %d %d %d %f %f\n",
@@ -105,6 +102,10 @@ void MasterWorker::runWorkerProcess(){
     for (int element = 0; element < payload_interval.max_size; ++element)
         printf("%d ", payload_interval.interval[element]);
     printf("\n");
+    
+    ProblemFJSSP problem(payload_problem);
+    problem.printProblemInfo();
+    
 }
 
 void MasterWorker::loadInstance(Payload_problem_fjssp& problem, const char *filePath){

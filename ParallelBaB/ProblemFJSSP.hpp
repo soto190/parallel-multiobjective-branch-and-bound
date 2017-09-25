@@ -136,11 +136,12 @@ public:
     
     FJSSPdata(const FJSSPdata& toCopy):
     n_jobs(toCopy.getNumberOfJobs()),
-    n_machines(toCopy.getNumberOfMachines()),
     n_operations(toCopy.getNumberOfOperations()),
-    makespan(toCopy.getMakespan()),
+    n_machines(toCopy.getNumberOfMachines()),
+    machine_makespan(toCopy.getMakespanMachine()),
     total_workload(toCopy.getTotalWorkload()),
     max_workload(toCopy.getMaxWorkload()),
+    makespan(toCopy.getMakespan()),
     min_total_workload(toCopy.getMinTotalWorkload()),
     machine_allocations(toCopy.getMachineAllocations()){
         
