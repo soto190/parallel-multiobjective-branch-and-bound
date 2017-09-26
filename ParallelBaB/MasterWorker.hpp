@@ -1,21 +1,22 @@
-//
-//  MasterSlave.hpp
-//  ParallelBaB
-//
-//  Created by Carlos Soto on 21/09/17.
-//  Copyright © 2017 Carlos Soto. All rights reserved.
-//
+/*
+ * MasterWorker.h
+ *
+ *  Created on: 22/09/2017
+ *      Author: carlossoto
+ */
 
-#ifndef MasterSlave_hpp
-#define MasterSlave_hpp
+#ifndef MASTERWORKER_HPP_
+#define MASTERWORKER_HPP_
 
 #include <stdio.h>
 #include <mpi.h>
 #include "ProblemFJSSP.hpp"
 #include "Solution.hpp"
 #include "Interval.hpp"
-
-class MasterWorker{
+/*
+ *
+ */
+class MasterWorker {
 public:
     MasterWorker();
     MasterWorker(int num_workers, int num_threads, const char file[]);
@@ -38,6 +39,7 @@ private:
     int n_workers;
     int threads_per_node;
     MPI_Status status;
+    ProblemFJSSP problem;
     
     static const int MASTER_RANK = 0;
     static const int TAG_INTERVAL = 190;
@@ -55,8 +57,10 @@ private:
     void preparePayloadInterval(const Payload_interval& interval, MPI_Datatype& datatype_interval);
     
     void unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval);
+    void unpack_payload_part2(Payload_problem_fjssp& problem);
     void runMasterProcess();
     void runWorkerProcess();
-    
 };
-#endif /* MasterSlave_hpp */
+
+#endif /* MASTERWORKER_HPP_ */
+

@@ -18,9 +18,10 @@
 enum ProblemType{combination = 0, permutation = 1, permutation_with_repetition_and_combination = 2, XD=190};
 
 class Problem{
-
+    
 public:
     
+    Problem();
     Problem(const Problem& toCopy);
     Problem (int totalObjectives, int totalVariables);
     virtual ~Problem();
@@ -71,10 +72,11 @@ public:
     
     virtual void printSolution(const Solution & solution) const;
     virtual void printPartialSolution(const Solution & solution, int level) const;
-    virtual void printSolutionInfo(Solution & solution) const;
-    virtual void loadInstance(char path[2][255]);
+    virtual void printSolutionInfo(const Solution & solution) const;
+    virtual void loadInstance(char path[2][255], char file_extension[4]);
     virtual void printInstance();
     virtual void printProblemInfo() const;
 };
 
 #endif /* Problem_hpp */
+

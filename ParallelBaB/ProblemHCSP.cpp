@@ -143,11 +143,11 @@ int ProblemHCSP::getCodeMap(int value1, int value2){return 0;}
 int ProblemHCSP::getTimesValueIsRepeated(int value){return 0;}
 
 double ProblemHCSP::computeProcessingTime(int task, int machine, int config){
-   return this->processingTime[task][machine] / this->speed[config][machine];
+    return this->processingTime[task][machine] / this->speed[config][machine];
 }
 
 double ProblemHCSP::computeEnergy(int task, int machine, int config, double proc_time){
-    return proc_time * pow(this->voltage[config][machine], 2);
+    return proc_time * std::pow(voltage[config][machine], 2);
 }
 
 double ProblemHCSP::evaluate(Solution & solution){
@@ -190,27 +190,27 @@ double ProblemHCSP::evaluate(Solution & solution){
  * This functio uses the value of the last evaluation.
  */
 /*
-double ProblemHCSP::evaluatePartial(Solution * solution, int levelEvaluation){
-    
-    int mapping = solution->getVariable(levelEvaluation);
-    int machine = this->mappingConfig[mapping][0];
-    int config = this->mappingConfig[mapping][1];
-    
-    double proc_prime = this->computeProcessingTime(levelEvaluation, machine, config);
-    solution->execTime[machine] += proc_prime;
-    
-    double energy = solution->getObjective(1) + this->computeEnergy(levelEvaluation, machine, config, proc_prime);
-    
-    for (machine = 0; machine < this->totalMachines; machine++)
-        if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){
-            solution->machineWithMakespan = machine;
-            solution->setObjective(0, solution->execTime[machine]);
-        }
-    
-    solution->setObjective(1, energy);
-    return 0;
-}
-*/
+ double ProblemHCSP::evaluatePartial(Solution * solution, int levelEvaluation){
+ 
+ int mapping = solution->getVariable(levelEvaluation);
+ int machine = this->mappingConfig[mapping][0];
+ int config = this->mappingConfig[mapping][1];
+ 
+ double proc_prime = this->computeProcessingTime(levelEvaluation, machine, config);
+ solution->execTime[machine] += proc_prime;
+ 
+ double energy = solution->getObjective(1) + this->computeEnergy(levelEvaluation, machine, config, proc_prime);
+ 
+ for (machine = 0; machine < this->totalMachines; machine++)
+ if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){
+ solution->machineWithMakespan = machine;
+ solution->setObjective(0, solution->execTime[machine]);
+ }
+ 
+ solution->setObjective(1, energy);
+ return 0;
+ }
+ */
 
 
 double ProblemHCSP::evaluatePartial(Solution & solution, int levelEvaluation){
@@ -252,14 +252,14 @@ double ProblemHCSP::evaluateLastLevel(Solution * solution){
     /**
      * For this problem there is no special evaluation on the last level.
      **/
-/*
-    int machine = 0;
-    for (machine = 0; machine < this->totalMachines; machine++)
-        if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){
-            solution->machineWithMakespan = machine;
-            solution->objective[0] = solution->execTime[machine];
-        }
-*/
+    /*
+     int machine = 0;
+     for (machine = 0; machine < this->totalMachines; machine++)
+     if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){
+     solution->machineWithMakespan = machine;
+     solution->objective[0] = solution->execTime[machine];
+     }
+     */
     return 0.0;
 }
 
@@ -324,7 +324,7 @@ double ProblemHCSP::removeLastLevelEvaluation(Solution * solution, int newLevel)
                 solution->setObjective(0, solution->execTime[machine]);
             }
     }
-     
+    
     return 0.0;
 }
 
@@ -368,7 +368,7 @@ void ProblemHCSP::printProblemInfo() const{
     
 }
 
-void ProblemHCSP::loadInstance(char filePath[2][255]){
+void ProblemHCSP::loadInstance(char filePath[2][255], char file_extension[4]){
     
     std::ifstream infile(filePath[0]);
     std::string line;
@@ -417,14 +417,14 @@ void ProblemHCSP::readMachinesConfigurations(char filePath[255]){
     
     std::getline(infile, line); /** reads comment in first line. **/
     std::getline(infile, line); /** reads total config and machines. **/
-
+    
     elemens = split(line, ' ');
     this->totalConfig = std::stoi(elemens.at(0));
     int totalMachinesInConfig = std::stoi(elemens.at(1));
     
     if (this->totalMachines < totalMachinesInConfig)
         totalMachinesInConfig = this->totalMachines;
-
+    
     
     this->maxConfigIn = new int [this->totalMachines];
     this->voltage = new double * [this->totalConfig];
@@ -440,12 +440,12 @@ void ProblemHCSP::readMachinesConfigurations(char filePath[255]){
     
     for (config = 0; config < this->totalConfig; config++)
         this->voltage[config] = new double[this->totalMachines];
-
+    
     for (config = 0; config < this->totalConfig; config++)
         this->speed[config] = new double[this->totalMachines];
-
+    
     std::getline(infile, line); /** reads comment of voltage and speed. **/
-
+    
     std::string voltageS;
     std::string speedS;
     int pos = 0;
@@ -456,14 +456,14 @@ void ProblemHCSP::readMachinesConfigurations(char filePath[255]){
         for(machine = 0; machine < totalMachinesInConfig; machine++){
             voltageS = elemens.at(++pos);
             speedS = elemens.at(++pos);
-
+            
             this->voltage[config][machine] = 0;
             this->speed[config][machine] = 0;
             
             if(voltageS.compare("----") != 0){
                 this->maxConfigIn[machine]++;
                 this->totalMappings++;
-        
+                
                 this->voltage[config][machine] = std::stod(voltageS);
                 this->speed[config][machine] = std::stod(speedS);
             }
@@ -508,5 +508,5 @@ void ProblemHCSP::printSolutionInfo(const Solution & solution) const{
 }
 
 void ProblemHCSP::printPartialSolution(const Solution & solution, int level) const{
-
+    
 }

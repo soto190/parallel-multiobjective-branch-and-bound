@@ -157,16 +157,16 @@ double ProblemTSP::evaluate(Solution & solution){
  **/
 double ProblemTSP::evaluatePartial(Solution& solution, int levelEvaluation){
     /*
-    
-    int origin = solution->getVariable(levelEvaluation - 1);
-    int destiny = solution->getVariable(levelEvaluation);
-    
-    double distance = solution->getObjective(0) + this->euclideanDistance[origin][destiny];
-    double cost = solution->getObjective(1) + this->costs[origin][destiny];
-    solution->setObjective(0, distance);
-    solution->setObjective(1, cost);
-    
-    */
+     
+     int origin = solution->getVariable(levelEvaluation - 1);
+     int destiny = solution->getVariable(levelEvaluation);
+     
+     double distance = solution->getObjective(0) + this->euclideanDistance[origin][destiny];
+     double cost = solution->getObjective(1) + this->costs[origin][destiny];
+     solution->setObjective(0, distance);
+     solution->setObjective(1, cost);
+     
+     */
     double sumDist = 0;
     double sumCost = 0;
     int city = 0;
@@ -184,7 +184,7 @@ double ProblemTSP::evaluatePartial(Solution& solution, int levelEvaluation){
     solution.setObjective(1, sumCost);
     
     return sumDist;
-
+    
     
     return 0;
 }
@@ -272,7 +272,7 @@ void ProblemTSP::createDefaultSolution(Solution& solution){
     
 }
 
-void ProblemTSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){    
+void ProblemTSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){
 }
 
 void ProblemTSP::printInstance(){
@@ -304,10 +304,10 @@ double ProblemTSP::computeEuclideanDistance(int x1, int y1, int x2, int y2){
     double x = x1 - x2;
     double y = y1 - y2;
     
-    return sqrt(pow(x, 2) + pow(y, 2));
+    return std::sqrt(std::pow(x, 2) + std::pow(y, 2));
 }
 
-void ProblemTSP::loadInstance(char filePath[2][255]){
+void ProblemTSP::loadInstance(char filePath[2][255], char file_extension[4]){
     
     std::ifstream infile(filePath[0]);
     std::string line;

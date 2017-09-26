@@ -62,8 +62,6 @@
  Operation 7 is from job 2: [7] = 2
  **/
 
-/** Structs used in MPI. **/
-
 typedef struct {
     int n_objectives;
     int n_jobs;
@@ -75,7 +73,7 @@ typedef struct {
 } Payload_problem_fjssp;
 
 class FJSSPdata{
-
+    
 private:
     int n_jobs;
     int n_operations;
@@ -95,16 +93,17 @@ private:
     int* workload_in_machine; /** Size = n_machines. Contains the acumulated processing time. **/
     int* best_workloads_in_machine; /** Size = n_machines.**/
     int* temp_best_wl_m; /** Size = n_machines.**/
-    std::vector<std::deque<int>> machine_allocations;
+    std::vector<std::deque<int> > machine_allocations;
     
 public:
     FJSSPdata(int numberOfJobs, int numberOfOperations, int numberOfMachines):
     n_jobs(numberOfJobs),
-    n_machines(numberOfMachines),
     n_operations(numberOfOperations),
-    makespan(0),
+    n_machines(numberOfMachines),
+    machine_makespan(0),
     total_workload(0),
     max_workload(0),
+    makespan(0),
     min_total_workload(0){
         n_operations_allocated = new int[n_jobs];
         operation_allocated_in = new int [n_operations];
@@ -114,12 +113,12 @@ public:
         workload_in_machine = new int[n_machines];
         best_workloads_in_machine = new int[n_machines];
         temp_best_wl_m = new int[n_machines];
-
+        
         machine_allocations.resize(n_machines);
-
+        
         for (int j = 0; j < n_jobs; ++j)
             n_operations_allocated[j] = 0;
-
+        
         for (int m = 0; m < n_machines; ++m){
             time_on_machine[m] = 0;
             workload_in_machine[m] = 0;
@@ -213,7 +212,7 @@ public:
         time_on_machine = new int[n_machines];
         workload_in_machine = new int[n_machines];
         machine_allocations.resize(n_machines);
-
+        
         for (int j = 0; j < n_jobs; ++j)
             n_operations_allocated[j] = 0;
         
@@ -227,7 +226,7 @@ public:
             starting_time[o] = 0;
             ending_time[o] = 0;
         }
-
+        
         return *this;
     }
     
@@ -249,9 +248,9 @@ public:
     
     int getBestWorkloadInMachine(int machine) const{return best_workloads_in_machine[machine];}
     int getTempBestWorkloadInMachine(int machine) const{return temp_best_wl_m[machine];}
-
+    
     size_t getNumberOfOperationsAllocatedIn(int machine) const { return machine_allocations[machine].size();}
-    const std::vector<std::deque<int>>& getMachineAllocations() const {return machine_allocations;}
+    const std::vector<std::deque<int> >& getMachineAllocations() const {return machine_allocations;}
     
     void setMakespanMachine(int machine) { machine_makespan = machine;}
     void setNumberOfOperationsAllocatedInJob(int job, int n_allocated) { n_operations_allocated[job] = n_allocated;}
@@ -276,10 +275,10 @@ public:
     void setTempBestWorkloadInMachine(int machine, int value){temp_best_wl_m[machine] = value;}
     void setBestWorkloadInMachine(int machine, int value){best_workloads_in_machine[machine] = value;}
     void setMinTotalWorkload(int value){min_total_workload = value;}
-
+    
     void increaseTempWorkloadIn(int machine, int time){temp_best_wl_m[machine] += time;}
     void decreaseTempWorkloadIn(int machine, int time){temp_best_wl_m[machine] -= time;}
-
+    
     void increaseOperationsAllocatedIn(int job){n_operations_allocated[job]++;}
     void decreaseOperationsAllocatedIn(int job){n_operations_allocated[job]--;}
     void increaseWorkloadIn(int machine, int time){workload_in_machine[machine] += time;}
@@ -307,7 +306,7 @@ public:
         total_workload -= procceessiinngg;
         workload_in_machine[machine] -= procceessiinngg;
     }
-
+    
     void reset(){
         total_workload = min_total_workload;
         max_workload = 0;
@@ -321,7 +320,7 @@ public:
             temp_best_wl_m[m] = best_workloads_in_machine[m];
             machine_allocations[m].clear();
         }
-    
+        
         for (int o = 0; o < n_operations; ++o){
             operation_allocated_in[o] = -1;
             starting_time[o] = 0;
@@ -341,16 +340,16 @@ public:
                 printf("%3c %3d: %2d %3d - %3d \n", 'a' + operation, operation, operation_allocated_in[operation], starting_time[operation], ending_time[operation]);
             else
                 printf("%3c %3d:  - %3d - %3d \n", 'a' + operation, operation, starting_time[operation], ending_time[operation]);
-
+        
         /**creates an empty gantt**/
         for (machine = 0; machine < n_machines; ++machine)
             for (time = 0; time < 255; ++time)
                 gantt[machine][time] = ' ';
-
+        
         for (operation = 0; operation < n_operations; ++operation)
             for (time = starting_time[operation]; time < ending_time[operation]; ++time)
                 gantt[operation_allocated_in[operation]][time] = 'a' + operation;
-    
+        
         for (machine = 0; machine < n_machines; ++machine) {
             printf("M%d  |", machine);
             for (time = 0; time <= makespan; ++time)
@@ -370,15 +369,15 @@ public:
         
         for (machine = 0; machine < n_machines; ++machine)
             printf("BestWL: %6d Temp: %6d\n", best_workloads_in_machine[machine], temp_best_wl_m[machine]);
-
+        
         printf("makespan: %d\nmaxWorkLoad: %d\ntotalWorkload: %d \n", makespan, max_workload, total_workload);
     }
 };
 
 class ProblemFJSSP: public Problem {
-
+    
 private:
-//    const unsigned int MAX_GANTT_LIMIT = 4096;
+    //    const unsigned int MAX_GANTT_LIMIT = 4096;
     int n_jobs;
     int n_operations;
     int n_machines;
@@ -409,11 +408,11 @@ private:
     int bestBound_maxWorkload;
     int bestBound_makespan;
 public:
-    // ProblemFJSSP();
+    ProblemFJSSP();
     ProblemFJSSP(const ProblemFJSSP& toCopy);
-    ProblemFJSSP(const Payload_problem_fjssp& payload_problem);
     ProblemFJSSP(int totalObjectives, int totalVariables);
-   
+    ProblemFJSSP(const Payload_problem_fjssp& payload_problem);
+    
     ~ProblemFJSSP();
     
     ProblemFJSSP& operator=(const ProblemFJSSP& toCopy);
@@ -484,7 +483,7 @@ public:
     void setSumOf_M_smallestEST(int nValue);
     
     double evaluatePartialTest4(Solution & solution, int currentLevel);
-
+    
     void printSolution(const Solution & solution) const;
     void printPartialSolution(const Solution & solution, int level) const;
     void printSolutionInfo(const Solution & solution) const;
@@ -492,8 +491,9 @@ public:
     void loadInstance(char path[2][255], char file_extension[10]);
     void loadInstanceFJS(char path[2][255], char file_extension[10]);
     void loadInstanceTXT(char path[2][255], char file_extension[10]);
+    void loadInstancePayload(const Payload_problem_fjssp& payload);
     void printInstance();
-    void printProblemInfo();
+    void printProblemInfo() const;
     void printSchedule(const Solution & solution) const;
     void buildSolutionWithGoodMaxWorkload(Solution & solution);
     void buildSolutionWithGoodMaxWorkloadv2(Solution & solution);

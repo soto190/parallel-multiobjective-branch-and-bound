@@ -26,13 +26,13 @@
 
 enum TSPObj {DISTANCE = 0, COST = 1};
 class ProblemTSP: public Problem {
-
+    
 public:
     
     ProblemTSP(const ProblemTSP& toCopy);
     ProblemTSP(int totalObjectives, int totalVariables);
     ~ProblemTSP();
-
+    
     ProblemTSP& operator=(const ProblemTSP& toCopy);
     double evaluate(Solution & solution);
     
@@ -46,11 +46,11 @@ public:
     
     void createDefaultSolution(Solution & solution);
     void getSolutionWithLowerBoundInObj(int nObj, Solution& solution);
-
+    
     int getLowerBound(int indexVar) const;
     int getUpperBound(int indexVar) const;
     int getLowerBoundInObj(int nObj) const;
-
+    
     ProblemType getType() const;
     int getStartingRow();
     int getFinalLevel();
@@ -69,18 +69,19 @@ public:
     
     double computeEuclideanDistance(int x1, int y1, int x2, int y2);
     
-    void loadInstance(char filePath[2][255]);
+    void loadInstance(char filePath[2][255], char file_extension[4]);
     
     /**Print information**/
     void printSolution(const Solution & solution) const;
     void printPartialSolution(const Solution & solution, int level) const;
     void printSolutionInfo(const Solution & solution) const;
-
+    
     void printInstance();
     void printProblemInfo() const;
-
+    
 private:
     void readCost(char pathFile[255]);
 };
 
 #endif /* ProblemTSP_hpp */
+
