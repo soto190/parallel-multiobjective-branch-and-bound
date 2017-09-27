@@ -124,7 +124,7 @@ void MasterWorker::runWorkerProcess() {
     try {
         
         tbb::task_scheduler_init init(threads_per_node);
-        ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(threads_per_node, problem);
+        ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(rank, threads_per_node, problem);
         pbb->setBranchInitPayload(payload_interval);
 //        pbb->setParetoFrontFile(outputFile.c_str());
 //        pbb->setSummarizeFile(summarizeFile.c_str());
