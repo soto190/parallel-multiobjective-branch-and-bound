@@ -118,12 +118,12 @@
 		211282291D63988E0038DBEE /* ParallelBaB */ = {
 			isa = PBXGroup;
 			children = (
-				2112824A1D639AB30038DBEE /* BranchAndBound.cpp */,
-				2112824B1D639AB30038DBEE /* BranchAndBound.hpp */,
 				217D170D1F744B33004CECD8 /* MasterWorker.cpp */,
 				217D170E1F744B33004CECD8 /* MasterWorker.hpp */,
 				21E8EF8A1E48BD0800A716C6 /* ParallelBranchAndBound.cpp */,
 				21E8EF8B1E48BD0800A716C6 /* ParallelBranchAndBound.hpp */,
+				2112824A1D639AB30038DBEE /* BranchAndBound.cpp */,
+				2112824B1D639AB30038DBEE /* BranchAndBound.hpp */,
 				21F4CBA51DAE97CC004A308F /* Dominance.cpp */,
 				21F4CBA61DAE97CC004A308F /* Dominance.hpp */,
 				217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */,

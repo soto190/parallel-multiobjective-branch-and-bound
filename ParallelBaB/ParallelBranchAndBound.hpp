@@ -20,14 +20,15 @@
 class ParallelBranchAndBound: public tbb::task{
 
 public:
-    int number_of_threads;
+    int rank;
+    int number_of_bbs;
     char outputParetoFile[255];
     char summarizeFile[255];
         
     ProblemFJSSP problem;
     Interval branch_init;
     
-    ParallelBranchAndBound(int n_threads, const ProblemFJSSP& problem);
+    ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem);
     ~ParallelBranchAndBound();
     tbb::task* execute();
     
@@ -36,6 +37,8 @@ public:
     void setSummarizeFile(const char outputFile[255]);
     void setBranchInit(const Interval& interval);
     void setBranchInitPayload(const Payload_interval& payload);
+    
+    int getRank() const;
 };
 
 #endif /* ParallelBranchAndBound_hpp */

@@ -17,6 +17,7 @@ ReadySubproblems globalPool;  /** intervals are the pending branches/subproblems
 HandlerContainer paretoContainer;
 
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
+node_rank(toCopy.getNodeRank()),
 rank(toCopy.getRank()),
 problem(toCopy.getProblem()),
 fjssp_data(toCopy.getFJSSPdata()),
@@ -43,7 +44,8 @@ currentLevel(toCopy.getCurrentLevel()){
     std::strcpy(summarizeFile, toCopy.summarizeFile);
 }
 
-BranchAndBound::BranchAndBound(int rank, const ProblemFJSSP& problemToCopy, const Interval & branch):
+BranchAndBound::BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problemToCopy, const Interval & branch):
+node_rank(node_rank),
 rank(rank),
 problem(problemToCopy),
 fjssp_data(problemToCopy.getNumberOfJobs(),
@@ -84,11 +86,12 @@ totalTime(0){
     ivm_tree.setOwner(rank);
 }
 
-BranchAndBound& BranchAndBound::operator()(int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch){
+BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch){
     t1 = std::chrono::high_resolution_clock::now();
     t2 = std::chrono::high_resolution_clock::now();
     
     start = std::clock();
+    node_rank = node_rank_new;
     rank = rank_new;
     problem = problem_to_copy;
     fjssp_data(problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
@@ -315,7 +318,7 @@ tbb::task* BranchAndBound::execute() {
         if(globalPool.try_pop(interval_to_solve))
             solve(interval_to_solve);
     
-    printf("[B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", rank, getTotalTime());
+    printf("[%03dB&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, rank, getTotalTime());
     
     return NULL;
 }
@@ -339,9 +342,9 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             if (updateParetoGrid(incumbent_s)){
                 totalUpdatesInLowerBound++;
                 
-                printf("[B&B-%03d] ", rank);
+                /*printf("[B&B-%03d] ", rank);
                 printCurrentSolution();
-                printf(" + [%6lu] \n", paretoContainer.getSize());
+                printf(" + [%6lu] \n", paretoContainer.getSize());*/
             }
             updateBounds(incumbent_s, fjssp_data);
             ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
@@ -719,7 +722,6 @@ void BranchAndBound::updateBoundsWithSolution(const Solution & solution){
  *
  **/
 void BranchAndBound::setPriorityTo(Interval& interval) const{
-
     /** TODO: This can be replaced by a Fuzzy Logic Controller. **/
     switch (interval.getDeep()) {
         case Deep::TOP:
@@ -749,9 +751,9 @@ void BranchAndBound::setPriorityTo(Interval& interval) const{
         default:
             break;
     }
-
 }
 
+int BranchAndBound::getNodeRank() const{ return rank; }
 int BranchAndBound::getRank() const{ return rank; }
 int BranchAndBound::getCurrentLevel() const{ return currentLevel;}
 unsigned long BranchAndBound::getNumberOfLevels() const{ return totalLevels;}

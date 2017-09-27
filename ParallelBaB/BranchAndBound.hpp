@@ -50,6 +50,7 @@ class BranchAndBound: public tbb::task {
 
 private:
     
+    int node_rank;
     int rank; /** Identifies the number of thread-B&B. **/
 
     tbb::atomic<unsigned long> totalNodes;
@@ -87,10 +88,11 @@ private:
     
 public:
     BranchAndBound(const BranchAndBound& branchAndBound);
-    BranchAndBound(int rank, const ProblemFJSSP& problem, const Interval & branch /*,GlobalPool& globa_pool, HandlerContainer& pareto_container*/);
-    BranchAndBound& operator()(int rank, const ProblemFJSSP& problem, const Interval & branch);
+    BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch /*,GlobalPool& globa_pool, HandlerContainer& pareto_container*/);
+    BranchAndBound& operator()(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
 	~BranchAndBound();
     
+    int getNodeRank() const;
     int getRank() const;
     int getCurrentLevel() const;
     double getTotalTime();

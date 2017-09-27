@@ -1,6 +1,6 @@
 #Makefile for compiling with ICPC.
 
-CXX = icpc
+CXX = mpiicpc
 DEBUGGER = gdb-ia
 
 LIBS = -tbb -ltbbmalloc -ltbbmalloc_proxy

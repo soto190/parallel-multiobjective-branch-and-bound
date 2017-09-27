@@ -49,7 +49,7 @@ public:
     void printSolutionInfo(const Solution & solution) const;
     
     void printInstance();
-    void printProblemInfo();
+    void printProblemInfo() const;
     void loadInstance(char filePath[2][255], char file_extension[4]);
     
     

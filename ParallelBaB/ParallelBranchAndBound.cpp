@@ -8,28 +8,29 @@
 
 #include "ParallelBranchAndBound.hpp"
 
-ParallelBranchAndBound::ParallelBranchAndBound(int n_threads, const ProblemFJSSP& problem):
+ParallelBranchAndBound::ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem):
+rank(rank),
 problem(problem),
 branch_init(problem.getNumberOfVariables()),
-number_of_threads(n_threads){}
+number_of_bbs(n_threads){}
 
 ParallelBranchAndBound::~ParallelBranchAndBound(){}
 
 tbb::task * ParallelBranchAndBound::execute() {
 
-    globalPool.setSizeEmptying((unsigned long) (number_of_threads * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
+    globalPool.setSizeEmptying((unsigned long) (number_of_bbs * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
     
-    BranchAndBound BB_container(0, problem, branch_init);
+    BranchAndBound BB_container(rank, 0, problem, branch_init);
     BB_container.initGlobalPoolWithInterval(branch_init);
     
-	set_ref_count(number_of_threads + 1);
+	set_ref_count(number_of_bbs + 1);
 
 	tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
     vector<BranchAndBound *> bb_threads;
-    int counter_threads = 0;
-	while (counter_threads++ < number_of_threads) {
+    int n_bb = 0;
+	while (n_bb++ < number_of_bbs) {
 
-		BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(counter_threads, problem, branch_init);
+		BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb, problem, branch_init);
 
         bb_threads.push_back(BaB_task);
 		tl.push_back(*BaB_task);
@@ -79,7 +80,7 @@ void ParallelBranchAndBound::setBranchInit(const Interval &interval){
 }
 
 void ParallelBranchAndBound::setNumberOfThreads(int n_number_of_threads) {
-	number_of_threads = n_number_of_threads;
+	number_of_bbs = n_number_of_threads;
 }
 
 void ParallelBranchAndBound::setParetoFrontFile(const char outputFile[255]) {
@@ -88,4 +89,8 @@ void ParallelBranchAndBound::setParetoFrontFile(const char outputFile[255]) {
 
 void ParallelBranchAndBound::setSummarizeFile(const char outputFile[255]) {
 	std::strcpy(summarizeFile, outputFile);
+}
+
+int ParallelBranchAndBound::getRank() const{
+    return rank;
 }
