@@ -187,7 +187,7 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
     int toAdd = 0;
     
     float distance_error[2];
-    //fjssp_data.reset(); /** This function call is not necesary because the structuras starts empty.**/
+    //fjssp_data.reset(); /** This function call is not necesary because the structurs are empty.**/
     
     fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
     for (int m = 0; m < problem.getNumberOfMachines(); ++m){

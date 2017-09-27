@@ -59,17 +59,21 @@ void MasterWorker::runMasterProcess() {
      **/
     int node_dest = 0;
     
+    for (int element = 1; element < payload_interval.max_size; ++element)
+        payload_interval.interval[element] = -1;
+    
+    int max_number_of_mappings = problem.getNumberOfMachines() * problem.getNumberOfMachines();
+    int map = 0;
+    
     for (node_dest = 1; node_dest < n_workers; node_dest++) {
         
         // Generates an interval.
-        payload_interval.priority = node_dest;
-        payload_interval.deep = node_dest;
-        payload_interval.build_up_to = node_dest;
-        payload_interval.distance[0] = 0.3;
-        payload_interval.distance[1] = 0.7;
-        
-        for (int element = 0; element < payload_interval.max_size; ++element)
-            payload_interval.interval[element] = element * node_dest;
+        payload_interval.priority = 0;
+        payload_interval.deep = 0;
+        payload_interval.build_up_to = 0;
+        payload_interval.distance[0] = 0.9;
+        payload_interval.distance[1] = 0.9;
+        payload_interval.interval[0] = map;
         
         printf("[%d] Sending: %d %d %d %d %f %f\n",
                MASTER_RANK,
@@ -86,7 +90,12 @@ void MasterWorker::runMasterProcess() {
         printf("\n");
         MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, node_dest, TAG_INTERVAL);
         
+        
         /** Here starts the part to monitor each node. **/
+        
+        map++;
+        if (map == max_number_of_mappings)
+            node_dest = n_workers;
     }
 }
 
@@ -111,8 +120,23 @@ void MasterWorker::runWorkerProcess() {
         printf("%d ", payload_interval.interval[element]);
     printf("\n");
     problem.loadInstancePayload(payload_problem);
-    //ProblemFJSSP problem(3,3);
-    problem.printProblemInfo();
+    
+    try {
+        
+        tbb::task_scheduler_init init(threads_per_node);
+        ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(threads_per_node, problem);
+        pbb->setBranchInitPayload(payload_interval);
+//        pbb->setParetoFrontFile(outputFile.c_str());
+//        pbb->setSummarizeFile(summarizeFile.c_str());
+        
+        printf("Spawning root...\n");
+        tbb::task::spawn_root_and_wait(*pbb);
+        
+    } catch (tbb::tbb_exception& e) {
+        std::cerr << "Intercepted exception:\n" << e.name();
+        std::cerr << "Reason is:\n" << e.what();
+    }
+    
 }
 
 void MasterWorker::loadInstance(Payload_problem_fjssp& problem, const char *filePath) {

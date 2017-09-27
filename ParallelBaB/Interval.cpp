@@ -14,7 +14,7 @@
  *
  **/
 Interval::Interval():
-max_size(1),
+max_size(0),
 build_up_to(-1),
 interval(nullptr),
 priority(Priority::P_Low),
@@ -42,6 +42,18 @@ deep(toCopy.getDeep()){
 
 }
 
+Interval::Interval(const Payload_interval& payload){
+    build_up_to = payload.build_up_to;
+    max_size = payload.max_size;
+    
+    priority = (Priority) payload.priority;
+    deep = (Deep) payload.deep;
+
+    interval = new int[max_size];
+    for (int index = 0; index < max_size; ++index)
+        interval[index] = payload.interval[index];
+}
+
 Interval& Interval::operator()(int size){
     
     build_up_to = -1;
@@ -54,6 +66,22 @@ Interval& Interval::operator()(int size){
     for (int index = 0; index < max_size; ++index)
         interval[index] = -1;
     
+    return *this;
+}
+
+Interval& Interval::operator()(const Payload_interval& payload){
+    build_up_to = payload.build_up_to;
+    max_size = payload.max_size;
+    
+    priority = (Priority) payload.priority;
+    deep = (Deep) payload.deep;
+   
+    if(interval != nullptr)
+        delete [] interval;
+    
+    interval = new int[max_size];
+    for (int index = 0; index < max_size; ++index)
+        interval[index] = payload.interval[index];
     return *this;
 }
 

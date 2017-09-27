@@ -55,10 +55,13 @@ public:
     Interval();
     Interval(int max_size);
     Interval(const Interval &toCopy);
+    Interval(const Payload_interval& payload);
     virtual ~Interval();
     
     Interval& operator=(const Interval& toCopy);
     Interval& operator()(int size);
+    Interval& operator()(const Payload_interval& payload);
+
     
     int increaseBuildUpTo();
     int getSize() const;

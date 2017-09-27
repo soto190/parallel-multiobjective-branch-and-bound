@@ -10,9 +10,11 @@
 
 #include <stdio.h>
 #include <mpi.h>
+#include <tbb/task_scheduler_init.h>
 #include "ProblemFJSSP.hpp"
 #include "Solution.hpp"
 #include "Interval.hpp"
+#include "ParallelBranchAndBound.hpp"
 /*
  *
  */

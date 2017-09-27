@@ -57,17 +57,25 @@ tbb::task * ParallelBranchAndBound::execute() {
         BB_container.increaseSharedWork(bb_in->getSharedWork());
 	}
     
-    BB_container.setParetoFrontFile(outputParetoFile);
-    BB_container.setSummarizeFile(summarizeFile);
+//    BB_container.setParetoFrontFile(outputParetoFile);
+//    BB_container.setSummarizeFile(summarizeFile);
     
 	BB_container.getParetoFront();
 	BB_container.printParetoFront();
-	BB_container.saveParetoFront();
-	BB_container.saveSummarize();
+//    BB_container.saveParetoFront();
+//    BB_container.saveSummarize();
     bb_threads.clear();
     printf("Data swarm recollected and saved.\n");
 	printf("Parallel Branch And Bound ended.\n");
     return NULL;
+}
+
+void ParallelBranchAndBound::setBranchInitPayload(const Payload_interval& payload){
+    branch_init(payload);
+}
+
+void ParallelBranchAndBound::setBranchInit(const Interval &interval){
+    branch_init = interval;
 }
 
 void ParallelBranchAndBound::setNumberOfThreads(int n_number_of_threads) {

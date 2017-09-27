@@ -34,6 +34,8 @@ public:
     void setNumberOfThreads(int number_of_threads);
     void setParetoFrontFile(const char outputFile[255]);
     void setSummarizeFile(const char outputFile[255]);
+    void setBranchInit(const Interval& interval);
+    void setBranchInitPayload(const Payload_interval& payload);
 };
 
 #endif /* ParallelBranchAndBound_hpp */
