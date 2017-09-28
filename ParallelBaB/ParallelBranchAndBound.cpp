@@ -36,9 +36,9 @@ tbb::task * ParallelBranchAndBound::execute() {
 		tl.push_back(*BaB_task);
 	}
 
-    printf("Spawning the swarm...\nWaiting for all...\n");
+    printf("[%03dB&B] Spawning the swarm...\nWaiting for all...\n", rank);
     tbb::task::spawn_and_wait_for_all(tl);
-    printf("Job done...\n");
+    printf("[%03dB&B] Job done...\n", rank);
 
     /** Recollects the data. **/
 	BB_container.getTotalTime();
@@ -66,15 +66,14 @@ tbb::task * ParallelBranchAndBound::execute() {
 //    BB_container.saveParetoFront();
 //    BB_container.saveSummarize();
     bb_threads.clear();
-    printf("[B&B%03d] Data swarm recollected and saved.\n", rank);
-	printf("[B&B%03d] Parallel Branch And Bound ended.\n", rank);
+    printf("[%03dB&B] Data swarm recollected and saved.\n", rank);
+	printf("[%03dB&B] Parallel Branch And Bound ended.\n", rank);
     return NULL;
 }
 
 std::vector<Solution>& ParallelBranchAndBound::getParetoFront(){
     return paretoContainer.getParetoFront();
 }
-
 
 void ParallelBranchAndBound::setBranchInitPayload(const Payload_interval& payload){
     branch_init(payload);

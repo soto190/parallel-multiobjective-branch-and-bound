@@ -75,7 +75,7 @@ void MasterWorker::runMasterProcess() {
         payload_interval.distance[1] = 0.9;
         payload_interval.interval[0] = map;
         
-        printf("[%d] Sending: %d %d %d %d %f %f\n",
+        printf("[%03dMaster] Sending: %d %d %d %d %f %f\n",
                MASTER_RANK,
                payload_interval.priority,
                payload_interval.deep,
@@ -84,7 +84,7 @@ void MasterWorker::runMasterProcess() {
                payload_interval.distance[0],
                payload_interval.distance[1]);
         
-        printf("[%d] ", MASTER_RANK);
+        printf("[%03dMaster] ", MASTER_RANK);
         for (int element = 0; element < payload_interval.max_size; ++element)
             printf("%d ", payload_interval.interval[element]);
         printf("\n");
@@ -113,7 +113,7 @@ void MasterWorker::runMasterProcess() {
             stopped_worker++;
         }
     }
-    printf("[B&B%03d] No more work.\n", rank);
+    printf("[%03dMaster] No more work.\n", rank);
 }
 
 void MasterWorker::runWorkerProcess() {
@@ -132,7 +132,7 @@ void MasterWorker::runWorkerProcess() {
                 break;
             }
             //MPI::COMM_WORLD.Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL);
-            printf("[%d] Receiving: %d %d %d %d %f %f\n",
+            printf("[%03dWorker] Receiving: %d %d %d %d %f %f\n",
                    rank,
                    payload_interval.priority,
                    payload_interval.deep,
@@ -141,7 +141,7 @@ void MasterWorker::runWorkerProcess() {
                    payload_interval.distance[0],
                    payload_interval.distance[1]);
             
-            printf("[%d] ", rank);
+            printf("[%03dWorker] ", rank);
             for (int element = 0; element < payload_interval.max_size; ++element)
                 printf("%d ", payload_interval.interval[element]);
             printf("\n");
@@ -150,7 +150,7 @@ void MasterWorker::runWorkerProcess() {
             //        pbb->setParetoFrontFile(outputFile.c_str());
             //        pbb->setSummarizeFile(summarizeFile.c_str());
             
-            printf("[B&B%03d] Spawning root...\n", rank);
+            printf("[%03dWorker] Spawning root...\n", rank);
             tbb::task::spawn_root_and_wait(*pbb);
             
             pbb->getParetoFront();
