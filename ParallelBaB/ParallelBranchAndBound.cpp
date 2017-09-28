@@ -66,8 +66,8 @@ tbb::task * ParallelBranchAndBound::execute() {
 //    BB_container.saveParetoFront();
 //    BB_container.saveSummarize();
     bb_threads.clear();
-    printf("Data swarm recollected and saved.\n");
-	printf("Parallel Branch And Bound ended.\n");
+    printf("[B&B%03d] Data swarm recollected and saved.\n", rank);
+	printf("[B&B%03d] Parallel Branch And Bound ended.\n", rank);
     return NULL;
 }
 

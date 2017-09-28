@@ -26,7 +26,7 @@ MasterWorker::~MasterWorker() {
 
 void MasterWorker::run() {
     rank = MPI::COMM_WORLD.Get_rank();
-    n_workers = MPI::COMM_WORLD.Get_size();
+    n_workers = MPI::COMM_WORLD.Get_size() - 1;
     
     if (isMaster())
         loadInstance(payload_problem, file);
@@ -65,7 +65,7 @@ void MasterWorker::runMasterProcess() {
     int max_number_of_mappings = problem.getNumberOfMachines() * problem.getNumberOfMachines();
     int map = 0;
     
-    for (node_dest = 1; node_dest < n_workers; node_dest++) {
+    for (node_dest = 1; node_dest <= n_workers; node_dest++) {
         
         // Generates an interval.
         payload_interval.priority = 0;
@@ -89,9 +89,6 @@ void MasterWorker::runMasterProcess() {
             printf("%d ", payload_interval.interval[element]);
         printf("\n");
         MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, node_dest, TAG_INTERVAL);
-        
-        
-        /** Here starts the part to monitor each node. **/
         
         map++;
         if (map == max_number_of_mappings)
@@ -153,7 +150,7 @@ void MasterWorker::runWorkerProcess() {
             //        pbb->setParetoFrontFile(outputFile.c_str());
             //        pbb->setSummarizeFile(summarizeFile.c_str());
             
-            printf("Spawning root...\n");
+            printf("[B&B%03d] Spawning root...\n", rank);
             tbb::task::spawn_root_and_wait(*pbb);
             
             pbb->getParetoFront();
