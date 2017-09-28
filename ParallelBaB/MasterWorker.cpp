@@ -63,7 +63,7 @@ void MasterWorker::runMasterProcess() {
         payload_interval.interval[element] = -1;
     
     int max_number_of_mappings = problem.getNumberOfJobs() * problem.getNumberOfMachines();
-    int map = 0;
+    int n_intervals = 0;
     
     payload_interval.priority = 0;
     payload_interval.deep = 0;
@@ -73,7 +73,7 @@ void MasterWorker::runMasterProcess() {
     
     for (node_dest = 1; node_dest <= n_workers; node_dest++) {
         
-        payload_interval.interval[0] = map; /** The first map of the interval. **/
+        payload_interval.interval[0] = n_intervals; /** The first map of the interval. **/
         
         printf("[%03dMaster] Sending: %d %d %d %d %f %f\n",
                MASTER_RANK,
@@ -90,16 +90,16 @@ void MasterWorker::runMasterProcess() {
         printf("\n");
         MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, node_dest, TAG_INTERVAL);
         
-        map++;
-        if (map == max_number_of_mappings)
+        n_intervals++;
+        if (n_intervals == max_number_of_mappings)
             node_dest = n_workers;
     }
     int stopped_workers = 0;
     while (stopped_workers < n_workers) {
         MPI_Recv(&payload_interval, 1, datatype_interval, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         
-        if (map < max_number_of_mappings) {
-            payload_interval.interval[0] = map;
+        if (status.MPI_TAG == TAG_REQUEST_MORE_WORK && n_intervals < max_number_of_mappings) {
+            payload_interval.interval[0] = n_intervals;
             
             printf("[%03dMaster] Sending: %d %d %d %d %f %f\n",
                    rank,
@@ -116,7 +116,7 @@ void MasterWorker::runMasterProcess() {
             printf("\n");
             
             MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_INTERVAL, MPI_COMM_WORLD);
-            map++;
+            n_intervals++;
         }else{
             MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
             stopped_workers++;
