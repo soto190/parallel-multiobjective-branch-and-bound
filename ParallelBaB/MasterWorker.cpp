@@ -101,8 +101,9 @@ void MasterWorker::runMasterProcess() {
         if (status.MPI_TAG == TAG_REQUEST_MORE_WORK && n_intervals < max_number_of_mappings) {
             payload_interval.interval[0] = n_intervals;
             
-            printf("[%03dMaster] Sending: %d %d %d %d %f %f\n",
+            printf("[%03dMaster] Sending [%03d]: %d %d %d %d %f %f\n",
                    rank,
+                   n_intervals,
                    payload_interval.priority,
                    payload_interval.deep,
                    payload_interval.build_up_to,
@@ -118,6 +119,7 @@ void MasterWorker::runMasterProcess() {
             MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_INTERVAL, MPI_COMM_WORLD);
             n_intervals++;
         }else{
+            printf("[Interval number %3d of intervals %3d] \n", n_intervals, max_number_of_mappings);
             MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
             stopped_workers++;
         }
