@@ -9,12 +9,12 @@
 
 MasterWorker::MasterWorker() {
     rank = 0;
-    n_workers = 2;
-    threads_per_node = 2;
+    n_workers = 0;
+    threads_per_node = 0;
 }
 
-MasterWorker::MasterWorker(int num_workers, int num_threads, const char file_instance[]) :
-n_workers(num_workers),
+MasterWorker::MasterWorker(int num_nodes, int num_threads, const char file_instance[]) :
+n_workers(num_nodes - 1),
 threads_per_node(num_threads) {
     rank = 0;
     std::strcpy(file, file_instance);
@@ -97,46 +97,73 @@ void MasterWorker::runMasterProcess() {
         if (map == max_number_of_mappings)
             node_dest = n_workers;
     }
+    int stopped_worker = 0;
+    while (stopped_worker < n_workers) {
+        MPI_Recv(&payload_interval,       /* message buffer */
+                 1,              /* one data item */
+                 datatype_interval,     /* of type double real */
+                 MPI_ANY_SOURCE, /* receive from any sender */
+                 MPI_ANY_TAG,    /* any type of message */
+                 MPI_COMM_WORLD, /* always use this */
+                 &status);       /* received message info */
+        
+        if (map < max_number_of_mappings) {
+            payload_interval.interval[0] = map;
+            MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_INTERVAL, MPI_COMM_WORLD);
+            map++;
+        }else{
+            MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
+            stopped_worker++;
+        }
+    }
+    printf("[B&B%03d] No more work.\n", rank);
 }
 
 void MasterWorker::runWorkerProcess() {
     
     int source = MASTER_RANK;
-    
-    //MPI_Recv(&payload_interval, 1, *datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
-    
-    MPI::COMM_WORLD.Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL);
-    printf("[%d] Receiving: %d %d %d %d %f %f\n",
-           rank,
-           payload_interval.priority,
-           payload_interval.deep,
-           payload_interval.build_up_to,
-           payload_interval.max_size,
-           payload_interval.distance[0],
-           payload_interval.distance[1]);
-    
-    printf("[%d] ", rank);
-    for (int element = 0; element < payload_interval.max_size; ++element)
-        printf("%d ", payload_interval.interval[element]);
-    printf("\n");
     problem.loadInstancePayload(payload_problem);
-    
     try {
-        
         tbb::task_scheduler_init init(threads_per_node);
         ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(rank, threads_per_node, problem);
-        pbb->setBranchInitPayload(payload_interval);
-//        pbb->setParetoFrontFile(outputFile.c_str());
-//        pbb->setSummarizeFile(summarizeFile.c_str());
         
-        printf("Spawning root...\n");
-        tbb::task::spawn_root_and_wait(*pbb);
-        
+        //MPI_Recv(&payload_interval, 1, *datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
+        while(true){
+            MPI_Recv(&payload_interval, 1, datatype_interval, source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            
+            if (status.MPI_TAG == TAG_NO_MORE_WORK) {
+                break;
+            }
+            //MPI::COMM_WORLD.Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL);
+            printf("[%d] Receiving: %d %d %d %d %f %f\n",
+                   rank,
+                   payload_interval.priority,
+                   payload_interval.deep,
+                   payload_interval.build_up_to,
+                   payload_interval.max_size,
+                   payload_interval.distance[0],
+                   payload_interval.distance[1]);
+            
+            printf("[%d] ", rank);
+            for (int element = 0; element < payload_interval.max_size; ++element)
+                printf("%d ", payload_interval.interval[element]);
+            printf("\n");
+            
+            pbb->setBranchInitPayload(payload_interval);
+            //        pbb->setParetoFrontFile(outputFile.c_str());
+            //        pbb->setSummarizeFile(summarizeFile.c_str());
+            
+            printf("Spawning root...\n");
+            tbb::task::spawn_root_and_wait(*pbb);
+            
+            pbb->getParetoFront();
+            
+            MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK);
+        }
     } catch (tbb::tbb_exception& e) {
         std::cerr << "Intercepted exception:\n" << e.name();
         std::cerr << "Reason is:\n" << e.what();
     }
-    
 }
 
 void MasterWorker::loadInstance(Payload_problem_fjssp& problem, const char *filePath) {

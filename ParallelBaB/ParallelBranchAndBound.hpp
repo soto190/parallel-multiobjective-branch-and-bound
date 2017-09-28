@@ -32,6 +32,7 @@ public:
     ~ParallelBranchAndBound();
     tbb::task* execute();
     
+    vector<Solution>& getParetoFront();
     void setNumberOfThreads(int number_of_threads);
     void setParetoFrontFile(const char outputFile[255]);
     void setSummarizeFile(const char outputFile[255]);

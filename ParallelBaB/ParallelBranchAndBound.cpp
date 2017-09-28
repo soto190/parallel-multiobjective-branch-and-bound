@@ -71,6 +71,11 @@ tbb::task * ParallelBranchAndBound::execute() {
     return NULL;
 }
 
+std::vector<Solution>& ParallelBranchAndBound::getParetoFront(){
+    return paretoContainer.getParetoFront();
+}
+
+
 void ParallelBranchAndBound::setBranchInitPayload(const Payload_interval& payload){
     branch_init(payload);
 }

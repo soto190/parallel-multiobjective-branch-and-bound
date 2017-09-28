@@ -21,7 +21,7 @@
 class MasterWorker {
 public:
     MasterWorker();
-    MasterWorker(int num_workers, int num_threads, const char file[]);
+    MasterWorker(int num_nodes, int num_threads, const char file[]);
     virtual ~MasterWorker();
     
     void run();
@@ -47,7 +47,9 @@ private:
     static const int TAG_INTERVAL = 190;
     static const int TAG_SOLUTION = 191;
     static const int TAG_FINISH_WORK = 192;
-    static const int TAG_SLAVE_READY = 193;
+    static const int TAG_WORKER_READY = 193;
+    static const int TAG_NO_MORE_WORK = 194;
+    static const int TAG_REQUEST_MORE_WORK = 195;
     
     char file[255];
     
