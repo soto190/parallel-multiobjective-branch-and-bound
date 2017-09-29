@@ -37,7 +37,7 @@ void MasterWorker::run() {
     preparePayloadProblemPart2(payload_problem, datatype_problem); /** Prepares the second part (processing times).**/
     MPI::COMM_WORLD.Bcast(&payload_problem, 1, datatype_problem, MASTER_RANK);
     
-    unpack_payload_part2(payload_problem);
+    //unpack_payload_part2(payload_problem);
     preparePayloadInterval(payload_interval, datatype_interval); /** Each node prepares the payload for receiving intervals. **/
     
     if (isMaster())
@@ -56,7 +56,7 @@ void MasterWorker::runMasterProcess() {
      * Repeat send one interval to each node.
      * - Generates an interval for each node.
      **/
-    int node_dest = 0;
+    int worker_dest = 0;
     
     for (int element = 1; element < payload_interval.max_size; ++element)
         payload_interval.interval[element] = -1;
@@ -70,12 +70,12 @@ void MasterWorker::runMasterProcess() {
     payload_interval.distance[0] = 0.9;
     payload_interval.distance[1] = 0.9;
     
-    for (node_dest = 1; node_dest <= n_workers; node_dest++) {
+    /** Seeding the workers with subproblems/intervals. **/
+    for (worker_dest = 1; worker_dest <= n_workers; worker_dest++) {
         
         payload_interval.interval[0] = n_intervals; /** The first map of the interval. **/
         
-        printf("[%03dMaster] Sending: %d %d %d %d %f %f\n",
-               MASTER_RANK,
+        printf("[Master] Sending: %d %d %d %d %f %f\n",
                payload_interval.priority,
                payload_interval.deep,
                payload_interval.build_up_to,
@@ -83,90 +83,96 @@ void MasterWorker::runMasterProcess() {
                payload_interval.distance[0],
                payload_interval.distance[1]);
         
-        printf("[%03dMaster] ", MASTER_RANK);
+        printf("[Master] ");
         for (int element = 0; element < payload_interval.max_size; ++element)
             printf("%d ", payload_interval.interval[element]);
         printf("\n");
-        MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, node_dest, TAG_INTERVAL);
+        MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, worker_dest, TAG_INTERVAL);
         
         n_intervals++;
         if (n_intervals == max_number_of_mappings)
-            node_dest = n_workers;
+            worker_dest = n_workers;
     }
     int stopped_workers = 0;
     while (stopped_workers < n_workers) {
         MPI_Recv(&payload_interval, 1, datatype_interval, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         
-        if (status.MPI_TAG == TAG_REQUEST_MORE_WORK && n_intervals < max_number_of_mappings) {
-            payload_interval.interval[0] = n_intervals;
-            
-            printf("[%03dMaster] Sending [%03d]: %d %d %d %d %f %f\n",
-                   rank,
-                   n_intervals,
-                   payload_interval.priority,
-                   payload_interval.deep,
-                   payload_interval.build_up_to,
-                   payload_interval.max_size,
-                   payload_interval.distance[0],
-                   payload_interval.distance[1]);
-            
-            printf("[%03dMaster] ", rank);
-            for (int element = 0; element < payload_interval.max_size; ++element)
-                printf("%d ", payload_interval.interval[element]);
-            printf("\n");
-            
-            MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_INTERVAL, MPI_COMM_WORLD);
-            n_intervals++;
-        }else{
-            printf("[Interval number %3d of intervals %3d] \n", n_intervals, max_number_of_mappings);
-            MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
-            stopped_workers++;
+        switch (status.MPI_TAG) {
+            case TAG_REQUEST_MORE_WORK:
+                if (n_intervals < max_number_of_mappings) {
+                    payload_interval.interval[0] = n_intervals;
+                    
+                    printf("[Master] Sending [%03d]: %d %d %d %d %f %f\n", n_intervals, payload_interval.priority, payload_interval.deep, payload_interval.build_up_to, payload_interval.max_size, payload_interval.distance[0], payload_interval.distance[1]);
+                    
+                    printf("[Master] ");
+                    for (int element = 0; element < payload_interval.max_size; ++element)
+                        printf("%d ", payload_interval.interval[element]);
+                    printf("\n");
+                    
+                    MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_INTERVAL, MPI_COMM_WORLD);
+                    n_intervals++;
+                }else{
+                    printf("[Interval number %3d of intervals %3d] \n", n_intervals, max_number_of_mappings);
+                    MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
+                    stopped_workers++;
+                }
+                break;
+                
+            default:
+                break;
         }
+        
     }
-    printf("[%03dMaster] No more work.\n", rank);
+    printf("[Master] No more work.\n");
 }
 
 void MasterWorker::runWorkerProcess() {
     
     int source = MASTER_RANK;
+    int working = 1;
     problem.loadInstancePayload(payload_problem);
     try {
         tbb::task_scheduler_init init(threads_per_node);
         ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(rank, threads_per_node, problem);
         
-        //MPI_Recv(&payload_interval, 1, *datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
-        while(true){
+        while(working == 1){
             MPI_Recv(&payload_interval, 1, datatype_interval, source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
             
-            if (status.MPI_TAG == TAG_NO_MORE_WORK) {
-                printf("[%03dWorker] Stopped worker.\n", rank);
-                break;
+            switch (status.MPI_TAG) {
+                case TAG_INTERVAL:
+                    printf("[Worker-%02d] Receiving: %d %d %d %d %f %f\n",
+                           rank,
+                           payload_interval.priority,
+                           payload_interval.deep,
+                           payload_interval.build_up_to,
+                           payload_interval.max_size,
+                           payload_interval.distance[0],
+                           payload_interval.distance[1]);
+                    
+                    printf("[Worker-%02d] ", rank);
+                    for (int element = 0; element < payload_interval.max_size; ++element)
+                        printf("%d ", payload_interval.interval[element]);
+                    printf("\n");
+                    
+                    pbb->setBranchInitPayload(payload_interval);
+                    //        pbb->setParetoFrontFile(outputFile.c_str());
+                    //        pbb->setSummarizeFile(summarizeFile.c_str());
+                    
+                    printf("[Worker-%02d] Spawning root...\n", rank);
+                    tbb::task::spawn_root_and_wait(*pbb);
+                    
+                    pbb->getParetoFront();
+                    
+                    MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK);
+                    break;
+                    
+                case TAG_NO_MORE_WORK:
+                    working = 0;
+                    printf("[Worker-%02d] Stopped worker.\n", rank);
+                    break;
+                default:
+                    break;
             }
-            //MPI::COMM_WORLD.Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL);
-            printf("[%03dWorker] Receiving: %d %d %d %d %f %f\n",
-                   rank,
-                   payload_interval.priority,
-                   payload_interval.deep,
-                   payload_interval.build_up_to,
-                   payload_interval.max_size,
-                   payload_interval.distance[0],
-                   payload_interval.distance[1]);
-            
-            printf("[%03dWorker] ", rank);
-            for (int element = 0; element < payload_interval.max_size; ++element)
-                printf("%d ", payload_interval.interval[element]);
-            printf("\n");
-            
-            pbb->setBranchInitPayload(payload_interval);
-            //        pbb->setParetoFrontFile(outputFile.c_str());
-            //        pbb->setSummarizeFile(summarizeFile.c_str());
-            
-            printf("[%03dWorker] Spawning root...\n", rank);
-            tbb::task::spawn_root_and_wait(*pbb);
-            
-            pbb->getParetoFront();
-            
-            MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK);
         }
     } catch (tbb::tbb_exception& e) {
         std::cerr << "Intercepted exception:\n" << e.name();
