@@ -21,7 +21,6 @@ threads_per_node(num_threads) {
 }
 
 MasterWorker::~MasterWorker() {
-    
 }
 
 void MasterWorker::run() {
@@ -62,7 +61,7 @@ void MasterWorker::runMasterProcess() {
     for (int element = 1; element < payload_interval.max_size; ++element)
         payload_interval.interval[element] = -1;
     
-    int max_number_of_mappings = problem.getNumberOfJobs() * problem.getNumberOfMachines();
+    int max_number_of_mappings = payload_problem.n_jobs * payload_problem.n_machines;
     int n_intervals = 0;
     
     payload_interval.priority = 0;
