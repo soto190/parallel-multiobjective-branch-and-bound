@@ -8,28 +8,32 @@
 #ifndef MASTERWORKER_HPP_
 #define MASTERWORKER_HPP_
 
-#include <stdio.h>
 #include <mpi.h>
+#include <stdio.h>
+#include <tbb/task.h>
 #include <tbb/task_scheduler_init.h>
+#include "BranchAndBound.hpp"
+#include "Interval.hpp"
 #include "ProblemFJSSP.hpp"
 #include "Solution.hpp"
 #include "Interval.hpp"
-#include "ParallelBranchAndBound.hpp"
 /*
  *
  */
-class MasterWorker {
+
+class MasterWorkerPBB : public tbb::task {
 public:
-    MasterWorker();
-    MasterWorker(int num_nodes, int num_threads, const char file[]);
-    virtual ~MasterWorker();
+    MasterWorkerPBB();
+    MasterWorkerPBB(int num_nodes, int num_threads, const char file[]);
+    virtual ~MasterWorkerPBB();
     
     void run();
     int getRank();
     int getSizeWorkers();
     int isMaster();
     int isWorker();
-    
+    tbb::task* execute();
+
 private:
     Payload_problem_fjssp payload_problem;
     Payload_interval payload_interval;
@@ -40,8 +44,10 @@ private:
     int rank;
     int n_workers;
     int threads_per_node;
+    int sleeping_workers;
     MPI_Status status;
     ProblemFJSSP problem;
+    Interval branch_init;
     
     static const int MASTER_RANK = 0;
     static const int TAG_INTERVAL = 190;

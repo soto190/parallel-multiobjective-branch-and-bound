@@ -5,7 +5,7 @@
 //  Created by Carlos Soto on 08/06/16.
 //  Copyright © 2016 Carlos Soto. All rights reserved.
 //
-
+#include <mpi.h>
 #include <iostream>
 #include <cstring>
 #include <exception>
@@ -19,12 +19,11 @@
 #include "ParallelBranchAndBound.hpp"
 #include "myutils.hpp"
 #include "GridContainer.hpp"
-#include "MasterWorker.hpp"
+#include "MasterWorkerPBB.hpp"
 #include <tbb/task_scheduler_init.h>
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
 #include <tbb/task_group.h>
-#include <mpi.h>
 
 using namespace std;
 
@@ -102,10 +101,10 @@ int main(int argc, char* argv[]) {
     MPI_Init(&argc, &argv);
     
     int size_world = MPI::COMM_WORLD.Get_size();
-    if (size_world == 1) {
+    if (size_world == 1) { /** MPI disable or one node request: shared memory version. **/
         one_node(argc, argv);
-    }else{
-        MasterWorker *  mw = new MasterWorker (size_world, stoi(argv[arg_num_threads]), argv[arg_input_file]);
+    }else{/** MPI enable: Distributed memory. **/
+        MasterWorkerPBB *  mw = new MasterWorkerPBB (size_world, stoi(argv[arg_num_threads]), argv[arg_input_file]);
         mw->run();
     }
     MPI_Finalize();

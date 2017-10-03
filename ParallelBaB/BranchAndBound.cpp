@@ -320,6 +320,7 @@ tbb::task* BranchAndBound::execute() {
     
     printf("[%03dB&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, rank, getTotalTime());
     
+    sleeping_bb++;
     return NULL;
 }
 
@@ -341,7 +342,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             reachedLeaves++;
             if (updateParetoGrid(incumbent_s)){
                 totalUpdatesInLowerBound++;
-                
+                //Broadcast the new solution found.
                 /*printf("[B&B-%03d] ", rank);
                 printCurrentSolution();
                 printf(" + [%6lu] \n", paretoContainer.getSize());*/
@@ -948,7 +949,7 @@ void BranchAndBound::printCurrentSolution(int withVariables) {
 /**
  * This function prints the pareto front found.
  **/
-void BranchAndBound::printParetoFront(int withVariables) {
+void BranchAndBound::printParetoFront(int withExtraInfo) {
     
     int counterSolutions = 0;
     std::vector<Solution>::iterator it;
@@ -957,8 +958,10 @@ void BranchAndBound::printParetoFront(int withVariables) {
         printf("[%6d] ", ++counterSolutions);
         problem.printSolution(*it);
         printf("\n");
-        problem.printSolutionInfo(*it);
-        printf("\n");
+        if (withExtraInfo == 1) {
+            problem.printSolutionInfo(*it);
+            printf("\n");
+        }
     }
 }
 

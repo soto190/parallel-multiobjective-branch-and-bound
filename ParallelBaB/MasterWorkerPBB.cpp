@@ -5,25 +5,25 @@
  *      Author: carlossoto
  */
 
-#include "MasterWorker.hpp"
+#include "MasterWorkerPBB.hpp"
 
-MasterWorker::MasterWorker() {
+MasterWorkerPBB::MasterWorkerPBB() {
     rank = 0;
     n_workers = 0;
     threads_per_node = 0;
 }
 
-MasterWorker::MasterWorker(int num_nodes, int num_threads, const char file_instance[]) :
+MasterWorkerPBB::MasterWorkerPBB(int num_nodes, int num_threads, const char file_instance[]) :
 n_workers(num_nodes - 1),
 threads_per_node(num_threads) {
     rank = 0;
     std::strcpy(file, file_instance);
 }
 
-MasterWorker::~MasterWorker() {
+MasterWorkerPBB::~MasterWorkerPBB() {
 }
 
-void MasterWorker::run() {
+void MasterWorkerPBB::run() {
     rank = MPI::COMM_WORLD.Get_rank();
     n_workers = MPI::COMM_WORLD.Get_size() - 1;
     
@@ -40,6 +40,11 @@ void MasterWorker::run() {
     //unpack_payload_part2(payload_problem);
     preparePayloadInterval(payload_interval, datatype_interval); /** Each node prepares the payload for receiving intervals. **/
     
+}
+
+tbb::task * MasterWorkerPBB::execute() {
+    run(); /** Call the MPI initialiation functions. **/
+    
     if (isMaster())
         runMasterProcess();
     else
@@ -47,17 +52,15 @@ void MasterWorker::run() {
     
     MPI_Type_free(&datatype_problem);
     MPI_Type_free(&datatype_interval);
-    
+
+    return NULL;
 }
 
-void MasterWorker::runMasterProcess() {
-    /**
-     * This is the Master node.
-     * Repeat send one interval to each node.
-     * - Generates an interval for each node.
-     **/
-    int worker_dest = 0;
-    
+/**
+ * Seeds each worker with an Interval.
+ */
+void MasterWorkerPBB::runMasterProcess() {
+    int worker_dest = 1;
     for (int element = 1; element < payload_interval.max_size; ++element)
         payload_interval.interval[element] = -1;
     
@@ -70,7 +73,7 @@ void MasterWorker::runMasterProcess() {
     payload_interval.distance[0] = 0.9;
     payload_interval.distance[1] = 0.9;
     
-    /** Seeding the workers with subproblems/intervals. **/
+    /** Seeding the workers with initial subproblems/intervals. **/
     for (worker_dest = 1; worker_dest <= n_workers; worker_dest++) {
         
         payload_interval.interval[0] = n_intervals; /** The first map of the interval. **/
@@ -93,8 +96,9 @@ void MasterWorker::runMasterProcess() {
         if (n_intervals == max_number_of_mappings)
             worker_dest = n_workers;
     }
-    int stopped_workers = 0;
-    while (stopped_workers < n_workers) {
+    
+    sleeping_workers = 0;
+    while (sleeping_workers < n_workers) {
         MPI_Recv(&payload_interval, 1, datatype_interval, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         
         switch (status.MPI_TAG) {
@@ -114,7 +118,7 @@ void MasterWorker::runMasterProcess() {
                 }else{
                     printf("[Interval number %3d of intervals %3d] \n", n_intervals, max_number_of_mappings);
                     MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
-                    stopped_workers++;
+                    sleeping_workers++;
                 }
                 break;
                 
@@ -126,21 +130,46 @@ void MasterWorker::runMasterProcess() {
     printf("[Master] No more work.\n");
 }
 
-void MasterWorker::runWorkerProcess() {
+/**
+ * The worker receives the seeding then initalize all the necessary structures and creates in each thread one B&B.
+ *
+ */
+void MasterWorkerPBB::runWorkerProcess() {
     
     int source = MASTER_RANK;
-    int working = 1;
     problem.loadInstancePayload(payload_problem);
-    try {
-        tbb::task_scheduler_init init(threads_per_node);
-        ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(rank, threads_per_node, problem);
+    tbb::task_scheduler_init init(threads_per_node);
+    
+    MPI_Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
+    globalPool.setSizeEmptying((unsigned long) (threads_per_node * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
+    
+    branch_init(payload_interval);
+    BranchAndBound BB_container(rank, 0, problem, branch_init);
+    BB_container.initGlobalPoolWithInterval(branch_init);
+    
+    set_ref_count(threads_per_node + 1);
+    
+    tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
+    vector<BranchAndBound *> bb_threads;
+    int n_bb = 0;
+    while (n_bb++ < threads_per_node) {
         
-        while(working == 1){
+        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb, problem, branch_init);
+        
+        bb_threads.push_back(BaB_task);
+        tl.push_back(*BaB_task);
+    }
+    
+    printf("[WorkerPBB-%03d] Spawning the swarm...\nWaiting for all...\n", rank);
+    tbb::task::spawn(tl);
+    printf("[WorkerPBB-%03d] Job done...\n", rank);
+    while (sleeping_bb < threads_per_node) {
+        if (globalPool.isEmptying()) {
+            MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK);
             MPI_Recv(&payload_interval, 1, datatype_interval, source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-            
             switch (status.MPI_TAG) {
                 case TAG_INTERVAL:
-                    printf("[Worker-%02d] Receiving: %d %d %d %d %f %f\n",
+                    printf("[WorkerPBB-%03d] Receiving: %d %d %d %d %f %f\n",
                            rank,
                            payload_interval.priority,
                            payload_interval.deep,
@@ -149,38 +178,55 @@ void MasterWorker::runWorkerProcess() {
                            payload_interval.distance[0],
                            payload_interval.distance[1]);
                     
-                    printf("[Worker-%02d] ", rank);
+                    printf("[WorkerPBB-%03d] ", rank);
                     for (int element = 0; element < payload_interval.max_size; ++element)
                         printf("%d ", payload_interval.interval[element]);
                     printf("\n");
+                    branch_init(payload_interval);
+                    globalPool.push(branch_init);
                     
-                    pbb->setBranchInitPayload(payload_interval);
-                    //        pbb->setParetoFrontFile(outputFile.c_str());
-                    //        pbb->setSummarizeFile(summarizeFile.c_str());
-                    
-                    printf("[Worker-%02d] Spawning root...\n", rank);
-                    tbb::task::spawn_root_and_wait(*pbb);
-                    
-                    pbb->getParetoFront();
-                    
-                    MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK);
                     break;
                     
                 case TAG_NO_MORE_WORK:
-                    working = 0;
-                    printf("[Worker-%02d] Stopped worker.\n", rank);
+                    printf("[WorkerPBB-%03d] No more work. %03d B&B inactives.\n", rank, (int) sleeping_bb);
                     break;
                 default:
                     break;
             }
         }
-    } catch (tbb::tbb_exception& e) {
-        std::cerr << "Intercepted exception:\n" << e.name();
-        std::cerr << "Reason is:\n" << e.what();
     }
+    
+    /** Recollects the data. **/
+    BB_container.getTotalTime();
+    BranchAndBound* bb_in;
+    while (!bb_threads.empty()) {
+        
+        bb_in = bb_threads.back();
+        bb_threads.pop_back();
+        
+        BB_container.increaseNumberOfExploredNodes(bb_in->getNumberOfExploredNodes());
+        BB_container.increaseNumberOfCallsToBranch(bb_in->getNumberOfCallsToBranch());
+        BB_container.increaseNumberOfBranches(bb_in->getNumberOfBranches());
+        BB_container.increaseNumberOfCallsToPrune(bb_in->getNumberOfCallsToPrune());
+        BB_container.increaseNumberOfPrunedNodes(bb_in->getNumberOfPrunedNodes());
+        BB_container.increaseNumberOfReachedLeaves(bb_in->getNumberOfReachedLeaves());
+        BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());
+        BB_container.increaseSharedWork(bb_in->getSharedWork());
+    }
+    
+    //    BB_container.setParetoFrontFile(outputParetoFile);
+    //    BB_container.setSummarizeFile(summarizeFile);
+    
+    BB_container.getParetoFront();
+    BB_container.printParetoFront(0);
+    //    BB_container.saveParetoFront();
+    //    BB_container.saveSummarize();
+    bb_threads.clear();
+    printf("[WorkerPBB-%03d] Data swarm recollected and saved.\n", rank);
+    printf("[WorkerPBB-%03d] Parallel Branch And Bound ended.\n", rank);
 }
 
-void MasterWorker::loadInstance(Payload_problem_fjssp& problem, const char *filePath) {
+void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *filePath) {
     char extension[4];
     problem.n_objectives = 2;
     problem.n_jobs = 0;
@@ -245,7 +291,7 @@ void MasterWorker::loadInstance(Payload_problem_fjssp& problem, const char *file
     }
 }
 
-void MasterWorker::preparePayloadProblemPart1(const Payload_problem_fjssp &problem, MPI_Datatype &datatype_problem) {
+void MasterWorkerPBB::preparePayloadProblemPart1(const Payload_problem_fjssp &problem, MPI_Datatype &datatype_problem) {
     const int n_blocks = 4;
     int blocks[n_blocks] = { 1, 1, 1, 1 };
     MPI_Aint displacements_interval[n_blocks];
@@ -267,7 +313,7 @@ void MasterWorker::preparePayloadProblemPart1(const Payload_problem_fjssp &probl
     MPI_Type_commit(&datatype_problem);
 }
 
-void MasterWorker::preparePayloadProblemPart2(const Payload_problem_fjssp &problem, MPI_Datatype &datatype_problem) {
+void MasterWorkerPBB::preparePayloadProblemPart2(const Payload_problem_fjssp &problem, MPI_Datatype &datatype_problem) {
     const int n_blocks = 7;
     int blocks[n_blocks] = { 1, 1, 1, 1, problem.n_jobs, problem.n_jobs, problem.n_operations
         * problem.n_machines };
@@ -298,7 +344,7 @@ void MasterWorker::preparePayloadProblemPart2(const Payload_problem_fjssp &probl
     MPI_Type_commit(&datatype_problem);
 }
 
-void MasterWorker::preparePayloadInterval(const Payload_interval &interval, MPI_Datatype &datatype_interval) {
+void MasterWorkerPBB::preparePayloadInterval(const Payload_interval &interval, MPI_Datatype &datatype_interval) {
     const int n_blocks = 6;
     int blocks[n_blocks] = { 1, 1, 1, 1, 2, interval.max_size };
     MPI_Aint displacements_interval[n_blocks];
@@ -324,7 +370,7 @@ void MasterWorker::preparePayloadInterval(const Payload_interval &interval, MPI_
     MPI_Type_commit(&datatype_interval);
 }
 
-void MasterWorker::preparePayloadSolution(const Payload_solution &solution, MPI_Datatype &datatype_solution) {
+void MasterWorkerPBB::preparePayloadSolution(const Payload_solution &solution, MPI_Datatype &datatype_solution) {
     const int n_blocks = 6;
     int blocks[n_blocks] = { 1, 1, 1, solution.n_objectives, solution.n_variables };
     MPI_Aint displacements_interval[n_blocks];
@@ -348,7 +394,7 @@ void MasterWorker::preparePayloadSolution(const Payload_solution &solution, MPI_
     MPI_Type_commit(&datatype_solution);
 }
 
-void MasterWorker::unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval) {
+void MasterWorkerPBB::unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval) {
     if (isWorker()) {
         problem.release_times = new int[problem.n_jobs];
         problem.n_operations_in_job = new int[problem.n_jobs];
@@ -359,7 +405,7 @@ void MasterWorker::unpack_payload_part1(Payload_problem_fjssp& problem, Payload_
     interval.interval = new int[problem.n_operations];
 }
 
-void MasterWorker::unpack_payload_part2(Payload_problem_fjssp& problem) {
+void MasterWorkerPBB::unpack_payload_part2(Payload_problem_fjssp& problem) {
     printf("[%d] Jobs: %d Operations: %d Machines: %d\n", rank, problem.n_jobs, problem.n_operations,
            problem.n_machines);
     
@@ -379,21 +425,21 @@ void MasterWorker::unpack_payload_part2(Payload_problem_fjssp& problem) {
     printf("\n");
 }
 
-int MasterWorker::getRank() {
+int MasterWorkerPBB::getRank() {
     return rank;
 }
 
-int MasterWorker::getSizeWorkers() {
+int MasterWorkerPBB::getSizeWorkers() {
     return n_workers;
 }
 
-int MasterWorker::isMaster() {
+int MasterWorkerPBB::isMaster() {
     if (rank == MASTER_RANK)
         return 1;
     return 0;
 }
 
-int MasterWorker::isWorker() {
+int MasterWorkerPBB::isWorker() {
     if (rank > MASTER_RANK)
         return 1;
     return 0;
