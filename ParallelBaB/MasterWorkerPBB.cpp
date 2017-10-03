@@ -98,7 +98,9 @@ void MasterWorkerPBB::runMasterProcess() {
     }
     
     sleeping_workers = 0;
+    printf("[Master] Sleeping_workers: %3d.\n", (int) sleeping_workers);
     while (sleeping_workers < n_workers) {
+        printf("[Master] Waiting for request.\n");
         MPI_Recv(&payload_interval, 1, datatype_interval, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         
         switch (status.MPI_TAG) {
@@ -140,6 +142,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     sleeping_bb = 0;
     problem.loadInstancePayload(payload_problem);
     
+    printf("[WorkerPBB-%03d] Waiting for interval.\n", rank);
     MPI_Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
     globalPool.setSizeEmptying((unsigned long) (threads_per_node * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
     
@@ -162,7 +165,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     
     printf("[WorkerPBB-%03d] Spawning the swarm...\nWaiting for all...\n", rank);
     tbb::task::spawn(tl);
-    printf("[WorkerPBB-%03d] Job done...\n", rank);
+
     while (sleeping_bb < threads_per_node) {
         if (globalPool.isEmptying()) {
             MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK);

@@ -11,7 +11,6 @@
 #include <mpi.h>
 #include <stdio.h>
 #include <tbb/task.h>
-#include <tbb/task_scheduler_init.h>
 #include "BranchAndBound.hpp"
 #include "Interval.hpp"
 #include "ProblemFJSSP.hpp"
