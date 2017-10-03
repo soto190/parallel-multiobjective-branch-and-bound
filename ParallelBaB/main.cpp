@@ -84,8 +84,7 @@ void one_node(int argc, char* argv[]){
         std::cerr << "Reason is:\n" << e.what();
     }
     
-    printf("Done\n");
-    
+    printf("Done.\n");
 }
 /**
  * argv[1] = number of threads.
@@ -104,8 +103,16 @@ int main(int argc, char* argv[]) {
     if (size_world == 1) { /** MPI disable or one node request: shared memory version. **/
         one_node(argc, argv);
     }else{/** MPI enable: Distributed memory. **/
-        MasterWorkerPBB *  mw = new MasterWorkerPBB (size_world, stoi(argv[arg_num_threads]), argv[arg_input_file]);
-        mw->run();
+        
+        try {
+            MasterWorkerPBB *  mwpbb = new MasterWorkerPBB (size_world, stoi(argv[arg_num_threads]), argv[arg_input_file]);
+            tbb::task::spawn_root_and_wait(*mwpbb);
+            printf("Spawning root...\n");
+        } catch (tbb::tbb_exception& e) {
+            std::cerr << "Intercepted exception:\n" << e.name();
+            std::cerr << "Reason is:\n" << e.what();
+        }
+        printf("Done.\n");
     }
     MPI_Finalize();
 }
