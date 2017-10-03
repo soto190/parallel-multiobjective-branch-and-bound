@@ -135,9 +135,7 @@ void MasterWorkerPBB::runMasterProcess() {
  *
  */
 void MasterWorkerPBB::runWorkerProcess() {
-
-    tbb::task_scheduler_init init(threads_per_node);
-
+    
     int source = MASTER_RANK;
     sleeping_bb = 0;
     problem.loadInstancePayload(payload_problem);

@@ -105,6 +105,7 @@ int main(int argc, char* argv[]) {
     }else{/** MPI enable: Distributed memory. **/
         
         try {
+            tbb::task_scheduler_init init(stoi(argv[arg_num_threads]));
             MasterWorkerPBB *  mwpbb = new MasterWorkerPBB (size_world, stoi(argv[arg_num_threads]), argv[arg_input_file]);
             tbb::task::spawn_root_and_wait(*mwpbb);
             printf("Spawning root...\n");
