@@ -135,10 +135,12 @@ void MasterWorkerPBB::runMasterProcess() {
  *
  */
 void MasterWorkerPBB::runWorkerProcess() {
-    
-    int source = MASTER_RANK;
-    problem.loadInstancePayload(payload_problem);
+
     tbb::task_scheduler_init init(threads_per_node);
+
+    int source = MASTER_RANK;
+    sleeping_bb = 0;
+    problem.loadInstancePayload(payload_problem);
     
     MPI_Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
     globalPool.setSizeEmptying((unsigned long) (threads_per_node * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
