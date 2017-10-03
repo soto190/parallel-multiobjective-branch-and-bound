@@ -16,10 +16,6 @@
 #include "Interval.hpp"
 #include "ProblemFJSSP.hpp"
 #include "Solution.hpp"
-#include "Interval.hpp"
-/*
- *
- */
 
 class MasterWorkerPBB : public tbb::task {
 public:

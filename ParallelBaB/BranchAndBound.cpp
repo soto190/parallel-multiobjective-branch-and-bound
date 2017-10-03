@@ -15,6 +15,7 @@
 #include "BranchAndBound.hpp"
 ReadySubproblems globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 HandlerContainer paretoContainer;
+tbb::atomic<int> sleeping_bb;
 
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
 node_rank(toCopy.getNodeRank()),
