@@ -139,7 +139,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     tbb::task_scheduler_init init(threads_per_node);
 
     int source = MASTER_RANK;
-    sleeping_bb = 0;
+    BranchAndBound.sleeping_bb = 0;
     problem.loadInstancePayload(payload_problem);
     
     MPI_Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
@@ -165,7 +165,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     printf("[WorkerPBB-%03d] Spawning the swarm...\nWaiting for all...\n", rank);
     tbb::task::spawn(tl);
     printf("[WorkerPBB-%03d] Job done...\n", rank);
-    while (sleeping_bb < threads_per_node) {
+    while (BranchAndBound.sleeping_bb < threads_per_node) {
         if (globalPool.isEmptying()) {
             MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK);
             MPI_Recv(&payload_interval, 1, datatype_interval, source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
