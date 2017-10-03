@@ -144,12 +144,14 @@ void MasterWorkerPBB::runWorkerProcess() {
     
     printf("[WorkerPBB-%03d] Waiting for interval.\n", rank);
     MPI_Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
+    branch_init(payload_interval);
+    
     globalPool.setSizeEmptying((unsigned long) (threads_per_node * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
     
-    branch_init(payload_interval);
     BranchAndBound BB_container(rank, 0, problem, branch_init);
     BB_container.initGlobalPoolWithInterval(branch_init);
     
+    printf("[WorkerPBB-%03d] Container initialized.\n", rank);
     set_ref_count(threads_per_node + 1);
     
     tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
@@ -163,7 +165,7 @@ void MasterWorkerPBB::runWorkerProcess() {
         tl.push_back(*BaB_task);
     }
     
-    printf("[WorkerPBB-%03d] Spawning the swarm...\nWaiting for all...\n", rank);
+    printf("[WorkerPBB-%03d] Spawning the swarm...\n", rank);
     tbb::task::spawn(tl);
 
     while (sleeping_bb < threads_per_node) {
