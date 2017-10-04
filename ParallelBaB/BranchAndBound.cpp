@@ -319,7 +319,7 @@ tbb::task* BranchAndBound::execute() {
         if(globalPool.try_pop(interval_to_solve))
             solve(interval_to_solve);
     
-    printf("[%03dB&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, rank, getTotalTime());
+    printf("[Worker-%03dB&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, rank, getTotalTime());
     
     sleeping_bb++;
     return NULL;

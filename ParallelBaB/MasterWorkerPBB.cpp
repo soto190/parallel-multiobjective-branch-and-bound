@@ -24,8 +24,6 @@ MasterWorkerPBB::~MasterWorkerPBB() {
 }
 
 void MasterWorkerPBB::run() {
-    rank = MPI::COMM_WORLD.Get_rank();
-    n_workers = MPI::COMM_WORLD.Get_size() - 1;
     
     if (isMaster())
         loadInstance(payload_problem, file);
@@ -37,12 +35,15 @@ void MasterWorkerPBB::run() {
     preparePayloadProblemPart2(payload_problem, datatype_problem); /** Prepares the second part (processing times).**/
     MPI::COMM_WORLD.Bcast(&payload_problem, 1, datatype_problem, MASTER_RANK);
     
-    //unpack_payload_part2(payload_problem);
+    unpack_payload_part2(payload_problem);
     preparePayloadInterval(payload_interval, datatype_interval); /** Each node prepares the payload for receiving intervals. **/
     
 }
 
 tbb::task * MasterWorkerPBB::execute() {
+    rank = MPI::COMM_WORLD.Get_rank();
+    n_workers = MPI::COMM_WORLD.Get_size() - 1;
+    
     run(); /** Call the MPI initialiation functions. **/
     
     if (isMaster())
@@ -97,7 +98,7 @@ void MasterWorkerPBB::runMasterProcess() {
             worker_dest = n_workers;
     }
     
-    sleeping_workers = 0;
+    /*sleeping_workers = 0;
     printf("[Master] Sleeping_workers: %3d.\n", (int) sleeping_workers);
     while (sleeping_workers < n_workers) {
         printf("[Master] Waiting for request.\n");
@@ -127,8 +128,8 @@ void MasterWorkerPBB::runMasterProcess() {
             default:
                 break;
         }
-        
-    }
+     
+    }*/
     printf("[Master] No more work.\n");
 }
 
@@ -166,7 +167,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     }
     
     printf("[WorkerPBB-%03d] Spawning the swarm...\n", rank);
-    tbb::task::spawn(tl);
+    tbb::task::spawn_and_wait_for_all(tl);
 
     while (sleeping_bb < threads_per_node) {
         if (globalPool.isEmptying()) {

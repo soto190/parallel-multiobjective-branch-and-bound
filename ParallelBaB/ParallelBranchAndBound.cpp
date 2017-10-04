@@ -36,9 +36,9 @@ tbb::task * ParallelBranchAndBound::execute() {
 		tl.push_back(*BaB_task);
 	}
 
-    printf("[%03dB&B] Spawning the swarm...\nWaiting for all...\n", rank);
+    printf("[Worker-%03d] Spawning the swarm...\nWaiting for all...\n", rank);
     tbb::task::spawn_and_wait_for_all(tl);
-    printf("[%03dB&B] Job done...\n", rank);
+    printf("[Worker-%03d] Job done...\n", rank);
 
     /** Recollects the data. **/
 	BB_container.getTotalTime();
@@ -66,8 +66,8 @@ tbb::task * ParallelBranchAndBound::execute() {
 //    BB_container.saveParetoFront();
 //    BB_container.saveSummarize();
     bb_threads.clear();
-    printf("[%03dB&B] Data swarm recollected and saved.\n", rank);
-	printf("[%03dB&B] Parallel Branch And Bound ended.\n", rank);
+    printf("[Worker-%03d] Data swarm recollected and saved.\n", rank);
+	printf("[Worker-%03d] Parallel Branch And Bound ended.\n", rank);
     return NULL;
 }
 
