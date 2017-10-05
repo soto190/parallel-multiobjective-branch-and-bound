@@ -44,6 +44,7 @@ tbb::task * MasterWorkerPBB::execute() {
     rank = MPI::COMM_WORLD.Get_rank();
     n_workers = MPI::COMM_WORLD.Get_size() - 1;
     
+    printf("Size world: %d\n", n_workers);
     run(); /** Call the MPI initialiation functions. **/
     
     if (isMaster())
@@ -146,88 +147,89 @@ void MasterWorkerPBB::runWorkerProcess() {
     printf("[WorkerPBB-%03d] Waiting for interval.\n", rank);
     MPI_Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
     branch_init(payload_interval);
+    branch_init.print();
     
-    globalPool.setSizeEmptying((unsigned long) (threads_per_node * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
-    
-    BranchAndBound BB_container(rank, 0, problem, branch_init);
-    BB_container.initGlobalPoolWithInterval(branch_init);
-    
-    printf("[WorkerPBB-%03d] Container initialized.\n", rank);
-    set_ref_count(threads_per_node + 1);
-    
-    tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
-    vector<BranchAndBound *> bb_threads;
-    int n_bb = 0;
-    while (n_bb++ < threads_per_node) {
-        
-        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb, problem, branch_init);
-        
-        bb_threads.push_back(BaB_task);
-        tl.push_back(*BaB_task);
-    }
-    
-    printf("[WorkerPBB-%03d] Spawning the swarm...\n", rank);
-    tbb::task::spawn_and_wait_for_all(tl);
-
-    while (sleeping_bb < threads_per_node) {
-        if (globalPool.isEmptying()) {
-            MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK);
-            MPI_Recv(&payload_interval, 1, datatype_interval, source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-            switch (status.MPI_TAG) {
-                case TAG_INTERVAL:
-                    printf("[WorkerPBB-%03d] Receiving: %d %d %d %d %f %f\n",
-                           rank,
-                           payload_interval.priority,
-                           payload_interval.deep,
-                           payload_interval.build_up_to,
-                           payload_interval.max_size,
-                           payload_interval.distance[0],
-                           payload_interval.distance[1]);
-                    
-                    printf("[WorkerPBB-%03d] ", rank);
-                    for (int element = 0; element < payload_interval.max_size; ++element)
-                        printf("%d ", payload_interval.interval[element]);
-                    printf("\n");
-                    branch_init(payload_interval);
-                    globalPool.push(branch_init);
-                    
-                    break;
-                    
-                case TAG_NO_MORE_WORK:
-                    printf("[WorkerPBB-%03d] No more work. %03d B&B inactives.\n", rank, (int) sleeping_bb);
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-    
-    /** Recollects the data. **/
-    BB_container.getTotalTime();
-    BranchAndBound* bb_in;
-    while (!bb_threads.empty()) {
-        
-        bb_in = bb_threads.back();
-        bb_threads.pop_back();
-        
-        BB_container.increaseNumberOfExploredNodes(bb_in->getNumberOfExploredNodes());
-        BB_container.increaseNumberOfCallsToBranch(bb_in->getNumberOfCallsToBranch());
-        BB_container.increaseNumberOfBranches(bb_in->getNumberOfBranches());
-        BB_container.increaseNumberOfCallsToPrune(bb_in->getNumberOfCallsToPrune());
-        BB_container.increaseNumberOfPrunedNodes(bb_in->getNumberOfPrunedNodes());
-        BB_container.increaseNumberOfReachedLeaves(bb_in->getNumberOfReachedLeaves());
-        BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());
-        BB_container.increaseSharedWork(bb_in->getSharedWork());
-    }
-    
-    //    BB_container.setParetoFrontFile(outputParetoFile);
-    //    BB_container.setSummarizeFile(summarizeFile);
-    
-    BB_container.getParetoFront();
-    BB_container.printParetoFront(0);
-    //    BB_container.saveParetoFront();
-    //    BB_container.saveSummarize();
-    bb_threads.clear();
+//    globalPool.setSizeEmptying((unsigned long) (threads_per_node * 2)); /** If the global pool reach this size then the B&B tasks starts sending part of their work to the global pool. **/
+//
+//    BranchAndBound BB_container(rank, 0, problem, branch_init);
+//    BB_container.initGlobalPoolWithInterval(branch_init);
+//
+//    printf("[WorkerPBB-%03d] Container initialized.\n", rank);
+//    set_ref_count(threads_per_node + 1);
+//
+//    tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
+//    vector<BranchAndBound *> bb_threads;
+//    int n_bb = 0;
+//    while (n_bb++ < threads_per_node) {
+//
+//        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb, problem, branch_init);
+//
+//        bb_threads.push_back(BaB_task);
+//        tl.push_back(*BaB_task);
+//    }
+//
+//    printf("[WorkerPBB-%03d] Spawning the swarm...\n", rank);
+//    tbb::task::spawn_and_wait_for_all(tl);
+//
+//    while (sleeping_bb < threads_per_node) {
+//        if (globalPool.isEmptying()) {
+//            MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK);
+//            MPI_Recv(&payload_interval, 1, datatype_interval, source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+//            switch (status.MPI_TAG) {
+//                case TAG_INTERVAL:
+//                    printf("[WorkerPBB-%03d] Receiving: %d %d %d %d %f %f\n",
+//                           rank,
+//                           payload_interval.priority,
+//                           payload_interval.deep,
+//                           payload_interval.build_up_to,
+//                           payload_interval.max_size,
+//                           payload_interval.distance[0],
+//                           payload_interval.distance[1]);
+//
+//                    printf("[WorkerPBB-%03d] ", rank);
+//                    for (int element = 0; element < payload_interval.max_size; ++element)
+//                        printf("%d ", payload_interval.interval[element]);
+//                    printf("\n");
+//                    branch_init(payload_interval);
+//                    globalPool.push(branch_init);
+//
+//                    break;
+//
+//                case TAG_NO_MORE_WORK:
+//                    printf("[WorkerPBB-%03d] No more work. %03d B&B inactives.\n", rank, (int) sleeping_bb);
+//                    break;
+//                default:
+//                    break;
+//            }
+//        }
+//    }
+//
+//    /** Recollects the data. **/
+//    BB_container.getTotalTime();
+//    BranchAndBound* bb_in;
+//    while (!bb_threads.empty()) {
+//
+//        bb_in = bb_threads.back();
+//        bb_threads.pop_back();
+//
+//        BB_container.increaseNumberOfExploredNodes(bb_in->getNumberOfExploredNodes());
+//        BB_container.increaseNumberOfCallsToBranch(bb_in->getNumberOfCallsToBranch());
+//        BB_container.increaseNumberOfBranches(bb_in->getNumberOfBranches());
+//        BB_container.increaseNumberOfCallsToPrune(bb_in->getNumberOfCallsToPrune());
+//        BB_container.increaseNumberOfPrunedNodes(bb_in->getNumberOfPrunedNodes());
+//        BB_container.increaseNumberOfReachedLeaves(bb_in->getNumberOfReachedLeaves());
+//        BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());
+//        BB_container.increaseSharedWork(bb_in->getSharedWork());
+//    }
+//
+//    //    BB_container.setParetoFrontFile(outputParetoFile);
+//    //    BB_container.setSummarizeFile(summarizeFile);
+//
+//    BB_container.getParetoFront();
+//    BB_container.printParetoFront(0);
+//    //    BB_container.saveParetoFront();
+//    //    BB_container.saveSummarize();
+//    bb_threads.clear();
     printf("[WorkerPBB-%03d] Data swarm recollected and saved.\n", rank);
     printf("[WorkerPBB-%03d] Parallel Branch And Bound ended.\n", rank);
 }
