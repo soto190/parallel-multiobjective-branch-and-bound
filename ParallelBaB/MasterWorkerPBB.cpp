@@ -414,20 +414,20 @@ void MasterWorkerPBB::unpack_payload_part1(Payload_problem_fjssp& problem, Paylo
 }
 
 void MasterWorkerPBB::unpack_payload_part2(Payload_problem_fjssp& problem) {
-    printf("[%d] Jobs: %d Operations: %d Machines: %d\n", rank, problem.n_jobs, problem.n_operations,
+    printf("[Node%d] Jobs: %d Operations: %d Machines: %d\n", rank, problem.n_jobs, problem.n_operations,
            problem.n_machines);
     
-    printf("[%d] ", rank);
+    printf("[Node%d] ", rank);
     for (int n_job = 0; n_job < problem.n_jobs; ++n_job)
         printf("%d ", problem.release_times[n_job]);
     printf("\n");
     
-    printf("[%d] ", rank);
+    printf("[Node%d] ", rank);
     for (int n_job = 0; n_job < problem.n_jobs; ++n_job)
         printf("%d ", problem.n_operations_in_job[n_job]);
     printf("\n");
     
-    printf("[%d] ", rank);
+    printf("[Node%d] ", rank);
     for (int proc_t = 0; proc_t < problem.n_operations * problem.n_machines; ++proc_t)
         printf("%d ", problem.processing_times[proc_t]);
     printf("\n");
@@ -452,4 +452,3 @@ int MasterWorkerPBB::isWorker() {
         return 1;
     return 0;
 }
-
