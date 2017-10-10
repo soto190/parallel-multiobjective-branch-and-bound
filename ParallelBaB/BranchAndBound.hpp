@@ -163,7 +163,7 @@ private:
 	/** IVM functions. **/
 public:
 	void computeLastBranch(Interval & branch);
-	void initGlobalPoolWithInterval(Interval & branch);
+	void initGlobalPoolWithInterval(const Interval & branch);
 
 private:
 	int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);

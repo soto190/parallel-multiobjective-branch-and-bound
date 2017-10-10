@@ -80,7 +80,8 @@ void MasterWorkerPBB::runMasterProcess() {
         
         payload_interval.interval[0] = n_intervals; /** The first map of the interval. **/
         
-        printf("[Master] Sending: %d %d %d %d %f %f\n",
+        printf("[Master] Sending to %3d: %d %d %d %d %f %f\n",
+               worker_dest,
                payload_interval.priority,
                payload_interval.deep,
                payload_interval.build_up_to,
@@ -149,10 +150,12 @@ void MasterWorkerPBB::runWorkerProcess() {
     branch_init(payload_interval);
     branch_init.print();
     
-//    globalPool.setSizeEmptying((unsigned long) (threads_per_node * 2)); /** If the global pool reach this size then the B&B tasks starts sending part of their work to the global pool. **/
-//
-//    BranchAndBound BB_container(rank, 0, problem, branch_init);
-//    BB_container.initGlobalPoolWithInterval(branch_init);
+    globalPool.setSizeEmptying((unsigned long) (threads_per_node * 2)); /** If the global pool reach this size then the B&B tasks starts sending part of their work to the global pool. **/
+
+    BranchAndBound BB_container(rank, 0, problem, branch_init);
+    BB_container.initGlobalPoolWithInterval(branch_init);
+    BB_container.getRank();
+    printf("[WorkerPBB-%03d] GlobalPool size: %3lu", rank, globalPool.unsafe_size());
 //
 //    printf("[WorkerPBB-%03d] Container initialized.\n", rank);
 //    set_ref_count(threads_per_node + 1);

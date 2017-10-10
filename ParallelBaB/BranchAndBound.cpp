@@ -48,12 +48,14 @@ currentLevel(toCopy.getCurrentLevel()){
 BranchAndBound::BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problemToCopy, const Interval & branch):
 node_rank(node_rank),
 rank(rank),
+currentLevel(branch.getBuildUpTo()),
 problem(problemToCopy),
 fjssp_data(problemToCopy.getNumberOfJobs(),
            problemToCopy.getNumberOfOperations(),
            problemToCopy.getNumberOfMachines()),
+incumbent_s(problemToCopy.getNumberOfObjectives(), problemToCopy.getNumberOfVariables()),
+ivm_tree(problemToCopy.getNumberOfVariables(), problemToCopy.getUpperBound(0) + 1),
 interval_to_solve(branch),
-currentLevel(0),
 totalTime(0){
     shared_work.store(0);
     totalLevels.store(problemToCopy.getNumberOfVariables());
@@ -74,16 +76,13 @@ totalTime(0){
     branches_to_move = problem.getUpperBound(0) * to_share;
     deep_to_share = totalLevels * deep_limit_share;
     
-    int numberOfObjectives = problem.getNumberOfObjectives();
     int numberOfVariables = problem.getNumberOfVariables();
     
     totalNodes.fetch_and_store(computeTotalNodes(numberOfVariables));
     
-    incumbent_s(numberOfObjectives, numberOfVariables);
-    problem.createDefaultSolution(incumbent_s);
-    updateBoundsWithSolution(incumbent_s);
+    //problem.createDefaultSolution(incumbent_s);
+    //updateBoundsWithSolution(incumbent_s);
     
-    ivm_tree(problem.getNumberOfVariables(), problem.getUpperBound(0) + 1);
     ivm_tree.setOwner(rank);
 }
 
@@ -166,8 +165,9 @@ void BranchAndBound::initialize(int starts_tree) {
  *
  *  NOTE: Remember to avoid to split the intervals in the last levels.
  **/
-void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
+void BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     
+    Interval branch_to_split(branch_init);
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
     paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
@@ -191,7 +191,7 @@ void BranchAndBound::initGlobalPoolWithInterval(Interval & branch_to_split) {
     int toAdd = 0;
     
     float distance_error[2];
-    //fjssp_data.reset(); /** This function call is not necesary because the structurs are empty.**/
+    fjssp_data.reset(); /** This function call is not necesary because the structurs are empty.**/
     
     fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
     for (int m = 0; m < problem.getNumberOfMachines(); ++m){
