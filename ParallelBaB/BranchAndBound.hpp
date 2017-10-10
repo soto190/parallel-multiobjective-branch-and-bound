@@ -48,12 +48,12 @@ extern HandlerContainer paretoContainer;
 extern tbb::atomic<int> sleeping_bb;
 
 class BranchAndBound: public tbb::task {
-
+    
 private:
     
     int node_rank;
     int rank; /** Identifies the number of thread-B&B. **/
-
+    
     tbb::atomic<unsigned long> totalNodes;
     tbb::atomic<unsigned long> branches;
     tbb::atomic<unsigned long> exploredNodes;
@@ -91,22 +91,22 @@ public:
     BranchAndBound(const BranchAndBound& branchAndBound);
     BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch /*,GlobalPool& globa_pool, HandlerContainer& pareto_container*/);
     BranchAndBound& operator()(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
-	~BranchAndBound();
+    ~BranchAndBound();
     
     int getNodeRank() const;
     int getRank() const;
     int getCurrentLevel() const;
     double getTotalTime();
     
-	void solve(Interval & interval);
-	void initialize(int starting_level);
-	int explore(Solution & solution);
-	int branch(Solution & solution, int currentLevel);
-	void prune(Solution & solution, int currentLevel);
+    void solve(Interval & interval);
+    void initialize(int starting_level);
+    int explore(Solution & solution);
+    int branch(Solution & solution, int currentLevel);
+    void prune(Solution & solution, int currentLevel);
     
     std::vector<Solution>& getParetoFront();
-	void printParetoFront(int withVariables = 0);
-
+    void printParetoFront(int withVariables = 0);
+    
     unsigned long getNumberOfNodes() const;
     unsigned long getNumberOfLevels() const;
     unsigned long getNumberOfBranches() const;
@@ -127,7 +127,7 @@ public:
     void increaseNumberOfReachedLeaves(unsigned long value);
     void increaseNumberOfUpdatesInLowerBound(unsigned long value);
     void increaseSharedWork(unsigned long value);
-
+    
     const IVMTree& getIVMTree() const;
     const Interval& getStartingInterval() const;
     const ProblemFJSSP& getProblem() const;
@@ -136,45 +136,45 @@ public:
     
     void saveEvery(double timeInSeconds);
     void setParetoFront(const std::vector<Solution>& front);
-	int setParetoFrontFile(const char outputFile[255]);
+    int setParetoFrontFile(const char outputFile[255]);
     int setSummarizeFile(const char outputFile[255]);
-	int saveParetoFront();
-	int saveSummarize();
-
+    int saveParetoFront();
+    int saveSummarize();
+    
     void printDebug();
     
 private:
-	void printCurrentSolution(int withVariables = 0);
-	int aLeafHasBeenReached() const;
-	int theTreeHasMoreBranches() const;
-
-	unsigned long computeTotalNodes(unsigned long totalVariables) const;
-	unsigned long permut(unsigned long n, unsigned long i) const;
-
+    void printCurrentSolution(int withVariables = 0);
+    int aLeafHasBeenReached() const;
+    int theTreeHasMoreBranches() const;
+    
+    unsigned long computeTotalNodes(unsigned long totalVariables) const;
+    unsigned long permut(unsigned long n, unsigned long i) const;
+    
     void shareWorkAndSendToGlobalPool(const Interval& interval);
-	/** Grid functions. **/
-	int improvesTheGrid(const Solution & solution) const;
-	int updateParetoGrid(const Solution & solution);
-	/** End Grid functions. **/
+    /** Grid functions. **/
+    int improvesTheGrid(const Solution & solution) const;
+    int updateParetoGrid(const Solution & solution);
+    /** End Grid functions. **/
     void updateBounds(const Solution & solution, FJSSPdata& data);
     void updateBoundsWithSolution(const Solution & solution);
     
     void setPriorityTo(Interval & interval) const;
-	/** IVM functions. **/
+    /** IVM functions. **/
 public:
-	void computeLastBranch(Interval & branch);
-	void initGlobalPoolWithInterval(const Interval & branch);
-
+    void computeLastBranch(Interval & branch);
+    void initGlobalPoolWithInterval(const Interval & branch);
+    
 private:
-	int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);
+    int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);
     int intializeIVM_data(Interval& branch, IVMTree & tree);
-	/** End IVM functions **/
-
+    /** End IVM functions **/
+    
 public:
-	task* execute();
-	/* void operator()(const Interval& branch) {
-		this->solve(branch);
-	}; */
+    task* execute();
+    /* void operator()(const Interval& branch) {
+     this->solve(branch);
+     }; */
 };
 
 #endif /* BranchAndBound_hpp */

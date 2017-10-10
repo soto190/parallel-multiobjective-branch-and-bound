@@ -10,18 +10,24 @@
 
 IVMTree::IVMTree() {
     
+    rows = 0;
+    cols = 0;
     whoIam = -1;
-    rows = 1;
-    cols = 1;
-    hasBranches = 0;
-    root_row = 0;
-    starting_row = 0;
+    ivm = nullptr;
+    active_column = nullptr;
+    start_exploration = nullptr; /** This is not used. **/
+    end_exploration = nullptr; /** This is not used. **/
     active_row = 0;
-
+    starting_row = 0;
+    hasBranches = 0;
+    root_row = 0; /** Root row. **/
+    n_nodes_at_row = nullptr;
+    pending_nodes = 0;
+    
 }
 
 IVMTree::IVMTree(int n_rows, int n_cols) {
-
+    
     rows = n_rows;
     cols = n_cols;
     hasBranches = 1;
@@ -84,7 +90,7 @@ IVMTree::IVMTree(const IVMTree& toCopy) {
 }
 
 IVMTree& IVMTree::operator=(const IVMTree &toCopy){
-
+    
     rows = toCopy.rows;
     cols = toCopy.cols;
     hasBranches = toCopy.hasBranches;
@@ -119,7 +125,7 @@ IVMTree& IVMTree::operator=(const IVMTree &toCopy){
 }
 
 IVMTree& IVMTree::operator()(int n_rows, int n_cols) {
-
+    
     rows = n_rows;
     cols = n_cols;
     hasBranches = 1;
@@ -147,7 +153,7 @@ IVMTree& IVMTree::operator()(int n_rows, int n_cols) {
 }
 
 IVMTree::~IVMTree() {
-        
+    
     delete[] active_column;
     delete[] n_nodes_at_row;
     delete[] start_exploration;
@@ -223,7 +229,7 @@ void IVMTree::setExplorationInterval(int set_starting_level, int *starts,
     
 }
 
-/** TODO: Check this function. 
+/** TODO: Check this function.
  * Because active_column[row] is initialized with -1 it needs the +1 to store the next value.
  **/
 void IVMTree::setNode(int row, int value) {
@@ -241,7 +247,7 @@ unsigned long IVMTree::getPendingNodes() const{return pending_nodes;}
 
 /** Prune the active node and set the active_level pointing a new active node. **/
 int IVMTree::pruneActiveNode() {
-
+    
     ivm[active_row][active_column[active_row]] = -1; /** Marks the node as removed. **/
     n_nodes_at_row[active_row]--; /** Reduces the number of nodes in the active level. **/
     pending_nodes--;

@@ -23,13 +23,13 @@
     }
     */
 HandlerContainer::HandlerContainer(const HandlerContainer& toCopy):
-grid(toCopy.grid),
 maxinx(toCopy.maxinx),
 maxiny(toCopy.maxiny),
 numberOfElements(toCopy.numberOfElements),
-activeBuckets(toCopy.activeBuckets),
-unexploredBuckets(toCopy.unexploredBuckets),
-disabledBuckets(toCopy.disabledBuckets){
+activeBuckets(toCopy.getNumberOfActiveBuckets()),
+unexploredBuckets(toCopy.getNumberOfUnexploredBuckets()),
+disabledBuckets(toCopy.getNumberOfDisabledBuckets()),
+grid(toCopy.grid){
     
     rangeinx = new double[toCopy.getCols()];
     rangeiny = new double[toCopy.getRows()];
@@ -50,11 +50,11 @@ HandlerContainer::HandlerContainer(unsigned int rows, unsigned int cols, double 
 grid(cols, rows){
     //    grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows) {
     /*
-    if (maxValX < cols)
-        cols = maxValX;
-    if (maxValY < rows)
-        rows = maxValY;
-    */
+     if (maxValX < cols)
+     cols = maxValX;
+     if (maxValY < rows)
+     rows = maxValY;
+     */
     numberOfElements = 0;
     unexploredBuckets = rows * cols;
     activeBuckets = 0;
@@ -89,17 +89,17 @@ HandlerContainer::~HandlerContainer() {
 }
 
 HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int cols, double maxValX, double maxValY, int minValX, int minValY ){
-   /*
-    if (maxValX < cols)
-        cols = maxValX;
-    if (maxValY < rows)
-        rows = maxValY;
-    */
+    /*
+     if (maxValX < cols)
+     cols = maxValX;
+     if (maxValY < rows)
+     rows = maxValY;
+     */
     grid(cols, rows);
-
+    
     //grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows);
-
-
+    
+    
     numberOfElements = 0;
     unexploredBuckets = rows * cols;
     activeBuckets = 0;

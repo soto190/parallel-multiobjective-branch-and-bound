@@ -28,7 +28,7 @@ public:
     int isMaster();
     int isWorker();
     tbb::task* execute();
-
+    
 private:
     Payload_problem_fjssp payload_problem;
     Payload_interval payload_interval;
@@ -39,7 +39,7 @@ private:
     int rank;
     int n_workers;
     int threads_per_node;
-    int sleeping_workers;
+    //    int sleeping_workers;
     MPI_Status status;
     ProblemFJSSP problem;
     Interval branch_init;

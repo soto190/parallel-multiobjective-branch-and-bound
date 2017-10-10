@@ -14,32 +14,34 @@
  *
  **/
 Interval::Interval():
-max_size(0),
-build_up_to(-1),
-interval(nullptr),
 priority(Priority::P_Low),
-deep(Deep::TOP){}
+deep(Deep::TOP),
+build_up_to(-1),
+max_size(0),
+interval(nullptr){
+}
 
 Interval::Interval(int max_size):
-max_size(max_size),
-build_up_to(-1),
-interval(new int[max_size]),
 priority(Priority::P_Low),
-deep(Deep::TOP){}
+deep(Deep::TOP),
+build_up_to(-1),
+max_size(max_size),
+interval(new int[max_size]){
+}
 
 Interval::Interval(const Interval &toCopy):
-max_size(toCopy.getSize()),
-interval(new int[toCopy.getSize()]),
-build_up_to(toCopy.getBuildUpTo()),
 priority(toCopy.getPriority()),
-deep(toCopy.getDeep()){
-
+deep(toCopy.getDeep()),
+build_up_to(toCopy.getBuildUpTo()),
+max_size(toCopy.getSize()),
+interval(new int[toCopy.getSize()]){
+    
     distance[0] = toCopy.getDistance(0);
     distance[1] = toCopy.getDistance(1);
     
     for (int index = 0; index < max_size; ++index)
         interval[index] = toCopy.getValueAt(index);
-
+    
 }
 
 Interval::Interval(const Payload_interval& payload){
@@ -48,7 +50,7 @@ Interval::Interval(const Payload_interval& payload){
     
     priority = (Priority) payload.priority;
     deep = (Deep) payload.deep;
-
+    
     interval = new int[max_size];
     for (int index = 0; index < max_size; ++index)
         interval[index] = payload.interval[index];
@@ -75,7 +77,7 @@ Interval& Interval::operator()(const Payload_interval& payload){
     
     priority = (Priority) payload.priority;
     deep = (Deep) payload.deep;
-   
+    
     if(interval != nullptr)
         delete [] interval;
     

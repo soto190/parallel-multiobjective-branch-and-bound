@@ -12,11 +12,11 @@
 #include <stdio.h>
 
 class IVMTree {
-
+    
 private:
-	int rows;
-	int cols;
-	int whoIam = -1;
+    int rows;
+    int cols;
+    int whoIam = -1;
     int ** ivm;
     int * active_column;
     int * start_exploration; /** This is not used. **/
@@ -27,12 +27,12 @@ private:
     int root_row = 0; /** Root row. **/
     int * n_nodes_at_row;
     unsigned long pending_nodes = 0;
-
+    
 public:
-	IVMTree();
+    IVMTree();
     IVMTree(const IVMTree& toCopy);
-	IVMTree(int rows, int cols);
-	~IVMTree();
+    IVMTree(int rows, int cols);
+    ~IVMTree();
     
     void setOwner(int idBB);
     void setRootRow(int node);
@@ -57,29 +57,29 @@ public:
     int getActiveRow() const;
     int getLastNodeAtRow(int row) const;
     int getStartingRow() const;
-	int getNumberOfRows() const;
-	int getNumberOfCols() const;
-	int getTreeDeep() const;
-	int getOwner() const;
+    int getNumberOfRows() const;
+    int getNumberOfCols() const;
+    int getTreeDeep() const;
+    int getOwner() const;
     int getStartExploration(int row) const;
     int getEndExploration(int row) const;
     unsigned long getPendingNodes() const;
     
     int removeLastNodeAtRow(int row);
     
-	int hasPendingBranches() const;
-	void setNode(int level, int value);
-	int getActiveNode() const;
-	int getFatherNode() const;
-	int pruneActiveNode();
+    int hasPendingBranches() const;
+    void setNode(int level, int value);
+    int getActiveNode() const;
+    int getFatherNode() const;
+    int pruneActiveNode();
     
-	int moveToNextRow();
-	int moveToNextNode();
-
-	void print();
-	IVMTree& operator()(int rows, int cols);
+    int moveToNextRow();
+    int moveToNextNode();
+    
+    void print();
+    IVMTree& operator()(int rows, int cols);
     IVMTree& operator=(const IVMTree& toCopy);
-
+    
 };
 
 #endif /* IVMTree_hpp */

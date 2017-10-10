@@ -18,13 +18,13 @@
 //#include <memory.h> /** For the Ehecatl wich uses GCC 4.4.7, this activates the shared_ptr. **/
 
 class ParallelBranchAndBound: public tbb::task{
-
+    
 public:
     int rank;
     int number_of_bbs;
     char outputParetoFile[255];
     char summarizeFile[255];
-        
+    
     ProblemFJSSP problem;
     Interval branch_init;
     
