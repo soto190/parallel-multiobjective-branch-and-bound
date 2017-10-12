@@ -97,9 +97,11 @@ int main(int argc, char* argv[]) {
     
     const int arg_num_threads = 1;
     const int arg_input_file = 3;
-    MPI_Init(&argc, &argv);
     
+    MPI_Init(&argc, &argv);
+    int rank = MPI::COMM_WORLD.Get_rank();
     int size_world = MPI::COMM_WORLD.Get_size();
+    
     if (size_world == 1) { /** MPI disable or one node request: shared memory version. **/
         one_node(argc, argv);
     }else{/** MPI enable: Distributed memory. **/
@@ -107,13 +109,13 @@ int main(int argc, char* argv[]) {
         try {
             tbb::task_scheduler_init init(stoi(argv[arg_num_threads]));
             MasterWorkerPBB *  mwpbb = new (tbb::task::allocate_root()) MasterWorkerPBB (size_world, stoi(argv[arg_num_threads]), argv[arg_input_file]);
-            printf("Spawning root...\n");
+            printf("[Node-%02d] Spawning root...\n", rank);
             tbb::task::spawn_root_and_wait(*mwpbb);
         } catch (tbb::tbb_exception& e) {
             std::cerr << "Intercepted exception:\n" << e.name();
             std::cerr << "Reason is:\n" << e.what();
         }
-        printf("Done.\n");
+        printf("[Node-%02d] Done.\n", rank);
     }
     MPI_Finalize();
 }

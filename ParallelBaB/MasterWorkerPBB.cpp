@@ -11,8 +11,9 @@ MasterWorkerPBB::MasterWorkerPBB() {
     rank = 0;
     n_workers = 0;
     threads_per_node = 0;
-    datatype_interval = nullptr;
-    datatype_problem = nullptr;
+    datatype_interval = 0;
+    datatype_problem = 0;
+    datatype_solution = 0;
 }
 
 MasterWorkerPBB::MasterWorkerPBB(int num_nodes, int num_threads, const char file_instance[]) :
@@ -20,28 +21,12 @@ n_workers(num_nodes - 1),
 threads_per_node(num_threads) {
     rank = 0;
     std::strcpy(file, file_instance);
-    datatype_interval = nullptr;
-    datatype_problem = nullptr;
+    datatype_interval = 0;
+    datatype_problem = 0;
+    datatype_solution = 0;
 }
 
 MasterWorkerPBB::~MasterWorkerPBB() {
-}
-
-void MasterWorkerPBB::run() {
-    
-    if (isMaster())
-        loadInstance(payload_problem, file);
-    
-    preparePayloadProblemPart1(payload_problem, datatype_problem);
-    MPI::COMM_WORLD.Bcast(&payload_problem, 1, datatype_problem, MASTER_RANK); /* The MASTER_NODE broadcast the part 1 of payload and the slaves nodes receives it. */
-    
-    unpack_payload_part1(payload_problem, payload_interval); /** Each node initialize their structures. The MASTER_NODE has initialized them from the load_instance. **/
-    preparePayloadProblemPart2(payload_problem, datatype_problem); /** Prepares the second part (processing times).**/
-    MPI::COMM_WORLD.Bcast(&payload_problem, 1, datatype_problem, MASTER_RANK);
-    
-    unpack_payload_part2(payload_problem);
-    preparePayloadInterval(payload_interval, datatype_interval); /** Each node prepares the payload for receiving intervals. **/
-    
 }
 
 tbb::task * MasterWorkerPBB::execute() {
@@ -58,8 +43,26 @@ tbb::task * MasterWorkerPBB::execute() {
     
     MPI_Type_free(&datatype_problem);
     MPI_Type_free(&datatype_interval);
+    MPI_Type_free(&datatype_solution);
     
     return NULL;
+}
+
+void MasterWorkerPBB::run() {
+    
+    if (isMaster())
+        loadInstance(payload_problem, file);
+    
+    preparePayloadProblemPart1(payload_problem, datatype_problem);
+    MPI::COMM_WORLD.Bcast(&payload_problem, 1, datatype_problem, MASTER_RANK); /* The MASTER_NODE broadcast the part 1 of payload and the slaves nodes receives it. */
+    
+    unpack_payload_part1(payload_problem, payload_interval, payload_solution); /** Each node initialize their structures. The MASTER_NODE has initialized them from the load_instance. **/
+    preparePayloadProblemPart2(payload_problem, datatype_problem); /** Prepares the second part (processing times).**/
+    MPI::COMM_WORLD.Bcast(&payload_problem, 1, datatype_problem, MASTER_RANK);
+    
+    unpack_payload_part2(payload_problem);
+    preparePayloadInterval(payload_interval, datatype_interval); /** Each node prepares the payload for receiving intervals. **/
+    preparePayloadSolution(payload_solution, datatype_solution);
 }
 
 /**
@@ -84,7 +87,7 @@ void MasterWorkerPBB::runMasterProcess() {
         
         payload_interval.interval[0] = n_intervals; /** The first map of the interval. **/
         
-        printf("[Master] Sending to %3d: %d %d %d %d %f %f\n",
+        printf("[Master] Sending to Worker-%3d: %d %d %d %d %f %f\n",
                worker_dest,
                payload_interval.priority,
                payload_interval.deep,
@@ -159,7 +162,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     BranchAndBound BB_container(rank, 0, problem, branch_init);
     BB_container.initGlobalPoolWithInterval(branch_init);
     BB_container.getRank();
-    printf("[WorkerPBB-%03d] GlobalPool size: %3lu", rank, globalPool.unsafe_size());
+    printf("[WorkerPBB-%03d] GlobalPool size: %3lu\n", rank, globalPool.unsafe_size());
     //
     //    printf("[WorkerPBB-%03d] Container initialized.\n", rank);
     //    set_ref_count(threads_per_node + 1);
@@ -232,10 +235,10 @@ void MasterWorkerPBB::runWorkerProcess() {
     //    //    BB_container.setParetoFrontFile(outputParetoFile);
     //    //    BB_container.setSummarizeFile(summarizeFile);
     //
-    //    BB_container.getParetoFront();
-    //    BB_container.printParetoFront(0);
-    //    //    BB_container.saveParetoFront();
-    //    //    BB_container.saveSummarize();
+    BB_container.getParetoFront();
+    BB_container.printParetoFront(0);
+    //    BB_container.saveParetoFront();
+    //    BB_container.saveSummarize();
     //    bb_threads.clear();
     printf("[WorkerPBB-%03d] Data swarm recollected and saved.\n", rank);
     printf("[WorkerPBB-%03d] Parallel Branch And Bound ended.\n", rank);
@@ -386,7 +389,7 @@ void MasterWorkerPBB::preparePayloadInterval(const Payload_interval &interval, M
 }
 
 void MasterWorkerPBB::preparePayloadSolution(const Payload_solution &solution, MPI_Datatype &datatype_solution) {
-    const int n_blocks = 6;
+    const int n_blocks = 5;
     int blocks[n_blocks] = { 1, 1, 1, solution.n_objectives, solution.n_variables };
     MPI_Aint displacements_interval[n_blocks];
     MPI_Datatype types[n_blocks] = { MPI_INT, MPI_INT, MPI_INT, MPI_DOUBLE, MPI_INT };
@@ -409,15 +412,22 @@ void MasterWorkerPBB::preparePayloadSolution(const Payload_solution &solution, M
     MPI_Type_commit(&datatype_solution);
 }
 
-void MasterWorkerPBB::unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval) {
+void MasterWorkerPBB::unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval, Payload_solution& solution) {
     if (isWorker()) {
         problem.release_times = new int[problem.n_jobs];
         problem.n_operations_in_job = new int[problem.n_jobs];
         problem.processing_times = new int[problem.n_operations * problem.n_machines];
     }
     
+    /** All the nodes creates this **/
     interval.max_size = problem.n_operations;
     interval.interval = new int[problem.n_operations];
+    
+    solution.n_objectives = problem.n_objectives;
+    solution.n_variables = problem.n_operations;
+    solution.build_up_to = -1;
+    solution.objective =  new double[problem.n_objectives];
+    solution.variable = new int[problem.n_operations];
 }
 
 void MasterWorkerPBB::unpack_payload_part2(Payload_problem_fjssp& problem) {
@@ -459,3 +469,4 @@ int MasterWorkerPBB::isWorker() {
         return 1;
     return 0;
 }
+

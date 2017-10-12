@@ -62,7 +62,6 @@ public:
     Interval& operator()(int size);
     Interval& operator()(const Payload_interval& payload);
     
-    
     int increaseBuildUpTo();
     int getSize() const;
     int getBuildUpTo() const;

@@ -70,6 +70,10 @@ public:
     m_vec(toCopy.getVectorToCopy()){
     };
     
+    ~ParetoBucket(){
+        m_vec.clear();
+    }
+    
     void setPosX(unsigned long new_posx){ posx = new_posx;}
     void setPosY(unsigned long new_posy){ posy = new_posy;}
     void setPositionXY(unsigned long new_posx, unsigned long new_posy){ posx = new_posx; posy = new_posy;}
@@ -233,12 +237,14 @@ public:
     }
     
     ~GridContainer(){
+        m_Data.clear();
     }
     
     GridContainer& operator()(unsigned int width, unsigned int height) {
         cols = width;
         rows = height;
         numberOfElements.store(0);
+        m_Data.clear(); /** Release previous used memory. **/
         m_Data.reserve(cols * rows);
         int index = 0, indey = 0;
         for (indey = 0; indey < rows; ++indey)
@@ -299,7 +305,7 @@ private:
     tbb::atomic<unsigned long> activeBuckets;
     tbb::atomic<unsigned long> unexploredBuckets;
     tbb::atomic<unsigned long> disabledBuckets;
-    tbb::atomic<int> best_value_found_in_obj [2]; /** for two objectives **/
+    tbb::atomic<int> best_value_found_in_obj [2]; /** TODO: Change to more objectives. Also this doesnt goes here. Fixed to two objectives **/
     
     GridContainer grid;
     std::vector<Solution> paretoFront;

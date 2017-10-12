@@ -74,12 +74,10 @@ totalTime(0){
     t1 = std::chrono::high_resolution_clock::now();
     t2 = std::chrono::high_resolution_clock::now();
     
-    branches_to_move = problem.getUpperBound(0) * to_share;
+    branches_to_move = problemToCopy.getUpperBound(0) * to_share;
     deep_to_share = totalLevels * deep_limit_share;
     
-    int numberOfVariables = problem.getNumberOfVariables();
-    
-    totalNodes.fetch_and_store(computeTotalNodes(numberOfVariables));
+    totalNodes.fetch_and_store(computeTotalNodes(problemToCopy.getNumberOfVariables()));
     
     //problem.createDefaultSolution(incumbent_s);
     //updateBoundsWithSolution(incumbent_s);

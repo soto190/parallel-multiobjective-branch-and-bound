@@ -99,11 +99,17 @@ HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int c
     
     //grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows);
     
-    
     numberOfElements = 0;
     unexploredBuckets = rows * cols;
     activeBuckets = 0;
     disabledBuckets = 0;
+    
+    if(rangeinx != nullptr)
+        delete rangeinx;
+    if(rangeiny != nullptr)
+        delete rangeiny;
+    
+    paretoFront.clear();
     
     rangeinx = new double[cols];
     rangeiny = new double[rows];

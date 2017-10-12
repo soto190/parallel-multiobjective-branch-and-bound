@@ -32,9 +32,11 @@ public:
 private:
     Payload_problem_fjssp payload_problem;
     Payload_interval payload_interval;
+    Payload_solution payload_solution;
     
     MPI_Datatype datatype_problem; /** For committing. **/
     MPI_Datatype datatype_interval; /** For committing. **/
+    MPI_Datatype datatype_solution; /** For committing. **/
     
     int rank;
     int n_workers;
@@ -61,7 +63,7 @@ private:
     void preparePayloadSolution(const Payload_solution& solution, MPI_Datatype& datatype_solution);
     void preparePayloadInterval(const Payload_interval& interval, MPI_Datatype& datatype_interval);
     
-    void unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval);
+    void unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval, Payload_solution& solution);
     void unpack_payload_part2(Payload_problem_fjssp& problem);
     void runMasterProcess();
     void runWorkerProcess();
