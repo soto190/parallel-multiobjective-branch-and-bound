@@ -78,10 +78,7 @@ totalTime(0){
     deep_to_share = totalLevels * deep_limit_share;
     
     totalNodes.fetch_and_store(computeTotalNodes(problemToCopy.getNumberOfVariables()));
-    
-    //problem.createDefaultSolution(incumbent_s);
-    //updateBoundsWithSolution(incumbent_s);
-    
+
     ivm_tree.setOwner(rank);
 }
 
@@ -149,6 +146,9 @@ void BranchAndBound::initialize(int starts_tree) {
     totalNodes = computeTotalNodes(totalLevels);
     shared_work = 0;
     
+    problem.createDefaultSolution(incumbent_s);
+    updateBoundsWithSolution(incumbent_s);
+    
 }
 
 /** Generates an interval for each possible value in the given level of the branch_to_split
@@ -167,17 +167,14 @@ void BranchAndBound::initialize(int starts_tree) {
 void BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     
     Interval branch_to_split(branch_init);
-    Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    problem.createDefaultSolution(solution);
-    paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
+    problem.createDefaultSolution(incumbent_s);
     Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(1, temp);
-    solution.print();
     temp.print();
-    updateParetoGrid(solution);
+    incumbent_s.print();
+    updateParetoGrid(incumbent_s);
     updateParetoGrid(temp);
-    updateBoundsWithSolution(solution);
     updateBoundsWithSolution(temp);
     
     int row = 0;
