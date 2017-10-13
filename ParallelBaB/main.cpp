@@ -5,6 +5,11 @@
 //  Created by Carlos Soto on 08/06/16.
 //  Copyright © 2016 Carlos Soto. All rights reserved.
 //
+/**
+ * Debugging and running MPI programs in Xcode:
+ * - http://wp.yaonan.li/archives/1065
+ **/
+
 #include <mpi.h>
 #include <iostream>
 #include <cstring>
@@ -69,7 +74,6 @@ void one_node(int argc, char* argv[]){
     
     try {
         
-        //tbb::task_scheduler_init::default_num_threads();
         tbb::task_scheduler_init init(number_of_threads);
         
         ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(0, number_of_threads, problem);

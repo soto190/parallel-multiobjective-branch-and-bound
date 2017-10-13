@@ -58,7 +58,7 @@ public:
     posx(posx),
     posy(posy){
         size.store(0);
-        state.store(BucketState::unexplored),
+        state.store(BucketState::unexplored);
         m_vec.reserve(50);
     };
     

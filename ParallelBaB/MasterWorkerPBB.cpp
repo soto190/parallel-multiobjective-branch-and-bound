@@ -163,24 +163,24 @@ void MasterWorkerPBB::runWorkerProcess() {
     BB_container.initGlobalPoolWithInterval(branch_init);
     BB_container.getRank();
     printf("[WorkerPBB-%03d] GlobalPool size: %3lu\n", rank, globalPool.unsafe_size());
-    //
-    //    printf("[WorkerPBB-%03d] Container initialized.\n", rank);
-    //    set_ref_count(threads_per_node + 1);
-    //
-    //    tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
-    //    vector<BranchAndBound *> bb_threads;
-    //    int n_bb = 0;
-    //    while (n_bb++ < threads_per_node) {
-    //
-    //        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb, problem, branch_init);
-    //
-    //        bb_threads.push_back(BaB_task);
-    //        tl.push_back(*BaB_task);
-    //    }
-    //
-    //    printf("[WorkerPBB-%03d] Spawning the swarm...\n", rank);
-    //    tbb::task::spawn_and_wait_for_all(tl);
-    //
+    
+    printf("[WorkerPBB-%03d] Container initialized.\n", rank);
+    set_ref_count(threads_per_node + 1);
+    
+    tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
+    vector<BranchAndBound *> bb_threads;
+    int n_bb = 0;
+    while (n_bb++ < threads_per_node) {
+        
+        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb, problem, branch_init);
+        
+        bb_threads.push_back(BaB_task);
+        tl.push_back(*BaB_task);
+    }
+    
+    printf("[WorkerPBB-%03d] Spawning the swarm...\n", rank);
+    tbb::task::spawn_and_wait_for_all(tl);
+    
     //    while (sleeping_bb < threads_per_node) {
     //        if (globalPool.isEmptying()) {
     //            MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK);
@@ -413,13 +413,13 @@ void MasterWorkerPBB::preparePayloadSolution(const Payload_solution &solution, M
 }
 
 void MasterWorkerPBB::unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval, Payload_solution& solution) {
-    if (isWorker()) {
+    if (isWorker()) { /** Only the workers do this because the Master node initialized them in the loadInstance function. **/
         problem.release_times = new int[problem.n_jobs];
         problem.n_operations_in_job = new int[problem.n_jobs];
         problem.processing_times = new int[problem.n_operations * problem.n_machines];
     }
     
-    /** All the nodes creates this **/
+    /** All nodes initializes this. **/
     interval.max_size = problem.n_operations;
     interval.interval = new int[problem.n_operations];
     
@@ -436,18 +436,20 @@ void MasterWorkerPBB::unpack_payload_part2(Payload_problem_fjssp& problem) {
     
     printf("[Node%d] ", rank);
     for (int n_job = 0; n_job < problem.n_jobs; ++n_job)
+        printf("%d ", problem.n_operations_in_job[n_job]);
+    printf("\n");
+    /*
+    printf("[Node%d] ", rank);
+    for (int n_job = 0; n_job < problem.n_jobs; ++n_job)
         printf("%d ", problem.release_times[n_job]);
     printf("\n");
     
-    printf("[Node%d] ", rank);
-    for (int n_job = 0; n_job < problem.n_jobs; ++n_job)
-        printf("%d ", problem.n_operations_in_job[n_job]);
-    printf("\n");
     
     printf("[Node%d] ", rank);
     for (int proc_t = 0; proc_t < problem.n_operations * problem.n_machines; ++proc_t)
         printf("%d ", problem.processing_times[proc_t]);
     printf("\n");
+     */
 }
 
 int MasterWorkerPBB::getRank() {
