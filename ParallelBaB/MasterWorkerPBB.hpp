@@ -65,6 +65,8 @@ private:
     void unpack_payload_part2(Payload_problem_fjssp& problem);
     void runMasterProcess();
     void runWorkerProcess();
+    
+    void splitInterval(Interval& branch_to_split);
 };
 
 #endif /* MASTERWORKER_HPP_ */

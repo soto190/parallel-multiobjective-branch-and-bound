@@ -107,38 +107,38 @@ void MasterWorkerPBB::runMasterProcess() {
             worker_dest = n_workers;
     }
     
-    /*sleeping_workers = 0;
-     printf("[Master] Sleeping_workers: %3d.\n", (int) sleeping_workers);
-     while (sleeping_workers < n_workers) {
-     printf("[Master] Waiting for request.\n");
-     MPI_Recv(&payload_interval, 1, datatype_interval, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-     
-     switch (status.MPI_TAG) {
-     case TAG_REQUEST_MORE_WORK:
-     if (n_intervals < max_number_of_mappings) {
-     payload_interval.interval[0] = n_intervals;
-     
-     printf("[Master] Sending [%03d]: %d %d %d %d %f %f\n", n_intervals, payload_interval.priority, payload_interval.deep, payload_interval.build_up_to, payload_interval.max_size, payload_interval.distance[0], payload_interval.distance[1]);
-     
-     printf("[Master] ");
-     for (int element = 0; element < payload_interval.max_size; ++element)
-     printf("%d ", payload_interval.interval[element]);
-     printf("\n");
-     
-     MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_INTERVAL, MPI_COMM_WORLD);
-     n_intervals++;
-     }else{
-     printf("[Interval number %3d of intervals %3d] \n", n_intervals, max_number_of_mappings);
-     MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
-     sleeping_workers++;
-     }
-     break;
-     
-     default:
-     break;
-     }
-     
-     }*/
+    int sleeping_workers = 0;
+    printf("[Master] Sleeping_workers: %3d.\n", (int) sleeping_workers);
+    while (sleeping_workers < n_workers) {
+        printf("[Master] Waiting for request.\n");
+        MPI_Recv(&payload_interval, 1, datatype_interval, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        
+        switch (status.MPI_TAG) {
+            case TAG_REQUEST_MORE_WORK:
+                if (n_intervals < max_number_of_mappings) {
+                    payload_interval.interval[0] = n_intervals;
+                    
+                    printf("[Master] Sending [%03d]: %d %d %d %d %f %f\n", n_intervals, payload_interval.priority, payload_interval.deep, payload_interval.build_up_to, payload_interval.max_size, payload_interval.distance[0], payload_interval.distance[1]);
+                    
+                    printf("[Master] ");
+                    for (int element = 0; element < payload_interval.max_size; ++element)
+                        printf("%d ", payload_interval.interval[element]);
+                    printf("\n");
+                    
+                    MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_INTERVAL, MPI_COMM_WORLD);
+                    n_intervals++;
+                }else{
+                    printf("[Master] Interval number %3d of intervals %3d \n", n_intervals, max_number_of_mappings);
+                    MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
+                    sleeping_workers++;
+                }
+                break;
+                
+            default:
+                break;
+        }
+        
+    }
     printf("[Master] No more work.\n");
 }
 
@@ -150,6 +150,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     
     int source = MASTER_RANK;
     sleeping_bb = 0;
+    there_is_more_work = 1;
     problem.loadInstancePayload(payload_problem);
     
     printf("[WorkerPBB-%03d] Waiting for interval.\n", rank);
@@ -161,7 +162,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
-
+    
     paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
     BranchAndBound BB_container(rank, 0, problem, branch_init);
@@ -169,7 +170,6 @@ void MasterWorkerPBB::runWorkerProcess() {
     BB_container.getRank();
     printf("[WorkerPBB-%03d] GlobalPool size: %3lu\n", rank, globalPool.unsafe_size());
     
-    printf("[WorkerPBB-%03d] Container initialized.\n", rank);
     set_ref_count(threads_per_node + 1);
     
     tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
@@ -184,67 +184,73 @@ void MasterWorkerPBB::runWorkerProcess() {
     }
     
     printf("[WorkerPBB-%03d] Spawning the swarm...\n", rank);
-    tbb::task::spawn_and_wait_for_all(tl);
+    //    tbb::task::spawn_and_wait_for_all(tl);
+    tbb::task::spawn(tl);
     
-    //    while (sleeping_bb < threads_per_node) {
-    //        if (globalPool.isEmptying()) {
-    //            MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK);
-    //            MPI_Recv(&payload_interval, 1, datatype_interval, source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-    //            switch (status.MPI_TAG) {
-    //                case TAG_INTERVAL:
-    //                    printf("[WorkerPBB-%03d] Receiving: %d %d %d %d %f %f\n",
-    //                           rank,
-    //                           payload_interval.priority,
-    //                           payload_interval.deep,
-    //                           payload_interval.build_up_to,
-    //                           payload_interval.max_size,
-    //                           payload_interval.distance[0],
-    //                           payload_interval.distance[1]);
-    //
-    //                    printf("[WorkerPBB-%03d] ", rank);
-    //                    for (int element = 0; element < payload_interval.max_size; ++element)
-    //                        printf("%d ", payload_interval.interval[element]);
-    //                    printf("\n");
-    //                    branch_init(payload_interval);
-    //                    globalPool.push(branch_init);
-    //
-    //                    break;
-    //
-    //                case TAG_NO_MORE_WORK:
-    //                    printf("[WorkerPBB-%03d] No more work. %03d B&B inactives.\n", rank, (int) sleeping_bb);
-    //                    break;
-    //                default:
-    //                    break;
-    //            }
-    //        }
-    //    }
-    //
-    //    /** Recollects the data. **/
-    //    BB_container.getTotalTime();
-    //    BranchAndBound* bb_in;
-    //    while (!bb_threads.empty()) {
-    //
-    //        bb_in = bb_threads.back();
-    //        bb_threads.pop_back();
-    //
-    //        BB_container.increaseNumberOfExploredNodes(bb_in->getNumberOfExploredNodes());
-    //        BB_container.increaseNumberOfCallsToBranch(bb_in->getNumberOfCallsToBranch());
-    //        BB_container.increaseNumberOfBranches(bb_in->getNumberOfBranches());
-    //        BB_container.increaseNumberOfCallsToPrune(bb_in->getNumberOfCallsToPrune());
-    //        BB_container.increaseNumberOfPrunedNodes(bb_in->getNumberOfPrunedNodes());
-    //        BB_container.increaseNumberOfReachedLeaves(bb_in->getNumberOfReachedLeaves());
-    //        BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());
-    //        BB_container.increaseSharedWork(bb_in->getSharedWork());
-    //    }
-    //
-    //    //    BB_container.setParetoFrontFile(outputParetoFile);
-    //    //    BB_container.setSummarizeFile(summarizeFile);
-    //
+    while (there_is_more_work == 1) {
+        if (globalPool.isEmptying()) {
+            MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK);
+            MPI_Recv(&payload_interval, 1, datatype_interval, source, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+            printf("[WorkerPBB-%03d] Waiting for more work.\n", rank);
+            switch (status.MPI_TAG) {
+                case TAG_INTERVAL:
+                    printf("[WorkerPBB-%03d] Receiving more work: %d %d %d %d %f %f\n",
+                           rank,
+                           payload_interval.priority,
+                           payload_interval.deep,
+                           payload_interval.build_up_to,
+                           payload_interval.max_size,
+                           payload_interval.distance[0],
+                           payload_interval.distance[1]);
+                    
+                    printf("[WorkerPBB-%03d] ", rank);
+                    for (int element = 0; element < payload_interval.max_size; ++element)
+                        printf("%d ", payload_interval.interval[element]);
+                    printf("\n");
+                    
+                    branch_init(payload_interval);/** Split this interval. **/
+                    splitInterval(branch_init);
+                    //globalPool.push(branch_init);
+                    
+                    break;
+                    
+                case TAG_NO_MORE_WORK:
+                    /** There is no more work.**/
+                    there_is_more_work = 0;
+                    printf("[WorkerPBB-%03d] No more work. %03d B&B inactives.\n", rank, (int) sleeping_bb);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    
+    /** Recollects the data. **/
+    BB_container.getTotalTime();
+    BranchAndBound* bb_in;
+    while (!bb_threads.empty()) {
+        
+        bb_in = bb_threads.back();
+        bb_threads.pop_back();
+        
+        BB_container.increaseNumberOfExploredNodes(bb_in->getNumberOfExploredNodes());
+        BB_container.increaseNumberOfCallsToBranch(bb_in->getNumberOfCallsToBranch());
+        BB_container.increaseNumberOfBranches(bb_in->getNumberOfBranches());
+        BB_container.increaseNumberOfCallsToPrune(bb_in->getNumberOfCallsToPrune());
+        BB_container.increaseNumberOfPrunedNodes(bb_in->getNumberOfPrunedNodes());
+        BB_container.increaseNumberOfReachedLeaves(bb_in->getNumberOfReachedLeaves());
+        BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());
+        BB_container.increaseSharedWork(bb_in->getSharedWork());
+    }
+    
+    //    BB_container.setParetoFrontFile(outputParetoFile);
+    //    BB_container.setSummarizeFile(summarizeFile);
+    
     BB_container.getParetoFront();
     BB_container.printParetoFront(0);
     //    BB_container.saveParetoFront();
     //    BB_container.saveSummarize();
-    //    bb_threads.clear();
+    bb_threads.clear();
     printf("[WorkerPBB-%03d] Data swarm recollected and saved.\n", rank);
     printf("[WorkerPBB-%03d] Parallel Branch And Bound ended.\n", rank);
 }
@@ -444,16 +450,16 @@ void MasterWorkerPBB::unpack_payload_part2(Payload_problem_fjssp& problem) {
         printf("%d ", problem.n_operations_in_job[n_job]);
     printf("\n");
     /*
-    printf("[Node%d] ", rank);
-    for (int n_job = 0; n_job < problem.n_jobs; ++n_job)
-        printf("%d ", problem.release_times[n_job]);
-    printf("\n");
-    
-    
-    printf("[Node%d] ", rank);
-    for (int proc_t = 0; proc_t < problem.n_operations * problem.n_machines; ++proc_t)
-        printf("%d ", problem.processing_times[proc_t]);
-    printf("\n");
+     printf("[Node%d] ", rank);
+     for (int n_job = 0; n_job < problem.n_jobs; ++n_job)
+     printf("%d ", problem.release_times[n_job]);
+     printf("\n");
+     
+     
+     printf("[Node%d] ", rank);
+     for (int proc_t = 0; proc_t < problem.n_operations * problem.n_machines; ++proc_t)
+     printf("%d ", problem.processing_times[proc_t]);
+     printf("\n");
      */
 }
 
@@ -477,3 +483,58 @@ int MasterWorkerPBB::isWorker() {
     return 0;
 }
 
+void MasterWorkerPBB::splitInterval(Interval& branch_to_split){
+    Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    int row = 0;
+    int split_level = branch_to_split.getBuildUpTo() + 1;
+    int branches_created = 0;
+    int num_elements = problem.getTotalElements();
+    int map = 0;
+    int element = 0;
+    int machine = 0;
+    int toAdd = 0;
+    
+    float distance_error[2];
+    
+    FJSSPdata fjssp_data(problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
+    fjssp_data.reset(); /** This function call is not necesary because the structurs are empty.**/
+    
+    fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
+    for (int m = 0; m < problem.getNumberOfMachines(); ++m){
+        fjssp_data.setBestWorkloadInMachine(m, problem.getBestWorkload(m));
+        fjssp_data.setTempBestWorkloadInMachine(m, problem.getBestWorkload(m));
+    }
+    
+    for (row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
+        map = branch_to_split.getValueAt(row);
+        temp.setVariable(row, map);
+        problem.evaluateDynamic(temp, fjssp_data, row);
+    }
+    
+    for (element = 0; element < num_elements; ++element)
+        if (fjssp_data.getNumberOfOperationsAllocatedInJob(element) < problem.getTimesValueIsRepeated(element))
+            for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
+                
+                toAdd = problem.getCodeMap(element, machine);
+                temp.setVariable(split_level, toAdd);
+                problem.evaluateDynamic(temp, fjssp_data, split_level);
+                
+                if (paretoContainer.improvesTheGrid(temp)) {
+                    /** Gets the branch to add. */
+                    branch_to_split.setValueAt(split_level, toAdd);
+                    
+                    distance_error[0] = (problem.getLowerBoundInObj(0) - fjssp_data.getMakespan()) / (float) problem.getLowerBoundInObj(0);
+                    distance_error[1] = (problem.getLowerBoundInObj(1) - fjssp_data.getMaxWorkload()) / (float) problem.getLowerBoundInObj(1);
+                    
+                    branch_to_split.setDistance(0, distance_error[0]);
+                    branch_to_split.setDistance(1, distance_error[1]);
+                    branch_to_split.setHighPriority();
+                    /** Add it to pending intervals. **/
+                    globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
+                    branch_to_split.removeLastValue();
+                    branches_created++;
+                } else
+                    problem.evaluateRemoveDynamic(temp, fjssp_data, split_level);
+            }
+    
+}

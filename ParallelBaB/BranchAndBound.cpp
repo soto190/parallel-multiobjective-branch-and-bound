@@ -16,6 +16,7 @@
 ReadySubproblems globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 HandlerContainer paretoContainer;
 tbb::atomic<int> sleeping_bb;
+tbb::atomic<int> there_is_more_work;
 
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
 node_rank(toCopy.getNodeRank()),
@@ -311,7 +312,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
 tbb::task* BranchAndBound::execute() {
     t1 = std::chrono::high_resolution_clock::now();
     initialize(interval_to_solve.getBuildUpTo());
-    while (!globalPool.empty())
+    while (!globalPool.empty() || there_is_more_work == 1)
         if(globalPool.try_pop(interval_to_solve))
             solve(interval_to_solve);
     

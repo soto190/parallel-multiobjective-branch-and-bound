@@ -46,6 +46,8 @@ const float deep_limit_share = 0.90f;
 extern ReadySubproblems globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 extern HandlerContainer paretoContainer;
 extern tbb::atomic<int> sleeping_bb;
+extern tbb::atomic<int> there_is_more_work;
+
 
 class BranchAndBound: public tbb::task {
     
