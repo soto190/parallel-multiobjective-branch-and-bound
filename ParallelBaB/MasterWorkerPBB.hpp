@@ -23,10 +23,10 @@ public:
     virtual ~MasterWorkerPBB();
     
     void run();
-    int getRank();
-    int getSizeWorkers();
-    int isMaster();
-    int isWorker();
+    int getRank() const;
+    int getSizeWorkers() const;
+    int isMaster() const;
+    int isWorker() const;
     tbb::task* execute();
     
 private:
@@ -65,8 +65,8 @@ private:
     void unpack_payload_part2(Payload_problem_fjssp& problem);
     void runMasterProcess();
     void runWorkerProcess();
-    
-    void splitInterval(Interval& branch_to_split);
+    void printPayloadInterval() const;
+    int splitInterval(Interval& branch_to_split);
 };
 
 #endif /* MASTERWORKER_HPP_ */

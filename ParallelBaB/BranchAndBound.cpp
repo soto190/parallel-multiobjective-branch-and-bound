@@ -165,7 +165,7 @@ void BranchAndBound::initialize(int starts_tree) {
  *
  *  NOTE: Remember to avoid to split the intervals in the last levels.
  **/
-void BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
+int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     
     Interval branch_to_split(branch_init);
     
@@ -221,10 +221,8 @@ void BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
                     branch_to_split.setDistance(1, distance_error[1]);
                     setPriorityTo(branch_to_split);
                     /** Add it to pending intervals. **/
-                    if (rank == 0){
-                        globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
-                        shared_work++;
-                    }
+                    globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
+                    shared_work++;
                     branch_to_split.removeLastValue();
                     branches_created++;
                 } else
@@ -233,6 +231,7 @@ void BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
             }
     
     branches += branches_created;
+    return branches_created;
 }
 
 int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
@@ -312,13 +311,12 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
 tbb::task* BranchAndBound::execute() {
     t1 = std::chrono::high_resolution_clock::now();
     initialize(interval_to_solve.getBuildUpTo());
-    while (!globalPool.empty() || there_is_more_work == 1)
+    while (!globalPool.empty() || there_is_more_work == 1)  /** While the pool has intervals or there are more work on other nodes. **/
         if(globalPool.try_pop(interval_to_solve))
             solve(interval_to_solve);
     
-    printf("[Worker-%03dB&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, rank, getTotalTime());
-    
     sleeping_bb++;
+    printf("[Worker-%03d:B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, rank, getTotalTime());
     return NULL;
 }
 
@@ -356,10 +354,6 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         if(ivm_tree.hasPendingBranches()) /** Sharing part of the IVM tree to the global pool. This is done after branching and pruning any pending work of the three. **/
             shareWorkAndSendToGlobalPool(branch_to_solve);
     }
-    
-    t2 = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
-    totalTime = time_span.count();
 }
 
 double BranchAndBound::getTotalTime() {

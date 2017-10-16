@@ -106,6 +106,9 @@ int main(int argc, char* argv[]) {
     int rank = MPI::COMM_WORLD.Get_rank();
     int size_world = MPI::COMM_WORLD.Get_size();
     
+    if (rank == 0)
+        printf("[MASTER] Number of nodes: %3d\n", size_world);
+    
     if (size_world == 1) { /** MPI disable or one node request: shared memory version. **/
         one_node(argc, argv);
     }else{/** MPI enable: Distributed memory. **/
