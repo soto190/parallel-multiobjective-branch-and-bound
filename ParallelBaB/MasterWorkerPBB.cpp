@@ -135,6 +135,8 @@ void MasterWorkerPBB::runMasterProcess() {
         }
     }
     printf("[Master] No more work.\n");
+    
+    /** TODO: Collects the final data. **/
 }
 
 /**
