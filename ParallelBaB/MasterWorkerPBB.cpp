@@ -30,15 +30,24 @@ MasterWorkerPBB::~MasterWorkerPBB() {
 }
 
 tbb::task * MasterWorkerPBB::execute() {
+    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
     rank = MPI::COMM_WORLD.Get_rank();
     n_workers = MPI::COMM_WORLD.Get_size() - 1;
-    
+
     run(); /** Initializes the Payloads. **/
     
     if (isMaster())
         runMasterProcess();
     else
         runWorkerProcess();
+    
+    std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+    
+    if (isMaster())
+        printf("[Master] Elapsed time: %6.6f\n", time_span.count());
+    else
+        printf("[WorkerPBB-%03d] Elapsed time: %6.6f\n", rank, time_span.count());
     
     MPI_Type_free(&datatype_problem);
     MPI_Type_free(&datatype_interval);
@@ -48,7 +57,6 @@ tbb::task * MasterWorkerPBB::execute() {
 }
 
 void MasterWorkerPBB::run() {
-    
     if (isMaster())
         loadInstance(payload_problem, file);
     
@@ -115,7 +123,7 @@ void MasterWorkerPBB::runMasterProcess() {
                 }else{
                     /** TODO: Starts a process to request work from other nodes. **/
                     
-                    /** TODO: If the other nodes doesnt have enough work to share then send the signal to stop. **/
+                    /** TODO: If the other nodes doesnt have enough work to share then send a stop signal. **/
                     printf("[Master] Sending no more work signal to Worker-%03d.\n", status.MPI_SOURCE);
                     MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
                     sleeping_workers++;
@@ -185,6 +193,8 @@ void MasterWorkerPBB::runWorkerProcess() {
                     branches_in_loop = splitInterval(branch_init); /** Splits and push to GlobalPool. **/
                     branches_created += branches_in_loop;
                     printf("[WorkerPBB-%03d] Interval divided in %3d sub-intervals.\n", rank, branches_in_loop);
+                    
+                    /** TODO: Share the solutions found to other nodes. **/
                     break;
                     
                 case TAG_NO_MORE_WORK:  /** There is no more work.**/

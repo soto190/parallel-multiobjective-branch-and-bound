@@ -10,6 +10,7 @@
 
 #include <mpi.h>
 #include <stdio.h>
+#include <chrono>
 #include <tbb/task.h>
 #include "BranchAndBound.hpp"
 #include "Interval.hpp"

@@ -358,8 +358,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
 
 double BranchAndBound::getTotalTime() {
     t2 = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<float> time_span = std::chrono::duration_cast<
-    std::chrono::milliseconds>(t2 - t1);
+    std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
     totalTime = time_span.count();
     return totalTime;
 }
