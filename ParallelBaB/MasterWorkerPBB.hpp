@@ -34,10 +34,12 @@ private:
     Payload_problem_fjssp payload_problem;
     Payload_interval payload_interval;
     Payload_solution payload_solution;
+    //Payload_interval payload_solutions[10]; /** Sending 10 solutions at the time. Recycling the interval struct because it has the same values. **/
     
     MPI_Datatype datatype_problem; /** For committing. **/
     MPI_Datatype datatype_interval; /** For committing. **/
     MPI_Datatype datatype_solution; /** For committing. **/
+    //MPI_Datatype datatyple_solutions; /** For committing. **/
     
     int rank;
     int n_workers;
@@ -61,6 +63,7 @@ private:
     void preparePayloadProblemPart1(const Payload_problem_fjssp& problem, MPI_Datatype& datatype_problem);
     void preparePayloadProblemPart2(const Payload_problem_fjssp& problem, MPI_Datatype& datatype_problem);
     void preparePayloadSolution(const Payload_solution& solution, MPI_Datatype& datatype_solution);
+    //void preparePayloadSolutions(const Payload_interval* solutions, MPI_Datatype& datatype_solutions);
     void preparePayloadInterval(const Payload_interval& interval, MPI_Datatype& datatype_interval);
     void unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval, Payload_solution& solution);
     void unpack_payload_part2(Payload_problem_fjssp& problem);

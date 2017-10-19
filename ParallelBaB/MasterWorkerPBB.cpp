@@ -3,6 +3,10 @@
  *
  *  Created on: 22/09/2017
  *      Author: carlossoto
+ *  This class is inspired from:
+ *  - https://github.com/coolis/MPI_Master_Worker
+ *  - https://www.hpc.cam.ac.uk/using-clusters/compiling-and-development/parallel-programming-mpi-example
+ *
  */
 
 #include "MasterWorkerPBB.hpp"
@@ -48,6 +52,11 @@ tbb::task * MasterWorkerPBB::execute() {
         printf("[Master] Elapsed time: %6.6f\n", time_span.count());
     else
         printf("[WorkerPBB-%03d] Elapsed time: %6.6f\n", rank, time_span.count());
+    /** Wait for all the workers to save the Pareto front. **/
+    /*MPI::COMM_WORLD.Barrier();
+    if (isMaster()) {
+     // save pareto front and data.
+    }*/
     
     MPI_Type_free(&datatype_problem);
     MPI_Type_free(&datatype_interval);
@@ -70,6 +79,7 @@ void MasterWorkerPBB::run() {
     unpack_payload_part2(payload_problem);
     preparePayloadInterval(payload_interval, datatype_interval); /** Each node prepares the payload for receiving intervals. **/
     preparePayloadSolution(payload_solution, datatype_solution);
+    //preparePayloadSolutions(payload_solutions, datatyple_solutions);
 }
 
 /**
@@ -106,6 +116,9 @@ void MasterWorkerPBB::runMasterProcess() {
     
     int sleeping_workers = 0;
     printf("[Master] Sleeping_workers: %3d.\n", (int) sleeping_workers);
+    vector<Solution> new_solutions;
+    Solution new_sol(2, payload_interval.max_size);
+    
     while (sleeping_workers < n_workers) {
         printf("[Master] Waiting for request.\n");
         MPI_Recv(&payload_interval, 1, datatype_interval, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
@@ -130,10 +143,22 @@ void MasterWorkerPBB::runMasterProcess() {
                 }
                 break;
                 
+            case TAG_SOLUTION:
+                printf("[Master] Receiving solution from Worker-%03d.\n", status.MPI_SOURCE);
+
+                new_sol.setObjective(0, payload_interval.distance[0]);
+                new_sol.setObjective(1, payload_interval.distance[1]);
+                
+                for (int sol = 0; sol < new_sol.getNumberOfVariables(); ++sol)
+                    new_sol.setVariable(sol, payload_interval.interval[sol]);
+                
+                new_solutions.push_back(new_sol);
+                
             default:
                 break;
         }
     }
+    printf("[Master] Number of solutions received: %03lu\n", new_solutions.size());
     printf("[Master] No more work.\n");
     
     /** TODO: Collects the final data. **/
@@ -179,7 +204,11 @@ void MasterWorkerPBB::runWorkerProcess() {
     
     printf("[WorkerPBB-%03d] Spawning the swarm...\n", rank);
     tbb::task::spawn(tl);
+    /**TODO: Spawn the thread with the metaheuristic. **/
     int branches_in_loop = 0;
+    
+    vector<Solution> paretoFront;// = BB_container.getParetoFront();
+    Solution temp;
     
     while (there_is_more_work == 1) {
         if (globalPool.isEmptying()) {
@@ -196,7 +225,21 @@ void MasterWorkerPBB::runWorkerProcess() {
                     branches_created += branches_in_loop;
                     printf("[WorkerPBB-%03d] Interval divided in %3d sub-intervals.\n", rank, branches_in_loop);
                     
-                    /** TODO: Share the solutions found to other nodes. **/
+                    /** TODO: Share the solutions found with other nodes. **/
+                    paretoFront = BB_container.getParetoFront();
+                    payload_interval.build_up_to = (int) paretoFront.size();
+                    printf("[WorkerPBB-%03d] Sending solutions to Master %3d.\n", rank, (int) paretoFront.size());
+
+                    for (int n_sol = 0; n_sol < paretoFront.size(); ++n_sol) {
+                        temp =  paretoFront.at(n_sol);
+                        payload_interval.distance[0] = temp.getObjective(0);
+                        payload_interval.distance[1] = temp.getObjective(1);
+                        
+                        for (int n_var = 0; n_var < temp.getNumberOfVariables(); ++n_var)
+                            payload_interval.interval[n_var] = temp.getVariable(n_var);
+                        
+                        MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_SOLUTION);
+                    }
                     break;
                     
                 case TAG_NO_MORE_WORK:  /** There is no more work.**/
@@ -211,7 +254,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     }
     
     while (sleeping_bb < threads_per_node) {
-        /** Waiting for working B&B to end. **/
+        /** Waiting for working B&Bs to end. **/
     }
     
     /** Recollects the data. **/
@@ -254,15 +297,15 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
     
     /** Get name of the instance. **/
     std::vector<std::string> elemens;
-    std::vector<std::string> splited;
+    std::vector<std::string> name_file_ext;
     
     elemens = split(filePath, '/');
     
     unsigned long int sizeOfElems = elemens.size();
-    splited = split(elemens[sizeOfElems - 1], '.');
-    printf("[Master] Name: %s\n", splited[0].c_str());
-    printf("[Master] File extension: %s\n", splited[1].c_str());
-    std::strcpy(extension, splited[1].c_str());
+    name_file_ext = split(elemens[sizeOfElems - 1], '.');
+    printf("[Master] Name: %s\n", name_file_ext[0].c_str());
+    printf("[Master] File extension: %s\n", name_file_ext[1].c_str());
+    std::strcpy(extension, name_file_ext[1].c_str());
     
     std::ifstream infile(filePath);
     if (infile.is_open()) {
@@ -388,7 +431,33 @@ void MasterWorkerPBB::preparePayloadInterval(const Payload_interval &interval, M
     MPI_Type_create_struct(n_blocks, blocks, displacements_interval, types, &datatype_interval);
     MPI_Type_commit(&datatype_interval);
 }
-
+/*
+void MasterWorkerPBB::preparePayloadSolutions(const Payload_interval * solutions, MPI_Datatype &datatype_solutions){
+    const int n_blocks = 6;
+    int blocks[n_blocks] = { 1, 1, 1, 1, 2, solutions[0].max_size };
+    MPI_Aint displacements_interval[n_blocks];
+    MPI_Datatype types[n_blocks] = { MPI_INT, MPI_INT, MPI_INT, MPI_INT, MPI_FLOAT, MPI_INT };
+    MPI_Aint addr_base, addr_priority, addr_deep, addr_build, addr_max_size, addr_distance, addr_interval;
+    
+    MPI_Get_address(&solutions, &addr_base);
+    MPI_Get_address(&(solutions[0].priority), &addr_priority);
+    MPI_Get_address(&(solutions[0].deep), &addr_deep);
+    MPI_Get_address(&(solutions[0].build_up_to), &addr_build);
+    MPI_Get_address(&(solutions[0].max_size), &addr_max_size);
+    MPI_Get_address(solutions[0].distance, &addr_distance);
+    MPI_Get_address(solutions[0].interval, &addr_interval);
+    
+    displacements_interval[0] = static_cast<MPI_Aint>(0);
+    displacements_interval[1] = addr_deep - addr_base;
+    displacements_interval[2] = addr_build - addr_base;
+    displacements_interval[3] = addr_max_size - addr_base;
+    displacements_interval[4] = addr_distance - addr_base;
+    displacements_interval[5] = addr_interval - addr_base;
+    
+    MPI_Type_create_struct(n_blocks, blocks, displacements_interval, types, &datatype_interval);
+    MPI_Type_commit(&datatype_interval);
+}
+*/
 void MasterWorkerPBB::preparePayloadSolution(const Payload_solution &solution, MPI_Datatype &datatype_solution) {
     const int n_blocks = 5;
     int blocks[n_blocks] = { 1, 1, 1, solution.n_objectives, solution.n_variables };
@@ -413,7 +482,7 @@ void MasterWorkerPBB::preparePayloadSolution(const Payload_solution &solution, M
     MPI_Type_commit(&datatype_solution);
 }
 
-void MasterWorkerPBB::unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval, Payload_solution& solution) {
+void MasterWorkerPBB::unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval, Payload_solution & solution) {
     if (isWorker()) { /** Only the workers do this because the Master node initialized them in the loadInstance function. **/
         problem.release_times = new int[problem.n_jobs];
         problem.n_operations_in_job = new int[problem.n_jobs];
@@ -429,6 +498,14 @@ void MasterWorkerPBB::unpack_payload_part1(Payload_problem_fjssp& problem, Paylo
     solution.build_up_to = -1;
     solution.objective =  new double[problem.n_objectives];
     solution.variable = new int[problem.n_operations];
+    
+    /** Calling the payload_solutions directly. **/
+    /*for (int n_sol = 0; n_sol < 10; n_sol++) {
+        payload_solutions[n_sol].distance[0] = 0;
+        payload_solutions[n_sol].distance[1] = 0;
+        payload_solutions[n_sol].max_size = problem.n_operations;
+        payload_solutions[n_sol].interval = new int[problem.n_operations];
+    }*/
 }
 
 void MasterWorkerPBB::unpack_payload_part2(Payload_problem_fjssp& problem) {
