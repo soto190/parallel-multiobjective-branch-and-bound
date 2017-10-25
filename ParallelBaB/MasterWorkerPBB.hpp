@@ -52,12 +52,15 @@ private:
     char file[255];
     
     static const int MASTER_RANK = 0;
-    static const int TAG_INTERVAL = 190;
-    static const int TAG_SOLUTION = 191;
-    static const int TAG_FINISH_WORK = 192;
-    static const int TAG_WORKER_READY = 193;
-    static const int TAG_NO_MORE_WORK = 194;
-    static const int TAG_REQUEST_MORE_WORK = 195;
+    static const int TAG_INTERVAL = 191;
+    static const int TAG_SOLUTION = 192;
+    static const int TAG_FINISH_WORK = 193;
+    static const int TAG_WORKER_READY = 194;
+    static const int TAG_NO_MORE_WORK = 195;
+    static const int TAG_REQUEST_MORE_WORK = 196;
+    static const int TAG_SHARE_WORK = 197;
+    
+    char TAGS[8][50];
     
     void loadInstance(Payload_problem_fjssp& problem, const char filePath[]);
     void preparePayloadProblemPart1(const Payload_problem_fjssp& problem, MPI_Datatype& datatype_problem);
@@ -71,6 +74,7 @@ private:
     void runWorkerProcess();
     void printPayloadInterval() const;
     int splitInterval(Interval& branch_to_split);
+    void printMessageStatus(int source, int tag);
 };
 
 #endif /* MASTERWORKER_HPP_ */

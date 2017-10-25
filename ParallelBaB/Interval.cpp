@@ -113,7 +113,7 @@ Interval::~Interval(){
     delete [] interval;
 }
 
-int Interval::getSize() const{ return  max_size;}
+int Interval::getSize() const{ return max_size;}
 int Interval::getBuildUpTo() const{ return build_up_to;}
 int Interval::getValueAt(int position) const{ return interval[position];}
 Priority Interval::getPriority() const {return priority;}
