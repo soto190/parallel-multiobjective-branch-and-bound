@@ -7,6 +7,9 @@
  *  - https://github.com/coolis/MPI_Master_Worker
  *  - https://www.hpc.cam.ac.uk/using-clusters/compiling-and-development/parallel-programming-mpi-example
  *
+ *  Hybrid parallel designs:
+ *  - https://software.intel.com/en-us/articles/hybrid-parallelism-parallel-distributed-memory-and-shared-memory-computing
+ *
  */
 
 #include "MasterWorkerPBB.hpp"
@@ -64,9 +67,9 @@ tbb::task * MasterWorkerPBB::execute() {
         printf("[WorkerPBB-%03d] Barrier reached at time: %6.6f\n", rank, time_span.count());
     /** Wait for all the workers to save the Pareto front. **/
     MPI::COMM_WORLD.Barrier();
-    /*if (isMaster()) {
+    if (isMaster()) {
      // save pareto front and data.
-    }*/
+    }
     
     MPI_Type_free(&datatype_problem);
     MPI_Type_free(&datatype_interval);
@@ -96,7 +99,7 @@ void MasterWorkerPBB::run() {
  * Seeds each worker with an Interval.
  */
 void MasterWorkerPBB::runMasterProcess() {
-    int worker_dest = 1;
+
     for (int element = 1; element < payload_interval.max_size; ++element)
         payload_interval.interval[element] = -1;
     
@@ -110,7 +113,7 @@ void MasterWorkerPBB::runMasterProcess() {
     payload_interval.distance[1] = 0.9;
     
     /** Seeding the workers with initial subproblems/intervals. **/
-    for (worker_dest = 1; worker_dest <= n_workers; worker_dest++) {
+    for (int worker_dest = 1; worker_dest <= n_workers; worker_dest++) {
         
         payload_interval.interval[0] = n_intervals; /** The first map of the interval. **/
         
@@ -128,15 +131,27 @@ void MasterWorkerPBB::runMasterProcess() {
     printf("[Master] Sleeping_workers: %3d.\n", (int) sleeping_workers);
     vector<Solution> received_solutions;
     Solution received_solution(2, payload_interval.max_size);
-    int sharing_worker = 1;
+    //int sharing_worker = 1;
     int worker_at_right[n_workers + 1];
-    worker_at_right[0] = 0; /** This position is not used. **/
-    for (int w = 1; w < n_workers; ++w)
-        worker_at_right[w] = w + 1;
-    worker_at_right[n_workers] = 1;
+    int workers_with_work[n_workers + 1];
     
+    for (int w = 0; w <= n_workers; ++w)
+        workers_with_work[w] = 1;
+    
+    worker_at_right[0] = 0; /** This position is not used. **/
+    for (int worker = 1; worker < n_workers; ++worker)
+        worker_at_right[worker] = worker + 1;
+    worker_at_right[n_workers] = 1;
+    int number_of_workers_with_work = n_workers;
+    int number_of_work_received = 0;
+    vector<Interval> pending_work;
+    Interval work_to_send(problem.getNumberOfOperations());
+    /** Message to be received in the while loop by the workers. **/
+//    for (worker_dest = 1; worker_dest <= n_workers; worker_dest++)
+//        MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, worker_dest, TAG_WORKER_READY);
+
     while (sleeping_workers < n_workers) {
-        printf("[Master] Waiting for request.\n");
+        printf("[Master] Waiting for workers request.\n");
         MPI_Recv(&payload_interval, 1, datatype_interval, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         printMessageStatus(status.MPI_SOURCE, status.MPI_TAG);
 
@@ -145,37 +160,64 @@ void MasterWorkerPBB::runMasterProcess() {
                 if (n_intervals < max_number_of_mappings) {
                     payload_interval.interval[0] = n_intervals;
                     payload_interval.build_up_to = 0;
+                    payload_interval.priority = 1;
+                    payload_interval.deep = 0;
                     payload_interval.distance[0] = 0.999;
                     payload_interval.distance[1] = 0.999;
                     
-                    for (int var = 1; var < problem.getNumberOfVariables(); ++var)
+                    for (int var = 1; var < payload_interval.max_size; ++var)
                         payload_interval.interval[var] = -1;
                     
                     printf("[Master] Sending interval number %d to WorkerPBB-%03d [B: %3d; D: (%4.4f, %4.4f)].\n", n_intervals, status.MPI_SOURCE, payload_interval.build_up_to, payload_interval.distance[0], payload_interval.distance[1]);
                     printPayloadInterval();
                     
                     MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_INTERVAL, MPI_COMM_WORLD);
+                    workers_with_work[status.MPI_SOURCE] = 1;
                     n_intervals++;
-                }else{
+                }else if(pending_work.size() > 0){
                     /** TODO: Starts a process to request work from other nodes.
-                     *  Stategy 1: Request work to the node who has received less works. Which means the worker has a larger job or a slow worker. The workers whoes request more jobs are fastest or their job is easiest.
+                     *  Strategy 1: Request work to the node who has received less works. Which means the worker has received a larger job or it is a slow worker. The workers whoes request more jobs are fastest or their job is easiest.
+                     *  Strategy 2: Request work to all nodes except the source worker.
+                     *  Strategy 3: The source worker request to the worker at their rigth to share work with him.
                      **/
+                    work_to_send = pending_work.back();
                     
-                    sharing_worker = status.MPI_SOURCE + 1; /** Recycling this buffer to indicate the requesting worker following a ring communincation. **/
-                    if (sharing_worker > n_workers)
-                        sharing_worker = 1;
-                    payload_interval.build_up_to = status.MPI_SOURCE; /** Requesting worker. **/
-                    printf("[Master] Requesting Worker-%03d to share job with WorkerPBB-%03d.\n", sharing_worker, status.MPI_SOURCE);
-                    MPI_Send(&payload_interval, 1, datatype_interval, sharing_worker, TAG_SHARE_WORK, MPI_COMM_WORLD);
+                    payload_interval.build_up_to = work_to_send.getBuildUpTo();
+                    payload_interval.max_size = work_to_send.getSize();
+                    payload_interval.deep = work_to_send.getDeep();
+                    payload_interval.priority = work_to_send.getPriority();
+                    payload_interval.distance[0] = work_to_send.getDistance(0);
+                    payload_interval.distance[1] = work_to_send.getDistance(1);
                     
-                    //printf("[Master] Sending no more work signal to Worker-%03d.\n", status.MPI_SOURCE);
-                    //MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
-                    //sleeping_workers++;
+                    for (int var = 0; var < payload_interval.max_size; ++var)
+                        payload_interval.interval[var] = work_to_send.getValueAt(var);
+                    
+                    printf("[Master] Sending interval to WorkerPBB-%03d [B: %3d; D: (%4.4f, %4.4f)].\n", status.MPI_SOURCE, payload_interval.build_up_to, payload_interval.distance[0], payload_interval.distance[1]);
+                    printPayloadInterval();
+                    MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_INTERVAL, MPI_COMM_WORLD);
 
+                    workers_with_work[status.MPI_SOURCE] = 1;
+                    
+                }else{
+                    
+                    workers_with_work[status.MPI_SOURCE] = 0;
+                    /** Requesting all nodes to share one work except the source worker.**/
+                    for (int worker = 1; worker <= n_workers; ++worker)
+                        if(worker != status.MPI_SOURCE && workers_with_work[worker] == 1){
+                            printf("[Master] Requesting WorkerPBB-%03d to share job with Master.\n", worker);
+                            MPI_Send(&payload_interval, 1, datatype_interval, worker, TAG_SHARE_WORK, MPI_COMM_WORLD);
+                        }
+                    
+                    /** TODO: Rethink if wait for message from requested workers and then re-send the work to the requesting worker. **/
+                    
                 }
                 break;
                 
             case TAG_SHARE_WORK:
+                number_of_work_received++;
+                work_to_send(payload_interval);
+                pending_work.push_back(work_to_send);
+                printf("[Master] Received work from WorkerPBB-%03d.\n", status.MPI_SOURCE);
                 break;
                 
             case TAG_FINISH_WORK:
@@ -183,34 +225,47 @@ void MasterWorkerPBB::runMasterProcess() {
                 break;
             
             case TAG_NO_MORE_WORK:
-                /** If the workers do not have enough work to share then send a stop signal. **/
-                printf("[Master] Sending no more work signal to WorkerPBB-%03d.\n", payload_interval.build_up_to);
-                MPI_Send(&payload_interval, 1, datatype_interval, payload_interval.build_up_to, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
+                number_of_workers_with_work = 0;
+                workers_with_work[status.MPI_SOURCE] = 0;
                 
-                for (int w = 1; w < n_workers; ++w) {
+                for (int worker= 1; worker <= n_workers; ++worker)
+                    if (workers_with_work[worker] == 1)
+                        number_of_workers_with_work++;
+                
+                if (number_of_workers_with_work == 0) /** If any worker has work to share then send a stop signal to all workers. **/
+                    for (int worker = 1; worker <= n_workers; ++worker) {
+                        printf("[Master] Sending no more work signal to WorkerPBB-%03d.\n", worker);
+                        MPI_Send(&payload_interval, 1, datatype_interval, worker, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
+                        sleeping_workers++;
+                    }
+                
+               
+                //printf("[Master] Sending no more work signal to WorkerPBB-%03d.\n", payload_interval.build_up_to);
+                //MPI_Send(&payload_interval, 1, datatype_interval, payload_interval.build_up_to, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
+                
+                /*for (int w = 1; w < n_workers; ++w) {
                     if (worker_at_right[w] == status.MPI_SOURCE)
                         worker_at_right[w]++;
                     if (worker_at_right[w] > n_workers)
                         worker_at_right[w] = 1;
-                }
+                }*/
                 //sleeping_workers++;
                 break;
                 
             case TAG_SOLUTION:
+                /** This tag is not used. **/
                 printf("[Master] Receiving solution from WorkerPBB-%03d.\n", status.MPI_SOURCE);
 
                 received_solution.setObjective(0, payload_interval.distance[0]);
                 received_solution.setObjective(1, payload_interval.distance[1]);
-                
                 for (int sol = 0; sol < received_solution.getNumberOfVariables(); ++sol)
                     received_solution.setVariable(sol, payload_interval.interval[sol]);
                 
                 received_solutions.push_back(received_solution);
                 
-                /** TODO: Re-think if this can be done with a Broadcast (requeires syncronization of all the nodes, also Broadcast is a blocking message) or another advanced function. **/
                 /** Re-sending the solution to other workers. **/
-                printf("[Master] Re-sending solution to Workers.\n");
-                for (int worker = 1; worker < n_workers; ++worker)
+                printf("[Master] Re-sending solution to workers.\n");
+                for (int worker = 1; worker <= n_workers; ++worker)
                     if (worker != status.MPI_SOURCE)
                         MPI_Send(&payload_interval, 1, datatype_interval, worker, TAG_SOLUTION, MPI_COMM_WORLD);
                  break;
@@ -219,10 +274,13 @@ void MasterWorkerPBB::runMasterProcess() {
                 break;
         }
     }
-    for (int w = 1; w <= n_workers; w++) {
+    
+    /** Sending stop singal to all the workers. **/
+    for (int w = 1; w <= n_workers; w++)
         MPI_Send(&payload_interval, 1, datatype_interval, w, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
-    }
+    
     printf("[Master] Number of solutions received: %03lu\n", received_solutions.size());
+    printf("[Master] Number of work received: %03d\n", number_of_work_received);
     printf("[Master] No more work.\n");
 }
 
@@ -289,11 +347,11 @@ void MasterWorkerPBB::runWorkerProcess() {
     while (sleeping_bb < threads_per_node){ /** Waits for all B&Bs to end. **/
         if (there_is_more_work == 1 && globalPool.isEmptying()){
             MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK); /** Request more work from Master. **/
-            
+        
             printf("[WorkerPBB-%03d] Waiting for message.\n", rank);
             MPI_Recv(&payload_interval, 1, datatype_interval, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
             printMessageStatus(status.MPI_SOURCE, status.MPI_TAG);
-
+        
             switch (status.MPI_TAG) {
                     
                 case TAG_INTERVAL:
@@ -361,12 +419,15 @@ void MasterWorkerPBB::runWorkerProcess() {
                         for (int var = 0; var < new_interval.getSize(); ++var)
                             payload_interval.interval[var] = new_interval.getValueAt(var);
                         
-                        printf("[WorkerPBB-%03d] Sending interval to WorkerPBB-%03d with D:(%4.0f, %4.0f).\n", rank, requesting_worker, payload_interval.distance[0], payload_interval.distance[1]);
-                        MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, requesting_worker, TAG_INTERVAL);
+                        //printf("[WorkerPBB-%03d] Sending interval to WorkerPBB-%03d with D:(%4.0f, %4.0f).\n", rank, requesting_worker, payload_interval.distance[0], payload_interval.distance[1]);
+                        //MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, requesting_worker, TAG_INTERVAL);
+                        printf("[WorkerPBB-%03d] Sending interval to Master with D:(%4.0f, %4.0f).\n", rank, payload_interval.distance[0], payload_interval.distance[1]);
+                        MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_SHARE_WORK);
                     }else{
                         printf("[WorkerPBB-%03d] Sending message to Master with TAG_NO_MORE_WORK.\n", rank);
                         MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_NO_MORE_WORK);
-                    }break;
+                    }
+                    break;
                 
                 case TAG_SOLUTION:
                     
@@ -376,7 +437,10 @@ void MasterWorkerPBB::runWorkerProcess() {
                     for (int n_var = 0; n_var < temp.getNumberOfVariables(); ++n_var)
                         temp.setVariable(n_var, payload_interval.interval[n_var]);
                     
-                    printf("[WorkerPBB-%03d] Receiving solution from WorkerPBB-%03d with [%4.0f, %4.0f].\n", rank, status.MPI_SOURCE, temp.getObjective(0), temp.getObjective(1));
+                    if (status.MPI_SOURCE == MASTER_RANK)
+                        printf("[WorkerPBB-%03d] Receiving solution from Master with [%4.0f, %4.0f].\n", rank, temp.getObjective(0), temp.getObjective(1));
+                    else
+                        printf("[WorkerPBB-%03d] Receiving solution from WorkerPBB-%03d with [%4.0f, %4.0f].\n", rank, status.MPI_SOURCE, temp.getObjective(0), temp.getObjective(1));
                     
                     paretoContainer.add(temp);
                     break;
@@ -384,13 +448,18 @@ void MasterWorkerPBB::runWorkerProcess() {
                 case TAG_NO_MORE_WORK:  /** There is no more work.**/
                     there_is_more_work = 0;
                     printf("[WorkerPBB-%03d] Receiving tag with no more work, now waiting for %03d B&B to end.\n", rank, threads_per_node - (int) sleeping_bb);
+                    
                     while (sleeping_bb < threads_per_node) {
                     }
                     
                     MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_FINISH_WORK);
                     
                     break;
-                    
+                
+                case TAG_WORKER_READY:
+                    printf("[WorkerPBB-%03d] Worker Ready!.\n", rank);
+                    break;
+                
                 default:
                     break;
             }
