@@ -469,6 +469,10 @@ void MasterWorkerPBB::runWorkerProcess() {
                     for (int n_var = 0; n_var < temp.getNumberOfVariables(); ++n_var)
                         temp.setVariable(n_var, payload_interval.interval[n_var]);
                     
+                    /** Update the bounds with the received solution. **/
+                    problem.updateBestMakespanSolutionWith(temp);
+                    problem.updateBestMaxWorkloadSolutionWith(temp);
+                    
                     if (status.MPI_SOURCE == MASTER_RANK)
                         printf("[WorkerPBB-%03d] Receiving solution from Master with [%4.0f, %4.0f].\n", rank, temp.getObjective(0), temp.getObjective(1));
                     else
