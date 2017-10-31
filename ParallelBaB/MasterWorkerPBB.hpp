@@ -79,7 +79,7 @@ private:
     void printPayloadInterval() const;
     int splitInterval(Interval& branch_to_split);
     void printMessageStatus(int source, int tag);
-    const float distanceToObjective(int value, int objective) const; /** This function is also in BranchAndBound class. TODO: Fix later.**/
+    float distanceToObjective(int value, int objective) const; /** This function is also in BranchAndBound class. TODO: Fix later.**/
 
 };
 

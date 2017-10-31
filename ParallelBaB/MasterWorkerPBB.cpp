@@ -801,7 +801,7 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
  *  other distance: (objective - value) / objective;
  *
  **/
-const float MasterWorkerPBB::distanceToObjective(int value, int objective) const{
+float MasterWorkerPBB::distanceToObjective(int value, int objective) const{
     int proximity = (value - objective) / value;
     if (proximity < 0)
         proximity = 0;
