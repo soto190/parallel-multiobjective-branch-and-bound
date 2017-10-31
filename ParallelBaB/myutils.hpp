@@ -44,6 +44,7 @@ vector<string> split(const string &s, char delim);
 double roundToNearest(double value);
 double round_double(double value);
 int binarySearch(double value, const double * vector, int size);
+float distance_to_objective(const int val, const int best);
 
 enum Dom {Domtes = 1, Domted = -1, Nondom = 0, Eq = 11};
 enum SORTING_TYPES{DIST_1 = 0, DIST_2 = 1, DIST_COMB = 3, DOMINANCE = 4};

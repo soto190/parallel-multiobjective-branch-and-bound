@@ -78,6 +78,9 @@ Interval& Interval::operator()(const Payload_interval& payload){
     priority = (Priority) payload.priority;
     deep = (Deep) payload.deep;
     
+    distance[0] = payload.distance[0];
+    distance[1] = payload.distance[1];
+    
     if(interval != nullptr)
         delete [] interval;
     

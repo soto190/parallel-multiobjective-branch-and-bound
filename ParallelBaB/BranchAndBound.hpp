@@ -21,7 +21,6 @@
 #include "Problem.hpp"
 #include "ProblemFJSSP.hpp"
 #include "Solution.hpp"
-#include "myutils.hpp"
 #include "GridContainer.hpp"
 #include "Dominance.hpp"
 #include "IVMTree.hpp"
@@ -167,6 +166,7 @@ private:
 public:
     void computeLastBranch(Interval & branch);
     int initGlobalPoolWithInterval(const Interval & branch);
+    const float distanceToObjective(int value, int objective) const;
     
 private:
     int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);

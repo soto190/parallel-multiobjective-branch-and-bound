@@ -16,6 +16,7 @@
 #include "Interval.hpp"
 #include "ProblemFJSSP.hpp"
 #include "Solution.hpp"
+#include "myutils.hpp"
 
 class MasterWorkerPBB : public tbb::task {
 public:
@@ -68,6 +69,9 @@ private:
     void preparePayloadSolution(const Payload_solution& solution, MPI_Datatype& datatype_solution);
     //void preparePayloadSolutions(const Payload_interval* solutions, MPI_Datatype& datatype_solutions);
     void preparePayloadInterval(const Payload_interval& interval, MPI_Datatype& datatype_interval);
+    void storesPayloadInterval(Payload_interval& payload, const Interval& interval);
+    void storesSolutionInInterval(Payload_interval& payload, const Solution& solution);
+    void recoverSolutionFromPayload(const Payload_interval& payload, Solution& solution);
     void unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval, Payload_solution& solution);
     void unpack_payload_part2(Payload_problem_fjssp& problem);
     void runMasterProcess();
@@ -75,6 +79,8 @@ private:
     void printPayloadInterval() const;
     int splitInterval(Interval& branch_to_split);
     void printMessageStatus(int source, int tag);
+    const float distanceToObjective(int value, int objective) const; /** This function is also in BranchAndBound class. TODO: Fix later.**/
+
 };
 
 #endif /* MASTERWORKER_HPP_ */

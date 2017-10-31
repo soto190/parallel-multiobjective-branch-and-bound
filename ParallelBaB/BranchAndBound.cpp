@@ -187,7 +187,6 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     int machine = 0;
     int toAdd = 0;
     
-    float distance_error[2];
     fjssp_data.reset(); /** This function call is not necesary because the structurs are empty.**/
     
     fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
@@ -214,11 +213,8 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
                     /** Gets the branch to add. */
                     branch_to_split.setValueAt(split_level, toAdd);
                     
-                    distance_error[0] = (problem.getLowerBoundInObj(0) - fjssp_data.getMakespan()) / (float) problem.getLowerBoundInObj(0);
-                    distance_error[1] = (problem.getLowerBoundInObj(1) - fjssp_data.getMaxWorkload()) / (float) problem.getLowerBoundInObj(1);
-                    
-                    branch_to_split.setDistance(0, distance_error[0]);
-                    branch_to_split.setDistance(1, distance_error[1]);
+                    branch_to_split.setDistance(0, distanceToObjective(fjssp_data.getMakespan(), problem.getLowerBoundInObj(0)));
+                    branch_to_split.setDistance(1, distanceToObjective(fjssp_data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
                     setPriorityTo(branch_to_split);
                     /** Add it to pending intervals. **/
                     globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
@@ -393,8 +389,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     
     int branches_created = 0;
     
-    float distance_error[2];
-    float distance_error_best[2];
+    float distance_error_to_best[2];
     
     SortedVector sorted_elements;
     Data3 data;
@@ -436,22 +431,19 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         solution.setVariable(currentLevel + 1, toAdd);
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
                         
-                        distance_error_best[0] = (best_values_found[0] - fjssp_data.getMakespan()) / (float) best_values_found[0];
-                        distance_error_best[1] = (best_values_found[1] - fjssp_data.getMaxWorkload()) / (float) best_values_found[1];
+                        distance_error_to_best[0] = distanceToObjective(fjssp_data.getMakespan(), best_values_found[0]);
+                        distance_error_to_best[1] = distanceToObjective(fjssp_data.getMaxWorkload(), best_values_found[1]);
                         
-                        /** If distance in obj1 is greater  or distance in ob2 is smaller the can produce an improvement. **/
-                        if ((distance_error_best[0] >= 0 || distance_error_best[1] >= 0) && improvesTheGrid(solution)) {
+                        /** If distance in obj1 is better  or distance in ob2 is better then it can produce an improvement. **/
+                        if ((distance_error_to_best[0] <= 0 || distance_error_to_best[1] <= 0) && improvesTheGrid(solution)) {
                             
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
                             data.setValue(toAdd);
                             data.setObjective(0, fjssp_data.getMakespan());
                             data.setObjective(1, fjssp_data.getMaxWorkload());
                             
-                            distance_error[0] = (problem.getLowerBoundInObj(0) - data.getObjective(0)) / (float) problem.getLowerBoundInObj(0);
-                            distance_error[1] = (problem.getLowerBoundInObj(1) - data.getObjective(1)) / (float) problem.getLowerBoundInObj(1);
-                            
-                            data.setDistance(0, distance_error[0]);
-                            data.setDistance(1, distance_error[1]);
+                            data.setDistance(0, distanceToObjective(data.getObjective(0), problem.getLowerBoundInObj(0)));
+                            data.setDistance(1, distanceToObjective(data.getObjective(1), problem.getLowerBoundInObj(1)));
                             
                             sorted_elements.push(data, SORTING_TYPES::DIST_1);/** sorting the nodes to give priority to promising nodes. **/
                             
@@ -549,14 +541,12 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
                 temp.setVariable(next_row, value);
                 problem.evaluateDynamic(temp, data, next_row);
                 
-                branch_to_send.setDistance(0, (problem.getLowerBoundInObj(0) - data.getMakespan()) / (float) problem.getLowerBoundInObj(0));
-                branch_to_send.setDistance(1, (problem.getLowerBoundInObj(1) - data.getMaxWorkload()) / (float) problem.getLowerBoundInObj(1));
+                branch_to_send.setDistance(0, distanceToObjective(data.getMakespan(), problem.getLowerBoundInObj(0)));
+                branch_to_send.setDistance(1, distanceToObjective(data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
                 
                 setPriorityTo(branch_to_send);
                 globalPool.push(branch_to_send); /** This stores a copy.**/
                 shared_work++;
-                
-                //intervals_to_send.push_back(branch_to_send);
                 
                 branch_to_send.removeLastValue();
                 problem.evaluateRemoveDynamic(temp, data, next_row);
@@ -715,34 +705,47 @@ void BranchAndBound::updateBoundsWithSolution(const Solution & solution){
  **/
 void BranchAndBound::setPriorityTo(Interval& interval) const{
     /** TODO: This can be replaced by a Fuzzy Logic Controller. **/
+    float close = 0.25f; /** If it is less than 0.333f then it is close. **/
+    float half = 0.5f;   /** If it is more than 0.25 and less than 0.5f then it is at half distance. **/
+    float far = 0.75f;   /** If it is bigger than 0.75 then it is far. **/
+    
     switch (interval.getDeep()) {
         case Deep::TOP:
             interval.setHighPriority();
-            if (interval.getDistance(0) >= 0.6f) /** Good distance. **/
+            if (interval.getDistance(0) <= close) /** Good distance. **/
                 interval.setHighPriority();
-            else if(interval.getDistance(0) >= 0.3f) /** Moderate distance. **/
+            else if(interval.getDistance(0) <= half) /** Moderate distance. **/
                 interval.setMediumPriority();
-            
             break;
             
         case Deep::MID:
             interval.setMediumPriority();
             
-            if (interval.getDistance(0) >= 0.6f) /** Good distance. **/
+            if (interval.getDistance(0) <= close) /** Good distance. **/
                 interval.setHighPriority();
-            else if(interval.getDistance(0) <= 0.3f) /** Bad distance. **/
+            else if(interval.getDistance(0) >= far) /** Bad distance. **/
                 interval.setLowPriority();
             break;
             
         case Deep::BOTTOM:
             interval.setLowPriority();
-            if (interval.getDistance(0) >= 0.8f) /** Good distance. **/
+            if (interval.getDistance(0) <= close) /** Good distance. **/
                 interval.setHighPriority();
             break;
             
         default:
             break;
     }
+}
+
+/** Returns the distance or proximity to the given objective. If the value is minor than the objective then returns 0. If it is less than 0 then it produces an improvement. Distance connot be negative.
+ *  other distance: (objective - value) / objective;
+ ***/
+const float BranchAndBound::distanceToObjective(int value, int objective) const{
+    int proximity = (value - objective) / value;
+    if (proximity < 0)
+        proximity = 0;
+    return proximity;
 }
 
 int BranchAndBound::getNodeRank() const{ return rank; }

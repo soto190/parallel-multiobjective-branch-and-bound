@@ -41,6 +41,11 @@ double round_double(double value) {
 	return round(value * 1000000) / 1000000;
 }
 
+/** Returns a value between -1 and 1. **/
+float distance_to_objective(const float value, const float best) {
+    return (value - best) / value;
+}
+
 int binarySearch(double value, const double * array, int size) {
 	int low = 0, high = size - 1, mid;
 
