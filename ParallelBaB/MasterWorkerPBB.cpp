@@ -300,8 +300,6 @@ void MasterWorkerPBB::runWorkerProcess() {
     if (worker_at_right > n_workers) /** Ring formation: The last worker has at it rigth the first worker. **/
         worker_at_right = 1;
     
-    problem.loadInstancePayload(payload_problem);
-    
     printf("[WorkerPBB-%03d] Waiting for interval.\n", rank);
     MPI_Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
     branch_init(payload_interval);
@@ -485,6 +483,8 @@ void MasterWorkerPBB::runWorkerProcess() {
 
 void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *filePath) {
     char extension[4];
+    const int instance_with_release_time = 1; /** This is used because the Kacem's instances have releases times and the other sets dont. **/
+    
     problem.n_objectives = 2;
     problem.n_jobs = 0;
     problem.n_machines = 0;
@@ -516,18 +516,28 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
             problem.n_operations_in_job = new int[problem.n_jobs];
             
             std::string * job_line = new std::string[problem.n_jobs];
-            for (int n_job = 0; n_job < problem.n_jobs; ++n_job) {
-                std::getline(infile, job_line[n_job]);
-                split(job_line[n_job], ' ', elemens);
-                problem.n_operations_in_job[n_job] = std::stoi(elemens.at(0));
-                problem.n_operations += problem.n_operations_in_job[n_job];
-                problem.release_times[n_job] = 0;
-            }
+            if (instance_with_release_time == 1)
+                for (int n_job = 0; n_job < problem.n_jobs; ++n_job) {
+                    std::getline(infile, job_line[n_job]);
+                    split(job_line[n_job], ' ', elemens);
+                    problem.n_operations_in_job[n_job] = std::stoi(elemens.at(1));
+                    problem.n_operations += problem.n_operations_in_job[n_job];
+                    problem.release_times[n_job] = std::stoi(elemens.at(0));
+                }
+            else
+                for (int n_job = 0; n_job < problem.n_jobs; ++n_job) {
+                    std::getline(infile, job_line[n_job]);
+                    split(job_line[n_job], ' ', elemens);
+                    problem.n_operations_in_job[n_job] = std::stoi(elemens.at(0));
+                    problem.n_operations += problem.n_operations_in_job[n_job];
+                    problem.release_times[n_job] = 0;
+                }
             
             problem.processing_times = new int[problem.n_operations * problem.n_machines];
             int op_counter = 0;
             for (int n_job = 0; n_job < problem.n_jobs; ++n_job) {
-                int token = 1;
+                int token = (instance_with_release_time == 0)?1:2;
+                
                 split(job_line[n_job], ' ', elemens);
                 for (int n_op_in_job = 0; n_op_in_job < problem.n_operations_in_job[n_job]; ++n_op_in_job) {
                     int op_can_be_proc_in_n_mach = std::stoi(elemens.at(token++));
@@ -703,27 +713,13 @@ void MasterWorkerPBB::unpack_payload_part1(Payload_problem_fjssp& problem, Paylo
      }*/
 }
 
-void MasterWorkerPBB::unpack_payload_part2(Payload_problem_fjssp& problem) {
-    
-    printf("[Node-%02d] Jobs: %d Operations: %d Machines: %d\n", rank, problem.n_jobs, problem.n_operations,
-           problem.n_machines);
-    
-    /*
-     printf("[Node%02d] ", rank);
-     for (int n_job = 0; n_job < problem.n_jobs; ++n_job)
-     printf("%d ", problem.n_operations_in_job[n_job]);
-     printf("\n");
-     
-     printf("[Node%d] ", rank);
-     for (int n_job = 0; n_job < problem.n_jobs; ++n_job)
-     printf("%d ", problem.release_times[n_job]);
-     printf("\n");
-     
-     printf("[Node%d] ", rank);
-     for (int proc_t = 0; proc_t < problem.n_operations * problem.n_machines; ++proc_t)
-     printf("%d ", problem.processing_times[proc_t]);
-     printf("\n");
-     */
+void MasterWorkerPBB::unpack_payload_part2(Payload_problem_fjssp& payload_problem) {
+    printf("[Node-%02d] Jobs: %d Operations: %d Machines: %d\n", rank, payload_problem.n_jobs, payload_problem.n_operations,
+           payload_problem.n_machines);
+
+    problem.loadInstancePayload(payload_problem);
+    if(isMaster())
+        problem.printProblemInfo();
 }
 
 int MasterWorkerPBB::getRank() const{

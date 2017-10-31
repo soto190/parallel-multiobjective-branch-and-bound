@@ -101,10 +101,14 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/workspace/Instances/FJSSP/set-BehnkeGeiger/6_Fattahi/Fattahi10.fjs"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/carlossoto/workspace/Instances/FJSSP/set-Kacem/Kacem1.fjs"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/carlossoto/workspace/Instances/FJSSP/Kacem/Kacem-I0.txt"
+            argument = "/Users/carlossoto/workspace/Instances/FJSSP/set-BehnkeGeiger/5_Kacem/Kacem1.fjs"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
