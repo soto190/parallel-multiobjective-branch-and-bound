@@ -496,6 +496,8 @@ public:
     void buildSolutionWithGoodMaxWorkload(Solution & solution);
     void buildSolutionWithGoodMaxWorkloadv2(Solution & solution);
     int e_function(double value) const;
+    
+    int validateVariablesOf(const Solution& solution) const;
 };
 
 #endif /* ProblemFJSSP_hpp */

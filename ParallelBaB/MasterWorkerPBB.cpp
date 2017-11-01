@@ -506,7 +506,7 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
     const int kacem_legnth = 5;
     char kacem[kacem_legnth] {'K', 'a', 'c', 'e', 'm'};
     for (int character = 0; character < kacem_legnth && instance_with_release_time == 1; ++character)
-        instance_with_release_time = (kacem[character] != name_file_ext[0][character]) ? 0 : 1;
+        instance_with_release_time = (kacem[character] == name_file_ext[0][character]) ? 1 : 0;
     
     std::ifstream infile(filePath);
     if (infile.is_open()) {
@@ -525,7 +525,7 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
             for (int n_job = 0; n_job < problem.n_jobs; ++n_job) {
                 std::getline(infile, job_line[n_job]);
                 split(job_line[n_job], ' ', elemens);
-                problem.n_operations_in_job[n_job] = std::stoi(elemens.at(1));
+                problem.n_operations_in_job[n_job] = (instance_with_release_time == 1) ? std::stoi(elemens.at(1)): std::stoi(elemens.at(0));
                 problem.n_operations += problem.n_operations_in_job[n_job];
                 problem.release_times[n_job] = ((instance_with_release_time == 1) ? std::stoi(elemens.at(0)) : 0);
             }

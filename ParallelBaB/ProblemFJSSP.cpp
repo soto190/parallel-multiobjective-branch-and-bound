@@ -381,6 +381,8 @@ void ProblemFJSSP::loadInstancePayload(const Payload_problem_fjssp& problem) {
         processingTime[n_op] = new int[n_machines];
         for (int n_mach = 0; n_mach < n_machines; ++n_mach)
             processingTime[n_op][n_mach] = problem.processing_times[n_op * problem.n_machines + n_mach];
+        lowerBound[n_op] = 0;
+        upperBound[n_op] = n_jobs * n_machines;
     }
     
     /** Creates the mapping. **/
@@ -1915,4 +1917,13 @@ void ProblemFJSSP::printPartialSolution(const Solution & solution, int level) co
         
         printf("|");
     }
+}
+
+/** This function return the number of variables which are out of range from varible values.**/
+int ProblemFJSSP::validateVariablesOf(const Solution& solution) const {
+    int number_of_invalid_variables = 0;
+    for (int variable = 0; variable < totalVariables; ++variable)
+        if (solution.getVariable(variable) < lowerBound[variable] || solution.getVariable(variable) > upperBound[variable])
+            number_of_invalid_variables++;
+    return number_of_invalid_variables;
 }

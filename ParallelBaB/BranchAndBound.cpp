@@ -737,12 +737,11 @@ void BranchAndBound::setPriorityTo(Interval& interval) const{
     }
 }
 
-/** Returns the distance or proximity to the given objective. If the value is minor than the objective then returns 0. If it is less than 0 then it produces an improvement. Distance connot be negative.
+/** Returns the proximity to the given objective. When minimizing objectives, if it is less than 0 then it produces an improvement.
  *  other distance: (objective - value) / objective;
  ***/
 float BranchAndBound::distanceToObjective(int value, int objective){
-    int proximity = (value - objective) / value;
-    return (proximity > 0)?proximity:0;
+    return (value - objective) / value;
 }
 
 int BranchAndBound::getNodeRank() const{ return rank; }
