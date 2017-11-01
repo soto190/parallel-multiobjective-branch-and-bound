@@ -24,6 +24,7 @@
  * An example of the Grid vectorization:
  *  https://stackoverflow.com/questions/14015556/how-to-map-the-indexes-of-a-matrix-to-a-1-dimensional-array-c
  **/
+#define BIG_VALUE 999999999
 
 enum BucketState {
     unexplored = 0, nondominated = 1, dominated = 2

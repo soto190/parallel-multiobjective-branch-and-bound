@@ -79,7 +79,7 @@ grid(cols, rows){
         rangeiny[divs] = rangeiny[divs - 1] + ry;
     
     for (int obj = 0; obj < 2; ++obj)
-        best_value_found_in_obj[obj].fetch_and_store(999999999);
+        best_value_found_in_obj[obj].fetch_and_store(BIG_VALUE);
 }
 
 HandlerContainer::~HandlerContainer() {
@@ -130,7 +130,7 @@ HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int c
         rangeiny[divs] = rangeiny[divs - 1] + ry;
     
     for (int obj = 0; obj < 2; ++obj)
-        best_value_found_in_obj[obj].fetch_and_store(999999999);
+        best_value_found_in_obj[obj].fetch_and_store(BIG_VALUE);
     
     return *this;
 }

@@ -166,7 +166,7 @@ private:
 public:
     void computeLastBranch(Interval & branch);
     int initGlobalPoolWithInterval(const Interval & branch);
-    float distanceToObjective(int value, int objective) const;
+    static float distanceToObjective(int value, int objective);
     
 private:
     int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);

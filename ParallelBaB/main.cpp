@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
     int size_world = MPI::COMM_WORLD.Get_size();
     
     if (rank == 0)
-        printf("[MASTER] Number of nodes: %3d\n", size_world);
+        printf("[Master] Number of nodes: %3d\n", size_world);
     
     if (size_world == 1) { /** MPI disable or one node request: shared memory version. **/
         one_node(argc, argv);
@@ -116,7 +116,6 @@ int main(int argc, char* argv[]) {
         try {
             tbb::task_scheduler_init init(stoi(argv[arg_num_threads]));
             MasterWorkerPBB *  mwpbb = new (tbb::task::allocate_root()) MasterWorkerPBB (size_world, stoi(argv[arg_num_threads]), argv[arg_input_file]);
-            printf("[Node-%02d] Spawning root...\n", rank);
             tbb::task::spawn_root_and_wait(*mwpbb);
         } catch (tbb::tbb_exception& e) {
             std::cerr << "Intercepted exception:\n" << e.name();

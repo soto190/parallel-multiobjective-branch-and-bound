@@ -334,7 +334,6 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             reachedLeaves++;
             if (updateParetoGrid(incumbent_s)){
                 totalUpdatesInLowerBound++;
-                //Broadcast the new solution found.
                 /*printf("[B&B-%03d] ", rank);
                  printCurrentSolution();
                  printf(" + [%6lu] \n", paretoContainer.getSize());*/
@@ -741,11 +740,9 @@ void BranchAndBound::setPriorityTo(Interval& interval) const{
 /** Returns the distance or proximity to the given objective. If the value is minor than the objective then returns 0. If it is less than 0 then it produces an improvement. Distance connot be negative.
  *  other distance: (objective - value) / objective;
  ***/
-float BranchAndBound::distanceToObjective(int value, int objective) const{
+float BranchAndBound::distanceToObjective(int value, int objective){
     int proximity = (value - objective) / value;
-    if (proximity < 0)
-        proximity = 0;
-    return proximity;
+    return (proximity > 0)?proximity:0;
 }
 
 int BranchAndBound::getNodeRank() const{ return rank; }

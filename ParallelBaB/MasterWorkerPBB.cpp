@@ -40,7 +40,7 @@ tbb::task * MasterWorkerPBB::execute() {
     std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
     rank = MPI::COMM_WORLD.Get_rank();
     n_workers = MPI::COMM_WORLD.Get_size() - 1;
-    
+
     /** All the nodes loads the text of tags for printing.**/
     strcpy(TAGS[0], "MASTER_RANK");
     strcpy(TAGS[1], "TAG_INTERVAL");
@@ -100,6 +100,7 @@ void MasterWorkerPBB::run() {
  */
 void MasterWorkerPBB::runMasterProcess() {
     
+    printf("[Master] Launching Master...\n");
     int max_number_of_mappings = payload_problem.n_jobs * payload_problem.n_machines;
     int n_intervals = 0;
     int sleeping_workers = 0;
@@ -291,7 +292,7 @@ void MasterWorkerPBB::runMasterProcess() {
  *
  */
 void MasterWorkerPBB::runWorkerProcess() {
-    
+    printf("[WorkerPBB-%03d] Worker ready...\n", rank);
     int source = MASTER_RANK;
     sleeping_bb = 0;
     there_is_more_work = 1;
@@ -483,7 +484,7 @@ void MasterWorkerPBB::runWorkerProcess() {
 
 void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *filePath) {
     char extension[4];
-    const int instance_with_release_time = 1; /** This is used because the Kacem's instances have releases times and the other sets dont. **/
+    int instance_with_release_time = 1; /** This is used because the Kacem's instances have releases times and the other sets dont. **/
     
     problem.n_objectives = 2;
     problem.n_jobs = 0;
@@ -498,9 +499,14 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
     
     unsigned long int sizeOfElems = elemens.size();
     name_file_ext = split(elemens[sizeOfElems - 1], '.');
-    printf("[Master] Name: %s\n", name_file_ext[0].c_str());
-    printf("[Master] File extension: %s\n", name_file_ext[1].c_str());
+    printf("[Master] Name: %s extension: %s\n", name_file_ext[0].c_str(), name_file_ext[1].c_str());
     std::strcpy(extension, name_file_ext[1].c_str());
+    
+    /** If the instance is Kacem then it has the release time in the first value of each job. **/
+    const int kacem_legnth = 5;
+    char kacem[kacem_legnth] {'K', 'a', 'c', 'e', 'm'};
+    for (int character = 0; character < kacem_legnth && instance_with_release_time == 1; ++character)
+        instance_with_release_time = (kacem[character] != name_file_ext[0][character]) ? 0 : 1;
     
     std::ifstream infile(filePath);
     if (infile.is_open()) {
@@ -516,28 +522,18 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
             problem.n_operations_in_job = new int[problem.n_jobs];
             
             std::string * job_line = new std::string[problem.n_jobs];
-            if (instance_with_release_time == 1)
-                for (int n_job = 0; n_job < problem.n_jobs; ++n_job) {
-                    std::getline(infile, job_line[n_job]);
-                    split(job_line[n_job], ' ', elemens);
-                    problem.n_operations_in_job[n_job] = std::stoi(elemens.at(1));
-                    problem.n_operations += problem.n_operations_in_job[n_job];
-                    problem.release_times[n_job] = std::stoi(elemens.at(0));
-                }
-            else
-                for (int n_job = 0; n_job < problem.n_jobs; ++n_job) {
-                    std::getline(infile, job_line[n_job]);
-                    split(job_line[n_job], ' ', elemens);
-                    problem.n_operations_in_job[n_job] = std::stoi(elemens.at(0));
-                    problem.n_operations += problem.n_operations_in_job[n_job];
-                    problem.release_times[n_job] = 0;
-                }
+            for (int n_job = 0; n_job < problem.n_jobs; ++n_job) {
+                std::getline(infile, job_line[n_job]);
+                split(job_line[n_job], ' ', elemens);
+                problem.n_operations_in_job[n_job] = std::stoi(elemens.at(1));
+                problem.n_operations += problem.n_operations_in_job[n_job];
+                problem.release_times[n_job] = ((instance_with_release_time == 1) ? std::stoi(elemens.at(0)) : 0);
+            }
             
             problem.processing_times = new int[problem.n_operations * problem.n_machines];
             int op_counter = 0;
             for (int n_job = 0; n_job < problem.n_jobs; ++n_job) {
                 int token = (instance_with_release_time == 0)?1:2;
-                
                 split(job_line[n_job], ' ', elemens);
                 for (int n_op_in_job = 0; n_op_in_job < problem.n_operations_in_job[n_job]; ++n_op_in_job) {
                     int op_can_be_proc_in_n_mach = std::stoi(elemens.at(token++));
@@ -714,10 +710,13 @@ void MasterWorkerPBB::unpack_payload_part1(Payload_problem_fjssp& problem, Paylo
 }
 
 void MasterWorkerPBB::unpack_payload_part2(Payload_problem_fjssp& payload_problem) {
-    printf("[Node-%02d] Jobs: %d Operations: %d Machines: %d\n", rank, payload_problem.n_jobs, payload_problem.n_operations,
-           payload_problem.n_machines);
-
+    if(isMaster())
+        printf("[Master] Jobs: %d Operations: %d Machines: %d\n", payload_problem.n_jobs, payload_problem.n_operations, payload_problem.n_machines);
+    else
+        printf("[WorkerPBB-%03d] Jobs: %d Operations: %d Machines: %d\n", rank, payload_problem.n_jobs, payload_problem.n_operations, payload_problem.n_machines);
+    
     problem.loadInstancePayload(payload_problem);
+    
     if(isMaster())
         problem.printProblemInfo();
 }
@@ -780,8 +779,8 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
                     /** Gets the branch to add. */
                     branch_to_split.setValueAt(split_level, toAdd);
                     
-                    branch_to_split.setDistance(0, distanceToObjective(fjssp_data.getMakespan(), problem.getLowerBoundInObj(0)));
-                    branch_to_split.setDistance(1, distanceToObjective(fjssp_data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
+                    branch_to_split.setDistance(0, BranchAndBound::distanceToObjective(fjssp_data.getMakespan(), problem.getLowerBoundInObj(0)));
+                    branch_to_split.setDistance(1, BranchAndBound::distanceToObjective(fjssp_data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
                     branch_to_split.setHighPriority();
                     /** Add it to pending intervals. **/
                     globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
@@ -791,17 +790,6 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
                     problem.evaluateRemoveDynamic(temp, fjssp_data, split_level);
             }
     return branches_created;
-}
-
-/**
- *  other distance: (objective - value) / objective;
- *
- **/
-float MasterWorkerPBB::distanceToObjective(int value, int objective) const{
-    int proximity = (value - objective) / value;
-    if (proximity < 0)
-        proximity = 0;
-    return proximity;
 }
 
 void MasterWorkerPBB::storesPayloadInterval(Payload_interval& payload, const Interval& interval){
