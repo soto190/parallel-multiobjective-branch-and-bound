@@ -502,12 +502,12 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
     printf("[Master] Name: %s extension: %s\n", name_file_ext[0].c_str(), name_file_ext[1].c_str());
     std::strcpy(extension, name_file_ext[1].c_str());
     
-    /** If the instance is Kacem then it has the release time in the first value of each job. **/
+    /** If the instance is Kacem then it has the release time in the first value of each job. TODO: Re-think if its a good idea to update all the instances to include release time at 0. **/
     const int kacem_legnth = 5;
     char kacem[kacem_legnth] {'K', 'a', 'c', 'e', 'm'};
     for (int character = 0; character < kacem_legnth && instance_with_release_time == 1; ++character)
         instance_with_release_time = (kacem[character] == name_file_ext[0][character]) ? 1 : 0;
-    
+ 
     std::ifstream infile(filePath);
     if (infile.is_open()) {
         std::string line;
@@ -533,7 +533,7 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
             problem.processing_times = new int[problem.n_operations * problem.n_machines];
             int op_counter = 0;
             for (int n_job = 0; n_job < problem.n_jobs; ++n_job) {
-                int token = (instance_with_release_time == 0)?1:2;
+                int token = (instance_with_release_time == 1)?2:1;
                 split(job_line[n_job], ' ', elemens);
                 for (int n_op_in_job = 0; n_op_in_job < problem.n_operations_in_job[n_job]; ++n_op_in_job) {
                     int op_can_be_proc_in_n_mach = std::stoi(elemens.at(token++));

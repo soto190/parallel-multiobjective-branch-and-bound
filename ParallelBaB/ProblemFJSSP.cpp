@@ -1780,13 +1780,11 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     int makespan = 0;
     int maxWorkload = 0;
     int totalWorkload = 0;
-    
     int operationInPosition = 0;
     int operation = 0;
     int job = 0;
     int machine = 0;
     int numberOp = 0;
-    
     int operation_in_machine[n_operations];
     int operationOfJob[n_jobs];
     int startingTime[n_operations];
@@ -1809,7 +1807,6 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     for (machine = 0; machine < n_machines; ++machine) {
         timeInMachine[machine] = 0;
         workload[machine] = 0;
-        
         /**creates an empty gantt**/
         for (time = 0; time < MAX_GANTT_LIMIT; time++) {
             gantt[machine][time] = ' ';

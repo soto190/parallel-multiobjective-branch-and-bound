@@ -20,6 +20,11 @@ ParallelBranchAndBound::~ParallelBranchAndBound(){}
 tbb::task * ParallelBranchAndBound::execute() {
     
     globalPool.setSizeEmptying((unsigned long) (number_of_bbs * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
+   
+    Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.createDefaultSolution(solution);
+    
+    paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
     BranchAndBound BB_container(rank, 0, problem, branch_init);
     BB_container.initGlobalPoolWithInterval(branch_init);

@@ -252,13 +252,13 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     
     for (row = 0; row <= build_up_to; ++row) {
         for (col = 0; col < tree.getNumberOfCols(); ++col)
-            tree.setIVMValueAt(row, col, -1);
+            tree.setValueAt(row, col, -1);
         build_value = branch_init.getValueAt(row);
         tree.setStartExploration(row, build_value);
         tree.setEndExploration(row, build_value);
         tree.setNumberOfNodesAt(row, 1);
         tree.setActiveNodeAt(row, build_value);
-        tree.setIVMValueAt(row, build_value, build_value);
+        tree.setValueAt(row, build_value, build_value);
         
         /** The interval is equivalent to the solution. **/
         incumbent_s.setVariable(row, build_value);
@@ -300,7 +300,6 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
             problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, currentLevel + 1);
         }
     }
-    
     return 0;
 }
 
@@ -346,7 +345,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
             problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, l);
         
-        if(ivm_tree.hasPendingBranches()) /** Sharing part of the IVM tree to the global pool. This is done after branching and pruning any pending work of the three. **/
+        if(ivm_tree.hasPendingBranches())
             shareWorkAndSendToGlobalPool(branch_to_solve);
     }
 }
@@ -363,7 +362,6 @@ double BranchAndBound::getTotalTime() {
  * Modifies the solution.
  **/
 int BranchAndBound::explore(Solution & solution) {
-    
     exploredNodes++;
     currentLevel = ivm_tree.getActiveRow();
     solution.setVariable(currentLevel, ivm_tree.getActiveNode());
@@ -411,7 +409,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                     }
                 
                 if (isInPermut == 0) {
-                    ivm_tree.setNode(currentLevel + 1, element);
+                    ivm_tree.setNodeAtRow(currentLevel + 1, element);
                     branches++;
                     branches_created++;
                 }
@@ -457,11 +455,11 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             
             if (branches_created > 0) { /** If a branch was created. **/
                 for (std::deque<Data3>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
-                    ivm_tree.setNode(currentLevel + 1, (*it).getValue());
+                    ivm_tree.setNodeAtRow(currentLevel + 1, (*it).getValue());
                 
                 ivm_tree.moveToNextRow();
                 ivm_tree.setActiveNodeAt(ivm_tree.getActiveRow(), 0);
-                ivm_tree.setHasBranches(1);
+                ivm_tree.setHasBranches();
             } else { /** If no branches were created then move to the next node. **/
                 ivm_tree.pruneActiveNode();
                 prunedNodes++;
@@ -470,7 +468,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             
         case ProblemType::combination:
             for (element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
-                ivm_tree.setNode(currentLevel + 1, element);
+                ivm_tree.setNodeAtRow(currentLevel + 1, element);
                 branches++;
                 branches_created++;
             }
@@ -504,8 +502,7 @@ int BranchAndBound::aLeafHasBeenReached() const { return (currentLevel == totalL
 void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_solve){
     
     int next_row = ivm_tree.getRootRow() + 1;
-    unsigned long branches_to_move_to_global_pool = ivm_tree.getActiveRow() - ivm_tree.getPendingNodes() - 1;
-    
+    unsigned long branches_to_move_to_global_pool = ivm_tree.getActiveRow() - ivm_tree.getNumberOfPendingNodes() - 1;
     
     /**
      * To start sharing we have to consider:
@@ -530,7 +527,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
          */
         int total_moved = 0;
         while(globalPool.isEmptying() && next_row < deep_to_share && next_row <= ivm_tree.getActiveRow()
-              && total_moved < ivm_tree.getActiveRow() - ivm_tree.getPendingNodes() - 1){
+              && total_moved < ivm_tree.getActiveRow() - ivm_tree.getNumberOfPendingNodes() - 1){
             
             branches_to_move_to_global_pool = ivm_tree.getNumberOfNodesAt(next_row) - 1;
             for(int moved = 0; moved < branches_to_move_to_global_pool; ++moved){
@@ -554,8 +551,8 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
             
             /** Resets / Clears the interval. **/
             if (next_row > ivm_tree.getRootRow() && next_row <= ivm_tree.getActiveRow() ) {
-                branch_to_send.setValueAt(next_row, ivm_tree.getIVMValue(next_row, ivm_tree.getActiveColAt(next_row)));
-                temp.setVariable(next_row, ivm_tree.getIVMValue(next_row, ivm_tree.getActiveColAt(next_row)));
+                branch_to_send.setValueAt(next_row, ivm_tree.getNodeValue(next_row, ivm_tree.getActiveColAt(next_row)));
+                temp.setVariable(next_row, ivm_tree.getNodeValue(next_row, ivm_tree.getActiveColAt(next_row)));
                 problem.evaluateDynamic(temp, data, next_row);
             }
             next_row++;
@@ -571,8 +568,13 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
 /**
  * Check if the ivm has pending branches to be explored.
  */
-int BranchAndBound::theTreeHasMoreBranches() const { return ivm_tree.hasPendingBranches(); }
-int BranchAndBound::updateParetoGrid(const Solution & solution) { return paretoContainer.add(solution); }
+int BranchAndBound::theTreeHasMoreBranches() const {
+    return ivm_tree.hasPendingBranches();
+}
+
+int BranchAndBound::updateParetoGrid(const Solution & solution) {
+    return paretoContainer.add(solution);
+}
 
 /**
  * The solution improves the lowe bound if:
@@ -956,7 +958,6 @@ void BranchAndBound::printParetoFront(int withExtraInfo) {
 }
 
 void BranchAndBound::printDebug(){
-    
     printf("\nDEBUG\n");
     printf("GlobalPool:\n");
     globalPool.print();
