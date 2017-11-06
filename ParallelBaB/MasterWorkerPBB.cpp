@@ -742,16 +742,13 @@ int MasterWorkerPBB::isWorker() const{
 }
 
 int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
-    Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    int row = 0;
+    Solution temp_sol(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     int split_level = branch_to_split.getBuildUpTo() + 1;
     int branches_created = 0;
     int num_elements = problem.getTotalElements();
     int map = 0;
-    int element = 0;
-    int machine = 0;
-    int toAdd = 0;
-    
+    int value_to_add = 0;
+
     FJSSPdata fjssp_data(problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
     fjssp_data.reset(); /** This function call is not necesary because the structurs are empty.**/
     
@@ -761,23 +758,23 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
         fjssp_data.setTempBestWorkloadInMachine(m, problem.getBestWorkload(m));
     }
     
-    for (row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
+    for (int row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
         map = branch_to_split.getValueAt(row);
-        temp.setVariable(row, map);
-        problem.evaluateDynamic(temp, fjssp_data, row);
+        temp_sol.setVariable(row, map);
+        problem.evaluateDynamic(temp_sol, fjssp_data, row);
     }
     
-    for (element = 0; element < num_elements; ++element)
-        if (fjssp_data.getNumberOfOperationsAllocatedInJob(element) < problem.getTimesValueIsRepeated(element))
-            for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
+    for (int job = 0; job < num_elements; ++job)
+        if (fjssp_data.getNumberOfOperationsAllocatedInJob(job) < problem.getTimesValueIsRepeated(job))
+            for (int machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
                 
-                toAdd = problem.getCodeMap(element, machine);
-                temp.setVariable(split_level, toAdd);
-                problem.evaluateDynamic(temp, fjssp_data, split_level);
+                value_to_add = problem.getCodeMap(job, machine);
+                temp_sol.setVariable(split_level, value_to_add);
+                problem.evaluateDynamic(temp_sol, fjssp_data, split_level);
                 
-                if (paretoContainer.improvesTheGrid(temp)) {
+                if (paretoContainer.improvesTheGrid(temp_sol)) {
                     /** Gets the branch to add. */
-                    branch_to_split.setValueAt(split_level, toAdd);
+                    branch_to_split.setValueAt(split_level, value_to_add);
                     
                     branch_to_split.setDistance(0, BranchAndBound::distanceToObjective(fjssp_data.getMakespan(), problem.getLowerBoundInObj(0)));
                     branch_to_split.setDistance(1, BranchAndBound::distanceToObjective(fjssp_data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
@@ -786,8 +783,8 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
                     globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
                     branch_to_split.removeLastValue();
                     branches_created++;
-                } else
-                    problem.evaluateRemoveDynamic(temp, fjssp_data, split_level);
+                }
+                problem.evaluateRemoveDynamic(temp_sol, fjssp_data, split_level);
             }
     return branches_created;
 }

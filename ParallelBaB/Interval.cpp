@@ -116,20 +116,46 @@ Interval::~Interval(){
     delete [] interval;
 }
 
-int Interval::getSize() const{ return max_size;}
-int Interval::getBuildUpTo() const{ return build_up_to;}
-int Interval::getValueAt(int position) const{ return interval[position];}
-Priority Interval::getPriority() const {return priority;}
-Deep Interval::getDeep() const{return deep;}
-float Interval::getDistance(int n_dim) const {return distance[n_dim];}
+int Interval::getSize() const{
+    return max_size;
+}
 
-void Interval::setLowPriority(){priority = Priority::P_Low;}
-void Interval::setHighPriority(){priority = Priority::P_High;}
-void Interval::setMediumPriority(){priority = Priority::P_Medium;}
+int Interval::getBuildUpTo() const{
+    return build_up_to;
+}
 
-void Interval::setDistance(int n_dim, float n_val){distance[n_dim] = n_val;}
+int Interval::getValueAt(int position) const{
+    return interval[position];
+}
 
-void Interval::setSize(int size){ max_size = size; }
+Priority Interval::getPriority() const {
+    return priority;
+}
+
+Deep Interval::getDeep() const{
+    return deep;
+}
+
+float Interval::getDistance(int n_dim) const {
+    return distance[n_dim];
+}
+
+void Interval::setLowPriority(){
+    priority = Priority::P_Low;
+}
+
+void Interval::setHighPriority(){
+    priority = Priority::P_High;
+}
+
+void Interval::setMediumPriority(){
+    priority = Priority::P_Medium;
+}
+
+void Interval::setDistance(int n_dim, float n_val){
+    distance[n_dim] = n_val;
+}
+
 void Interval::setValueAt(int index, int value){
     interval[index] = value;
     setBuildUpTo(index);
@@ -137,21 +163,40 @@ void Interval::setValueAt(int index, int value){
 
 void Interval::setBuildUpTo(int n_build){
     build_up_to = n_build;
-    if (build_up_to < max_size * short_branch)
+    if (isShortBranch())
         deep = Deep::TOP;
-    else if(build_up_to < max_size * large_branch)
+    else if(isMediumBranch())
         deep = Deep::MID;
     else
         deep = Deep::BOTTOM;
 }
 
+int Interval::isShortBranch() const{
+    return build_up_to < max_size * short_branch;
+}
+
+int Interval::isMediumBranch() const{ /** (short_size < branch_size < large_size)**/
+    return  max_size * short_branch < build_up_to && build_up_to < max_size * large_branch;
+}
+
+int Interval::isLargeBranch() const{
+    return build_up_to > max_size * large_branch;
+}
+
 /** TODO: Verify if we try to remove a value when it doesn't has values. **/
-void Interval::removeLastValue(){interval[build_up_to] = -1; build_up_to--;}
-int Interval::increaseBuildUpTo(){ return build_up_to++; }
+void Interval::removeLastValue(){
+    interval[build_up_to] = -1;
+    build_up_to--;
+}
+
+int Interval::increaseBuildUpTo(){
+    return build_up_to++;
+}
 
 bool Interval::verify() const{
     for (int in = 0; in <= build_up_to; ++in)
-        if (interval[in] == -1) return false;
+        if (interval[in] == -1)
+            return false;
     return true;
 }
 

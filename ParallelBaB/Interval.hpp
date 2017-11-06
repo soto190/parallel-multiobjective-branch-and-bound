@@ -10,6 +10,7 @@
 #define Interval_hpp
 
 #include <stdio.h>
+#include <iostream>
 #include "tbb/concurrent_queue.h"
 
 /**
@@ -43,15 +44,12 @@ class Interval {
 private:
     Priority priority;
     Deep deep;
-    
     int build_up_to = -1;
     int max_size = 0;
-    
     float distance[2];
     int * interval;
     
 public:
-    
     Interval();
     Interval(int max_size);
     Interval(const Interval &toCopy);
@@ -62,30 +60,27 @@ public:
     Interval& operator()(int size);
     Interval& operator()(const Payload_interval& payload);
     
-    int increaseBuildUpTo();
     int getSize() const;
     int getBuildUpTo() const;
     int getValueAt(int position) const;
-    int getLowSize() const;
-    int getHighSize() const;
-    
-    float getDistance(int n_dim) const;
-    
     Priority getPriority() const;
     Deep getDeep() const;
-    void setBuildUpTo(int newBuild);
-    void setSize(int size);
+    float getDistance(int n_dim) const;
+    int increaseBuildUpTo();
     void setValueAt(int index, int value);
-    
     void setLowPriority();
     void setHighPriority();
     void setMediumPriority();
-    
     void setDistance(int n_dim, float n_val);
-    
     void removeLastValue();
     void print() const;
     bool verify() const;
+    
+private:
+    void setBuildUpTo(int newBuild);
+    int isShortBranch() const;
+    int isMediumBranch() const;
+    int isLargeBranch() const;
 };
 
 class ReadySubproblems {
