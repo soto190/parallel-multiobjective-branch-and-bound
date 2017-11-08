@@ -111,7 +111,7 @@ void MasterWorkerPBB::runMasterProcess() {
     vector<Interval> pending_work;
     Interval work_to_send(problem.getNumberOfOperations());
     vector<Solution> received_solutions;
-    Solution received_solution(2, payload_interval.max_size);
+    Solution received_solution(problem.getNumberOfObjectives(), payload_interval.max_size);
     
     int workers_with_work[n_workers + 1];
     int worker_at_right[n_workers + 1];
@@ -218,7 +218,7 @@ void MasterWorkerPBB::runMasterProcess() {
                     if (number_of_workers_with_work == 0) /** If no worker has work to share then send a stop signal to all workers. **/
                         for (int worker = 1; worker <= n_workers; ++worker) {
                             printf("[Master] Sending no more work signal to WorkerPBB-%03d.\n", worker);
-                            MPI_Send(&payload_interval, 1, datatype_interval, worker, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
+                            MPI_Send(&payload_interval, 1, datatype_interval, worker, TAG_NOT_ENOUGH_WORK, MPI_COMM_WORLD);
                             sleeping_workers++;
                         }
                     else{
@@ -244,7 +244,7 @@ void MasterWorkerPBB::runMasterProcess() {
                 sleeping_workers++;
                 break;
                 
-            case TAG_NO_MORE_WORK:
+            case TAG_NOT_ENOUGH_WORK:
                 number_of_workers_with_work = 0;
                 workers_with_work[status.MPI_SOURCE] = 0;
                 
@@ -255,13 +255,13 @@ void MasterWorkerPBB::runMasterProcess() {
                 if (number_of_workers_with_work == 0) /** If any worker has work to share then send a stop signal to all workers. **/
                     for (int worker = 1; worker <= n_workers; ++worker) {
                         printf("[Master] Sending no more work signal to WorkerPBB-%03d.\n", worker);
-                        MPI_Send(&payload_interval, 1, datatype_interval, worker, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
+                        MPI_Send(&payload_interval, 1, datatype_interval, worker, TAG_NOT_ENOUGH_WORK, MPI_COMM_WORLD);
                         sleeping_workers++;
                     }
                 break;
                 
             case TAG_SOLUTION:
-                /** This tag is not used in this implementation because each worker shares their solutions found to the node at right. **/
+                /** This tag is not used in this implementation because each worker shares their solutions found to the worker at right. **/
                 printf("[Master] Receiving solution from WorkerPBB-%03d.\n", status.MPI_SOURCE);
                 
                 recoverSolutionFromPayload(payload_interval, received_solution);
@@ -281,7 +281,7 @@ void MasterWorkerPBB::runMasterProcess() {
     
     /** Sending stop singal to all the workers. **/
     for (int w = 1; w <= n_workers; w++)
-        MPI_Send(&payload_interval, 1, datatype_interval, w, TAG_NO_MORE_WORK, MPI_COMM_WORLD);
+        MPI_Send(&payload_interval, 1, datatype_interval, w, TAG_NOT_ENOUGH_WORK, MPI_COMM_WORLD);
     
     printf("[Master] Number of works received: %03d\n", number_of_works_received);
     printf("[Master] No more work.\n");
@@ -289,7 +289,6 @@ void MasterWorkerPBB::runMasterProcess() {
 
 /**
  * The worker receives the seeding then initalize all the necessary structures and creates in each thread one B&B.
- *
  */
 void MasterWorkerPBB::runWorkerProcess() {
     printf("[WorkerPBB-%03d] Worker ready...\n", rank);
@@ -314,7 +313,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     
     BranchAndBound BB_container(rank, 0, problem, branch_init);
     int branches_created = BB_container.initGlobalPoolWithInterval(branch_init);
-    BB_container.getRank();
+    BB_container.getBBRank();
     printf("[WorkerPBB-%03d] Pool size: %3lu %3d [%3d %3d]\n", rank, globalPool.unsafe_size(), branches_created, problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
     set_ref_count(threads_per_node + 1);
@@ -338,14 +337,13 @@ void MasterWorkerPBB::runWorkerProcess() {
     vector<Solution> solutionsToSend;
     
     Solution received_solution(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    Solution sFront(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     Solution sSub(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     
     Interval interval_to_share(problem.getNumberOfOperations());
     
     paretoFront.clear();
     while (sleeping_bb < threads_per_node){ /** Waits for all B&Bs to end. **/
-        if (there_is_more_work == 1 && globalPool.isEmptying()){
+        if (thereIsMoreWork() && globalPool.isEmptying()){
             MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK); /** Request more work from Master. **/
             
             printf("[WorkerPBB-%03d] Waiting for message.\n", rank);
@@ -375,8 +373,8 @@ void MasterWorkerPBB::runWorkerProcess() {
                             sSub = subFront.at(sub_sol);
                             send_sol = 1;
                             for (int fro_sol = 0; fro_sol < paretoFront.size(); ++fro_sol) {
-                                sFront = paretoFront.at(fro_sol);
-                                if(sSub.dominates(sFront) == Equals){
+                                DominanceRelation result_dom = sSub.dominates(paretoFront.at(fro_sol));
+                                if(result_dom == Equals || result_dom == Dominated){
                                     send_sol = 0;
                                     fro_sol = (int) paretoFront.size();
                                 }
@@ -431,7 +429,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                     paretoContainer.add(received_solution);
                     break;
                     
-                case TAG_NO_MORE_WORK:  /** There is no more work.**/
+                case TAG_NOT_ENOUGH_WORK:  /** There is no more work.**/
                     there_is_more_work = 0;
                     printf("[WorkerPBB-%03d] Receiving tag with no more work, now waiting for %03d B&B to end.\n", rank, threads_per_node - (int) sleeping_bb);
                     
@@ -453,7 +451,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     }
     
     /** Recollects the data. **/
-    BB_container.getTotalTime();
+    BB_container.getElapsedTime();
     BranchAndBound* bb_in;
     while (!bb_threads.empty()) {
         
@@ -480,6 +478,10 @@ void MasterWorkerPBB::runWorkerProcess() {
     bb_threads.clear();
     //printf("[WorkerPBB-%03d] Data swarm recollected and saved.\n", rank);
     printf("[WorkerPBB-%03d] Parallel Branch And Bound ended.\n", rank);
+}
+
+int MasterWorkerPBB::thereIsMoreWork() const{
+    return there_is_more_work;
 }
 
 void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *filePath) {
@@ -551,7 +553,8 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
             }
         }
         infile.close();
-    }
+    }else
+        printf("Unable to open instance file.\n");
 }
 
 void MasterWorkerPBB::preparePayloadProblemPart1(const Payload_problem_fjssp &problem, MPI_Datatype &datatype_problem) {
@@ -742,7 +745,7 @@ int MasterWorkerPBB::isWorker() const{
 }
 
 int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
-    Solution temp_sol(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    Solution solution(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     int split_level = branch_to_split.getBuildUpTo() + 1;
     int branches_created = 0;
     int num_elements = problem.getTotalElements();
@@ -753,38 +756,36 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
     fjssp_data.reset(); /** This function call is not necesary because the structurs are empty.**/
     
     fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
-    for (int m = 0; m < problem.getNumberOfMachines(); ++m){
-        fjssp_data.setBestWorkloadInMachine(m, problem.getBestWorkload(m));
-        fjssp_data.setTempBestWorkloadInMachine(m, problem.getBestWorkload(m));
+    for (int machine = 0; machine < problem.getNumberOfMachines(); ++machine){
+        fjssp_data.setBestWorkloadInMachine(machine, problem.getBestWorkload(machine));
+        fjssp_data.setTempBestWorkloadInMachine(machine, problem.getBestWorkload(machine));
     }
     
     for (int row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
         map = branch_to_split.getValueAt(row);
-        temp_sol.setVariable(row, map);
-        problem.evaluateDynamic(temp_sol, fjssp_data, row);
+        solution.setVariable(row, map);
+        problem.evaluateDynamic(solution, fjssp_data, row);
     }
     
     for (int job = 0; job < num_elements; ++job)
-        if (fjssp_data.getNumberOfOperationsAllocatedInJob(job) < problem.getTimesValueIsRepeated(job))
+        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(job) < problem.getTimesValueIsRepeated(job))
             for (int machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
-                
                 value_to_add = problem.getCodeMap(job, machine);
-                temp_sol.setVariable(split_level, value_to_add);
-                problem.evaluateDynamic(temp_sol, fjssp_data, split_level);
-                
-                if (paretoContainer.improvesTheGrid(temp_sol)) {
+                solution.setVariable(split_level, value_to_add);
+                problem.evaluateDynamic(solution, fjssp_data, split_level);
+                if (paretoContainer.improvesTheGrid(solution)) {
                     /** Gets the branch to add. */
                     branch_to_split.setValueAt(split_level, value_to_add);
-                    
                     branch_to_split.setDistance(0, BranchAndBound::distanceToObjective(fjssp_data.getMakespan(), problem.getLowerBoundInObj(0)));
                     branch_to_split.setDistance(1, BranchAndBound::distanceToObjective(fjssp_data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
+                    
                     branch_to_split.setHighPriority();
-                    /** Add it to pending intervals. **/
+
                     globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
                     branch_to_split.removeLastValue();
                     branches_created++;
                 }
-                problem.evaluateRemoveDynamic(temp_sol, fjssp_data, split_level);
+                problem.evaluateRemoveDynamic(solution, fjssp_data, split_level);
             }
     return branches_created;
 }

@@ -201,14 +201,13 @@ bool Interval::verify() const{
 }
 
 void Interval::print() const{
-    int index_var = 0;
-    char sep = '-';
+    const char sep = '-';
     
     printf("[%3d][", build_up_to);
-    for (index_var = 0; index_var <= build_up_to; ++index_var)
+    for (int index_var = 0; index_var <= build_up_to; ++index_var)
         printf("%3d ", interval[index_var]);
     
-    for (index_var = build_up_to + 1; index_var < max_size; ++index_var)
+    for (int index_var = build_up_to + 1; index_var < max_size; ++index_var)
         printf("%3c ", sep);
     
     printf("] [%3.3f, %3.3f] [%1d, %1d]\n", distance[0], distance[1], deep, priority);

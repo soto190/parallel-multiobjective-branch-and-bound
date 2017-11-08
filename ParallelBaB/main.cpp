@@ -75,7 +75,6 @@ void one_node(int argc, char* argv[]){
     try {
         
         tbb::task_scheduler_init init(number_of_threads);
-        
         ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(0, number_of_threads, problem);
         pbb->setParetoFrontFile(outputFile.c_str());
         pbb->setSummarizeFile(summarizeFile.c_str());

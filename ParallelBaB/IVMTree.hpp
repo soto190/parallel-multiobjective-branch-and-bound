@@ -10,6 +10,8 @@
 #define IVMTree_hpp
 
 #include <stdio.h>
+#include <fstream>
+#include <iomanip>
 
 class IVMTree {
 private:
@@ -18,13 +20,13 @@ private:
     int whoIam = -1;
     int ** ivm;
     int * active_column_at_row;
-    int * start_exploration; /** This is not used. **/
+    int * start_exploration;
     int * end_exploration; /** This is not used. **/
+    int * n_nodes_at_row;
     int active_row;
     int starting_row;
     int hasBranches = 1;
     int root_row = 0;
-    int * n_nodes_at_row;
     unsigned long pending_nodes = 0;
     
 public:
@@ -32,7 +34,10 @@ public:
     IVMTree(const IVMTree& toCopy);
     IVMTree(int rows, int cols);
     ~IVMTree();
-    
+
+    IVMTree& operator()(int rows, int cols);
+    IVMTree& operator=(const IVMTree& toCopy);
+
     void setOwner(int idBB);
     void setRootRow(int node);
     void setValueAt(int row, int col, int value);
@@ -74,8 +79,7 @@ public:
     int moveToNextNode();
     
     void print();
-    IVMTree& operator()(int rows, int cols);
-    IVMTree& operator=(const IVMTree& toCopy);
+    void saveToFile(const char outputFile[255]) const;
 
 private:
     void setNodeAtNextFreeNodeAtRow(int row, int node_value);
@@ -85,13 +89,12 @@ private:
     void removeActiveNode();
     void moveToFatherRow();
     void removeRow();
-    int isUnderRootRow();
     void moveToRootRow();
     unsigned long decreaseNumberOfPendingNodes();
     unsigned long increaseNumberOfPendingNodes();
     int decreaseEndExplorationAtRow(int row);
-    int isRootRow();
-
+    int isRootRow() const;
+    int isUnderRootRow() const;
     void markActiveNodeAsRemoved();
     void setNoMoreBranches();
 };

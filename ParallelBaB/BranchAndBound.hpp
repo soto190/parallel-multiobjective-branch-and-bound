@@ -40,7 +40,7 @@
  *
  **/
 
-const float to_share = 0.5f;
+const float size_to_share = 0.5f; /** We share the half of the row. **/
 const float deep_limit_share = 0.80f;
 
 extern ReadySubproblems globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
@@ -48,13 +48,11 @@ extern HandlerContainer paretoContainer;
 extern tbb::atomic<int> sleeping_bb;
 extern tbb::atomic<int> there_is_more_work;
 
-
 class BranchAndBound: public tbb::task {
     
 private:
-    
     int node_rank;
-    int rank; /** Identifies the number of thread-B&B. **/
+    int bb_rank;
     
     tbb::atomic<unsigned long> totalNodes;
     tbb::atomic<unsigned long> branches;
@@ -76,15 +74,17 @@ private:
     Solution incumbent_s;
     IVMTree ivm_tree;
     Interval interval_to_solve;
-    std::vector<Solution> paretoFront; /** paretoFront. **/
+    std::vector<Solution> pareto_front; /** paretoFront. **/
     
-    char outputFile[255];
-    char summarizeFile[255];
+    char pareto_file[255];
+    char summarize_file[255];
+    char pool_file[255];
+    char ivm_file[255];
     
     int branches_to_move;
-    int deep_to_share;
+    int deep_limit_to_share;
     
-    double totalTime;
+    double elapsed_time;
     std::clock_t start;
     std::chrono::high_resolution_clock::time_point t1;
     std::chrono::high_resolution_clock::time_point t2;
@@ -96,9 +96,9 @@ public:
     ~BranchAndBound();
     
     int getNodeRank() const;
-    int getRank() const;
+    int getBBRank() const;
     int getCurrentLevel() const;
-    double getTotalTime();
+    double getElapsedTime();
     
     void solve(Interval & interval);
     void initialize(int starting_level);
@@ -142,42 +142,36 @@ public:
     int setSummarizeFile(const char outputFile[255]);
     int saveParetoFront();
     int saveSummarize();
+    void saveCurrentState() const;
     
     void printDebug();
+    int initGlobalPoolWithInterval(const Interval & branch);
+    static float distanceToObjective(int value, int objective);
+    task* execute();
     
 private:
     void printCurrentSolution(int withVariables = 0);
     int aLeafHasBeenReached() const;
     int theTreeHasMoreBranches() const;
-    
+    int thereIsMoreWork() const;
     unsigned long computeTotalNodes(unsigned long totalVariables) const;
     unsigned long permut(unsigned long n, unsigned long i) const;
     
     void shareWorkAndSendToGlobalPool(const Interval& interval);
-    /** Grid functions. **/
     int improvesTheGrid(const Solution & solution) const;
     int updateParetoGrid(const Solution & solution);
-    /** End Grid functions. **/
     void updateBounds(const Solution & solution, FJSSPdata& data);
     void updateBoundsWithSolution(const Solution & solution);
-    
     void setPriorityTo(Interval & interval) const;
-    /** IVM functions. **/
-public:
+
     void computeLastBranch(Interval & branch);
-    int initGlobalPoolWithInterval(const Interval & branch);
-    static float distanceToObjective(int value, int objective);
     
-private:
     int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);
     int intializeIVM_data(Interval& branch, IVMTree & tree);
-    /** End IVM functions **/
     
-public:
-    task* execute();
-    /* void operator()(const Interval& branch) {
-     this->solve(branch);
-     }; */
+    void saveGlobalPool() const;
+    void saveIVM() const;
+    void buildOutputFiles();
 };
 
 #endif /* BranchAndBound_hpp */

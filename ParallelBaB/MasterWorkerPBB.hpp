@@ -57,7 +57,7 @@ private:
     static const int TAG_SOLUTION = 192;
     static const int TAG_FINISH_WORK = 193;
     static const int TAG_WORKER_READY = 194;
-    static const int TAG_NO_MORE_WORK = 195;
+    static const int TAG_NOT_ENOUGH_WORK = 195;
     static const int TAG_REQUEST_MORE_WORK = 196;
     static const int TAG_SHARE_WORK = 197;
     
@@ -79,7 +79,7 @@ private:
     void printPayloadInterval() const;
     int splitInterval(Interval& branch_to_split);
     void printMessageStatus(int source, int tag);
-    float distanceToObjective(int value, int objective) const; /** This function is also in BranchAndBound class. TODO: Fix later.**/
+    int thereIsMoreWork() const;
 
 };
 

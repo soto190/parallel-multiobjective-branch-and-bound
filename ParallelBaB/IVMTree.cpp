@@ -361,8 +361,12 @@ int IVMTree::pruneActiveNode() {
     return getActiveNode();
 }
 
-int IVMTree::isRootRow(){
+int IVMTree::isRootRow() const{
     return active_row == root_row;
+}
+
+int IVMTree::isUnderRootRow() const{
+    return active_row > root_row ? 1 : 0;
 }
 
 void IVMTree::removeActiveNode(){
@@ -385,10 +389,6 @@ void IVMTree::moveToFatherRow(){
 
 void IVMTree::removeRow(){
     active_column_at_row[active_row] = -1;
-}
-
-int IVMTree::isUnderRootRow(){
-    return active_row > root_row ? 1 : 0;
 }
 
 void IVMTree::moveToRootRow(){
@@ -418,33 +418,33 @@ void IVMTree::setNoMoreBranches(){
  */
 void IVMTree::print() {
     char sep = '-';
-    printf("[Row]\tS\tI\t N\t  #\n");
+    printf("[Row]\tS\tI\t V\t  #\n");
     for (int r = 0; r < rows; ++r) {
         /** The integer vector. **/
         if (active_column_at_row[r] == -1 && start_exploration[r] == -1)
-            printf("[%3d] %3c %3c ", r, sep, sep);
+            printf("[%4d] %4c %4c ", r, sep, sep);
         else if (active_column_at_row[r] == -1 && start_exploration[r] > -1)
-            printf("[%3d] %3d %3c ", r, start_exploration[r], sep);
+            printf("[%4d] %4d %4c ", r, start_exploration[r], sep);
         else if (active_column_at_row[r] > -1 && start_exploration[r] == -1)
-            printf("[%3d] %3c %3d ", r, sep, active_column_at_row[r]);
+            printf("[%4d] %4c %4d ", r, sep, active_column_at_row[r]);
         else
-            printf("[%3d] %3d %3d ", r, start_exploration[r], active_column_at_row[r]);
+            printf("[%4d] %4d %4d ", r, start_exploration[r], active_column_at_row[r]);
         
         /** The solution. **/
         if (active_column_at_row[r] == -1 || ivm[r][active_column_at_row[r]] == -1)
-            printf(" %3c ", sep);
+            printf(" %4c ", sep);
         else
-            printf(" %3d ", ivm[r][active_column_at_row[r]]);
+            printf(" %4d ", ivm[r][active_column_at_row[r]]);
         
         /** Max nodes in row. **/
-        printf(" %3d | ", n_nodes_at_row[r]);
+        printf(" %4d | ", n_nodes_at_row[r]);
         
         /** The matrix. **/
         for (int c = 0; c < cols; ++c)
             if (ivm[r][c] == -1)
-                printf("%3c", sep);
+                printf("%4c", sep);
             else
-                printf("%3d", ivm[r][c]);
+                printf("%4d", ivm[r][c]);
         
         /** The active row. **/
         printf("|");
@@ -454,4 +454,41 @@ void IVMTree::print() {
             printf("*");
         printf("\n");
     }
+}
+
+void IVMTree::saveToFile(const char outputFile[255]) const{
+    std::ofstream myfile(outputFile);
+    int size_word = 6;
+    if (myfile.is_open()) {
+        printf("Saving ivm file.\n");
+        myfile << getNumberOfRows() << ' ' << getNumberOfCols() << '\n';
+        myfile << getActiveRow() << '\n';
+        for (int row = 0; row < getNumberOfRows(); ++row){
+            
+            if (getStartExploration(row) > -1)
+                myfile << std::setw(size_word) << getStartExploration(row);
+            else
+                myfile << std::setw(size_word) << '-';
+        
+            if (getActiveColAt(row) > -1)
+                myfile << std::setw(size_word) << getActiveColAt(row);
+            else
+                myfile << std::setw(size_word) << '-';
+        
+            if (getNumberOfNodesAt(row) > -1)
+                myfile << std::setw(size_word) << getNumberOfNodesAt(row);
+            else
+                myfile << std::setw(size_word) << '-';
+        
+            for (int col = 0; col < getNumberOfCols(); ++col)
+                if (getNodeValue(row, col) > -1)
+                    myfile << std::setw(size_word) << getNodeValue(row, col);
+                else
+                    myfile << std::setw(size_word) << '-';
+            
+            myfile << '\n';
+        }
+        myfile.close();
+    } else
+        printf("Unable to open file to save IVM tree pool...\n");
 }

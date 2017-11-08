@@ -796,7 +796,7 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     int map = solution.getVariable(level);
     int job = getDecodeMap(map, 0);
     int machine = getDecodeMap(map, 1);
-    int numberOp = getOperationInJobIsNumber(job, data.getNumberOfOperationsAllocatedInJob(job));
+    int numberOp = getOperationInJobIsNumber(job, data.getNumberOfOperationsAllocatedFromJob(job));
     
     /** With the operation number and the machine we can continue. **/
     int proccessingTime = getProccessingTime(numberOp, machine);

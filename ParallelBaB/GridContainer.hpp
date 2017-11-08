@@ -35,7 +35,6 @@ typedef tbb::queuing_rw_mutex Lock;
 /** Wrapping a vector. **/
 //template<class T>
 class ParetoBucket{
-    
 private:
     unsigned long posx;
     unsigned long posy;
@@ -46,7 +45,6 @@ private:
     std::vector<Solution> m_vec;
     
 public:
-    
     ParetoBucket():
     posx(0),
     posy(0){
@@ -75,30 +73,73 @@ public:
         m_vec.clear();
     }
     
-    void setPosX(unsigned long new_posx){ posx = new_posx;}
-    void setPosY(unsigned long new_posy){ posy = new_posy;}
-    void setPositionXY(unsigned long new_posx, unsigned long new_posy){ posx = new_posx; posy = new_posy;}
-    void setState(BucketState new_state){ state.fetch_and_store(new_state); }
-    void setUnexplored(){ state.fetch_and_store(BucketState::unexplored); }
-    void setNonDominated(){ state.fetch_and_store(BucketState::nondominated); }
-    void setDominated(){ state.fetch_and_store(BucketState::dominated); }
-    void resetSize(){ size.fetch_and_store(0);}
+    void setPosX(unsigned long new_posx){
+        posx = new_posx;
+    }
     
-    unsigned long getPosx() const{ return posx; }
-    unsigned long getPosy() const{ return posy; }
-    unsigned long getSize() const{ return size; }
-    BucketState getState() const{ return state; }
+    void setPosY(unsigned long new_posy){
+        posy = new_posy;
+    }
     
-    tbb::atomic<unsigned long> getSizeAtomic() const{return size;}
-    tbb::atomic<BucketState> getStateAtomic() const{return state;}
+    void setPositionXY(unsigned long new_posx, unsigned long new_posy){
+        posx = new_posx;
+        posy = new_posy;
+    }
     
-    std::vector<Solution>& getVector() {return m_vec;}
-    const std::vector<Solution>& getVectorToCopy() const {return m_vec;}
+    void setState(BucketState new_state){
+        state.fetch_and_store(new_state);
+    }
+    
+    void setUnexplored(){
+        state.fetch_and_store(BucketState::unexplored);
+    }
+    
+    void setNonDominated(){
+        state.fetch_and_store(BucketState::nondominated);
+    }
+    
+    void setDominated(){
+        state.fetch_and_store(BucketState::dominated);
+    }
+    
+    void resetSize(){
+        size.fetch_and_store(0);
+    }
+    
+    unsigned long getPosx() const{
+        return posx;
+    }
+    
+    unsigned long getPosy() const{
+        return posy;
+    }
+    
+    unsigned long getSize() const{
+        return size;
+    }
+    
+    BucketState getState() const{
+        return state;
+    }
+    
+    tbb::atomic<unsigned long> getSizeAtomic() const{
+        return size;
+    }
+    
+    tbb::atomic<BucketState> getStateAtomic() const{
+        return state;
+    }
+    
+    std::vector<Solution>& getVector() {
+        return m_vec;
+    }
+    
+    const std::vector<Solution>& getVectorToCopy() const {
+        return m_vec;
+    }
     
     int produceImprovement(const Solution& obj){
-        
         tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, false);
-        
         unsigned long index = 0, size_vec = m_vec.size();
         int improves = 1;
         for (index = 0; index < size_vec; ++index)
@@ -135,7 +176,6 @@ public:
      *
      ***/
     int push_back(const Solution& obj){
-        
         tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, true);
         unsigned int dominates = 0;
         unsigned int nondominated = 0;
@@ -144,9 +184,7 @@ public:
         
         std::vector<Solution>::iterator begin = m_vec.begin();
         int wasAdded = 0;
-        unsigned long nSol = 0;
-        
-        for (nSol = 0; nSol < m_vec.size(); ++nSol)
+        for (unsigned long nSol = 0; nSol < m_vec.size(); ++nSol)
             switch (obj.dominates(m_vec.at(nSol))) {
                     
                 case DominanceRelation::Dominates:
@@ -210,7 +248,6 @@ public:
 };
 
 class GridContainer {
-    
 private:
     unsigned int cols;
     unsigned int rows;
@@ -218,15 +255,13 @@ private:
     tbb::concurrent_vector<ParetoBucket> m_Data;
     
 public:
-    
     GridContainer(unsigned int width, unsigned int height):
     cols(width),
     rows(height) {
         numberOfElements.store(0);
         m_Data.reserve(cols * rows);
-        int index = 0, indey = 0;
-        for (indey = 0; indey < rows; ++indey)
-            for (index = 0; index < cols; ++index)
+        for (int indey = 0; indey < rows; ++indey)
+            for (int index = 0; index < cols; ++index)
                 m_Data.push_back(ParetoBucket(index, indey));
     }
     
@@ -247,9 +282,8 @@ public:
         numberOfElements.store(0);
         m_Data.clear(); /** Release previous used memory. **/
         m_Data.reserve(cols * rows);
-        int index = 0, indey = 0;
-        for (indey = 0; indey < rows; ++indey)
-            for (index = 0; index < cols; ++index)
+        for (int indey = 0; indey < rows; ++indey)
+            for (int index = 0; index < cols; ++index)
                 m_Data.push_back(ParetoBucket(index, indey));
         return *this;
     }
@@ -260,7 +294,6 @@ public:
         unsigned long size_after = m_Data[y * cols + x].getSize();
         
         numberOfElements.fetch_and_add(size_after - size_before);
-        
         return updated;
     }
     
@@ -268,15 +301,37 @@ public:
         return m_Data[y * cols + x].getVector();
     }
     
-    unsigned int getCols() const { return cols; }
-    unsigned int getRows() const { return rows; }
-    unsigned long getSize() const{ return numberOfElements; }
+    unsigned int getCols() const {
+        return cols;
+    }
     
-    tbb::atomic<unsigned long> getSizeAtomic() const{ return numberOfElements;}
-    BucketState getStateOf(size_t x, size_t y) const{return m_Data[y * cols + x].getState();}
-    unsigned long getSizeOf(size_t x, size_t y) const{return m_Data[y * cols + x].getSize();}
-    int improvesBucket(const Solution& obj, size_t x, size_t y){return m_Data[y * cols + x].produceImprovement(obj);}
-    void setStateOf(BucketState new_state, size_t x, size_t y){m_Data[y * cols + x].setState(new_state);}
+    unsigned int getRows() const {
+        return rows;
+    }
+    
+    unsigned long getSize() const{
+        return numberOfElements;
+    }
+    
+    tbb::atomic<unsigned long> getSizeAtomic() const{
+        return numberOfElements;
+    }
+    
+    BucketState getStateOf(size_t x, size_t y) const{
+        return m_Data[y * cols + x].getState();
+    }
+    
+    unsigned long getSizeOf(size_t x, size_t y) const{
+        return m_Data[y * cols + x].getSize();
+    }
+    
+    int improvesBucket(const Solution& obj, size_t x, size_t y){
+        return m_Data[y * cols + x].produceImprovement(obj);
+    }
+    
+    void setStateOf(BucketState new_state, size_t x, size_t y){
+        m_Data[y * cols + x].setState(new_state);
+    }
     
     unsigned long clear(size_t x, size_t y) {
         unsigned long size_before = m_Data[y * cols + x].getSize();
@@ -291,11 +346,9 @@ public:
             if (m_Data[index].getState() == BucketState::nondominated)
                 m_Data[index].print();
     }
-    
 };
 
 class HandlerContainer {
-    
 private:
     double * rangeinx;
     double * rangeiny;
@@ -306,13 +359,12 @@ private:
     tbb::atomic<unsigned long> activeBuckets;
     tbb::atomic<unsigned long> unexploredBuckets;
     tbb::atomic<unsigned long> disabledBuckets;
-    tbb::atomic<int> best_value_found_in_obj [2]; /** TODO: Change to more objectives. Also this doesnt goes here. Fixed to two objectives **/
+    tbb::atomic<int> min_value_found_in_obj [2]; /** TODO: Change to more objectives. Also this doesnt goes here. Fixed to two objectives **/
     
     GridContainer grid;
     std::vector<Solution> paretoFront;
     
 public:
-    
     HandlerContainer():
     rangeinx(nullptr),
     rangeiny(nullptr),
@@ -329,12 +381,8 @@ public:
     
     int add(const Solution & solution);
     int set(const Solution & solution, int x, int y);
-    void checkCoordinate(const Solution & solution, int * coordinate) const; /** TODO: Choose an appropiate name method.**/
     int improvesTheGrid(const Solution & solution);
-    int improvesTheBucket(const Solution & solution, int x, int y);
     
-    std::vector<Solution>& get(int x, int y);
-    void clearContainer(int x, int y);
     unsigned long getNumberOfActiveBuckets() const;
     unsigned long getNumberOfUnexploredBuckets() const;
     unsigned long getNumberOfDisabledBuckets() const;
@@ -344,15 +392,22 @@ public:
     unsigned long getSizeOf(int x, int y) const;
     BucketState getStateOf(int x, int y) const;
     
-    void setStateOf(BucketState state, int x, int y);
     void printGridSize() const;
     void printStates() const;
     void print() const;
     
     double getMaxIn(int dimension);
     int getBestValueFoundIn(int obj) const;
-    
     std::vector<Solution>& getParetoFront();
+    
+private:
+    std::vector<Solution>& get(int x, int y);
+    int improvesTheBucket(const Solution & solution, int x, int y);
+    void clearContainer(int x, int y);
+    void setStateOf(BucketState state, int x, int y);
+    void getCoordinateForSolution(const Solution & solution, int * coordinate) const;
+    void updateMinValueFound(const Solution& solution);
+    void clearContainersDominatedBy(const int x, const int y);
 };
 
 #endif /* Grid_hpp */

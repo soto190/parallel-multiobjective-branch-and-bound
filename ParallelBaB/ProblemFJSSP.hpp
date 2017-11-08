@@ -153,7 +153,7 @@ public:
         temp_best_wl_m = new int[n_machines];
         
         for (int job = 0; job < n_jobs; ++job)
-            n_operations_allocated[job] = toCopy.getNumberOfOperationsAllocatedInJob(job);
+            n_operations_allocated[job] = toCopy.getNumberOfOperationsAllocatedFromJob(job);
         
         for (int machine = 0; machine < n_machines; ++machine){
             time_on_machine[machine] = toCopy.getTimeOnMachine(machine);
@@ -233,7 +233,7 @@ public:
     int getNumberOfMachines() const { return n_machines;}
     int getNumberOfOperations() const { return n_operations;}
     int getMakespanMachine() const { return machine_makespan;}
-    int getNumberOfOperationsAllocatedInJob(int job) const { return n_operations_allocated[job];}
+    int getNumberOfOperationsAllocatedFromJob(int job) const { return n_operations_allocated[job];}
     int getLastOperationAllocatedInJob(int job) const {return n_operations_allocated[job] - 1;}
     int getOperationAllocation(int operation) const {return operation_allocated_in[operation];}
     int getStartingTime(int operation) const {return starting_time[operation];}
