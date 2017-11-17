@@ -333,14 +333,16 @@ unsigned long IVMTree::getNumberOfPendingNodes() const{
 
 /** Prune the active node and set the active_level pointing to new active node. **/
 int IVMTree::pruneActiveNode() {
+    int pruned_nodes = 0;
     /** TODO if the active node is the root node we cannot remove it.**/
     if (isRootRow())
         setNoMoreBranches();
 
     removeActiveNode();
+    pruned_nodes++;
     if (thereAreMoreNodes()) {
         moveToNodeAtRight();
-        return getActiveNode();
+        return pruned_nodes;
     }
     
     /** If the active level doesn't have more nodes then move to the father node while there are pending nodes **/
@@ -349,16 +351,17 @@ int IVMTree::pruneActiveNode() {
         moveToFatherRow();
         if (!isRootRow()){
             removeActiveNode();
+            pruned_nodes++;
             if (thereAreMoreNodes()) {
                 moveToNodeAtRight();
-                return getActiveNode();
+                return pruned_nodes;
             }
         }
     }
 
     if (isRootRow())
         setNoMoreBranches();
-    return getActiveNode();
+    return pruned_nodes;
 }
 
 int IVMTree::isRootRow() const{

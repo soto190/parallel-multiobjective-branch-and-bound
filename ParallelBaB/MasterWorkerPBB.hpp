@@ -21,22 +21,26 @@
 class MasterWorkerPBB : public tbb::task {
 public:
     MasterWorkerPBB();
-    MasterWorkerPBB(int num_nodes, int num_threads, const char file[]);
+    MasterWorkerPBB(int num_nodes, int num_bb, const char file[]);
     virtual ~MasterWorkerPBB();
     
     void run();
     int getRank() const;
-    int getSizeWorkers() const;
     int isMaster() const;
     int isWorker() const;
     tbb::task* execute();
+    
+    void setParetoFrontFile(const char outputFile[255]);
+    void setSummarizeFile(const char outputFile[255]);
+    
+    int getNumberOfWorkers() const;
+    int getNumberOfBranchsAndBound() const;
     
 private:
     Payload_problem_fjssp payload_problem;
     Payload_interval payload_interval;
     Payload_solution payload_solution;
     //Payload_interval payload_solutions[10]; /** Sending 10 solutions at the time. Recycling the interval struct because it has the same values. **/
-    
     MPI_Datatype datatype_problem; /** For committing. **/
     MPI_Datatype datatype_interval; /** For committing. **/
     MPI_Datatype datatype_solution; /** For committing. **/
@@ -44,13 +48,21 @@ private:
     
     int rank;
     int n_workers;
-    int threads_per_node;
+    int branchsandbound_per_worker;
+    
+    long branches_explored;
+    long branches_created;
+    long branches_pruned;
     //    int sleeping_workers;
     MPI_Status status;
     ProblemFJSSP problem;
     Interval branch_init;
     
-    char file[255];
+    char instance_file[255];
+    char pareto_front_file[255];
+    char summarize_file[255];
+    char ivm_file[255];
+    char pool_file[255];
     
     static const int MASTER_RANK = 0;
     static const int TAG_INTERVAL = 191;
@@ -80,7 +92,7 @@ private:
     int splitInterval(Interval& branch_to_split);
     void printMessageStatus(int source, int tag);
     int thereIsMoreWork() const;
-
+    void buildOutputFiles();
 };
 
 #endif /* MASTERWORKER_HPP_ */

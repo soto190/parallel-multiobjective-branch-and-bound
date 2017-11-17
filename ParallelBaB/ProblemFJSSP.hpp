@@ -229,7 +229,9 @@ public:
         return *this;
     }
     
-    int getNumberOfJobs() const { return n_jobs;}
+    int getNumberOfJobs() const {
+        return n_jobs;
+    }
     int getNumberOfMachines() const { return n_machines;}
     int getNumberOfOperations() const { return n_operations;}
     int getMakespanMachine() const { return machine_makespan;}
@@ -244,6 +246,25 @@ public:
     int getTotalWorkload() const {return total_workload;}
     int getMaxWorkload() const {return max_workload;}
     int getMinTotalWorkload() const{return min_total_workload;}
+    
+    int getObjective(int n_obj) const{
+        int value = 0;
+        switch (n_obj) {
+            case 0:
+                value = getMakespan();
+                break;
+            case 1:
+                value = getMaxWorkload();
+                break;
+            case 2:
+                value = getMinTotalWorkload();
+                break;
+            default:
+                printf("Invalid objective in fjssp data.\n");
+                break;
+        }
+        return value;
+    }
     
     int getBestWorkloadInMachine(int machine) const{return best_workloads_in_machine[machine];}
     int getTempBestWorkloadInMachine(int machine) const{return temp_best_wl_m[machine];}
@@ -315,7 +336,7 @@ public:
         
         for (int machine = 0; machine < n_machines; ++machine){
             time_on_machine[machine] = 0;
-            workload_in_machine[machine] = 0;//best_workloads_machines[n_machines];
+            workload_in_machine[machine] = 0;
             temp_best_wl_m[machine] = best_workloads_in_machine[machine];
             machine_allocations[machine].clear();
         }

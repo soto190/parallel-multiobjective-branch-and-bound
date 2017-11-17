@@ -1125,9 +1125,11 @@ int ProblemFJSSP::getLowerBound(int indexVar) const {
 int ProblemFJSSP::getUpperBound(int indexVar) const {
     return (n_jobs * n_machines) - 1;
 }
+
 int ProblemFJSSP::getBestBoundMaxWorkload() const {
     return bestBound_maxWorkload;
 }
+
 int ProblemFJSSP::getBestBoundMakespan() const {
     return bestBound_makespan;
 }

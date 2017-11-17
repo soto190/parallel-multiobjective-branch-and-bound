@@ -40,7 +40,7 @@
  *
  **/
 
-const float size_to_share = 0.5f; /** We share the half of the row. **/
+const float size_to_share = 0.2f; /** We share the half of the row. **/
 const float deep_limit_share = 0.80f;
 
 extern ReadySubproblems globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
@@ -54,7 +54,7 @@ private:
     int node_rank;
     int bb_rank;
     
-    tbb::atomic<unsigned long> totalNodes;
+    tbb::atomic<unsigned long> number_of_nodes;
     tbb::atomic<unsigned long> branches;
     tbb::atomic<unsigned long> exploredNodes;
     tbb::atomic<unsigned long> callsToBranch;
@@ -82,7 +82,7 @@ private:
     char ivm_file[255];
     
     int branches_to_move;
-    int deep_limit_to_share;
+    int limit_level_to_share;
     
     double elapsed_time;
     std::clock_t start;
@@ -136,12 +136,17 @@ public:
     const Solution& getIncumbentSolution() const;
     const FJSSPdata& getFJSSPdata() const;
     
+    float getDeepLimitToShare() const;
+    float getSizeToShare() const;
+    
     void saveEvery(double timeInSeconds);
     void setParetoFront(const std::vector<Solution>& front);
-    int setParetoFrontFile(const char outputFile[255]);
-    int setSummarizeFile(const char outputFile[255]);
+    void setParetoFrontFile(const char outputFile[255]);
+    void setSummarizeFile(const char outputFile[255]);
+    void setPoolFile(const char outputFile[255]);
     int saveParetoFront();
     int saveSummarize();
+    void saveGlobalPool() const;
     void saveCurrentState() const;
     
     void printDebug();
@@ -164,14 +169,21 @@ private:
     void updateBoundsWithSolution(const Solution & solution);
     void setPriorityTo(Interval & interval) const;
 
+    
+    int getLimitLevelToShare() const;
     void computeLastBranch(Interval & branch);
     
     int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);
     int intializeIVM_data(Interval& branch, IVMTree & tree);
     
-    void saveGlobalPool() const;
     void saveIVM() const;
     void buildOutputFiles();
+    void increaseExploredNodes();
+    void increasePrunedBranches();
+    void increaseEvaluatedNodes();
+    void increaseBranchesCreated();
+    void increaseReachedLeaves();
+    
 };
 
 #endif /* BranchAndBound_hpp */

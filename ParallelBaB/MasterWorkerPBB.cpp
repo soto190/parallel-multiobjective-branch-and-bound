@@ -17,20 +17,28 @@
 MasterWorkerPBB::MasterWorkerPBB() {
     rank = 0;
     n_workers = 0;
-    threads_per_node = 0;
+    branchsandbound_per_worker = 0;
     datatype_interval = 0;
     datatype_problem = 0;
     datatype_solution = 0;
+    
+    branches_explored = 0;
+    branches_created = 0;
+    branches_pruned = 0;
 }
 
 MasterWorkerPBB::MasterWorkerPBB(int num_nodes, int num_threads, const char file_instance[]) :
 n_workers(num_nodes - 1),
-threads_per_node(num_threads) {
+branchsandbound_per_worker(num_threads) {
     rank = 0;
-    std::strcpy(file, file_instance);
+    std::strcpy(instance_file, file_instance);
     datatype_interval = 0;
     datatype_problem = 0;
     datatype_solution = 0;
+    
+    branches_explored = 0;
+    branches_created = 0;
+    branches_pruned = 0;
 }
 
 MasterWorkerPBB::~MasterWorkerPBB() {
@@ -51,8 +59,8 @@ tbb::task * MasterWorkerPBB::execute() {
     strcpy(TAGS[6], "TAG_REQUEST_MORE_WORK");
     strcpy(TAGS[7], "TAG_SHARE_WORK");
     
+    buildOutputFiles();
     run(); /** Initializes the Payloads. **/
-    
     if (isMaster())
         runMasterProcess();
     else
@@ -80,7 +88,7 @@ tbb::task * MasterWorkerPBB::execute() {
 
 void MasterWorkerPBB::run() {
     if (isMaster())
-        loadInstance(payload_problem, file);
+        loadInstance(payload_problem, instance_file);
     
     preparePayloadProblemPart1(payload_problem, datatype_problem);
     MPI::COMM_WORLD.Bcast(&payload_problem, 1, datatype_problem, MASTER_RANK); /* The MASTER_NODE broadcast the part 1 of payload and the slaves nodes receives it. */
@@ -304,7 +312,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     MPI_Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
     branch_init(payload_interval);
     
-    globalPool.setSizeEmptying((unsigned long) (threads_per_node * 2)); /** If the global pool reach this size then the B&B tasks starts sending part of their work to the global pool. **/
+    globalPool.setSizeEmptying((unsigned long) (branchsandbound_per_worker * 2)); /** If the global pool reach this size then the B&B tasks starts sending part of their work to the global pool. **/
     
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
@@ -312,16 +320,20 @@ void MasterWorkerPBB::runWorkerProcess() {
     paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
     BranchAndBound BB_container(rank, 0, problem, branch_init);
-    int branches_created = BB_container.initGlobalPoolWithInterval(branch_init);
-    BB_container.getBBRank();
-    printf("[WorkerPBB-%03d] Pool size: %3lu %3d [%3d %3d]\n", rank, globalPool.unsafe_size(), branches_created, problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
+    branches_created += BB_container.initGlobalPoolWithInterval(branch_init);
+    BB_container.setSummarizeFile(summarize_file);
+    BB_container.setParetoFrontFile(pareto_front_file);
+    BB_container.setPoolFile(pool_file);
     
-    set_ref_count(threads_per_node + 1);
+
+    printf("[WorkerPBB-%03d] Pool size: %3lu %3lu [%3d %3d]\n", rank, globalPool.unsafe_size(), branches_created, problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
+    
+    set_ref_count(branchsandbound_per_worker + 1);
     
     tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
     vector<BranchAndBound *> bb_threads;
     int n_bb = 0;
-    while (n_bb++ < threads_per_node) {
+    while (n_bb++ < branchsandbound_per_worker) {
         BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb, problem, branch_init);
         bb_threads.push_back(BaB_task);
         tl.push_back(*BaB_task);
@@ -342,7 +354,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     Interval interval_to_share(problem.getNumberOfOperations());
     
     paretoFront.clear();
-    while (sleeping_bb < threads_per_node){ /** Waits for all B&Bs to end. **/
+    while (sleeping_bb < branchsandbound_per_worker){ /** Waits for all B&Bs to end. **/
         if (thereIsMoreWork() && globalPool.isEmptying()){
             MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK); /** Request more work from Master. **/
             
@@ -358,7 +370,6 @@ void MasterWorkerPBB::runWorkerProcess() {
                     branch_init(payload_interval);
                     
                     branches_in_loop = splitInterval(branch_init); /** Splits and push to GlobalPool. **/
-                    branches_created += branches_in_loop;
                     printf("[WorkerPBB-%03d] Interval divided in %3d sub-intervals.\n", rank, branches_in_loop);
                     
                     /** This avoid to send repeated solutions. **/
@@ -431,9 +442,9 @@ void MasterWorkerPBB::runWorkerProcess() {
                     
                 case TAG_NOT_ENOUGH_WORK:  /** There is no more work.**/
                     there_is_more_work = 0;
-                    printf("[WorkerPBB-%03d] Receiving tag with no more work, now waiting for %03d B&B to end.\n", rank, threads_per_node - (int) sleeping_bb);
+                    printf("[WorkerPBB-%03d] Receiving tag with no enough work, now waiting for %03d B&B to end.\n", rank, branchsandbound_per_worker - (int) sleeping_bb);
                     
-                    while (sleeping_bb < threads_per_node) { /** TODO: this can be moved outside this switch-case. **/
+                    while (sleeping_bb < branchsandbound_per_worker) { /** TODO: this can be moved outside this switch-case. **/
                     }
                     
                     MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_FINISH_WORK);
@@ -468,15 +479,18 @@ void MasterWorkerPBB::runWorkerProcess() {
         BB_container.increaseSharedWork(bb_in->getSharedWork());
     }
     
-    //    BB_container.setParetoFrontFile(outputParetoFile);
-    //    BB_container.setSummarizeFile(summarizeFile);
+    
+    BB_container.increaseNumberOfExploredNodes(branches_explored);
+    BB_container.increaseNumberOfBranches(branches_created);
+    BB_container.increaseNumberOfPrunedNodes(branches_pruned);
     
     BB_container.getParetoFront();
     BB_container.printParetoFront(0);
-    //    BB_container.saveParetoFront();
-    //    BB_container.saveSummarize();
+    BB_container.saveParetoFront();
+    BB_container.saveSummarize();
+    BB_container.saveGlobalPool();
     bb_threads.clear();
-    //printf("[WorkerPBB-%03d] Data swarm recollected and saved.\n", rank);
+    printf("[WorkerPBB-%03d] Data swarm recollected and saved.\n", rank);
     printf("[WorkerPBB-%03d] Parallel Branch And Bound ended.\n", rank);
 }
 
@@ -554,7 +568,7 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
         }
         infile.close();
     }else
-        printf("Unable to open instance file.\n");
+        printf("[Master] Unable to open instance file.\n");
 }
 
 void MasterWorkerPBB::preparePayloadProblemPart1(const Payload_problem_fjssp &problem, MPI_Datatype &datatype_problem) {
@@ -635,33 +649,7 @@ void MasterWorkerPBB::preparePayloadInterval(const Payload_interval &interval, M
     MPI_Type_create_struct(n_blocks, blocks, displacements_interval, types, &datatype_interval);
     MPI_Type_commit(&datatype_interval);
 }
-/*
- void MasterWorkerPBB::preparePayloadSolutions(const Payload_interval * solutions, MPI_Datatype &datatype_solutions){
- const int n_blocks = 6;
- int blocks[n_blocks] = { 1, 1, 1, 1, 2, solutions[0].max_size };
- MPI_Aint displacements_interval[n_blocks];
- MPI_Datatype types[n_blocks] = { MPI_INT, MPI_INT, MPI_INT, MPI_INT, MPI_FLOAT, MPI_INT };
- MPI_Aint addr_base, addr_priority, addr_deep, addr_build, addr_max_size, addr_distance, addr_interval;
- 
- MPI_Get_address(&solutions, &addr_base);
- MPI_Get_address(&(solutions[0].priority), &addr_priority);
- MPI_Get_address(&(solutions[0].deep), &addr_deep);
- MPI_Get_address(&(solutions[0].build_up_to), &addr_build);
- MPI_Get_address(&(solutions[0].max_size), &addr_max_size);
- MPI_Get_address(solutions[0].distance, &addr_distance);
- MPI_Get_address(solutions[0].interval, &addr_interval);
- 
- displacements_interval[0] = static_cast<MPI_Aint>(0);
- displacements_interval[1] = addr_deep - addr_base;
- displacements_interval[2] = addr_build - addr_base;
- displacements_interval[3] = addr_max_size - addr_base;
- displacements_interval[4] = addr_distance - addr_base;
- displacements_interval[5] = addr_interval - addr_base;
- 
- MPI_Type_create_struct(n_blocks, blocks, displacements_interval, types, &datatype_interval);
- MPI_Type_commit(&datatype_interval);
- }
- */
+
 void MasterWorkerPBB::preparePayloadSolution(const Payload_solution &solution, MPI_Datatype &datatype_solution) {
     const int n_blocks = 5;
     int blocks[n_blocks] = { 1, 1, 1, solution.n_objectives, solution.n_variables };
@@ -728,10 +716,6 @@ int MasterWorkerPBB::getRank() const{
     return rank;
 }
 
-int MasterWorkerPBB::getSizeWorkers() const{
-    return n_workers;
-}
-
 int MasterWorkerPBB::isMaster() const{
     if (rank == MASTER_RANK)
         return 1;
@@ -747,7 +731,7 @@ int MasterWorkerPBB::isWorker() const{
 int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
     Solution solution(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     int split_level = branch_to_split.getBuildUpTo() + 1;
-    int branches_created = 0;
+    int branches_created_in = 0;
     int num_elements = problem.getTotalElements();
     int map = 0;
     int value_to_add = 0;
@@ -773,6 +757,7 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
                 value_to_add = problem.getCodeMap(job, machine);
                 solution.setVariable(split_level, value_to_add);
                 problem.evaluateDynamic(solution, fjssp_data, split_level);
+                branches_explored++;
                 if (paretoContainer.improvesTheGrid(solution)) {
                     /** Gets the branch to add. */
                     branch_to_split.setValueAt(split_level, value_to_add);
@@ -783,11 +768,13 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
 
                     globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
                     branch_to_split.removeLastValue();
+                    branches_created_in++;
                     branches_created++;
-                }
+                }else
+                    branches_pruned++;
                 problem.evaluateRemoveDynamic(solution, fjssp_data, split_level);
             }
-    return branches_created;
+    return branches_created_in;
 }
 
 void MasterWorkerPBB::storesPayloadInterval(Payload_interval& payload, const Interval& interval){
@@ -817,6 +804,49 @@ void MasterWorkerPBB::storesSolutionInInterval(Payload_interval &payload, const 
         payload.interval[var] = solution.getVariable(var);
 }
 
+void MasterWorkerPBB::setParetoFrontFile(const char outputFile[255]) {
+    std::strcpy(pareto_front_file, outputFile);
+}
+
+void MasterWorkerPBB::setSummarizeFile(const char outputFile[255]) {
+    std::strcpy(summarize_file, outputFile);
+}
+
+void MasterWorkerPBB::buildOutputFiles(){
+    
+    std::vector<std::string> paths;
+    std::vector<std::string> name_file;
+    paths = split(instance_file, '/');
+    
+    unsigned long int sizeOfElems = paths.size();
+    name_file = split(paths[sizeOfElems - 1], '.');
+    
+    std::string output_file_pool = "/Users/carlossoto/results/" + name_file[0];//"~/results/" + name_file[0];
+    std::string output_file_ivm = "";
+    std::string output_file_summarize = "";
+    std::string output_file_pareto = "";
+
+    output_file_ivm = output_file_pool;
+    output_file_summarize = output_file_ivm;
+    output_file_pareto = output_file_ivm;
+    
+    output_file_ivm += "-node" + std::to_string(getRank()) + "-ivm" + std::to_string(getNumberOfBranchsAndBound()) + ".txt";
+    std::strcpy(ivm_file, output_file_ivm.c_str());
+    printf("IVM File: %s\n", ivm_file);
+    
+    output_file_pool += "-node" + std::to_string(getRank()) + "-pool.txt";
+    std::strcpy(pool_file, output_file_pool.c_str());
+    printf("Pool File: %s\n", pool_file);
+    
+    output_file_summarize += "-node" + std::to_string(getRank()) + "-summarize.txt";
+    std::strcpy(summarize_file, output_file_summarize.c_str());
+    printf("Summarize File: %s\n", summarize_file);
+    
+    output_file_pareto += "-node" + std::to_string(getRank()) + "-pf.txt";
+    std::strcpy(pareto_front_file, output_file_pareto.c_str());
+    printf("Pareto front File: %s\n", pareto_front_file);
+}
+
 void MasterWorkerPBB::printPayloadInterval() const{
     if (isMaster())
         printf("[Master] [ ");
@@ -829,6 +859,14 @@ void MasterWorkerPBB::printPayloadInterval() const{
         else
             printf("%d ", payload_interval.interval[element]);
     printf("]\n");
+}
+
+int MasterWorkerPBB::getNumberOfWorkers() const{
+    return n_workers;
+}
+
+int MasterWorkerPBB::getNumberOfBranchsAndBound() const{
+    return branchsandbound_per_worker;
 }
 
 void MasterWorkerPBB::printMessageStatus(int source, int tag){
