@@ -126,7 +126,7 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/carlossoto/workspace/Results/"
+            argument = "/Users/carlossoto/workspace/Results/FJSSP/"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

@@ -21,7 +21,7 @@
 class MasterWorkerPBB : public tbb::task {
 public:
     MasterWorkerPBB();
-    MasterWorkerPBB(int num_nodes, int num_bb, const char file[]);
+    MasterWorkerPBB(int num_nodes, int num_bb, const char file[], const char output_path[]);
     virtual ~MasterWorkerPBB();
     
     void run();
@@ -63,6 +63,7 @@ private:
     char summarize_file[255];
     char ivm_file[255];
     char pool_file[255];
+    char output_path[255];
     
     static const int MASTER_RANK = 0;
     static const int TAG_INTERVAL = 191;

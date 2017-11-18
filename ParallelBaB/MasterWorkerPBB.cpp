@@ -27,11 +27,12 @@ MasterWorkerPBB::MasterWorkerPBB() {
     branches_pruned = 0;
 }
 
-MasterWorkerPBB::MasterWorkerPBB(int num_nodes, int num_threads, const char file_instance[]) :
+MasterWorkerPBB::MasterWorkerPBB(int num_nodes, int num_threads, const char file_instance[], const char output_path_results[]) :
 n_workers(num_nodes - 1),
 branchsandbound_per_worker(num_threads) {
     rank = 0;
     std::strcpy(instance_file, file_instance);
+    std::strcpy(output_path, output_path_results);
     datatype_interval = 0;
     datatype_problem = 0;
     datatype_solution = 0;
@@ -759,7 +760,6 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
                 problem.evaluateDynamic(solution, fjssp_data, split_level);
                 branches_explored++;
                 if (paretoContainer.improvesTheGrid(solution)) {
-                    /** Gets the branch to add. */
                     branch_to_split.setValueAt(split_level, value_to_add);
                     branch_to_split.setDistance(0, BranchAndBound::distanceToObjective(fjssp_data.getMakespan(), problem.getLowerBoundInObj(0)));
                     branch_to_split.setDistance(1, BranchAndBound::distanceToObjective(fjssp_data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
@@ -821,7 +821,7 @@ void MasterWorkerPBB::buildOutputFiles(){
     unsigned long int sizeOfElems = paths.size();
     name_file = split(paths[sizeOfElems - 1], '.');
     
-    std::string output_file_pool = "/Users/carlossoto/results/" + name_file[0];//"~/results/" + name_file[0];
+    std::string output_file_pool = output_path + name_file[0];
     std::string output_file_ivm = "";
     std::string output_file_summarize = "";
     std::string output_file_pareto = "";

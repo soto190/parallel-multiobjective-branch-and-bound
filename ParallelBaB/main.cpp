@@ -100,7 +100,8 @@ int main(int argc, char* argv[]) {
     
     const int arg_num_threads = 1;
     const int arg_input_file = 3;
-    
+    const int arg_ouput_path = 5;
+
     MPI_Init(&argc, &argv);
     int rank = MPI::COMM_WORLD.Get_rank();
     int size_world = MPI::COMM_WORLD.Get_size();
@@ -114,7 +115,7 @@ int main(int argc, char* argv[]) {
         
         try {
             tbb::task_scheduler_init init(stoi(argv[arg_num_threads]));
-            MasterWorkerPBB *  mw_pbb = new (tbb::task::allocate_root()) MasterWorkerPBB (size_world, stoi(argv[arg_num_threads]), argv[arg_input_file]);
+            MasterWorkerPBB *  mw_pbb = new (tbb::task::allocate_root()) MasterWorkerPBB (size_world, stoi(argv[arg_num_threads]), argv[arg_input_file], argv[arg_ouput_path]);
             tbb::task::spawn_root_and_wait(*mw_pbb);
         } catch (tbb::tbb_exception& e) {
             std::cerr << "Intercepted exception:\n" << e.name();
