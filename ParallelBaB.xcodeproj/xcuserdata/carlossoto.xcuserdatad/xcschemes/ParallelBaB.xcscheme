@@ -49,7 +49,7 @@
       language = "en"
       region = "MX"
       launchStyle = "0"
-      useCustomWorkingDirectory = "YES"
+      useCustomWorkingDirectory = "NO"
       customWorkingDirectory = "~/results/"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
