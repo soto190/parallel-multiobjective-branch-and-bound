@@ -917,14 +917,12 @@ void BranchAndBound::buildOutputFiles(){
     for (int p = 0; p < paths.size() - 1; ++p)
         output_file_ivm += paths.at(p) + "/";
     output_file_pool = output_file_ivm;
-    
-    output_file_ivm += name_file[0] + "-node"+std::to_string(node_rank) + "-ivm" + std::to_string(bb_rank) + ".txt";
+    long long node_rank_longlong = static_cast<long long>(node_rank);
+    output_file_ivm += name_file[0] + "-node" + std::to_string(node_rank_longlong) + "-ivm" + std::to_string(static_cast<long long>(bb_rank)) + ".txt";
     std::strcpy(ivm_file, output_file_ivm.c_str());
-    printf("IVM File: %s\n", ivm_file);
     
-    output_file_pool += name_file[0] + "-node"+std::to_string(node_rank) + "-pool.txt";
+    output_file_pool += name_file[0] + "-node" + std::to_string(node_rank_longlong) + "-pool.txt";
     std::strcpy(pool_file, output_file_pool.c_str());
-    printf("Pool File: %s\n", pool_file);
 }
 
 
