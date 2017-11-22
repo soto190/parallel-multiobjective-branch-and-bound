@@ -55,16 +55,16 @@ private:
     int bb_rank;
     
     tbb::atomic<unsigned long> number_of_nodes;
-    tbb::atomic<unsigned long> branches;
-    tbb::atomic<unsigned long> exploredNodes;
-    tbb::atomic<unsigned long> callsToBranch;
-    tbb::atomic<unsigned long> reachedLeaves;
-    tbb::atomic<unsigned long> unexploredNodes;
-    tbb::atomic<unsigned long> prunedNodes;
-    tbb::atomic<unsigned long> callsToPrune;
-    tbb::atomic<unsigned long> totalUpdatesInLowerBound;
-    tbb::atomic<unsigned long> totalLevels; /** Number of tree levels. **/
-    tbb::atomic<unsigned long> shared_work;
+    tbb::atomic<unsigned long> number_of_branches;
+    tbb::atomic<unsigned long> number_of_explored_nodes;
+    tbb::atomic<unsigned long> number_of_calls_to_branch;
+    tbb::atomic<unsigned long> number_of_reached_leaves;
+    tbb::atomic<unsigned long> number_of_unexplored_nodes;
+    tbb::atomic<unsigned long> number_of_pruned_nodes;
+    tbb::atomic<unsigned long> number_of_calls_to_prune;
+    tbb::atomic<unsigned long> number_of_updates_in_lower_bound;
+    tbb::atomic<unsigned long> number_of_tree_levels;
+    tbb::atomic<unsigned long> number_of_shared_works;
     
     int currentLevel; /** Active level **/
     
@@ -183,6 +183,8 @@ private:
     void increaseEvaluatedNodes();
     void increaseBranchesCreated();
     void increaseReachedLeaves();
+    void increaseUpdatesInLowerBound();
+    void increaseSharedWorks();
     
 };
 

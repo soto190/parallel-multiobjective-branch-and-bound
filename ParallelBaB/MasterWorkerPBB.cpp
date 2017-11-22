@@ -60,6 +60,14 @@ tbb::task * MasterWorkerPBB::execute() {
     strcpy(TAGS[6], "TAG_REQUEST_MORE_WORK");
     strcpy(TAGS[7], "TAG_SHARE_WORK");
     
+    char processor_name[MPI_MAX_PROCESSOR_NAME];
+    int name_len;
+    MPI_Get_processor_name(processor_name, &name_len);
+    if(isMaster())
+        printf("[Master] Running on %s.\n", processor_name);
+    else
+        printf("[WorkerPBB-%03d] Running on %s.\n", getRank(), processor_name);
+    
     buildOutputFiles();
     run(); /** Initializes the Payloads. **/
     if (isMaster())
@@ -73,7 +81,7 @@ tbb::task * MasterWorkerPBB::execute() {
     if (isMaster())
         printf("[Master] Barrier reached at time: %6.6f\n", time_span.count());
     else
-        printf("[WorkerPBB-%03d] Barrier reached at time: %6.6f\n", rank, time_span.count());
+        printf("[WorkerPBB-%03d] Barrier reached at time: %6.6f\n", getRank(), time_span.count());
     /** Wait for all the workers to save the Pareto front. **/
     MPI::COMM_WORLD.Barrier();
     if (isMaster()) {
@@ -682,8 +690,6 @@ void MasterWorkerPBB::unpack_payload_part1(Payload_problem_fjssp& problem, Paylo
 void MasterWorkerPBB::unpack_payload_part2(Payload_problem_fjssp& payload_problem) {
     if(isMaster())
         printf("[Master] Jobs: %d Operations: %d Machines: %d\n", payload_problem.n_jobs, payload_problem.n_operations, payload_problem.n_machines);
-    else
-        printf("[WorkerPBB-%03d] Jobs: %d Operations: %d Machines: %d\n", rank, payload_problem.n_jobs, payload_problem.n_operations, payload_problem.n_machines);
     
     problem.loadInstancePayload(payload_problem);
     
