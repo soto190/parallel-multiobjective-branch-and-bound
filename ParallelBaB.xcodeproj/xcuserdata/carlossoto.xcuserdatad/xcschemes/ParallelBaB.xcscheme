@@ -102,12 +102,12 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/carlossoto/workspace/Instances/FJSSP/set-BehnkeGeiger/6_Fattahi/Fattahi5.fjs"
-            isEnabled = "YES">
+            argument = "/Users/carlossoto/workspace/Instances/FJSSP/set-BehnkeGeiger/2a_Hurink_sdata/HurinkSdata1.fjs"
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/carlossoto/workspace/Instances/FJSSP/set-Kacem/Kacem1-0rs.fjs"
-            isEnabled = "NO">
+            argument = "/Users/carlossoto/workspace/Instances/FJSSP/set-Kacem/Kacem0.fjs"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/workspace/Instances/FJSSP/set-Kacem/Kacem1.fjs"
@@ -116,14 +116,6 @@
          <CommandLineArgument
             argument = "/Users/carlossoto/workspace/Instances/FJSSP/Kacem/Kacem-I00.txt"
             isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "/Users/carlossoto/workspace/Instances/TSP/ClusterA15.tsp"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "/Users/carlossoto/workspace/Instances/TSP/ClusterB15.tsp"
-            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/workspace/Results/FJSSP/"

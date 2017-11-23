@@ -548,11 +548,6 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
             }
             next_row++;
         }
-        /* If we need to sort the intervals.
-         while(!intervals_to_send.empty()){
-         globalPool.push(intervals_to_send.back());
-         intervals_to_send.pop_back();
-         }*/
     }
 }
 

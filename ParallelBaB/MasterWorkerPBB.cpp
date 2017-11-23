@@ -295,7 +295,7 @@ void MasterWorkerPBB::runMasterProcess() {
  * The worker receives the seeding then initalize all the necessary structures and creates in each thread one B&B.
  */
 void MasterWorkerPBB::runWorkerProcess() {
-    printf("[WorkerPBB-%03d] Worker ready...\n", rank);
+    printf("[WorkerPBB-%03d] Worker ready...\n", getRank());
     int source = MASTER_RANK;
     sleeping_bb = 0;
     there_is_more_work = 1;
@@ -322,7 +322,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     BB_container.setPoolFile(pool_file);
     
 
-    printf("[WorkerPBB-%03d] Pool size: %3lu %3lu [%3d %3d]\n", rank, globalPool.unsafe_size(), branches_created, problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
+    printf("[WorkerPBB-%03d] Pool size: %3lu %3lu [%3d %3d]\n", getRank(), globalPool.unsafe_size(), branches_created, problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
     set_ref_count(branchsandbound_per_worker + 1);
     
@@ -330,12 +330,12 @@ void MasterWorkerPBB::runWorkerProcess() {
     vector<BranchAndBound *> bb_threads;
     int n_bb = 0;
     while (n_bb++ < branchsandbound_per_worker) {
-        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb, problem, branch_init);
+        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(getRank(), n_bb, problem, branch_init);
         bb_threads.push_back(BaB_task);
         tl.push_back(*BaB_task);
     }
     
-    printf("[WorkerPBB-%03d] Spawning the swarm...\n", rank);
+    printf("[WorkerPBB-%03d] Spawning the swarm...\n", getRank());
     tbb::task::spawn(tl);
     /**TODO: Spawn the thread with the metaheuristic. **/
     int branches_in_loop = 0;
@@ -352,7 +352,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     paretoFront.clear();
     while (sleeping_bb < branchsandbound_per_worker){ /** Waits for all B&Bs to end. **/
         if (thereIsMoreWork() && globalPool.isEmptying()){
-            MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK); /** Request more work from Master. **/
+            MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK);
             
             MPI_Recv(&payload_interval, 1, datatype_interval, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
             printMessageStatus(status.MPI_SOURCE, status.MPI_TAG);
@@ -415,7 +415,6 @@ void MasterWorkerPBB::runWorkerProcess() {
                     
                     recoverSolutionFromPayload(payload_interval, received_solution);
                     
-                    /** Update the bounds with the received solution. **/
                     problem.updateBestMakespanSolutionWith(received_solution);
                     problem.updateBestMaxWorkloadSolutionWith(received_solution);
                     
@@ -424,7 +423,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                     
                 case TAG_NOT_ENOUGH_WORK:  /** There is no more work.**/
                     there_is_more_work = 0;
-                    
+                    printf("[WorkerPBB-%03d] Not engouh work received at %f.\n", getRank(), BB_container.getElapsedTime() );
                     while (sleeping_bb < branchsandbound_per_worker) { /** TODO: this can be moved outside this switch-case. **/
                     }
                     
@@ -433,13 +432,14 @@ void MasterWorkerPBB::runWorkerProcess() {
                     break;
                     
                 case TAG_WORKER_READY:
-                    printf("[WorkerPBB-%03d] Worker Ready!.\n", rank);
+                    printf("[WorkerPBB-%03d] Worker Ready!.\n", getRank());
                     break;
                     
                 default:
                     break;
             }
         }
+        //BB_container.saveEvery(300);
     }
     
     /** Recollects the data. **/
@@ -459,11 +459,14 @@ void MasterWorkerPBB::runWorkerProcess() {
         BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());
         BB_container.increaseSharedWork(bb_in->getSharedWork());
     }
-    
     BB_container.increaseNumberOfExploredNodes(branches_explored);
     BB_container.increaseNumberOfBranches(branches_created);
     BB_container.increaseNumberOfPrunedNodes(branches_pruned);
     
+    /**
+     * Send the data to Master.
+     **/
+
     BB_container.getParetoFront();
     BB_container.printParetoFront(0);
     BB_container.saveParetoFront();
@@ -471,14 +474,9 @@ void MasterWorkerPBB::runWorkerProcess() {
     BB_container.saveGlobalPool();
     bb_threads.clear();
     
-    printf("[WorkerPBB-%03d] Data swarm recollected and saved.\n", rank);
-    printf("[WorkerPBB-%03d] Parallel Branch And Bound ended.\n", rank);
+    printf("[WorkerPBB-%03d] Data swarm recollected and saved.\n", getRank());
+    printf("[WorkerPBB-%03d] Parallel Branch And Bound ended.\n", getRank());
 
-    /**
-     * Send the data to Master.
-     **/
-     
-    
 }
 
 int MasterWorkerPBB::thereIsMoreWork() const{
@@ -487,7 +485,7 @@ int MasterWorkerPBB::thereIsMoreWork() const{
 
 void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *filePath) {
     char extension[4];
-    int instance_with_release_time = 1; /** This is used because the Kacem's instances have releases times and the other sets dont. **/
+    int instance_with_release_time = 1; /** This is used because the Kacem's instances have release times and the other sets dont. **/
     
     problem.n_objectives = 2;
     problem.n_jobs = 0;
@@ -829,7 +827,7 @@ void MasterWorkerPBB::printPayloadInterval() const{
     if (isMaster())
         printf("[Master] [ ");
     else
-        printf("[WorkerPBB-%03d] [ ", rank);
+        printf("[WorkerPBB-%03d] [ ", getRank());
     
     for (int element = 0; element < payload_interval.max_size; ++element)
         if (payload_interval.interval[element] == -1)
@@ -851,7 +849,7 @@ void MasterWorkerPBB::printMessageStatus(int source, int tag){
     if (rank == MASTER_RANK)
         printf("[Master] Received message from WorkerPBB-%03d with %s.\n", source, TAGS[tag - 190]);
     else if (source == MASTER_RANK)
-        printf("[WorkerPBB-%03d] Received message from Master with %s.\n", rank, TAGS[tag - 190]);
+        printf("[WorkerPBB-%03d] Received message from Master with %s.\n", getRank(), TAGS[tag - 190]);
     else
-        printf("[WorkerPBB-%03d] Received message from WorkerPBB-%03d with %s.\n", rank, source, TAGS[tag - 190]);
+        printf("[WorkerPBB-%03d] Received message from WorkerPBB-%03d with %s.\n", getRank(), source, TAGS[tag - 190]);
 }
