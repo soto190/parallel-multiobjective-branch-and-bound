@@ -847,9 +847,13 @@ int MasterWorkerPBB::getNumberOfBranchsAndBound() const{
 
 void MasterWorkerPBB::printMessageStatus(int source, int tag){
     if (rank == MASTER_RANK)
-        printf("[Master] Received message from WorkerPBB-%03d with %s.\n", source, TAGS[tag - 190]);
+        printf("[Master] Received message from WorkerPBB-%03d with %s.\n", source, getTagText(tag));
     else if (source == MASTER_RANK)
-        printf("[WorkerPBB-%03d] Received message from Master with %s.\n", getRank(), TAGS[tag - 190]);
+        printf("[WorkerPBB-%03d] Received message from Master with %s.\n", getRank(), getTagText(tag));
     else
-        printf("[WorkerPBB-%03d] Received message from WorkerPBB-%03d with %s.\n", getRank(), source, TAGS[tag - 190]);
+        printf("[WorkerPBB-%03d] Received message from WorkerPBB-%03d with %s.\n", getRank(), source, getTagText(tag));
+}
+
+const char* MasterWorkerPBB::getTagText(int tag) const{
+    return TAGS[tag - 190];
 }

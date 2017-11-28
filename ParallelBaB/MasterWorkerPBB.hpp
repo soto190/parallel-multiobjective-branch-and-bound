@@ -92,6 +92,7 @@ private:
     void printPayloadInterval() const;
     int splitInterval(Interval& branch_to_split);
     void printMessageStatus(int source, int tag);
+    const char* getTagText(int tag) const;
     int thereIsMoreWork() const;
     void buildOutputFiles();
 };
