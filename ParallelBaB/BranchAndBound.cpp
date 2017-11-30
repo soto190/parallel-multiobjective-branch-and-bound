@@ -80,7 +80,7 @@ elapsed_time(0){
     
     number_of_nodes.fetch_and_store(computeTotalNodes(problemToCopy.getNumberOfVariables()));
 
-    ivm_tree.setOwner(rank);
+    ivm_tree.setOwnerId(rank);
 }
 
 BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch){
@@ -116,7 +116,7 @@ BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, cons
     problem.createDefaultSolution(incumbent_s);
     
     ivm_tree(problem.getNumberOfVariables(), problem.getUpperBound(0) + 1);
-    ivm_tree.setOwner(bb_rank);
+    ivm_tree.setOwnerId(bb_rank);
     
     branches_to_move = problem.getUpperBound(0) * size_to_share;
     limit_level_to_share = number_of_tree_levels * deep_limit_share;
@@ -252,7 +252,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
         tree.setStartExploration(row, build_value);
         tree.setEndExploration(row, build_value);
         tree.setNumberOfNodesAt(row, 1);
-        tree.setActiveNodeAt(row, build_value);
+        tree.setActiveColAtRow(row, build_value);
         tree.setValueAt(row, build_value, build_value);
         
         /** The interval is equivalent to the solution. **/
@@ -262,7 +262,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     
     for (row = build_up_to + 1; row <= number_of_tree_levels; ++row) {
         tree.setStartExploration(row, -1);
-        tree.setActiveNodeAt(row, -1);
+        tree.setActiveColAtRow(row, -1);
         tree.resetNumberOfNodesAt(row);
         incumbent_s.setVariable(row, -1);
     }
@@ -339,7 +339,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
             problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, l);
         
-        if(ivm_tree.hasPendingBranches())
+        if(theTreeHasMoreBranches())
             shareWorkAndSendToGlobalPool(branch_to_solve);
     }
 }
@@ -399,7 +399,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                     }
                 
                 if (isInPermut == 0) {
-                    ivm_tree.setNodeAtRow(currentLevel + 1, element);
+                    ivm_tree.addNodeToRow(currentLevel + 1, element);
                     number_of_branches++;
                     branches_created++;
                 }
@@ -444,18 +444,18 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             increaseNumberOfBranches(branches_created);
             if (branches_created > 0) { /** If a branch was created. **/
                 for (std::deque<Data3>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
-                    ivm_tree.setNodeAtRow(currentLevel + 1, (*it).getValue());
+                    ivm_tree.addNodeToRow(currentLevel + 1, (*it).getValue());
                 
                 ivm_tree.moveToNextRow();
-                ivm_tree.setActiveNodeAt(ivm_tree.getActiveRow(), 0);
-                ivm_tree.setHasBranches();
+                ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), 0);
+                ivm_tree.setThereAreMoreBranches();
             } else  /** If no branches were created then move to the next node. **/
                 ivm_tree.pruneActiveNode();
             break;
             
         case ProblemType::combination:
             for (element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
-                ivm_tree.setNodeAtRow(currentLevel + 1, element);
+                ivm_tree.addNodeToRow(currentLevel + 1, element);
                 branches_created++;
             }
             number_of_branches += branches_created;
@@ -542,8 +542,8 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
             
             /** Resets / Clears the interval. **/
             if (next_row > ivm_tree.getRootRow() && next_row <= ivm_tree.getActiveRow() ) {
-                branch_to_send.setValueAt(next_row, ivm_tree.getNodeValue(next_row, ivm_tree.getActiveColAt(next_row)));
-                temp.setVariable(next_row, ivm_tree.getNodeValue(next_row, ivm_tree.getActiveColAt(next_row)));
+                branch_to_send.setValueAt(next_row, ivm_tree.getNodeValueAt(next_row, ivm_tree.getActiveColAt(next_row)));
+                temp.setVariable(next_row, ivm_tree.getNodeValueAt(next_row, ivm_tree.getActiveColAt(next_row)));
                 problem.evaluateDynamic(temp, data, next_row);
             }
             next_row++;
@@ -555,7 +555,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
  * Check if the ivm has pending branches to be explored.
  */
 int BranchAndBound::theTreeHasMoreBranches() const {
-    return ivm_tree.hasPendingBranches();
+    return ivm_tree.thereAreMoreBranches();
 }
 
 int BranchAndBound::updateParetoGrid(const Solution & solution) {

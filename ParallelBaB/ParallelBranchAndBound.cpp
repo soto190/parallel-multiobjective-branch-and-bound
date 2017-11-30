@@ -69,8 +69,8 @@ tbb::task * ParallelBranchAndBound::execute() {
     
     BB_container.getParetoFront();
     BB_container.printParetoFront();
-    //    BB_container.saveParetoFront();
-    //    BB_container.saveSummarize();
+    BB_container.saveParetoFront();
+    BB_container.saveSummarize();
     bb_threads.clear();
     //printf("[Worker-%03d] Data swarm recollected and saved.\n", rank);
     printf("[Worker-%03d] Parallel Branch And Bound ended.\n", rank);

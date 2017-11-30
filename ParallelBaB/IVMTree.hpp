@@ -15,17 +15,17 @@
 
 class IVMTree {
 private:
-    int rows;
-    int cols;
-    int whoIam = -1;
-    int ** ivm;
-    int * active_column_at_row;
+    int n_rows;
+    int n_cols;
+    int i_am = -1;
+    int ** matrix_nodes;
+    int * vector_pointing_to_col_at_row;
     int * start_exploration;
     int * end_exploration; /** This is not used. **/
     int * n_nodes_at_row;
-    int active_row;
+    int integer_pointing_to_row;
     int starting_row;
-    int hasBranches = 1;
+    int there_are_more_ranches = 1;
     int root_row = 0;
     unsigned long pending_nodes = 0;
     
@@ -38,52 +38,52 @@ public:
     IVMTree& operator()(int rows, int cols);
     IVMTree& operator=(const IVMTree& toCopy);
 
-    void setOwner(int idBB);
+    void setOwnerId(int idBB);
     void setRootRow(int node);
     void setValueAt(int row, int col, int value);
-    void setActiveNodeAt(int row, int value);
+    void setActiveColAtRow(int row, int value);
     void setActiveRow(int row);
     void setStartingRow(int row);
     void setNumberOfNodesAt(int row, int value);
     void setExplorationInterval(int starting_level, int * starts, int * ends);
     void setStartExploration(int row, int value);
     void setEndExploration(int row, int value);
-    int increaseNodesAt(int row);
-    int decreaseNodesAt(int row);
+    int increaseNumberOfNodesAt(int row);
+    int decreaseNumberOfNodesAt(int row);
     void resetNumberOfNodesAt(int row);
-    void setHasBranches();
+    void setThereAreMoreBranches();
     
     int getRootNode() const;
     int getRootRow() const;
     int getNumberOfNodesAt(int row) const;
-    int getNodeValue(int row, int col) const;
+    int getNodeValueAt(int row, int col) const;
     int getActiveColAt(int row) const;
     int getActiveRow() const;
-    int getLastNodeAtRow(int row) const;
     int getStartingRow() const;
     int getNumberOfRows() const;
     int getNumberOfCols() const;
     int getDeepOfTree() const;
-    int getOwner() const;
+    int getId() const;
     int getStartExploration(int row) const;
     int getEndExploration(int row) const;
     unsigned long getNumberOfPendingNodes() const;
     int removeLastNodeAtRow(int row);
-    int hasPendingBranches() const;
-    void setNodeAtRow(int level, int value);
+    int thereAreMoreBranches() const;
+    void addNodeToRow(int level, int value);
     int getActiveNode() const;
     int getFatherNode() const;
     int pruneActiveNode();
     
     int moveToNextRow();
-    int moveToNextNode();
     
-    void print();
+    void resetRow(int row);
+    
+    void print() const;
     void saveToFile(const char outputFile[255]) const;
 
 private:
-    void setNodeAtNextFreeNodeAtRow(int row, int node_value);
-    int getNextFreeNodeAtRow(int row);
+    int getNextFreeColAtRow(int row);
+    int getActiveCol() const;
     void moveToNodeAtRight();
     int thereAreMoreNodes();
     void removeActiveNode();
