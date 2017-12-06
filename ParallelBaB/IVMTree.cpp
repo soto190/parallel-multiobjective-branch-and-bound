@@ -150,12 +150,28 @@ void IVMTree::setRootRow(int row){
     root_row = row;
 }
 
-void IVMTree::setValueAt(int row, int col, int value){
-    matrix_nodes[row][col] = value;
+void IVMTree::setNodeValueAt(int row, int col, int value) throw(IVMTreeException){
+    try{
+        if (row < 0 || row >= n_rows || col < 0 || col >= n_cols)
+            throw IVMTreeException(IVMTreeErrorCode::MATRIX_OUT_OF_RANGE, "when calling setNodeValueAt(row:" + std::to_string(row) + ", col:" + std::to_string(col) + ")");
+        
+        matrix_nodes[row][col] = value;
+        
+    } catch (IVMTreeException& ivmTreeEx) {
+        printf("%s\n",  ivmTreeEx.what());
+    }
 }
 
-void IVMTree::setActiveColAtRow(int row, int value){
-    vector_pointing_to_col_at_row[row] = value;
+void IVMTree::setActiveColAtRow(int row, int value) throw(IVMTreeException){
+    try {
+        if (row < 0 || row >= n_rows)
+            throw IVMTreeException(VECTOR_OUT_OF_RANGE, "row:" + std::to_string(row));
+        
+        vector_pointing_to_col_at_row[row] = value;
+    
+    } catch (IVMTreeException& ivmTreeEx) {
+        printf("%s\n",  ivmTreeEx.what());
+    }
 }
 
 void IVMTree::setStartingRow(int row){
@@ -194,7 +210,7 @@ void IVMTree::setThereAreMoreBranches(){
 }
 
 int IVMTree::getRootNode() const{
-    return matrix_nodes[root_row][vector_pointing_to_col_at_row[root_row]];
+    return getNodeValueAt(root_row, getActiveColAt(root_row));
 }
 
 int IVMTree::getRootRow() const {
@@ -205,16 +221,34 @@ int IVMTree::getNumberOfNodesAt(int row) const{
     return n_nodes_at_row[row];
 }
 
-int IVMTree::getNodeValueAt(int row, int col) const{
-    return matrix_nodes[row][col];
+int IVMTree::getNodeValueAt(int row, int col) const throw(IVMTreeException){
+    try {
+        if (row < 0 || row >= n_rows || col < 0 || col >= n_cols)
+            throw IVMTreeException(IVMTreeErrorCode::MATRIX_OUT_OF_RANGE, "(row:" + std::to_string(row) + ", col:" + std::to_string(col) + ")");
+        
+        return matrix_nodes[row][col];
+        
+    } catch (IVMTreeException& ivmTreeEx) {
+        printf("%s\n",  ivmTreeEx.what());
+    }
+    return -1;
 }
 
 int IVMTree::getActiveCol() const{
     return getActiveColAt(getActiveRow());
 }
 
-int IVMTree::getActiveColAt(int row) const{
-    return vector_pointing_to_col_at_row[row];
+int IVMTree::getActiveColAt(int row) const throw(IVMTreeException){
+    try {
+        if (row < 0 || row >= n_rows)
+            throw IVMTreeException(VECTOR_OUT_OF_RANGE, "row:" + std::to_string(row));
+        
+        return vector_pointing_to_col_at_row[row];
+        
+    } catch (IVMTreeException& ivmTreeEx) {
+        printf("%s\n",  ivmTreeEx.what());
+    }
+    return -1;
 }
 
 int IVMTree::getActiveRow() const{
@@ -253,7 +287,7 @@ int IVMTree::removeLastNodeAtRow(int row){
     int last_col = getActiveColAt(row) + getNumberOfNodesAt(row) - 1;
     int node_at_col = matrix_nodes[row][last_col];
     
-    setValueAt(row, last_col, -1);
+    setNodeValueAt(row, last_col, -1);
     decreaseNumberOfNodesAt(row);
     decreaseEndExplorationAtRow(row);
     decreaseNumberOfPendingNodes();
@@ -266,13 +300,21 @@ int IVMTree::decreaseEndExplorationAtRow(int row){
 
 void IVMTree::resetRow(int row){
     for (int col = 0; col < getNumberOfCols(); ++col)
-        setValueAt(row, col, -1);
+        setNodeValueAt(row, col, -1);
     resetNumberOfNodesAt(row);
     setActiveColAtRow(row, -1);
 }
 
-void IVMTree::setActiveRow(int row) {
-    integer_pointing_to_row = row;
+void IVMTree::setActiveRow(int row) throw (IVMTreeException){
+    try{
+        if (row < 0 || row >= n_rows)
+            throw IVMTreeException(INTEGER_OUT_OF_RANGE, "row: " + std::to_string(row));
+
+        integer_pointing_to_row = row;
+    
+    }catch(IVMTreeException& ex){
+        printf("%s\n", ex.what());
+    }
 }
 
 void IVMTree::setOwnerId(int id_bb) {
@@ -297,7 +339,7 @@ void IVMTree::setExplorationInterval(int starting_level, int *starts, int *ends)
 
 void IVMTree::addNodeToRow(int row, int node_value) {
     int next_free_col = getNextFreeColAtRow(row);
-    setValueAt(row, next_free_col, node_value);
+    setNodeValueAt(row, next_free_col, node_value);
     increaseNumberOfNodesAt(row);
     increaseNumberOfPendingNodes();
 }
@@ -311,7 +353,8 @@ int IVMTree::thereAreMoreBranches() const {
 }
 
 int IVMTree::moveToNextRow() {
-    return integer_pointing_to_row++;
+    setActiveRow(getActiveRow() + 1);
+    return 1;
 }
 
 int IVMTree::getActiveNode() const {
@@ -379,23 +422,23 @@ int IVMTree::thereAreMoreNodes(){
 }
 
 void IVMTree::moveToNodeAtRight(){
-    vector_pointing_to_col_at_row[getActiveRow()]++;
+    setActiveColAtRow(getActiveRow(), getActiveColAt(getActiveRow()) + 1);
 }
 
 void IVMTree::moveToFatherRow(){
-    integer_pointing_to_row--;
+    setActiveRow(getActiveRow() - 1);
 }
 
 void IVMTree::removeRow(){
-    vector_pointing_to_col_at_row[getActiveRow()] = -1;
+    setActiveColAtRow(getActiveRow(), -1);
 }
 
 void IVMTree::moveToRootRow(){
-    integer_pointing_to_row = root_row;
+    setActiveRow(root_row);
 }
 
 void IVMTree::markActiveNodeAsRemoved(){
-    setValueAt(getActiveRow(), getActiveCol(), -1);
+    setNodeValueAt(getActiveRow(), getActiveCol(), -1);
 }
 
 unsigned long IVMTree::decreaseNumberOfPendingNodes(){

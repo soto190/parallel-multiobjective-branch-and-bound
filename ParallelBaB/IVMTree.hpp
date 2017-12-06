@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <iomanip>
+#include "IVMTreeException.hpp"
 
 class IVMTree {
 private:
@@ -40,9 +41,9 @@ public:
 
     void setOwnerId(int idBB);
     void setRootRow(int node);
-    void setValueAt(int row, int col, int value);
-    void setActiveColAtRow(int row, int value);
-    void setActiveRow(int row);
+    void setNodeValueAt(int row, int col, int value) throw(IVMTreeException);
+    void setActiveColAtRow(int row, int value) throw(IVMTreeException);
+    void setActiveRow(int row) throw(IVMTreeException);
     void setStartingRow(int row);
     void setNumberOfNodesAt(int row, int value);
     void setExplorationInterval(int starting_level, int * starts, int * ends);
@@ -56,8 +57,8 @@ public:
     int getRootNode() const;
     int getRootRow() const;
     int getNumberOfNodesAt(int row) const;
-    int getNodeValueAt(int row, int col) const;
-    int getActiveColAt(int row) const;
+    int getNodeValueAt(int row, int col) const throw(IVMTreeException);
+    int getActiveColAt(int row) const throw(IVMTreeException);
     int getActiveRow() const;
     int getStartingRow() const;
     int getNumberOfRows() const;

@@ -247,13 +247,13 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     
     for (row = 0; row <= build_up_to; ++row) {
         for (col = 0; col < tree.getNumberOfCols(); ++col)
-            tree.setValueAt(row, col, -1);
+            tree.setNodeValueAt(row, col, -1);
         build_value = branch_init.getValueAt(row);
         tree.setStartExploration(row, build_value);
         tree.setEndExploration(row, build_value);
         tree.setNumberOfNodesAt(row, 1);
         tree.setActiveColAtRow(row, build_value);
-        tree.setValueAt(row, build_value, build_value);
+        tree.setNodeValueAt(row, build_value, build_value);
         
         /** The interval is equivalent to the solution. **/
         incumbent_s.setVariable(row, build_value);
