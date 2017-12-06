@@ -11,7 +11,6 @@
 
 #include <stdio.h>
 #include <iostream>
-#include "tbb/concurrent_queue.h"
 
 /**
  *
@@ -76,55 +75,5 @@ private:
     int isShortBranch() const;
     int isMediumBranch() const;
     int isLargeBranch() const;
-};
-
-class ReadySubproblems {
-    tbb::concurrent_queue<Interval> level[P_Low + 1];   // One queue for each priority level.
-    tbb::atomic<unsigned int> size;
-    unsigned long size_emptying = 10;
-    
-public:
-    ReadySubproblems(){
-        size.store(0);
-    }
-    
-    void setSizeEmptying(unsigned long size){
-        size_emptying = size;
-    }
-    
-    unsigned long getSizeEmptying() const{
-        return size_emptying;
-    }
-    
-    unsigned long unsafe_size() const{
-        return size;
-    }
-    
-    bool empty() const{
-        return size > 0 ? false : true;
-    }
-    
-    bool isEmptying() const{
-        return size < size_emptying ? true : false;
-    }
-    
-    void push(const Interval & subproblem) {
-        level[subproblem.getPriority()].push(subproblem);
-        size.fetch_and_increment();
-    }
-    
-    bool try_pop(Interval & interval) {
-        for(int i = P_High; i <= P_Low; ++i) // Scan queues in priority order for a subproblem.
-            if(level[i].try_pop(interval)){
-                size.fetch_and_decrement();
-                return true;
-            }
-        return false;
-    }
-    
-    void print() const{
-        unsigned long total_size = unsafe_size();
-        printf("T:%4lu\t[H:%4lu\tM:%4lu\tL:%4lu\t]\n", total_size, level[P_High].unsafe_size(), level[P_Medium].unsafe_size(), level[P_Low].unsafe_size());
-    }
 };
 #endif /* Interval_hpp */

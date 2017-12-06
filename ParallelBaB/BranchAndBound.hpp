@@ -25,6 +25,7 @@
 #include "Dominance.hpp"
 #include "IVMTree.hpp"
 #include "Interval.hpp"
+#include "SubproblemsPool.hpp"
 #include "tbb/atomic.h"
 #include "tbb/parallel_for.h"
 #include "tbb/task.h"
@@ -43,7 +44,7 @@
 const float size_to_share = 0.2f; /** We share the half of the row. **/
 const float deep_limit_share = 0.80f;
 
-extern ReadySubproblems globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
+extern SubproblemsPool globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 extern HandlerContainer paretoContainer;
 extern tbb::atomic<int> sleeping_bb;
 extern tbb::atomic<int> there_is_more_work;
