@@ -149,7 +149,7 @@ int HandlerContainer::set(const Solution & solution, int x, int y) {
         case BucketState::unexplored:
             clearContainersDominatedBy(x, y);
             grid.set(solution, x, y);
-            grid.setStateOf(BucketState::nondominated, x, y);
+            grid.setNonDominatedState(x, y);
             activeBuckets.fetch_and_increment();
             unexploredBuckets.fetch_and_decrement();
             updated = 1;
@@ -250,8 +250,16 @@ unsigned long HandlerContainer::getNumberOfDisabledBuckets() const{
     return disabledBuckets;
 }
 
-void HandlerContainer::setStateOf(BucketState state, int x, int y) {
-    grid.setStateOf(state, x, y);
+void HandlerContainer::setNonDominatedState(int x, int y){
+    grid.setNonDominatedState(x, y);
+}
+
+void HandlerContainer::setDominatedState(int x, int y){
+    grid.setDominatedState(x, y);
+}
+
+void HandlerContainer::setUnexploredState(int x, int y){
+    grid.setUnexploredState(x, y);
 }
 
 void HandlerContainer::print() const{

@@ -49,10 +49,6 @@ void ParetoBucket::setPositionXY(unsigned long new_posx, unsigned long new_posy)
     posy = new_posy;
 }
 
-void ParetoBucket::setState(BucketState new_state){
-    state.fetch_and_store(new_state);
-}
-
 void ParetoBucket::setUnexplored(){
     state.fetch_and_store(BucketState::unexplored);
 }

@@ -64,7 +64,5 @@ public:
     void print() const;
     void printObjectives() const;
     void printVariables() const;
-    
 };
-
 #endif /* Solution_hpp */

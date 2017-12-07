@@ -30,5 +30,4 @@ public:
     bool try_pop(Interval & interval);
     void print() const;
 };
-
 #endif /* SubproblemsPool_hpp */

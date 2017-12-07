@@ -33,5 +33,4 @@ public:
 private:
     const char* getError() const;
 };
-
 #endif /* IVMTreeException_hpp */

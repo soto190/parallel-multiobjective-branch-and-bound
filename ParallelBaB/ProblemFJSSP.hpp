@@ -520,5 +520,4 @@ public:
     
     int validateVariablesOf(const Solution& solution) const;
 };
-
 #endif /* ProblemFJSSP_hpp */

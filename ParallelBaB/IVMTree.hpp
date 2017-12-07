@@ -99,11 +99,4 @@ private:
     void markActiveNodeAsRemoved();
     void setNoMoreBranches();
 };
-
-/*class IVMException: public std::exception{
-    virtual const char* what() const throw(){
-        return "IVM Exception";
-    }
-} IVMex;*/
-
 #endif /* IVMTree_hpp */

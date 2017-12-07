@@ -45,4 +45,3 @@ const char* IVMTreeException::what() const throw(){
 const char* IVMTreeException::getError() const {
     return error_message.c_str();
 }
-

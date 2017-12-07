@@ -62,10 +62,11 @@ private:
     std::vector<Solution>& get(int x, int y);
     int improvesTheBucket(const Solution & solution, int x, int y);
     void clearContainer(int x, int y);
-    void setStateOf(BucketState state, int x, int y);
+    void setNonDominatedState(int x, int y);
+    void setDominatedState(int x, int y);
+    void setUnexploredState(int x, int y);
     void getCoordinateForSolution(const Solution & solution, int * coordinate) const;
     void updateMinValueFound(const Solution& solution);
     void clearContainersDominatedBy(const int x, const int y);
 };
-
 #endif /* HandlerContainer_hpp */

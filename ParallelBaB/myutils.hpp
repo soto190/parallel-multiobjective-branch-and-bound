@@ -429,7 +429,5 @@ public:
             (*it).print();
         }
     }
-
 };
-
 #endif /* myutils_hpp */

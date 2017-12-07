@@ -45,7 +45,6 @@ public:
     void setPosX(unsigned long new_posx);
     void setPosY(unsigned long new_posy);
     void setPositionXY(unsigned long new_posx, unsigned long new_posy);
-    void setState(BucketState new_state);
     void setUnexplored();
     void setNonDominated();
     void setDominated();
@@ -72,5 +71,4 @@ public:
      };
      */
 };
-
 #endif /* ParetoBucket_hpp */

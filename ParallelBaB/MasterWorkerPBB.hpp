@@ -96,5 +96,4 @@ private:
     int thereIsMoreWork() const;
     void buildOutputFiles();
 };
-
 #endif /* MASTERWORKER_HPP_ */

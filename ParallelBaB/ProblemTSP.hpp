@@ -82,6 +82,5 @@ public:
 private:
     void readCost(char pathFile[255]);
 };
-
 #endif /* ProblemTSP_hpp */
 

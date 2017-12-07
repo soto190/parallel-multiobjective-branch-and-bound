@@ -186,7 +186,5 @@ private:
     void increaseReachedLeaves();
     void increaseUpdatesInLowerBound();
     void increaseSharedWorks();
-    
 };
-
 #endif /* BranchAndBound_hpp */
