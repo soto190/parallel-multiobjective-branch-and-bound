@@ -153,7 +153,7 @@ void IVMTree::setRootRow(int row){
 void IVMTree::setNodeValueAt(int row, int col, int value) throw(IVMTreeException){
     try{
         if (row < 0 || row >= n_rows || col < 0 || col >= n_cols)
-            throw IVMTreeException(IVMTreeErrorCode::MATRIX_OUT_OF_RANGE, "when calling setNodeValueAt(row:" + std::to_string(static_cast<int>(row)) + ", col:" + std::to_string(static_cast<int>(col)) + ")");
+            throw IVMTreeException(IVMTreeErrorCode::MATRIX_OUT_OF_RANGE, "when calling setNodeValueAt(row:" + std::to_string(static_cast<long long>(row)) + ", col:" + std::to_string(static_cast<long long>(col)) + ")");
         
         matrix_nodes[row][col] = value;
         
@@ -165,7 +165,7 @@ void IVMTree::setNodeValueAt(int row, int col, int value) throw(IVMTreeException
 void IVMTree::setActiveColAtRow(int row, int value) throw(IVMTreeException){
     try {
         if (row < 0 || row >= n_rows)
-            throw IVMTreeException(VECTOR_OUT_OF_RANGE, "row:" + std::to_string(static_cast<int>(row)));
+            throw IVMTreeException(VECTOR_OUT_OF_RANGE, "row:" + std::to_string(static_cast<long long>(row)));
         
         vector_pointing_to_col_at_row[row] = value;
     
@@ -224,7 +224,7 @@ int IVMTree::getNumberOfNodesAt(int row) const{
 int IVMTree::getNodeValueAt(int row, int col) const throw(IVMTreeException){
     try {
         if (row < 0 || row >= n_rows || col < 0 || col >= n_cols)
-            throw IVMTreeException(IVMTreeErrorCode::MATRIX_OUT_OF_RANGE, "(row:" + std::to_string(static_cast<int>(row)) + ", col:" + std::to_string(static_cast<int>(col)) + ")");
+            throw IVMTreeException(IVMTreeErrorCode::MATRIX_OUT_OF_RANGE, "(row:" + std::to_string(static_cast<long long>(row)) + ", col:" + std::to_string(static_cast<long long>(col)) + ")");
         
         return matrix_nodes[row][col];
         
@@ -241,7 +241,7 @@ int IVMTree::getActiveCol() const{
 int IVMTree::getActiveColAt(int row) const throw(IVMTreeException){
     try {
         if (row < 0 || row >= n_rows)
-            throw IVMTreeException(VECTOR_OUT_OF_RANGE, "row:" + std::to_string(static_cast<int>(row)));
+            throw IVMTreeException(VECTOR_OUT_OF_RANGE, "row:" + std::to_string(static_cast<long long>(row)));
         
         return vector_pointing_to_col_at_row[row];
         
@@ -308,7 +308,7 @@ void IVMTree::resetRow(int row){
 void IVMTree::setActiveRow(int row) throw (IVMTreeException){
     try{
         if (row < 0 || row >= n_rows)
-            throw IVMTreeException(INTEGER_OUT_OF_RANGE, "row: " + std::to_string(static_cast<int>(row)));
+            throw IVMTreeException(INTEGER_OUT_OF_RANGE, "row: " + std::to_string(static_cast<long long>(row)));
 
         integer_pointing_to_row = row;
     
