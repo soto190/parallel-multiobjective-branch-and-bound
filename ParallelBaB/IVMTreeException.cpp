@@ -11,6 +11,9 @@
 IVMTreeException::IVMTreeException(IVMTreeErrorCode error_code, std::string error_msg):error_code(error_code), error_message(error_msg){
 }
 
+IVMTreeException::~IVMTreeException() throw(){
+}
+
 const char* IVMTreeException::what() const throw(){
     std::string error_text = "";
     switch (error_code) {

@@ -27,6 +27,7 @@ private:
     IVMTreeErrorCode error_code;
 public:
     IVMTreeException(IVMTreeErrorCode error_code, std::string error_msg);
+    ~IVMTreeException() throw();
     virtual const char* what() const throw();
 
 private:
