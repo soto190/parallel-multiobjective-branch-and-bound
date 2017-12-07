@@ -21,7 +21,7 @@
 #include "Problem.hpp"
 #include "ProblemFJSSP.hpp"
 #include "Solution.hpp"
-#include "GridContainer.hpp"
+#include "HandlerContainer.hpp"
 #include "Dominance.hpp"
 #include "IVMTree.hpp"
 #include "Interval.hpp"
