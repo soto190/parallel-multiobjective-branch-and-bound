@@ -170,9 +170,9 @@ int ParetoBucket::push_back(const Solution& obj){
             || dominates > 0
             || nondominated == size
             || dominated == 0)) {
-            m_vec.push_back(obj); /** Creates a new copy. **/
-            size.fetch_and_increment();
-            wasAdded = 1;
+                m_vec.push_back(obj); /** Creates a new copy. **/
+                size.fetch_and_increment();
+                wasAdded = 1;
         }
     
     return wasAdded;

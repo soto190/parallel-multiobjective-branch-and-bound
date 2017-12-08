@@ -15,24 +15,24 @@ IVMTreeException::~IVMTreeException() throw(){
 }
 
 const char* IVMTreeException::what() const throw(){
-    std::string error_text = "";
+    std::string error_text = "IVMTreeException: ";
     switch (error_code) {
         case OK:
             return error_message.c_str();
             break;
         
         case MATRIX_OUT_OF_RANGE:
-            error_text = "Matrix out of range: ";
+            error_text += "Matrix out of range: ";
             return (error_text + error_message.c_str()).c_str();
             break;
             
         case VECTOR_OUT_OF_RANGE:
-            error_text = "Vector out of range: ";
+            error_text += "Vector out of range: ";
             return (error_text + error_message.c_str()).c_str();
             break;
         
         case INTEGER_OUT_OF_RANGE:
-            error_text = "Integer with invalid index: ";
+            error_text += "Integer with invalid index: ";
             return (error_text + error_message.c_str()).c_str();;
             break;
             

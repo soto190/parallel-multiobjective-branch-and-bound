@@ -56,16 +56,21 @@ GridContainer& GridContainer::operator()(unsigned int width, unsigned int height
 }
 
 int GridContainer::set(const Solution& obj, size_t x, size_t y) {
-    unsigned long size_before = m_Data[y * cols + x].getSize();
-    int updated = m_Data[y * cols + x].push_back(obj);
-    unsigned long size_after = m_Data[y * cols + x].getSize();
+    size_t index = getIndexPosition(x, y);
+    unsigned long size_before = m_Data[index].getSize();
+    int updated = m_Data[index].push_back(obj);
+    unsigned long size_after = m_Data[index].getSize();
     
     numberOfElements.fetch_and_add(size_after - size_before);
     return updated;
 }
 
+size_t GridContainer::getIndexPosition(size_t x, size_t y) const{
+    return y * cols + x;
+}
+
 std::vector<Solution>& GridContainer::get(size_t x, size_t y) {
-    return m_Data[y * cols + x].getVector();
+    return m_Data[getIndexPosition(x, y)].getVector();
 }
 
 unsigned int GridContainer::getCols() const {
@@ -85,33 +90,34 @@ tbb::atomic<unsigned long> GridContainer::getSizeAtomic() const{
 }
 
 BucketState GridContainer::getStateOf(size_t x, size_t y) const{
-    return m_Data[y * cols + x].getState();
+    return m_Data[getIndexPosition(x, y)].getState();
 }
 
 unsigned long GridContainer::getSizeOf(size_t x, size_t y) const{
-    return m_Data[y * cols + x].getSize();
+    return m_Data[getIndexPosition(x, y)].getSize();
 }
 
 int GridContainer::improvesBucket(const Solution& obj, size_t x, size_t y){
-    return m_Data[y * cols + x].produceImprovement(obj);
+    return m_Data[getIndexPosition(x, y)].produceImprovement(obj);
 }
 
 void GridContainer::setNonDominatedState(size_t x, size_t y){
-    m_Data[y * cols + x].setNonDominated();
+    m_Data[getIndexPosition(x, y)].setNonDominated();
 }
 
 void GridContainer::setDominatedState(size_t x, size_t y){
-    m_Data[y * cols + x].setDominated();
+    m_Data[getIndexPosition(x, y)].setDominated();
 }
 
 void GridContainer::setUnexploredState(size_t x, size_t y){
-    m_Data[y * cols + x].setUnexplored();
+    m_Data[getIndexPosition(x, y)].setUnexplored();
 }
 
 unsigned long GridContainer::clear(size_t x, size_t y) {
-    unsigned long size_before = m_Data[y * cols + x].getSize();
-    m_Data[y * cols + x].setDominated();
-    m_Data[y * cols + x].clear();
+    size_t index = getIndexPosition(x, y);
+    unsigned long size_before = m_Data[index].getSize();
+    m_Data[index].setDominated();
+    m_Data[index].clear();
     numberOfElements.fetch_and_add(-size_before);
     return size_before;
 }

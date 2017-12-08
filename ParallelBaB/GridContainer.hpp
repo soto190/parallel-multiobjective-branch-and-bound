@@ -31,6 +31,7 @@ private:
     tbb::atomic<unsigned long> numberOfElements;
     tbb::concurrent_vector<ParetoBucket> m_Data;
     
+    size_t getIndexPosition(size_t x, size_t y) const;
 public:
     GridContainer(unsigned int width, unsigned int height);
     GridContainer(const GridContainer& toCopy);
