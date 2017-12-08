@@ -38,7 +38,6 @@ grid(toCopy.grid){
     
     for (int obj = 0; obj < 2; ++obj)
         min_value_found_in_obj[obj].fetch_and_store(toCopy.getBestValueFoundIn(obj));
-    
 }
 
 HandlerContainer::HandlerContainer(unsigned int rows, unsigned int cols, double maxValX, double maxValY):
@@ -146,17 +145,17 @@ int HandlerContainer::set(const Solution & solution, int x, int y) {
     int updated = 0;
     BucketState state = grid.getStateOf(x, y);
     switch (state) {
-        case BucketState::unexplored:
+        case BucketState::Unexplored:
             clearContainersDominatedBy(x, y);
-            grid.set(solution, x, y);
+            grid.addTo(solution, x, y);
             grid.setNonDominatedState(x, y);
             activeBuckets.fetch_and_increment();
             unexploredBuckets.fetch_and_decrement();
             updated = 1;
             break;
             
-        case BucketState::nondominated:
-            updated = grid.set(solution, x, y);
+        case BucketState::NonDominated:
+            updated = grid.addTo(solution, x, y);
             break;
             
         case BucketState::dominated:
@@ -172,10 +171,10 @@ int HandlerContainer::set(const Solution & solution, int x, int y) {
 }
 
 void HandlerContainer::clearContainersDominatedBy(const int x, const int y){
-    for (int nRow = y + 1; nRow < grid.getRows(); nRow++)
-        for (int nCol = x + 1; nCol < grid.getCols(); nCol++)
+    for (int nRow = y + 1; nRow < grid.getNumberOfRows(); nRow++)
+        for (int nCol = x + 1; nCol < grid.getNumberOfCols(); nCol++)
             if (grid.getStateOf(nCol, nRow) == BucketState::dominated)
-                nCol = grid.getCols(); /** If the bucket in (nCol, nRow) is dominated then the exploration continues in next row. **/
+                nCol = grid.getNumberOfCols(); /** If the bucket in (nCol, nRow) is dominated then the exploration continues in next row. **/
             else
                 clearContainer(nCol, nRow);
 }
@@ -223,11 +222,11 @@ std::vector<Solution>& HandlerContainer::get(int x, int y) {
 }
 
 unsigned int HandlerContainer::getRows() const {
-    return grid.getRows();
+    return grid.getNumberOfRows();
 }
 
 unsigned int HandlerContainer::getCols() const {
-    return grid.getCols();
+    return grid.getNumberOfCols();
 }
 
 unsigned long HandlerContainer::getSize() const {
@@ -267,10 +266,10 @@ void HandlerContainer::print() const{
 }
 
 void HandlerContainer::printGridSize() const{
-    for (int nRow = grid.getRows() - 1; nRow >= 0; --nRow) {
+    for (int nRow = grid.getNumberOfRows() - 1; nRow >= 0; --nRow) {
         printf("[%3d] ", nRow);
-        for (int nCol = 0; nCol < grid.getCols(); ++nCol)
-            if(grid.getStateOf(nCol, nRow) == BucketState::unexplored)
+        for (int nCol = 0; nCol < grid.getNumberOfCols(); ++nCol)
+            if(grid.getStateOf(nCol, nRow) == BucketState::Unexplored)
                 printf(" - ");
             else
                 printf("%3ld", grid.getSizeOf(nCol, nRow));
@@ -280,11 +279,11 @@ void HandlerContainer::printGridSize() const{
 
 void HandlerContainer::printStates() const{
     BucketState state;
-    for (int nRow = grid.getRows() - 1; nRow >= 0; --nRow) {
+    for (int nRow = grid.getNumberOfRows() - 1; nRow >= 0; --nRow) {
         printf("[%3d] ", nRow);
-        for (int nCol = 0; nCol < grid.getCols(); ++nCol){
+        for (int nCol = 0; nCol < grid.getNumberOfCols(); ++nCol){
             state = grid.getStateOf(nCol, nRow);
-            if(state == BucketState::unexplored)
+            if(state == BucketState::Unexplored)
                 printf(" - ");
             else
                 printf("%3d", state);
@@ -306,19 +305,19 @@ int HandlerContainer::improvesTheGrid(const Solution &solution) {
             improves = 0;
             break;
             
-        case BucketState::unexplored:
+        case BucketState::Unexplored:
             improves = 1;
             break;
             
-        case BucketState::nondominated:
-            improves = grid.improvesBucket(solution, bucketCoordinate[0], bucketCoordinate[1]);
+        case BucketState::NonDominated:
+            improves = grid.produceImprovementInBucket(solution, bucketCoordinate[0], bucketCoordinate[1]);
             break;
     }
     return improves;
 }
 
 int HandlerContainer::improvesTheBucket(const Solution &solution, int x, int y) {
-    return grid.improvesBucket(solution, x, y);
+    return grid.produceImprovementInBucket(solution, x, y);
 }
 
 std::vector<Solution>& HandlerContainer::getParetoFront() {
@@ -326,7 +325,7 @@ std::vector<Solution>& HandlerContainer::getParetoFront() {
     for (int bucketY = 0; bucketY < getRows(); ++bucketY)
         for (int bucketX = 0; bucketX < getCols(); ++bucketX) {
             BucketState state = grid.getStateOf(bucketX, bucketY);
-            if (state == BucketState::nondominated) {
+            if (state == BucketState::NonDominated) {
                 std::vector<Solution> vec = grid.get(bucketX, bucketY);
                 std::vector<Solution>::iterator it = vec.begin();
                 
@@ -334,7 +333,7 @@ std::vector<Solution>& HandlerContainer::getParetoFront() {
                     paretoFront.push_back(*it);
                 
             } else if (state == BucketState::dominated)
-                bucketX = grid.getCols();
+                bucketX = grid.getNumberOfCols();
         }
     
     extractParetoFront(paretoFront);

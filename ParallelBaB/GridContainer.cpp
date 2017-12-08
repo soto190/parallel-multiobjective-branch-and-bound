@@ -33,8 +33,8 @@ rows(height) {
 }
 
 GridContainer::GridContainer(const GridContainer& toCopy):
-cols(toCopy.getCols()),
-rows(toCopy.getRows()),
+cols(toCopy.getNumberOfCols()),
+rows(toCopy.getNumberOfRows()),
 numberOfElements((unsigned long) toCopy.getSizeAtomic()),
 m_Data(toCopy.m_Data){
 }
@@ -47,7 +47,7 @@ GridContainer& GridContainer::operator()(unsigned int width, unsigned int height
     cols = width;
     rows = height;
     numberOfElements.store(0);
-    m_Data.clear(); /** Release previous used memory. **/
+    m_Data.clear();
     m_Data.reserve(cols * rows);
     for (int indey = 0; indey < rows; ++indey)
         for (int index = 0; index < cols; ++index)
@@ -55,12 +55,11 @@ GridContainer& GridContainer::operator()(unsigned int width, unsigned int height
     return *this;
 }
 
-int GridContainer::set(const Solution& obj, size_t x, size_t y) {
+int GridContainer::addTo(const Solution& obj, size_t x, size_t y) {
     size_t index = getIndexPosition(x, y);
     unsigned long size_before = m_Data[index].getSize();
     int updated = m_Data[index].push_back(obj);
     unsigned long size_after = m_Data[index].getSize();
-    
     numberOfElements.fetch_and_add(size_after - size_before);
     return updated;
 }
@@ -73,11 +72,11 @@ std::vector<Solution>& GridContainer::get(size_t x, size_t y) {
     return m_Data[getIndexPosition(x, y)].getVector();
 }
 
-unsigned int GridContainer::getCols() const {
+unsigned int GridContainer::getNumberOfCols() const {
     return cols;
 }
 
-unsigned int GridContainer::getRows() const {
+unsigned int GridContainer::getNumberOfRows() const {
     return rows;
 }
 
@@ -97,7 +96,7 @@ unsigned long GridContainer::getSizeOf(size_t x, size_t y) const{
     return m_Data[getIndexPosition(x, y)].getSize();
 }
 
-int GridContainer::improvesBucket(const Solution& obj, size_t x, size_t y){
+int GridContainer::produceImprovementInBucket(const Solution& obj, size_t x, size_t y){
     return m_Data[getIndexPosition(x, y)].produceImprovement(obj);
 }
 
@@ -124,6 +123,6 @@ unsigned long GridContainer::clear(size_t x, size_t y) {
 
 void GridContainer::print() const{
     for (int index = 0; index < rows * cols; ++index)
-        if (m_Data[index].getState() == BucketState::nondominated)
+        if (m_Data[index].getState() == BucketState::NonDominated)
             m_Data[index].print();
 }

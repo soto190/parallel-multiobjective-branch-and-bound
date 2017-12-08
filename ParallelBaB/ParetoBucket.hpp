@@ -19,7 +19,7 @@
 #include "tbb/concurrent_vector.h"
 
 enum BucketState {
-    unexplored = 0, nondominated = 1, dominated = 2
+    Unexplored = 0, NonDominated = 1, dominated = 2
 };
 
 typedef tbb::queuing_rw_mutex Lock;

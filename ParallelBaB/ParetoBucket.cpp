@@ -12,7 +12,7 @@ ParetoBucket::ParetoBucket():
 posx(0),
 posy(0){
     size.store(0);
-    state.store(BucketState::unexplored);
+    state.store(BucketState::Unexplored);
     m_vec.reserve(50);
 };
 
@@ -20,7 +20,7 @@ ParetoBucket::ParetoBucket(unsigned long posx, unsigned long posy):
 posx(posx),
 posy(posy){
     size.store(0);
-    state.store(BucketState::unexplored);
+    state.store(BucketState::Unexplored);
     m_vec.reserve(50);
 };
 
@@ -50,11 +50,11 @@ void ParetoBucket::setPositionXY(unsigned long new_posx, unsigned long new_posy)
 }
 
 void ParetoBucket::setUnexplored(){
-    state.fetch_and_store(BucketState::unexplored);
+    state.fetch_and_store(BucketState::Unexplored);
 }
 
 void ParetoBucket::setNonDominated(){
-    state.fetch_and_store(BucketState::nondominated);
+    state.fetch_and_store(BucketState::NonDominated);
 }
 
 void ParetoBucket::setDominated(){

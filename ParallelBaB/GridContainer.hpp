@@ -38,19 +38,18 @@ public:
     ~GridContainer();
     
     GridContainer& operator()(unsigned int width, unsigned int height);
-    int set(const Solution& obj, size_t x, size_t y);
+    int addTo(const Solution& obj, size_t x, size_t y);
+    void setNonDominatedState(size_t x, size_t y);
+    void setDominatedState(size_t x, size_t y);
+    void setUnexploredState(size_t x, size_t y);
     std::vector<Solution>& get(size_t x, size_t y);
-    unsigned int getCols() const;
-    unsigned int getRows() const;
+    unsigned int getNumberOfCols() const;
+    unsigned int getNumberOfRows() const;
     unsigned long getSize() const;
     tbb::atomic<unsigned long> getSizeAtomic() const;
     BucketState getStateOf(size_t x, size_t y) const;
     unsigned long getSizeOf(size_t x, size_t y) const;
-    int improvesBucket(const Solution& obj, size_t x, size_t y);
-    
-    void setNonDominatedState(size_t x, size_t y);
-    void setDominatedState(size_t x, size_t y);
-    void setUnexploredState(size_t x, size_t y);
+    int produceImprovementInBucket(const Solution& obj, size_t x, size_t y);
     unsigned long clear(size_t x, size_t y) ;
     void print() const;
 };
