@@ -10,6 +10,11 @@ This README would normally document whatever steps are necessary to get your app
 
 ### How do I get set up? ###
 
+
+### Dependencies ###
+Message Passing Interface (MPI)
+Intel Threading Building Blocks (TBB)
+
 * Summary of set up
 * Configuration
 Remember to set the intel bins, libs and includes in 'profil'e and 'bashrc'.
@@ -25,7 +30,7 @@ export PYTHONPATH=$PYTHONPATH:/opt/intel/debugger_2017/python/intel64/lib/python
 PATH="$HOME/bin:$HOME/.local/bin:$PATH:/opt/intel/bin"
 
 
-* Dependencies
+
 * Database configuration
 * How to run tests
 * Deployment instructions
