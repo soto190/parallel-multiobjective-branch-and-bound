@@ -9,6 +9,7 @@
 #ifndef BranchAndBound_hpp
 #define BranchAndBound_hpp
 
+#include <mpi.h>
 #include <stdio.h>
 #include <vector>
 #include <queue>
@@ -20,13 +21,12 @@
 #include "Problem.hpp"
 #include "ProblemFJSSP.hpp"
 #include "Solution.hpp"
-#include "myutils.hpp"
-#include "GridContainer.hpp"
+#include "HandlerContainer.hpp"
 #include "Dominance.hpp"
 #include "IVMTree.hpp"
 #include "Interval.hpp"
+#include "SubproblemsPool.hpp"
 #include "tbb/atomic.h"
-#include "tbb/parallel_for.h"
 #include "tbb/task.h"
 #include "tbb/cache_aligned_allocator.h"
 #include "tbb/concurrent_queue.h"
@@ -40,33 +40,31 @@
  *
  **/
 
-const float to_share = 0.5f;
-const float deep_limit_share = 0.90f;
+const float size_to_share = 0.2f; /** We share the half of the row. **/
+const float deep_limit_share = 0.80f;
 
-extern ReadySubproblems globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
+extern SubproblemsPool globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 extern HandlerContainer paretoContainer;
 extern tbb::atomic<int> sleeping_bb;
 extern tbb::atomic<int> there_is_more_work;
 
-
 class BranchAndBound: public tbb::task {
     
 private:
-    
     int node_rank;
-    int rank; /** Identifies the number of thread-B&B. **/
+    int bb_rank;
     
-    tbb::atomic<unsigned long> totalNodes;
-    tbb::atomic<unsigned long> branches;
-    tbb::atomic<unsigned long> exploredNodes;
-    tbb::atomic<unsigned long> callsToBranch;
-    tbb::atomic<unsigned long> reachedLeaves;
-    tbb::atomic<unsigned long> unexploredNodes;
-    tbb::atomic<unsigned long> prunedNodes;
-    tbb::atomic<unsigned long> callsToPrune;
-    tbb::atomic<unsigned long> totalUpdatesInLowerBound;
-    tbb::atomic<unsigned long> totalLevels; /** Number of tree levels. **/
-    tbb::atomic<unsigned long> shared_work;
+    tbb::atomic<unsigned long> number_of_nodes;
+    tbb::atomic<unsigned long> number_of_branches;
+    tbb::atomic<unsigned long> number_of_explored_nodes;
+    tbb::atomic<unsigned long> number_of_calls_to_branch;
+    tbb::atomic<unsigned long> number_of_reached_leaves;
+    tbb::atomic<unsigned long> number_of_unexplored_nodes;
+    tbb::atomic<unsigned long> number_of_pruned_nodes;
+    tbb::atomic<unsigned long> number_of_calls_to_prune;
+    tbb::atomic<unsigned long> number_of_updates_in_lower_bound;
+    tbb::atomic<unsigned long> number_of_tree_levels;
+    tbb::atomic<unsigned long> number_of_shared_works;
     
     int currentLevel; /** Active level **/
     
@@ -76,15 +74,17 @@ private:
     Solution incumbent_s;
     IVMTree ivm_tree;
     Interval interval_to_solve;
-    std::vector<Solution> paretoFront; /** paretoFront. **/
+    std::vector<Solution> pareto_front; /** paretoFront. **/
     
-    char outputFile[255];
-    char summarizeFile[255];
+    char pareto_file[255];
+    char summarize_file[255];
+    char pool_file[255];
+    char ivm_file[255];
     
     int branches_to_move;
-    int deep_to_share;
+    int limit_level_to_share;
     
-    double totalTime;
+    double elapsed_time;
     std::clock_t start;
     std::chrono::high_resolution_clock::time_point t1;
     std::chrono::high_resolution_clock::time_point t2;
@@ -96,9 +96,9 @@ public:
     ~BranchAndBound();
     
     int getNodeRank() const;
-    int getRank() const;
+    int getBBRank() const;
     int getCurrentLevel() const;
-    double getTotalTime();
+    double getElapsedTime();
     
     void solve(Interval & interval);
     void initialize(int starting_level);
@@ -136,47 +136,54 @@ public:
     const Solution& getIncumbentSolution() const;
     const FJSSPdata& getFJSSPdata() const;
     
+    float getDeepLimitToShare() const;
+    float getSizeToShare() const;
+    
     void saveEvery(double timeInSeconds);
     void setParetoFront(const std::vector<Solution>& front);
-    int setParetoFrontFile(const char outputFile[255]);
-    int setSummarizeFile(const char outputFile[255]);
+    void setParetoFrontFile(const char outputFile[255]);
+    void setSummarizeFile(const char outputFile[255]);
+    void setPoolFile(const char outputFile[255]);
     int saveParetoFront();
     int saveSummarize();
+    void saveGlobalPool() const;
+    void saveCurrentState() const;
     
     void printDebug();
+    int initGlobalPoolWithInterval(const Interval & branch);
+    static float distanceToObjective(int value, int objective);
+    task* execute();
     
 private:
     void printCurrentSolution(int withVariables = 0);
     int aLeafHasBeenReached() const;
     int theTreeHasMoreBranches() const;
-    
+    int thereIsMoreWork() const;
     unsigned long computeTotalNodes(unsigned long totalVariables) const;
     unsigned long permut(unsigned long n, unsigned long i) const;
     
     void shareWorkAndSendToGlobalPool(const Interval& interval);
-    /** Grid functions. **/
     int improvesTheGrid(const Solution & solution) const;
     int updateParetoGrid(const Solution & solution);
-    /** End Grid functions. **/
     void updateBounds(const Solution & solution, FJSSPdata& data);
     void updateBoundsWithSolution(const Solution & solution);
-    
     void setPriorityTo(Interval & interval) const;
-    /** IVM functions. **/
-public:
-    void computeLastBranch(Interval & branch);
-    int initGlobalPoolWithInterval(const Interval & branch);
+
     
-private:
+    int getLimitLevelToShare() const;
+    void computeLastBranch(Interval & branch);
+    
     int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);
     int intializeIVM_data(Interval& branch, IVMTree & tree);
-    /** End IVM functions **/
     
-public:
-    task* execute();
-    /* void operator()(const Interval& branch) {
-     this->solve(branch);
-     }; */
+    void saveIVM() const;
+    void buildOutputFiles();
+    void increaseExploredNodes();
+    void increasePrunedBranches();
+    void increaseEvaluatedNodes();
+    void increaseBranchesCreated();
+    void increaseReachedLeaves();
+    void increaseUpdatesInLowerBound();
+    void increaseSharedWorks();
 };
-
 #endif /* BranchAndBound_hpp */

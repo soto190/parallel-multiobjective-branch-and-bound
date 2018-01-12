@@ -75,7 +75,6 @@ void one_node(int argc, char* argv[]){
     try {
         
         tbb::task_scheduler_init init(number_of_threads);
-        
         ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(0, number_of_threads, problem);
         pbb->setParetoFrontFile(outputFile.c_str());
         pbb->setSummarizeFile(summarizeFile.c_str());
@@ -101,13 +100,14 @@ int main(int argc, char* argv[]) {
     
     const int arg_num_threads = 1;
     const int arg_input_file = 3;
-    
+    const int arg_ouput_path = 5;
+
     MPI_Init(&argc, &argv);
     int rank = MPI::COMM_WORLD.Get_rank();
     int size_world = MPI::COMM_WORLD.Get_size();
     
     if (rank == 0)
-        printf("[MASTER] Number of nodes: %3d\n", size_world);
+        printf("[Master] Number of nodes: %3d\n", size_world);
     
     if (size_world == 1) { /** MPI disable or one node request: shared memory version. **/
         one_node(argc, argv);
@@ -115,9 +115,8 @@ int main(int argc, char* argv[]) {
         
         try {
             tbb::task_scheduler_init init(stoi(argv[arg_num_threads]));
-            MasterWorkerPBB *  mwpbb = new (tbb::task::allocate_root()) MasterWorkerPBB (size_world, stoi(argv[arg_num_threads]), argv[arg_input_file]);
-            printf("[Node-%02d] Spawning root...\n", rank);
-            tbb::task::spawn_root_and_wait(*mwpbb);
+            MasterWorkerPBB *  mw_pbb = new (tbb::task::allocate_root()) MasterWorkerPBB (size_world, stoi(argv[arg_num_threads]), argv[arg_input_file], argv[arg_ouput_path]);
+            tbb::task::spawn_root_and_wait(*mw_pbb);
         } catch (tbb::tbb_exception& e) {
             std::cerr << "Intercepted exception:\n" << e.name();
             std::cerr << "Reason is:\n" << e.what();

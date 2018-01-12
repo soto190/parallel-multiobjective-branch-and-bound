@@ -51,10 +51,6 @@ public:
     void printInstance();
     void printProblemInfo() const;
     void loadInstance(char filePath[2][255], char file_extension[4]);
-    
-    
 };
-
-
 #endif /* ProblemVRP_hpp */
 

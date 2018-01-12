@@ -77,6 +77,5 @@ public:
     virtual void printInstance();
     virtual void printProblemInfo() const;
 };
-
 #endif /* Problem_hpp */
 

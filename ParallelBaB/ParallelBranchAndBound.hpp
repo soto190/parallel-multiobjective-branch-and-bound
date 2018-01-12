@@ -41,5 +41,4 @@ public:
     
     int getRank() const;
 };
-
 #endif /* ParallelBranchAndBound_hpp */

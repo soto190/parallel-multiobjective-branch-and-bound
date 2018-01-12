@@ -82,7 +82,6 @@ private:
     int total_workload;
     int max_workload; /** Critical workload. **/
     int makespan;
-    
     int min_total_workload;
     
     int* operation_allocated_in; /** Size = n_operations. Indicates the machine where the operation is allocated. **/
@@ -116,20 +115,20 @@ public:
         
         machine_allocations.resize(n_machines);
         
-        for (int j = 0; j < n_jobs; ++j)
-            n_operations_allocated[j] = 0;
+        for (int job = 0; job < n_jobs; ++job)
+            n_operations_allocated[job] = 0;
         
-        for (int m = 0; m < n_machines; ++m){
-            time_on_machine[m] = 0;
-            workload_in_machine[m] = 0;
-            best_workloads_in_machine[m] = 0;
-            temp_best_wl_m[m] = 0;
+        for (int machine = 0; machine < n_machines; ++machine){
+            time_on_machine[machine] = 0;
+            workload_in_machine[machine] = 0;
+            best_workloads_in_machine[machine] = 0;
+            temp_best_wl_m[machine] = 0;
         }
         
-        for (int o = 0; o < n_operations; ++o){
-            starting_time[o] = 0;
-            ending_time[o] = 0;
-            operation_allocated_in[o] = -1;
+        for (int operation = 0; operation < n_operations; ++operation){
+            starting_time[operation] = 0;
+            ending_time[operation] = 0;
+            operation_allocated_in[operation] = -1;
         }
     }
     
@@ -153,20 +152,20 @@ public:
         best_workloads_in_machine = new int[n_machines];
         temp_best_wl_m = new int[n_machines];
         
-        for (int j = 0; j < n_jobs; ++j)
-            n_operations_allocated[j] = toCopy.getNumberOfOperationsAllocatedInJob(j);
+        for (int job = 0; job < n_jobs; ++job)
+            n_operations_allocated[job] = toCopy.getNumberOfOperationsAllocatedFromJob(job);
         
-        for (int m = 0; m < n_machines; ++m){
-            time_on_machine[m] = toCopy.getTimeOnMachine(m);
-            workload_in_machine[m] = toCopy.getWorkloadOnMachine(m);
-            best_workloads_in_machine[m] = toCopy.getBestWorkloadInMachine(m);
-            temp_best_wl_m[m] = toCopy.getTempBestWorkloadInMachine(m);
+        for (int machine = 0; machine < n_machines; ++machine){
+            time_on_machine[machine] = toCopy.getTimeOnMachine(machine);
+            workload_in_machine[machine] = toCopy.getWorkloadOnMachine(machine);
+            best_workloads_in_machine[machine] = toCopy.getBestWorkloadInMachine(machine);
+            temp_best_wl_m[machine] = toCopy.getTempBestWorkloadInMachine(machine);
         }
         
-        for (int o = 0; o < n_operations; ++o){
-            starting_time[o] = toCopy.getStartingTime(o);
-            ending_time[o] = toCopy.getEndingTime(o);
-            operation_allocated_in[o] = toCopy.getOperationAllocation(o);
+        for (int operation = 0; operation < n_operations; ++operation){
+            starting_time[operation] = toCopy.getStartingTime(operation);
+            ending_time[operation] = toCopy.getEndingTime(operation);
+            operation_allocated_in[operation] = toCopy.getOperationAllocation(operation);
         }
         
     }
@@ -213,28 +212,30 @@ public:
         workload_in_machine = new int[n_machines];
         machine_allocations.resize(n_machines);
         
-        for (int j = 0; j < n_jobs; ++j)
-            n_operations_allocated[j] = 0;
+        for (int job = 0; job < n_jobs; ++job)
+            n_operations_allocated[job] = 0;
         
-        for (int m = 0; m < n_machines; ++m){
-            time_on_machine[m] = 0;
-            workload_in_machine[m] = 0;
+        for (int machine = 0; machine < n_machines; ++machine){
+            time_on_machine[machine] = 0;
+            workload_in_machine[machine] = 0;
         }
         
-        for (int o = 0; o < n_operations; ++o){
-            operation_allocated_in[o] = -1;
-            starting_time[o] = 0;
-            ending_time[o] = 0;
+        for (int operation = 0; operation < n_operations; ++operation){
+            operation_allocated_in[operation] = -1;
+            starting_time[operation] = 0;
+            ending_time[operation] = 0;
         }
         
         return *this;
     }
     
-    int getNumberOfJobs() const { return n_jobs;}
+    int getNumberOfJobs() const {
+        return n_jobs;
+    }
     int getNumberOfMachines() const { return n_machines;}
     int getNumberOfOperations() const { return n_operations;}
     int getMakespanMachine() const { return machine_makespan;}
-    int getNumberOfOperationsAllocatedInJob(int job) const { return n_operations_allocated[job];}
+    int getNumberOfOperationsAllocatedFromJob(int job) const { return n_operations_allocated[job];}
     int getLastOperationAllocatedInJob(int job) const {return n_operations_allocated[job] - 1;}
     int getOperationAllocation(int operation) const {return operation_allocated_in[operation];}
     int getStartingTime(int operation) const {return starting_time[operation];}
@@ -245,6 +246,25 @@ public:
     int getTotalWorkload() const {return total_workload;}
     int getMaxWorkload() const {return max_workload;}
     int getMinTotalWorkload() const{return min_total_workload;}
+    
+    int getObjective(int n_obj) const{
+        int value = 0;
+        switch (n_obj) {
+            case 0:
+                value = getMakespan();
+                break;
+            case 1:
+                value = getMaxWorkload();
+                break;
+            case 2:
+                value = getMinTotalWorkload();
+                break;
+            default:
+                printf("Invalid objective in fjssp data.\n");
+                break;
+        }
+        return value;
+    }
     
     int getBestWorkloadInMachine(int machine) const{return best_workloads_in_machine[machine];}
     int getTempBestWorkloadInMachine(int machine) const{return temp_best_wl_m[machine];}
@@ -311,20 +331,20 @@ public:
         total_workload = min_total_workload;
         max_workload = 0;
         
-        for (int j = 0; j < n_jobs; ++j)
-            n_operations_allocated[j] = 0;
+        for (int job = 0; job < n_jobs; ++job)
+            n_operations_allocated[job] = 0;
         
-        for (int m = 0; m < n_machines; ++m){
-            time_on_machine[m] = 0;
-            workload_in_machine[m] = 0;//best_workloads_machines[n_machines];
-            temp_best_wl_m[m] = best_workloads_in_machine[m];
-            machine_allocations[m].clear();
+        for (int machine = 0; machine < n_machines; ++machine){
+            time_on_machine[machine] = 0;
+            workload_in_machine[machine] = 0;
+            temp_best_wl_m[machine] = best_workloads_in_machine[machine];
+            machine_allocations[machine].clear();
         }
         
-        for (int o = 0; o < n_operations; ++o){
-            operation_allocated_in[o] = -1;
-            starting_time[o] = 0;
-            ending_time[o] = 0;
+        for (int operation = 0; operation < n_operations; ++operation){
+            operation_allocated_in[operation] = -1;
+            starting_time[operation] = 0;
+            ending_time[operation] = 0;
         }
     }
     
@@ -375,7 +395,6 @@ public:
 };
 
 class ProblemFJSSP: public Problem {
-    
 private:
     //    const unsigned int MAX_GANTT_LIMIT = 4096;
     int n_jobs;
@@ -499,6 +518,6 @@ public:
     void buildSolutionWithGoodMaxWorkloadv2(Solution & solution);
     int e_function(double value) const;
     
+    int validateVariablesOf(const Solution& solution) const;
 };
-
 #endif /* ProblemFJSSP_hpp */

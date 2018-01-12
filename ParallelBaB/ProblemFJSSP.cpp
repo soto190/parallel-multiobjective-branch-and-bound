@@ -381,6 +381,8 @@ void ProblemFJSSP::loadInstancePayload(const Payload_problem_fjssp& problem) {
         processingTime[n_op] = new int[n_machines];
         for (int n_mach = 0; n_mach < n_machines; ++n_mach)
             processingTime[n_op][n_mach] = problem.processing_times[n_op * problem.n_machines + n_mach];
+        lowerBound[n_op] = 0;
+        upperBound[n_op] = n_jobs * n_machines;
     }
     
     /** Creates the mapping. **/
@@ -794,7 +796,7 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     int map = solution.getVariable(level);
     int job = getDecodeMap(map, 0);
     int machine = getDecodeMap(map, 1);
-    int numberOp = getOperationInJobIsNumber(job, data.getNumberOfOperationsAllocatedInJob(job));
+    int numberOp = getOperationInJobIsNumber(job, data.getNumberOfOperationsAllocatedFromJob(job));
     
     /** With the operation number and the machine we can continue. **/
     int proccessingTime = getProccessingTime(numberOp, machine);
@@ -846,7 +848,7 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     
     data.setMakespan(makespan);
     data.setMaxWorkload(max_workload);
-    
+    //data.setTotalWorkload is computed internally when the operation is allocated.
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
     //    solution.setObjective(1, data.getTotalWorkload());
@@ -1123,9 +1125,11 @@ int ProblemFJSSP::getLowerBound(int indexVar) const {
 int ProblemFJSSP::getUpperBound(int indexVar) const {
     return (n_jobs * n_machines) - 1;
 }
+
 int ProblemFJSSP::getBestBoundMaxWorkload() const {
     return bestBound_maxWorkload;
 }
+
 int ProblemFJSSP::getBestBoundMakespan() const {
     return bestBound_makespan;
 }
@@ -1214,6 +1218,25 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
         n_jobs = std::stoi(elemens.at(0));
         n_machines = std::stoi(elemens.at(1));
         
+        char extension[4];
+        int instance_with_release_time = 1; /** This is used because the Kacem's instances have release times and the other sets dont. **/
+        
+        /** Get name of the instance. **/
+        std::vector<std::string> name_file_ext;
+        
+        elemens = split(filePath[0], '/');
+        
+        unsigned long int sizeOfElems = elemens.size();
+        name_file_ext = split(elemens[sizeOfElems - 1], '.');
+        printf("[Master] Name: %s extension: %s\n", name_file_ext[0].c_str(), name_file_ext[1].c_str());
+        std::strcpy(extension, name_file_ext[1].c_str());
+        
+        /** If the instance is Kacem then it has the release time in the first value of each job. TODO: Re-think if its a good idea to update all the instances to include release time at 0. **/
+        const int kacem_legnth = 5;
+        char kacem[kacem_legnth] {'K', 'a', 'c', 'e', 'm'};
+        for (int character = 0; character < kacem_legnth && instance_with_release_time == 1; ++character)
+            instance_with_release_time = (kacem[character] == name_file_ext[0][character]) ? 1 : 0;
+        
         if (n_jobs > 0 && n_machines > 0) {
             
             n_operations_in_job = new int[n_jobs];
@@ -1222,10 +1245,10 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
             std::string * job_line = new std::string[n_jobs];
             for (int n_job = 0; n_job < n_jobs; ++n_job) {
                 std::getline(infile, job_line[n_job]);
-                split(job_line[n_job], ' ', elemens); /** Stores the text corresponding to the processing times of each jobs. **/
-                n_operations_in_job[n_job] = std::stoi(elemens.at(0));
+                split(job_line[n_job], ' ', elemens); /** Stores the text corresponding to each job processing times. **/
+                n_operations_in_job[n_job] = (instance_with_release_time == 1) ? std::stoi(elemens.at(1)): std::stoi(elemens.at(0));
                 n_operations += n_operations_in_job[n_job];
-                releaseTime[n_job] = 0;
+                releaseTime[n_job] = ((instance_with_release_time == 1) ? std::stoi(elemens.at(0)) : 0);
             }
             
             operationIsFromJob = new int[n_operations];
@@ -1270,7 +1293,7 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
                 minWorkload[machine] = 0;
             int op_counter = 0;
             for (int n_job = 0; n_job < n_jobs; ++n_job) {
-                int token = 1;
+                int token = (instance_with_release_time == 1)?2:1;
                 split(job_line[n_job], ' ', elemens);
                 for (int n_op_in_job = 0; n_op_in_job < n_operations_in_job[n_job]; ++n_op_in_job) {
                     int op_can_be_proc_in_n_mach = std::stoi(elemens.at(token++));
@@ -1289,11 +1312,9 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
             }
             
             for (int operation = 0; operation < n_operations; ++operation) {
-                //elemens = split(job_line, ' ');
                 minPij = INT_MAX;
                 minMachine = 0;
                 for (int machine = 0; machine < n_machines; ++machine) {
-                    //processingTime[operation][machine] = std::stoi(elemens.at(machine));
                     sorted_processing[machine][operation] = processingTime[operation][machine];
                     if (processingTime[operation][machine] < minPij) {
                         minPij = processingTime[operation][machine];
@@ -1309,7 +1330,6 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
             earliest_starting_time[0] = releaseTime[0];
             int op_allocated = 0;
             int next_op = 0;
-            /** Computes the earlist starting time and the earlist ending time for each job. **/
             for (int job = 0; job < n_jobs; ++job) {
                 earliest_starting_time[op_allocated] = releaseTime[job];
                 earliest_ending_time[op_allocated] = earliest_starting_time[op_allocated] + processingTime[op_allocated][assignationMinPij[op_allocated]];
@@ -1778,13 +1798,11 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     int makespan = 0;
     int maxWorkload = 0;
     int totalWorkload = 0;
-    
     int operationInPosition = 0;
     int operation = 0;
     int job = 0;
     int machine = 0;
     int numberOp = 0;
-    
     int operation_in_machine[n_operations];
     int operationOfJob[n_jobs];
     int startingTime[n_operations];
@@ -1807,7 +1825,6 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     for (machine = 0; machine < n_machines; ++machine) {
         timeInMachine[machine] = 0;
         workload[machine] = 0;
-        
         /**creates an empty gantt**/
         for (time = 0; time < MAX_GANTT_LIMIT; time++) {
             gantt[machine][time] = ' ';
@@ -1915,4 +1932,13 @@ void ProblemFJSSP::printPartialSolution(const Solution & solution, int level) co
         
         printf("|");
     }
+}
+
+/** This function return the number of variables which are out of range from varible values.**/
+int ProblemFJSSP::validateVariablesOf(const Solution& solution) const {
+    int number_of_invalid_variables = 0;
+    for (int variable = 0; variable < totalVariables; ++variable)
+        if (solution.getVariable(variable) < lowerBound[variable] || solution.getVariable(variable) > upperBound[variable])
+            number_of_invalid_variables++;
+    return number_of_invalid_variables;
 }
