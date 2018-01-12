@@ -26,42 +26,39 @@
 
 enum TSPObj {DISTANCE = 0, COST = 1};
 class ProblemTSP: public Problem {
+    
 public:
     
-    ProblemTSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){};
+    ProblemTSP(const ProblemTSP& toCopy);
+    ProblemTSP(int totalObjectives, int totalVariables);
     ~ProblemTSP();
     
+    ProblemTSP& operator=(const ProblemTSP& toCopy);
     double evaluate(Solution & solution);
     
     /**
      *
      */
-    double evaluatePartial(Solution * solution, int levelEvaluation);
+    double evaluatePartial(Solution & solution, int levelEvaluation);
     double evaluateLastLevel(Solution * solution);
     double removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel);
     double removeLastLevelEvaluation(Solution * solution, int newLevel);
     
-    void createDefaultSolution(Solution * solution);
-    Solution * getSolutionWithLowerBoundInObj(int nObj);
-
-    void printSolution(Solution * solution);
-    void printPartialSolution(Solution * solution, int level);
+    void createDefaultSolution(Solution & solution);
+    void getSolutionWithLowerBoundInObj(int nObj, Solution& solution);
     
-    Solution* createSolution();
+    int getLowerBound(int indexVar) const;
+    int getUpperBound(int indexVar) const;
+    int getLowerBoundInObj(int nObj) const;
     
-    int getLowerBound(int indexVar);
-    int getUpperBound(int indexVar);
-    int getLowerBoundInObj(int nObj);
-
-    
-    ProblemType getType();
-    int getStartingLevel();
+    ProblemType getType() const;
+    int getStartingRow();
     int getFinalLevel();
     
     int * getElemensToRepeat();
     int getTotalElements();
-    int getMapping(int map, int position);
-    int getMappingOf(int value1, int value2);
+    int getDecodeMap(int map, int position);
+    int getCodeMap(int value1, int value2);
     int getTimesValueIsRepeated(int value);
     
     /**TSP functions**/
@@ -72,16 +69,19 @@ public:
     
     double computeEuclideanDistance(int x1, int y1, int x2, int y2);
     
-    void loadInstance(char* pathsFile[]);
+    void loadInstance(char filePath[2][255], char file_extension[4]);
     
     /**Print information**/
+    void printSolution(const Solution & solution) const;
+    void printPartialSolution(const Solution & solution, int level) const;
+    void printSolutionInfo(const Solution & solution) const;
+    
     void printInstance();
-    void printProblemInfo();
-    void printSolutionInfo(Solution * solution);
-
+    void printProblemInfo() const;
     
 private:
-    void readCost(char * pathFile);
+    void readCost(char pathFile[255]);
 };
 
 #endif /* ProblemTSP_hpp */
+

@@ -23,7 +23,20 @@
 class ProblemHCSP: public Problem {
 public:
     
+    
+    ProblemHCSP(const ProblemHCSP& toCopy);
     ProblemHCSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
+        this->totalTasks = 0;
+        this->totalMachines = 0;
+        this->totalConfig = 0;
+        this->totalMappings = 0;
+        
+        this->mappingConfig = new int * [1];
+        this->maxConfigIn = new int[1];
+        this->processingTime = new double * [1];
+        this->voltage = new double * [1];
+        this->speed = new double * [1];
+        
         this->totalTasks = 0;
         this->totalMachines = 0;
         this->totalConfig = 0;
@@ -31,34 +44,31 @@ public:
     };
     ~ProblemHCSP();
     
+    ProblemHCSP& operator=(const ProblemHCSP& toCopy);
+    
     double evaluate(Solution & solution);
-    double evaluatePartial(Solution * solution, int levelEvaluation);
+    double evaluatePartial(Solution & solution, int levelEvaluation);
     double evaluateLastLevel(Solution * solution);
     double removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel);
     double removeLastLevelEvaluation(Solution * solution, int newLevel);
     
-    void createDefaultSolution(Solution * solution);
-    Solution * getSolutionWithLowerBoundInObj(int nObj);
-
-    void printSolution(Solution * solution);
-    void printPartialSolution(Solution * solution, int level);
-
-    int getLowerBound(int indexVar);
-    int getUpperBound(int indexVar);
-    int getLowerBoundInObj(int nObj);
-
-    ProblemType getType();
-    int getStartingLevel();
+    void createDefaultSolution(Solution & solution);
+    void getSolutionWithLowerBoundInObj(int nObj, Solution& solution);
+    
+    int getLowerBound(int indexVar) const;
+    int getUpperBound(int indexVar) const;
+    int getLowerBoundInObj(int nObj) const;
+    
+    ProblemType getType() const;
+    int getStartingRow();
     int getFinalLevel();
     
-    int getMapping(int map, int position);
-    int getMappingOf(int value1, int value2);
+    int getDecodeMap(int map, int position);
+    int getCodeMap(int value1, int value2);
     int getTimesValueIsRepeated(int value);
     
     int * getElemensToRepeat();
     int getTotalElements();
-    
-    Solution* createSolution();
     
     /**HCSP functions**/
     
@@ -73,16 +83,16 @@ public:
     int totalConfig;
     int totalMappings;
     
-    void loadInstance(char* path[]);
-    void readMachinesConfigurations(char* path);
+    void loadInstance(char filePath[2][255], char file_extension[4]);
+    void readMachinesConfigurations(char filePath[255]);
     
     double computeProcessingTime(int task, int machine, int config);
     double computeEnergy(int task, int machine, int config, double proc_time);
     
+    void printSolution(const Solution & solution) const;
+    void printPartialSolution(const Solution & solution, int level) const;
+    void printSolutionInfo(const Solution & solution) const;
     void printInstance();
-    void printProblemInfo();
-    void printSolutionInfo(Solution * solution);
-
-    
+    void printProblemInfo() const;
 };
 #endif /* ProblemHCSP_hpp */
