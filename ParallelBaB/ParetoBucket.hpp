@@ -13,10 +13,8 @@
 #include "Solution.hpp"
 #include "Dominance.hpp"
 #include "myutils.hpp"
-#include "tbb/mutex.h"
-#include "tbb/spin_rw_mutex.h"
+#include "tbb/atomic.h"
 #include "tbb/queuing_rw_mutex.h"
-#include "tbb/concurrent_vector.h"
 
 enum BucketState {
     Unexplored = 0, NonDominated = 1, dominated = 2

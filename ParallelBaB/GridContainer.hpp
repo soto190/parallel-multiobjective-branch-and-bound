@@ -16,6 +16,7 @@
 #include "Dominance.hpp"
 #include "myutils.hpp"
 #include "ParetoBucket.hpp"
+#include "tbb/atomic.h"
 #include "tbb/concurrent_vector.h"
 
 /**

@@ -27,7 +27,6 @@
 #include "Interval.hpp"
 #include "SubproblemsPool.hpp"
 #include "tbb/atomic.h"
-#include "tbb/parallel_for.h"
 #include "tbb/task.h"
 #include "tbb/cache_aligned_allocator.h"
 #include "tbb/concurrent_queue.h"

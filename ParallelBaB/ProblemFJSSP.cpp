@@ -848,7 +848,7 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     
     data.setMakespan(makespan);
     data.setMaxWorkload(max_workload);
-    
+    //data.setTotalWorkload is computed internally when the operation is allocated.
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
     //    solution.setObjective(1, data.getTotalWorkload());
