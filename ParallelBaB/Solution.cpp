@@ -23,33 +23,6 @@ n_variables(0) {
     execTime = nullptr;
 }
 
-<<<<<<< HEAD
-Solution::Solution(int numberOfObjectives, int numberOfVariables){
-    this->makespan = 0;
-    this->energy = 0;
-    this->machineWithMakespan = 0;
-    this->totalObjectives = numberOfObjectives;
-    this->totalVariables = numberOfVariables;
-    
-    this->objective = new double[numberOfObjectives];
-    this->variable = new int[numberOfVariables];
-    this->execTime = new double[16];
-    this->partialObjective = new double * [numberOfVariables];
-    
-    int obj = 0, var = 0;
-    for (obj = 0; obj < numberOfObjectives; obj++)
-        this->objective[obj] = 0;
-    
-    for (var = 0; var < numberOfVariables; var++){
-        this->variable[var] = 0;
-        this->partialObjective[var] = new double[numberOfObjectives];
-        for (obj = 0; obj < numberOfObjectives; obj++)
-            this->partialObjective[var][obj] = 0;
-    }
-    
-    for (var = 0; var < 16; var++)
-        this->execTime[var] = 0;
-=======
 Solution::Solution(int numberOfObjectives, int numberOfVariables):
 n_objectives(numberOfObjectives),
 n_variables(numberOfVariables),
@@ -68,7 +41,6 @@ execTime(new double[16]){
     
     for (var = 0; var < 16; ++var)
         execTime[var] = 0;
->>>>>>> mpi-pbb
 }
 
 Solution::Solution(const Solution &solution):
@@ -81,27 +53,6 @@ machineWithMakespan(solution.machineWithMakespan){
     variable = new int[n_variables];
     execTime = new double[16];
     
-<<<<<<< HEAD
-    this->objective = new double[this->totalObjectives];
-    this->variable = new int[this->totalVariables];
-    this->partialObjective = new double * [solution.totalVariables];
-    this->execTime = new double[16];
-    
-    int obj = 0, var = 0;
-    
-    for (obj = 0; obj < this->totalObjectives; obj++)
-        this->objective[obj] = solution.objective[obj];
-    
-    for (var = 0; var < this->totalVariables; var++){
-        this->variable[var] = solution.variable[obj];
-        this->partialObjective[var] = new double[solution.totalObjectives];
-        for (obj = 0; obj < solution.totalObjectives; obj++)
-            this->partialObjective[var][obj] = solution.partialObjective[var][obj];
-    }
-    
-    for (var = 0; var < 16; var++)
-        this->execTime[var] = solution.execTime[var];
-=======
     int var = 0, obj = 0;
     
     for (obj = 0; obj < n_objectives; ++obj)
@@ -120,7 +71,6 @@ Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
     build_up_to = -1;
     n_objectives = numberOfObjectives;
     n_variables = numberOfVariables;
->>>>>>> mpi-pbb
     
     /** Freeing previously used memory. **/
     if(objective != nullptr)
@@ -147,33 +97,6 @@ Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
     return *this;
 }
 
-<<<<<<< HEAD
-Solution::~Solution(){
-    delete [] objective;
-    delete [] variable;
-    delete [] execTime;
-    int obj = 0;
-    for (obj = 0; obj < this->totalVariables; obj++)
-        delete [] this->partialObjective[obj];
-    
-    delete [] this->partialObjective;
-}
-
-void Solution::setObjective(int obj, double value){
-    this->objective[obj] = value;
-}
-
-void Solution::setVariable(int obj, int value){
-    this->variable[obj] = value;
-}
-
-int Solution::getVariable(int obj){
-    return this->variable[obj];
-}
-
-double Solution::getObjective(int obj){
-    return this->objective[obj];
-=======
 Solution& Solution::operator=(const Solution &solution) {
     
     if (this == &solution) return *this;
@@ -223,7 +146,6 @@ Solution::~Solution() {
     delete[] execTime;
 }
 
-
 void Solution::setBuildUpTo(int index){build_up_to = index;}
 void Solution::setObjective(int index, double value) { objective[index] = value; }
 int Solution::setVariable(int index, int value) {
@@ -231,7 +153,6 @@ int Solution::setVariable(int index, int value) {
     variable[index] = value;
     build_up_to = index;
     return last_value;
->>>>>>> mpi-pbb
 }
 
 double Solution::getObjective(int index) const { return objective[index]; }
@@ -275,71 +196,7 @@ DominanceRelation Solution::dominates(const Solution & solution) const {
         return DominanceRelation::Nondominated;
 }
 
-<<<<<<< HEAD
-Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables){
-    this->makespan = 0;
-    this->energy = 0;
-    this->machineWithMakespan = 0;
-    this->totalObjectives = numberOfObjectives;
-    this->totalVariables = numberOfVariables;
-    
-    this->objective = new double[numberOfObjectives];
-    this->variable = new int[numberOfVariables];
-    this->execTime = new double[16];
-    this->partialObjective = new double * [numberOfVariables];
-    
-    int obj = 0, var = 0;
-    for (obj = 0; obj < numberOfObjectives; obj++)
-        this->objective[obj] = 0;
-    
-    for (var = 0; var < numberOfVariables; var++){
-        this->variable[var] = 0;
-        this->partialObjective[var] = new double[numberOfObjectives];
-        for (obj = 0; obj < numberOfObjectives; obj++)
-            this->partialObjective[var][obj] = 0;
-    }
-    
-    for (var = 0; var < 16; var++)
-        this->execTime[var] = 0;
-    
-    return *this;
-}
-
-Solution& Solution::operator=(const Solution &solution){
-    
-    this->build_up_to = solution.build_up_to;
-
-    this->totalObjectives = solution.totalObjectives;
-    this->totalVariables = solution.totalVariables;
-    
-    this->objective = new double[solution.totalObjectives];
-    this->variable = new int[solution.totalVariables];
-    
-    int obj = 0, var = 0;
-    
-    for (obj = 0; obj < this->totalObjectives; obj++)
-        this->objective[obj] = solution.objective[obj];
-    
-    
-    for (var = 0; var < this->totalVariables; var++){
-        this->variable[var] = solution.variable[obj];
-        this->partialObjective[var] = new double[solution.totalObjectives];
-        for (obj = 0; obj < solution.totalObjectives; obj++)
-            this->partialObjective[var][obj] = solution.partialObjective[var][obj];
-    }
-    
-    /**Section for the HCSP problem**/
-    this->execTime = new double[16];
-    for (var = 0; var < 16; var++)
-        this->execTime[var] = solution.execTime[var];
-    
-    return *this;
-}
-
-void Solution::print(){
-=======
 void Solution::print() const {
->>>>>>> mpi-pbb
     int nObj, nVar;
     char sep = '-';
     for (nObj = 0; nObj < n_objectives; ++nObj)
