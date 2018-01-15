@@ -8,83 +8,99 @@
 
 #include "ParallelBranchAndBound.hpp"
 
-ParallelBranchAndBound::ParallelBranchAndBound(const ProblemFJSSP& problem, GlobalPool& global_pool, HandlerContainer& global_grid):
-    problem(problem),
-    global_pool(global_pool),
-    global_grid(global_grid),
-    branch_init(problem.getNumberOfVariables()){
-        this->outputParetoFile = new char[255];
-        this->summarizeFile = new char[255];
+ParallelBranchAndBound::ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem):
+rank(rank),
+number_of_bbs(n_threads),
+problem(problem),
+branch_init(problem.getNumberOfVariables()){
 }
 
-ParallelBranchAndBound::~ParallelBranchAndBound(){
-    delete [] outputParetoFile;
-    delete [] summarizeFile;
-}
+ParallelBranchAndBound::~ParallelBranchAndBound(){}
 
 tbb::task * ParallelBranchAndBound::execute() {
-
-    int counter_threads = 0;
-    BranchAndBound BB_container(0, this->problem, branch_init, global_pool, global_grid);
-    BB_container.setParetoFrontFile(this->outputParetoFile);
-    BB_container.setSummarizeFile(this->summarizeFile);
-    BB_container.initGlobaPoolWithInterval(branch_init);
     
-	this->set_ref_count(this->number_of_threads + 1);
-
-	tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
+    globalPool.setSizeEmptying((unsigned long) (number_of_bbs * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
+   
+    Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.createDefaultSolution(solution);
+    
+    paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
+    
+    BranchAndBound BB_container(rank, 0, problem, branch_init);
+    BB_container.initGlobalPoolWithInterval(branch_init);
+    
+    set_ref_count(number_of_bbs + 1);
+    
+    tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
     vector<BranchAndBound *> bb_threads;
-	while (counter_threads++ < this->number_of_threads) {
-
-		BranchAndBound * BaB_task =
-				new (tbb::task::allocate_child()) BranchAndBound(
-						counter_threads, this->problem, branch_init, global_pool, global_grid);
-
+    int n_bb = 0;
+    while (n_bb++ < number_of_bbs) {
+        
+        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb, problem, branch_init);
+        BaB_task->setSummarizeFile(summarizeFile);
         bb_threads.push_back(BaB_task);
-		tl.push_back(*BaB_task);
-	}
-
-    printf("Spawning the swarm...\nWaiting for all...\n");
-    tbb::task::spawn_and_wait_for_all(tl);
-    printf("Job done...\n");
+        tl.push_back(*BaB_task);
+    }
     
-	/** Recollects the data. **/
-	BB_container.getTotalTime();
-	BranchAndBound* bb_in;
-	while (!bb_threads.empty()) {
-
+    printf("[Worker-%03d] Spawning the swarm...\nWaiting for all...\n", rank);
+    tbb::task::spawn_and_wait_for_all(tl);
+    printf("[Worker-%03d] Job done...\n", rank);
+    
+    /** Recollects the data. **/
+    BB_container.getElapsedTime();
+    BranchAndBound* bb_in;
+    while (!bb_threads.empty()) {
+        
         bb_in = bb_threads.back();
         bb_threads.pop_back();
-    
-		BB_container.increaseNumberOfExploredNodes(bb_in->getNumberOfExploredNodes());
+        
+        BB_container.increaseNumberOfExploredNodes(bb_in->getNumberOfExploredNodes());
         BB_container.increaseNumberOfCallsToBranch(bb_in->getNumberOfCallsToBranch());
         BB_container.increaseNumberOfBranches(bb_in->getNumberOfBranches());
         BB_container.increaseNumberOfCallsToPrune(bb_in->getNumberOfCallsToPrune());
         BB_container.increaseNumberOfPrunedNodes(bb_in->getNumberOfPrunedNodes());
         BB_container.increaseNumberOfReachedLeaves(bb_in->getNumberOfReachedLeaves());
         BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());
-	}
+        BB_container.increaseSharedWork(bb_in->getSharedWork());
+    }
     
-	printf("Data recollected.\n");
-
-	BB_container.getParetoFront();
-	BB_container.printParetoFront();
-	BB_container.saveParetoFront();
-	BB_container.saveSummarize();
+    BB_container.setParetoFrontFile(outputParetoFile);
+    BB_container.setSummarizeFile(summarizeFile);
     
+    BB_container.getParetoFront();
+    BB_container.printParetoFront();
+    BB_container.saveParetoFront();
+    BB_container.saveSummarize();
     bb_threads.clear();
-	printf("Parallel Branch And Bound ended.\n");
-	return NULL;
+    //printf("[Worker-%03d] Data swarm recollected and saved.\n", rank);
+    printf("[Worker-%03d] Parallel Branch And Bound ended.\n", rank);
+    return NULL;
 }
 
-void ParallelBranchAndBound::setNumberOfThreads(int number_of_threads) {
-	this->number_of_threads = number_of_threads;
+std::vector<Solution>& ParallelBranchAndBound::getParetoFront(){
+    return paretoContainer.getParetoFront();
 }
 
-void ParallelBranchAndBound::setParetoFrontFile(const char * outputFile) {
-	std::strcpy(this->outputParetoFile, outputFile);
+void ParallelBranchAndBound::setBranchInitPayload(const Payload_interval& payload){
+    branch_init(payload);
 }
 
-void ParallelBranchAndBound::setSummarizeFile(const char * outputFile) {
-	std::strcpy(this->summarizeFile, outputFile);
+void ParallelBranchAndBound::setBranchInit(const Interval &interval){
+    branch_init = interval;
+}
+
+void ParallelBranchAndBound::setNumberOfThreads(int n_number_of_threads) {
+    number_of_bbs = n_number_of_threads;
+}
+
+void ParallelBranchAndBound::setParetoFrontFile(const char outputFile[255]) {
+    std::strcpy(outputParetoFile, outputFile);
+}
+
+void ParallelBranchAndBound::setSummarizeFile(const char outputFile[255]) {
+    std::strcpy(summarizeFile, outputFile);
+}
+
+int ParallelBranchAndBound::getRank() const{
+    return rank;
 }

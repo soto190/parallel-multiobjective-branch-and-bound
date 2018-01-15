@@ -30,13 +30,13 @@ public:
         this->totalMachines = 0;
         this->totalConfig = 0;
         this->totalMappings = 0;
-
+        
         this->mappingConfig = new int * [1];
         this->maxConfigIn = new int[1];
         this->processingTime = new double * [1];
         this->voltage = new double * [1];
         this->speed = new double * [1];
-
+        
         this->totalTasks = 0;
         this->totalMachines = 0;
         this->totalConfig = 0;
@@ -54,11 +54,11 @@ public:
     
     void createDefaultSolution(Solution & solution);
     void getSolutionWithLowerBoundInObj(int nObj, Solution& solution);
-
+    
     int getLowerBound(int indexVar) const;
     int getUpperBound(int indexVar) const;
     int getLowerBoundInObj(int nObj) const;
-
+    
     ProblemType getType() const;
     int getStartingRow();
     int getFinalLevel();
@@ -69,7 +69,7 @@ public:
     
     int * getElemensToRepeat();
     int getTotalElements();
-        
+    
     /**HCSP functions**/
     
     int ** mappingConfig;
@@ -83,8 +83,8 @@ public:
     int totalConfig;
     int totalMappings;
     
-    void loadInstance(char* path[]);
-    void readMachinesConfigurations(char* path);
+    void loadInstance(char filePath[2][255], char file_extension[4]);
+    void readMachinesConfigurations(char filePath[255]);
     
     double computeProcessingTime(int task, int machine, int config);
     double computeEnergy(int task, int machine, int config, double proc_time);

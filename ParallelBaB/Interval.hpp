@@ -10,6 +10,7 @@
 #define Interval_hpp
 
 #include <stdio.h>
+#include <iostream>
 
 /**
  *
@@ -18,33 +19,61 @@
  * level indicates the level of the interval.
  *
  **/
+const float large_branch  = 0.666f;
+const float short_branch = 0.333f;
+
+enum Priority {P_High = 0, P_Medium = 1, P_Low = 2};
+enum Deep{TOP = 0, MID = 1, BOTTOM = 2};
+
+typedef struct {
+    int priority;
+    int deep;
+    int build_up_to;
+    int max_size;
+    float distance[2];
+    int * interval;
+} Payload_interval;
 
 class Interval {
 private:
+    Priority priority;
+    Deep deep;
     int build_up_to = -1;
-    int * interval;
     int max_size = 0;
-
-public:
-	
-    Interval();
-	Interval(int max_size);
-	Interval(const Interval &toCopy);
-	~Interval();
-
-	Interval& operator=(const Interval& toCopy);
-	Interval& operator()(int size);
+    float distance[2];
+    int * interval;
     
-    int increaseBuildUpTo();
+public:
+    Interval();
+    Interval(int max_size);
+    Interval(const Interval &toCopy);
+    Interval(const Payload_interval& payload);
+    virtual ~Interval();
+    
+    Interval& operator=(const Interval& toCopy);
+    Interval& operator()(int size);
+    Interval& operator()(const Payload_interval& payload);
+    
     int getSize() const;
     int getBuildUpTo() const;
     int getValueAt(int position) const;
-    
-    void setBuildUpTo(int newBuild);
-    void setSize(int size);
+    Priority getPriority() const;
+    Deep getDeep() const;
+    float getDistance(int n_dim) const;
+    int increaseBuildUpTo();
     void setValueAt(int index, int value);
-
-	void print() const;
+    void setLowPriority();
+    void setHighPriority();
+    void setMediumPriority();
+    void setDistance(int n_dim, float n_val);
+    void removeLastValue();
+    void print() const;
+    bool verify() const;
+    
+private:
+    void setBuildUpTo(int newBuild);
+    int isShortBranch() const;
+    int isMediumBranch() const;
+    int isLargeBranch() const;
 };
-
 #endif /* Interval_hpp */

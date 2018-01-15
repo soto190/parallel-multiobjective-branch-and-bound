@@ -1,14 +1,15 @@
-#Makefile for compiling in XeonPhi.
+#Makefile for compiling with ICPC.
 
-CXX = icpc
+CXX = mpiicpc
 DEBUGGER = gdb-ia
 
-#INC_DIR = -I/opt/intel/compilers_and_libraries_2017.1.132/linux/tbb/include
-#LIB_DIR = -L/opt/intel/compilers_and_libraries_2017/linux/tbb/lib/intel64_lin/gcc4.7
 LIBS = -tbb -ltbbmalloc -ltbbmalloc_proxy
-LIBS_DEBUG = -tbb -ltbbmalloc -ltbbmalloc_proxy_debug
+LIBS_DEBUG = -tbb -ltbbmalloc_debug -ltbbmalloc_proxy_debug
 
-LDFLAGS = -O0 -std=c++11
+#TODO: Some day investigate why the -debug parallel gets and segmentation fault when debugging.
+#TODO: Test the flag -fast to optimize for speed in intel compiler.
+LDFLAGS = -O0 -shared-intel -std=c++11
+LDFLAGS_DEBUG = -O0 -shared-intel -g -traceback -debug all -std=c++11
 
 src = $(wildcard *.cpp)
 obj = $(src:.cpp = .o)
@@ -16,11 +17,11 @@ obj = $(src:.cpp = .o)
 all: branchAndBound
 
 debug: LIBS = $(LIBS_DEBUG)
-debug: LDFLAGS = -O0 -std=c++11 -g -traceback -shared-intel
+debug: LDFLAGS = $(LDFLAGS_DEBUG)
 debug: branchAndBound
 
 branchAndBound: $(obj)
-	$(CXX) $(LIBS) -o $@ $^ $(LDFLAGS)
+	$(CXX) $(LIBS) $(LDFLAGS) -o $@ $^
 
 .BOOM: clean
 

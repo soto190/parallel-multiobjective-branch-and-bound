@@ -18,24 +18,27 @@
 //#include <memory.h> /** For the Ehecatl wich uses GCC 4.4.7, this activates the shared_ptr. **/
 
 class ParallelBranchAndBound: public tbb::task{
-
+    
 public:
-    int number_of_threads;
-    char * outputParetoFile;
-    char * summarizeFile;
-        
+    int rank;
+    int number_of_bbs;
+    char outputParetoFile[255];
+    char summarizeFile[255];
+    
     ProblemFJSSP problem;
-    GlobalPool& global_pool;
-    HandlerContainer& global_grid;
     Interval branch_init;
     
-    ParallelBranchAndBound(const ProblemFJSSP& problem, GlobalPool& global_pool, HandlerContainer& global_grid);
+    ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem);
     ~ParallelBranchAndBound();
     tbb::task* execute();
     
+    vector<Solution>& getParetoFront();
     void setNumberOfThreads(int number_of_threads);
-    void setParetoFrontFile(const char * outputFile);
-    void setSummarizeFile(const char * outputFile);
+    void setParetoFrontFile(const char outputFile[255]);
+    void setSummarizeFile(const char outputFile[255]);
+    void setBranchInit(const Interval& interval);
+    void setBranchInitPayload(const Payload_interval& payload);
+    
+    int getRank() const;
 };
-
 #endif /* ParallelBranchAndBound_hpp */

@@ -18,15 +18,16 @@
 enum ProblemType{combination = 0, permutation = 1, permutation_with_repetition_and_combination = 2, XD=190};
 
 class Problem{
-
+    
 public:
     
+    Problem();
     Problem(const Problem& toCopy);
     Problem (int totalObjectives, int totalVariables);
     virtual ~Problem();
     virtual Problem& operator=(const Problem& toCopy);
     
-    char * name;
+    char name[255];
     ProblemType type;
     int startingLevel;
     int totalObjectives;
@@ -48,7 +49,7 @@ public:
     
     virtual void getSolutionWithLowerBoundInObj(int nObj, Solution & sol) = 0;
     
-    void setName(const char* name);
+    void setName(const char name[255]);
     char * getName();
     
     void setNumberOfVariables(int numberOfVariables);
@@ -71,10 +72,10 @@ public:
     
     virtual void printSolution(const Solution & solution) const;
     virtual void printPartialSolution(const Solution & solution, int level) const;
-    virtual void printSolutionInfo(Solution & solution) const;
-    virtual void loadInstance(char* path[]);
+    virtual void printSolutionInfo(const Solution & solution) const;
+    virtual void loadInstance(char path[2][255], char file_extension[4]);
     virtual void printInstance();
     virtual void printProblemInfo() const;
 };
-
 #endif /* Problem_hpp */
+

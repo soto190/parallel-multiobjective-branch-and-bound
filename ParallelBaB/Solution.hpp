@@ -15,23 +15,28 @@ enum DominanceRelation {
     Dominates = 1, Dominated = -1, Nondominated = 0, Equals = 11
 };
 
+typedef struct {
+    int n_objectives;
+    int n_variables;
+    int build_up_to;
+    double * objective;
+    int * variable;
+} Payload_solution;
+
 //template <class TypeVariable>
 class Solution{
     
-    
 private:
+    int n_objectives;
+    int n_variables;
+    int build_up_to = -1;
     double * objective;
     int * variable;
     
-    int build_up_to = -1;
-    
-    int n_variables;
-    int n_objectives;
-    
 public:
     
-    int machineWithMakespan;
-    double * execTime;
+    int machineWithMakespan; /** TODO: this can be removed and all the related functions. **/
+    double * execTime; /** TODO: this can be removed and all the related functions. **/
     
     Solution();
     Solution(int totalObjectives, int totalVariables);
@@ -40,6 +45,7 @@ public:
     
     int setVariable(int index, int value);
     void setObjective(int index, double value);
+    void setBuildUpTo(int index);
     
     double getObjective(int nObjective) const;
     int getVariable(int index) const;
@@ -58,7 +64,5 @@ public:
     void print() const;
     void printObjectives() const;
     void printVariables() const;
-    
 };
-
 #endif /* Solution_hpp */

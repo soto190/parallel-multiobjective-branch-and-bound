@@ -10,75 +10,93 @@
 #define IVMTree_hpp
 
 #include <stdio.h>
+#include <fstream>
+#include <iomanip>
+#include "IVMTreeException.hpp"
 
 class IVMTree {
-
 private:
-	int rows;
-	int cols;
-	int whoIam = -1;
-    int ** ivm;
-    int * active_node;
-    int * start_exploration; /** This is not used. **/
+    int n_rows;
+    int n_cols;
+    int i_am = -1;
+    int ** matrix_nodes;
+    int * vector_pointing_to_col_at_row;
+    int * start_exploration;
     int * end_exploration; /** This is not used. **/
-    int active_row;
-    int starting_row;
-    int hasBranches = 1;
-    int root_row = 0; /** Root row. **/
     int * n_nodes_at_row;
-
-public:
-	IVMTree();
-    IVMTree(const IVMTree& toCopy);
-	IVMTree(int rows, int cols);
-	~IVMTree();
+    int integer_pointing_to_row;
+    int starting_row;
+    int there_are_more_ranches = 1;
+    int root_row = 0;
+    unsigned long pending_nodes = 0;
     
-    void setOwner(int idBB);
+public:
+    IVMTree();
+    IVMTree(const IVMTree& toCopy);
+    IVMTree(int rows, int cols);
+    ~IVMTree();
+
+    IVMTree& operator()(int rows, int cols);
+    IVMTree& operator=(const IVMTree& toCopy);
+
+    void setOwnerId(int idBB);
     void setRootRow(int node);
-    void setIVMValueAt(int row, int col, int value);
-    void setActiveNodeAt(int row, int value);
-    void setActiveRow(int row);
+    void setNodeValueAt(int row, int col, int value) throw(IVMTreeException);
+    void setActiveColAtRow(int row, int value) throw(IVMTreeException);
+    void setActiveRow(int row) throw(IVMTreeException);
     void setStartingRow(int row);
     void setNumberOfNodesAt(int row, int value);
     void setExplorationInterval(int starting_level, int * starts, int * ends);
     void setStartExploration(int row, int value);
     void setEndExploration(int row, int value);
-    int increaseNodesAt(int row);
-    int decreaseNodesAt(int row);
+    int increaseNumberOfNodesAt(int row);
+    int decreaseNumberOfNodesAt(int row);
     void resetNumberOfNodesAt(int row);
-    void setHasBranches(int itHas);
+    void setThereAreMoreBranches();
     
     int getRootNode() const;
+    int getRootRow() const;
     int getNumberOfNodesAt(int row) const;
-    int getIVMValue(int row, int col) const;
-    int getActiveNode(int row) const;
+    int getNodeValueAt(int row, int col) const throw(IVMTreeException);
+    int getActiveColAt(int row) const throw(IVMTreeException);
     int getActiveRow() const;
-    int getLastNodeAtRow(int row) const;
     int getStartingRow() const;
-	int getNumberOfRows() const;
-	int getNumberOfCols() const;
-	int getTreeDeep() const;
-	int getOwner() const;
+    int getNumberOfRows() const;
+    int getNumberOfCols() const;
+    int getDeepOfTree() const;
+    int getId() const;
     int getStartExploration(int row) const;
     int getEndExploration(int row) const;
-    
+    unsigned long getNumberOfPendingNodes() const;
     int removeLastNodeAtRow(int row);
+    int thereAreMoreBranches() const;
+    void addNodeToRow(int level, int value);
+    int getActiveNode() const;
+    int getFatherNode() const;
+    int pruneActiveNode();
     
-	int hasPendingBranches() const;
-	void setNode(int level, int value);
-	int getActiveNode() const;
-	int getFatherNode() const;
-	int pruneActiveNode();
+    int moveToNextRow();
+    
+    void resetRow(int row);
+    
+    void print() const;
+    void saveToFile(const char outputFile[255]) const;
 
-	int getCurrentLevel() const;
-
-	int moveToNextRow();
-	int moveToNextNode();
-
-	void print();
-	IVMTree& operator()(int rows, int cols);
-    IVMTree& operator=(const IVMTree& toCopy);
-
+private:
+    int getNextFreeColAtRow(int row);
+    int getActiveCol() const;
+    void moveToNodeAtRight();
+    int thereAreMoreNodes();
+    void removeActiveNode();
+    void moveToFatherRow();
+    void removeRow();
+    void moveToRootRow();
+    unsigned long decreaseNumberOfPendingNodes();
+    unsigned long increaseNumberOfPendingNodes();
+    int decreaseEndExplorationAtRow(int row);
+    int isRootRow() const;
+    int isUnderRootRow() const;
+    void markActiveNodeAsRemoved();
+    void setNoMoreBranches();
 };
-
 #endif /* IVMTree_hpp */

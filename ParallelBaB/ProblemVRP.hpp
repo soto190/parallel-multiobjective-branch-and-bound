@@ -21,7 +21,7 @@ public:
     ~ProblemVRP();
     
     ProblemVRP& operator=(const ProblemVRP& toCopy);
-
+    
     double evaluate(Solution & solution);
     double evaluatePartial(Solution & solution, int levelEvaluation);
     double evaluateLastLevel(Solution * solution);
@@ -30,7 +30,7 @@ public:
     
     void createDefaultSolution(Solution & solution);
     void getSolutionWithLowerBoundInObj(int nObj, Solution& solution);
-
+    
     int getLowerBound(int indexVar) const;
     int getUpperBound(int indexVar) const;
     int getLowerBoundInObj(int nObj) const;
@@ -47,13 +47,10 @@ public:
     void printSolution(const Solution & solution) const;
     void printPartialSolution(const Solution & solution, int level) const;
     void printSolutionInfo(const Solution & solution) const;
-
+    
     void printInstance();
-    void printProblemInfo();
-    void loadInstance(char* path[]);
-    
-    
+    void printProblemInfo() const;
+    void loadInstance(char filePath[2][255], char file_extension[4]);
 };
-
-
 #endif /* ProblemVRP_hpp */
+
