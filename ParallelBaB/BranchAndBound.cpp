@@ -7,8 +7,6 @@
 //
 
 /**
- * TODO: Sort the branches considering the objective values.
- * TODO: Create a structure to store the objective values in each level of the tree (in the solution class or in the B&B class?).
  * TODO: Decide if the grid is shared or each B&B has their own grid.
  *
  **/
@@ -186,7 +184,6 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     int toAdd = 0;
     
     fjssp_data.reset(); /** This function call is not necesary because the structurs are empty.**/
-    
     fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
     for (int m = 0; m < problem.getNumberOfMachines(); ++m){
         fjssp_data.setBestWorkloadInMachine(m, problem.getBestWorkload(m));
@@ -328,8 +325,11 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             if (updateParetoGrid(incumbent_s)){
                 increaseUpdatesInLowerBound();
                 /*printf("[B&B-%03d] ", bb_rank);
+
                 printCurrentSolution();
-                printf(" + [%6lu] \n", paretoContainer.getSize());*/
+                //problem.printSchedule(incumbent_s);
+                printf(" + [%6lu] \n", paretoContainer.getSize());
+                
             }
             updateBounds(incumbent_s, fjssp_data);
             ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
@@ -435,7 +435,6 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             
                             //ivm_tree.setNode(currentLevel + 1, toAdd);
                             branches_created++;
-                            
                         } else
                             increasePrunedBranches();
                         problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
@@ -487,7 +486,6 @@ int BranchAndBound::aLeafHasBeenReached() const {
  *
  * All the remanent of root_row + 1 is moved to the global pool.
  *
- * TODO: Send the next pending nodes to global pool, not only root_row + 1.
  ***/
 void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_solve){
     
@@ -633,7 +631,6 @@ unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) const {
 
 /**
  * This functions compute the number of nodes.
- *
  */
 unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) const {
     long n_nodes = 0;
@@ -1114,5 +1111,5 @@ void BranchAndBound::printDebug(){
     ivm_tree.print();
     printf("FJSSP Data:\n");
     fjssp_data.print();
-    printf("DEBUG\n");
+    printf("==========DEBUG==========\n");
 }

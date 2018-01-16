@@ -66,7 +66,6 @@ machineWithMakespan(solution.machineWithMakespan){
 }
 
 Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
-    
     machineWithMakespan = 0;
     build_up_to = -1;
     n_objectives = numberOfObjectives;
@@ -199,6 +198,7 @@ DominanceRelation Solution::dominates(const Solution & solution) const {
 void Solution::print() const {
     int nObj, nVar;
     char sep = '-';
+
     for (nObj = 0; nObj < n_objectives; ++nObj)
         printf("%4.0f", getObjective(nObj));
     

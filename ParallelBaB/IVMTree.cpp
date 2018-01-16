@@ -337,7 +337,6 @@ void IVMTree::setExplorationInterval(int starting_level, int *starts, int *ends)
     }
 }
 
-
 void IVMTree::addNodeToRow(int row, int node_value) {
     int next_free_col = getNextFreeColAtRow(row);
     setNodeValueAt(row, next_free_col, node_value);

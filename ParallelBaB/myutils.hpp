@@ -82,7 +82,7 @@ public:
         return distance[0] + distance[1];
     }
     
-    float getSomethingToSort(const SORTING_TYPES sort) const{
+    float getTheThingToSort(const SORTING_TYPES sort) const{
     
         switch (sort) {
             case SORTING_TYPES::DOMINANCE:
@@ -98,7 +98,7 @@ public:
                 break;
                 
             case SORTING_TYPES::DIST_COMB: /** This part can be used to combine the distances. **/
-                return distance[0] + distance[1];
+                return sqrt(pow(distance[0], 2) + pow(distance[1], 2));
                 break;
                 
             default:
@@ -169,8 +169,6 @@ public:
             return Dom::Nondom;
     }
     
-    
-    
     void print(){
         printf("%3d | %3d %3d | %3.3f %3.3f |\n", value, obj[0], obj[1], distance[0], distance[1]);
     }
@@ -192,15 +190,15 @@ public:
                 break;
                 
             case SORTING_TYPES::DIST_1:
-                push_dist1(data);
+                push_decrement(data, sort_type);
                 break;
                 
             case SORTING_TYPES::DIST_2:
-                push_dist2(data);
+                push_decrement(data, sort_type);
                 break;
                 
             case SORTING_TYPES::DIST_COMB:
-                push_dist_comb(data);
+                push_increment(data, sort_type);
                 break;
                 
             default:
@@ -210,81 +208,72 @@ public:
         return 1;
     }
     
-    int push_dist1(const Data3& data){
+    int push_decrement(const Data3& data, const SORTING_TYPES sort){
         
         switch (m_data.size()) {
             case 0:
                 m_data.push_back(data);
                 break;
             case 1:
-                if(data.getDistance(0) > m_data.front().getDistance(0))
+                if(data.getTheThingToSort(sort) > m_data.front().getTheThingToSort(sort))
                     m_data.push_front(data);
-                else if(data.getDistance(0) < m_data.front().getDistance(0))
-                    m_data.push_back(data);
                 else
                     m_data.push_back(data);
                 break;
                 
             case 2:
-                if(data.getDistance(0) >= m_data.front().getDistance(0))
+                if(data.getTheThingToSort(sort) >= m_data.front().getTheThingToSort(sort))
                     m_data.push_front(data);
-                else if(data.getDistance(0) <= m_data.back().getDistance(0))
+                else if(data.getTheThingToSort(sort) <= m_data.back().getTheThingToSort(sort))
                     m_data.push_back(data);
                 else
                     m_data.insert(m_data.begin() + 1, data);
                 break;
             default:
-                if(data.getDistance(0) >= m_data.front().getDistance(0))
+                if(data.getTheThingToSort(sort) >= m_data.front().getTheThingToSort(sort))
                     m_data.push_front(data);
-                else if(data.getDistance(0) <= m_data.back().getDistance(0))
+                else if(data.getTheThingToSort(sort) <= m_data.back().getTheThingToSort(sort))
                     m_data.push_back(data);
                 else
-                    m_data.insert(m_data.begin() + binarySearchDecrement(data, SORTING_TYPES::DIST_1), data);
-                
+                    m_data.insert(m_data.begin() + binarySearchDecrement(data, sort), data);
                 break;
         }
         
         return 1;
     }
     
-    int push_dist2(const Data3& data){
+    int push_increment(const Data3& data, const SORTING_TYPES sort){
         switch (m_data.size()) {
             case 0:
                 m_data.push_back(data);
                 break;
             case 1:
-                if(data.getDistance(1) > m_data.front().getDistance(1))
+                if(data.getTheThingToSort(sort) > m_data.front().getTheThingToSort(sort))
                     m_data.push_front(data);
-                else if(data.getDistance(1) < m_data.front().getDistance(1))
-                    m_data.push_back(data);
                 else
                     m_data.push_back(data);
                 break;
                 
             case 2:
-                if(data.getDistance(1) >= m_data.front().getDistance(1))
+                if(data.getTheThingToSort(sort) >= m_data.front().getTheThingToSort(sort))
                     m_data.push_front(data);
-                else if(data.getDistance(1) <= m_data.back().getDistance(1))
+                else if(data.getTheThingToSort(sort) <= m_data.back().getTheThingToSort(sort))
                     m_data.push_back(data);
                 else
                     m_data.insert(m_data.begin() + 1, data);
                 break;
                 
             default:
-                if(data.getDistance(1) >= m_data.front().getDistance(1))
+                if(data.getTheThingToSort(sort) >= m_data.front().getTheThingToSort(sort))
                     m_data.push_front(data);
-                else if(data.getDistance(1) <= m_data.back().getDistance(1))
+                else if(data.getTheThingToSort(sort) <= m_data.back().getTheThingToSort(sort))
                     m_data.push_back(data);
                 else
-                    m_data.insert(m_data.begin() + binarySearchDecrement(data, SORTING_TYPES::DIST_2), data);
+                    m_data.insert(m_data.begin() + binarySearchIncrement(data, sort), data);
                 
                 break;
         }
         
-        return 1;
-    }
-    
-    int push_dist_comb(const Data3& data){
         return 1;
     }
     
@@ -365,14 +354,10 @@ public:
         return 1;
     }
     
-    std::deque<Data3>::iterator begin(){return m_data.begin();}
-    std::deque<Data3>::iterator end(){return m_data.end();}
-    
-    
     unsigned long binarySearchIncrement(const Data3 & data, const SORTING_TYPES sort){
         unsigned long low, high, mid;
         
-        float value = data.getSomethingToSort(sort);
+        float value = data.getTheThingToSort(sort);
         low = 0;
         high = m_data.size() - 1;
         
@@ -385,11 +370,11 @@ public:
         
         while (low <= high) {
             mid = (low + high) * 0.5f;
-            if (m_data[mid].getSomethingToSort(sort) <= value && value <= m_data[mid + 1].getSomethingToSort(sort))
+            if (m_data[mid].getTheThingToSort(sort) <= value && value <= m_data[mid + 1].getTheThingToSort(sort))
                 return mid;
-            else if (value < m_data[mid].getSomethingToSort(sort))
+            else if (value < m_data[mid].getTheThingToSort(sort))
                 high = mid - 1;
-            else if (value > m_data[mid].getSomethingToSort(sort))
+            else if (value > m_data[mid].getTheThingToSort(sort))
                 low = mid + 1;
         }
         return high;
@@ -397,12 +382,13 @@ public:
     
     unsigned long binarySearchDecrement(const Data3 & data, const SORTING_TYPES sort){
         unsigned long low, high, mid;
-        float value = data.getSomethingToSort(sort);
-        low = 0;
+        float value = data.getTheThingToSort(sort);
+        low = 1;
         high = m_data.size() - 1;
         
-        if (value >= m_data[low].getSomethingToSort(sort))
+        if (value >= m_data[low].getTheThingToSort(sort))
             return low;
+
         if (value <= m_data[high].getSomethingToSort(sort))
             return high;
         
@@ -411,15 +397,19 @@ public:
         
         while (low <= high) {
             mid = (low + high) * 0.5f;
-            if (m_data[mid - 1].getSomethingToSort(sort) >= value && value >= m_data[mid].getSomethingToSort(sort))
+            if (m_data[mid - 1].getTheThingToSort(sort) >= value && value >= m_data[mid].getTheThingToSort(sort))
                 return mid;
-            else if (value > m_data[mid].getSomethingToSort(sort))
+            else if (value > m_data[mid].getTheThingToSort(sort))
                 high = mid - 1;
-            else if (value < m_data[mid].getSomethingToSort(sort))
+            else if (value < m_data[mid].getTheThingToSort(sort))
                 low = mid + 1;
         }
+        
         return low;
     }
+    
+    std::deque<Data3>::iterator begin(){return m_data.begin();}
+    std::deque<Data3>::iterator end(){return m_data.end();}
     
     void print() {
         std::deque<Data3>::iterator it = m_data.begin();

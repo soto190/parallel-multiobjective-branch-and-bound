@@ -457,6 +457,8 @@ public:
     int getTimesValueIsRepeated(int value);
     
     Solution goodSolutionWithMaxWorkload;
+    Solution goodSolutionWithMakespan;
+    
     void updateBestMaxWorkloadSolution(FJSSPdata& data);
     void updateBestMakespanSolution(FJSSPdata& data);
     void updateBestMakespanSolutionWith(const Solution& solution);
@@ -514,6 +516,7 @@ public:
     void printInstance();
     void printProblemInfo() const;
     void printSchedule(const Solution & solution) const;
+    void buildSolutionWithGoodMakespan(Solution & solution);
     void buildSolutionWithGoodMaxWorkload(Solution & solution);
     void buildSolutionWithGoodMaxWorkloadv2(Solution & solution);
     int e_function(double value) const;
