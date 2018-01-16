@@ -77,7 +77,7 @@ elapsed_time(0){
     limit_level_to_share = number_of_tree_levels * deep_limit_share;
     
     number_of_nodes.fetch_and_store(computeTotalNodes(problemToCopy.getNumberOfVariables()));
-
+    
     ivm_tree.setOwnerId(rank);
 }
 
@@ -325,11 +325,8 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             if (updateParetoGrid(incumbent_s)){
                 increaseUpdatesInLowerBound();
                 /*printf("[B&B-%03d] ", bb_rank);
-
-                printCurrentSolution();
-                //problem.printSchedule(incumbent_s);
-                printf(" + [%6lu] \n", paretoContainer.getSize());
-                
+                 printCurrentSolution();
+                 printf(" + [%6lu] \n", paretoContainer.getSize());*/
             }
             updateBounds(incumbent_s, fjssp_data);
             ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
@@ -458,7 +455,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                 branches_created++;
             }
             number_of_branches += branches_created;
-
+            
             break;
             
         case ProblemType::XD:
@@ -654,8 +651,8 @@ unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) co
             /** TODO: Design the correct computaiton of the number of nodes. **/
             /** Permutación without repetition: n!
              Permutation with repetition of each element is:
-              n! / (a! * b! * c!)
-                where n is the number of elements to use. And a is the number of times that a appears in the permutation.
+             n! / (a! * b! * c!)
+             where n is the number of elements to use. And a is the number of times that a appears in the permutation.
              **/
             nodes_per_branch = (problem.getUpperBound(0) + 1) - problem.getLowerBound(0);
             deepest_level = number_of_tree_levels + 1;
@@ -1100,7 +1097,7 @@ void BranchAndBound::printParetoFront(int withExtraInfo) {
 }
 
 void BranchAndBound::printDebug(){
-    printf("\nDEBUG\n");
+    printf("\nSTART-DEBUG-INFO\n");
     printf("GlobalPool:\n");
     globalPool.print();
     printf("Subproblem/interval:\n");
@@ -1111,5 +1108,5 @@ void BranchAndBound::printDebug(){
     ivm_tree.print();
     printf("FJSSP Data:\n");
     fjssp_data.print();
-    printf("==========DEBUG==========\n");
+    printf("END-DEBUG-INFO\n");
 }

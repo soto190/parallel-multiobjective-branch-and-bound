@@ -669,6 +669,7 @@ double ProblemFJSSP::evaluatePartial(Solution & solution, int levelEvaluation) {
 
 /**
  *
+ * TODO: improve the evaluation function.
  *
  * This representation use a mapping:
  * solution [ 0, 0, 0, 6, 7, 6, 3, 4, 5]
@@ -877,6 +878,7 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
         
         if (data.getWorkloadOnMachine(machine) > max_workload)
             max_workload = data.getWorkloadOnMachine(machine);
+        
         //        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
         //            max_workload = data.getTempBestWorkloadInMachine(machine);
     }
@@ -908,8 +910,8 @@ void ProblemFJSSP::createDefaultSolution(Solution & solution) {
     int map = 0;
     int machine = 0;
     
-    FJSSPdata fjssp(n_jobs, n_operations, n_machines);
-    /** Allocates one operation in each machine, creates a solution with a distribuited number of operations in each machine.**/
+    FJSSPdata fjsspd(n_jobs, n_operations, n_machines);
+    
     for (job = 0; job < n_jobs; ++job)
         for (operation = 0; operation < n_operations_in_job[job]; ++operation) {
             
@@ -987,35 +989,6 @@ void ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution) 
         for (operation = 0; operation < n_operations; ++operation)
             solution.setVariable(operation, jobMachineToMap[operationIsFromJob[operation]][assignationMinPij[operation]]);
     }
-    evaluate(solution);
-}
-
-void ProblemFJSSP::buildSolutionWithGoodMakespan(Solution & solution){
-    
-    //int n_op__in_machine[n_machines];
-    int n_est[n_operations];
-    int n_eet[n_operations];
-    int n_job_est[n_jobs];
-    int n_job_eet[n_jobs];
-    int best_alloc[n_operations];
-    int alloc_eet[n_operations];
-    
-    int ee_job = 0, eet = INT_MAX;
-    
-    for (int n_job = 0; n_job < n_jobs; ++n_job) {
-        n_job_est[n_job] = releaseTime[n_job];
-        n_job_eet[n_job] = eet_of_job[n_job];
-        if (n_job_eet[n_job] < eet)
-            ee_job = n_job;
-    }
-    
-    for (int n_op = 0; n_op < n_operations; ++n_op) {
-        n_est[n_op] = earliest_starting_time[n_op];
-        n_eet[n_op] = earliest_ending_time[n_op];
-        best_alloc[n_op] = assignationMinPij[n_op];
-        alloc_eet[n_op] = assignationMinPij[n_op];
-    }
- 
     evaluate(solution);
 }
 
@@ -1969,3 +1942,4 @@ int ProblemFJSSP::validateVariablesOf(const Solution& solution) const {
             number_of_invalid_variables++;
     return number_of_invalid_variables;
 }
+

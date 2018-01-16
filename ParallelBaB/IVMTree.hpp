@@ -35,10 +35,10 @@ public:
     IVMTree(const IVMTree& toCopy);
     IVMTree(int rows, int cols);
     ~IVMTree();
-
+    
     IVMTree& operator()(int rows, int cols);
     IVMTree& operator=(const IVMTree& toCopy);
-
+    
     void setOwnerId(int idBB);
     void setRootRow(int node);
     void setNodeValueAt(int row, int col, int value) throw(IVMTreeException);
@@ -81,7 +81,7 @@ public:
     
     void print() const;
     void saveToFile(const char outputFile[255]) const;
-
+    
 private:
     int getNextFreeColAtRow(int row);
     int getActiveCol() const;

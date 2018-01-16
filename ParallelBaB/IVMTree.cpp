@@ -168,7 +168,7 @@ void IVMTree::setActiveColAtRow(int row, int value) throw(IVMTreeException){
             throw IVMTreeException(VECTOR_OUT_OF_RANGE, "row:" + std::to_string(static_cast<long long>(row)));
         
         vector_pointing_to_col_at_row[row] = value;
-    
+        
     } catch (IVMTreeException& ivmTreeEx) {
         printf("%s\n",  ivmTreeEx.what());
     }
@@ -309,9 +309,9 @@ void IVMTree::setActiveRow(int row) throw (IVMTreeException){
     try{
         if (row < 0 || row >= n_rows)
             throw IVMTreeException(INTEGER_OUT_OF_RANGE, "row: " + std::to_string(static_cast<long long>(row)));
-
+        
         integer_pointing_to_row = row;
-    
+        
     }catch(IVMTreeException& ex){
         printf("%s\n", ex.what());
     }
@@ -376,7 +376,7 @@ int IVMTree::pruneActiveNode() {
     /** TODO if the active node is the root node we cannot remove it.**/
     if (isRootRow())
         setNoMoreBranches();
-
+    
     removeActiveNode();
     pruned_nodes++;
     if (thereAreMoreNodes()) {
@@ -397,7 +397,7 @@ int IVMTree::pruneActiveNode() {
             }
         }
     }
-
+    
     if (isRootRow())
         setNoMoreBranches();
     return pruned_nodes;
@@ -511,17 +511,17 @@ void IVMTree::saveToFile(const char outputFile[255]) const{
                 myfile << std::setw(size_word) << getStartExploration(row);
             else
                 myfile << std::setw(size_word) << '-';
-        
+            
             if (getActiveColAt(row) > -1)
                 myfile << std::setw(size_word) << getActiveColAt(row);
             else
                 myfile << std::setw(size_word) << '-';
-        
+            
             if (getNumberOfNodesAt(row) > -1)
                 myfile << std::setw(size_word) << getNumberOfNodesAt(row);
             else
                 myfile << std::setw(size_word) << '-';
-        
+            
             for (int col = 0; col < getNumberOfCols(); ++col)
                 if (getNodeValueAt(row, col) > -1)
                     myfile << std::setw(size_word) << getNodeValueAt(row, col);
