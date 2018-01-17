@@ -376,7 +376,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     float distance_error_to_best[2];
     
     SortedVector sorted_elements;
-    Data3 data;
+    ObjectiveValues data;
     
     int best_values_found[2];
     for (int obj = 0; obj < 2; ++obj)
@@ -439,7 +439,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             
             increaseNumberOfBranches(branches_created);
             if (branches_created > 0) { /** If a branch was created. **/
-                for (std::deque<Data3>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
+                for (std::deque<ObjectiveValues>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
                     ivm_tree.addNodeToRow(currentLevel + 1, (*it).getValue());
                 
                 ivm_tree.moveToNextRow();

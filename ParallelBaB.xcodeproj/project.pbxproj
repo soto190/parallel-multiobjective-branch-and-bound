@@ -23,6 +23,8 @@
 		21390E611F30CEB800C96853 /* libtbbmalloc.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 21390E5F1F30CEB800C96853 /* libtbbmalloc.dylib */; };
 		214467621FD8C3B000364E2A /* ParetoBucket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214467601FD8C3B000364E2A /* ParetoBucket.cpp */; };
 		214467651FD8D74A00364E2A /* HandlerContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214467631FD8D74A00364E2A /* HandlerContainer.cpp */; };
+		214C92DF200FC65C00B55E58 /* SortedVector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214C92DD200FC65C00B55E58 /* SortedVector.cpp */; };
+		214C92E2200FCB2B00B55E58 /* ObjectiveValues.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214C92E0200FCB2B00B55E58 /* ObjectiveValues.cpp */; };
 		21774E401FD85A11007FF333 /* IVMTreeException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21774E3E1FD85A11007FF333 /* IVMTreeException.cpp */; };
 		21774E431FD8883B007FF333 /* SubproblemsPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21774E411FD8883B007FF333 /* SubproblemsPool.cpp */; };
 		21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */; };
@@ -80,6 +82,10 @@
 		214467611FD8C3B000364E2A /* ParetoBucket.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ParetoBucket.hpp; sourceTree = "<group>"; };
 		214467631FD8D74A00364E2A /* HandlerContainer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = HandlerContainer.cpp; sourceTree = "<group>"; };
 		214467641FD8D74A00364E2A /* HandlerContainer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = HandlerContainer.hpp; sourceTree = "<group>"; };
+		214C92DD200FC65C00B55E58 /* SortedVector.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SortedVector.cpp; sourceTree = "<group>"; };
+		214C92DE200FC65C00B55E58 /* SortedVector.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SortedVector.hpp; sourceTree = "<group>"; };
+		214C92E0200FCB2B00B55E58 /* ObjectiveValues.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjectiveValues.cpp; sourceTree = "<group>"; };
+		214C92E1200FCB2B00B55E58 /* ObjectiveValues.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjectiveValues.hpp; sourceTree = "<group>"; };
 		216F69B01E5AE5FD00589E5D /* submit-multiple.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "submit-multiple.sh"; sourceTree = "<group>"; };
 		216F69B11E5AE66600589E5D /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		21774E3E1FD85A11007FF333 /* IVMTreeException.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IVMTreeException.cpp; sourceTree = "<group>"; };
@@ -170,6 +176,10 @@
 				21774E3F1FD85A11007FF333 /* IVMTreeException.hpp */,
 				2112824E1D639AB30038DBEE /* myutils.cpp */,
 				2112824F1D639AB30038DBEE /* myutils.hpp */,
+				214C92E0200FCB2B00B55E58 /* ObjectiveValues.cpp */,
+				214C92E1200FCB2B00B55E58 /* ObjectiveValues.hpp */,
+				214C92DD200FC65C00B55E58 /* SortedVector.cpp */,
+				214C92DE200FC65C00B55E58 /* SortedVector.hpp */,
 				211282501D639AB30038DBEE /* Problem.cpp */,
 				211282511D639AB30038DBEE /* Problem.hpp */,
 				21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */,
@@ -267,11 +277,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				21774E401FD85A11007FF333 /* IVMTreeException.cpp in Sources */,
+				214C92DF200FC65C00B55E58 /* SortedVector.cpp in Sources */,
 				212AFB1E1E3F35CE004FC057 /* Dominance.cpp in Sources */,
 				217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */,
 				211282621D639AB30038DBEE /* Solution.cpp in Sources */,
 				217D170F1F744B33004CECD8 /* MasterWorkerPBB.cpp in Sources */,
 				21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */,
+				214C92E2200FCB2B00B55E58 /* ObjectiveValues.cpp in Sources */,
 				211282611D639AB30038DBEE /* ProblemVRP.cpp in Sources */,
 				211282601D639AB30038DBEE /* ProblemTSP.cpp in Sources */,
 				214467621FD8C3B000364E2A /* ParetoBucket.cpp in Sources */,
