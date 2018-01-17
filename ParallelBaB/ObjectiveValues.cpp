@@ -12,25 +12,28 @@
 ObjectiveValues::ObjectiveValues(){
 }
 
-ObjectiveValues::ObjectiveValues(int var_value, int obj1, int obj2): value(var_value){
-    obj[0] = obj1;
-    obj[1] = obj2;
+ObjectiveValues::ObjectiveValues(int var_value, int obj1, int obj2): variable_value(var_value){
+    objective[0] = obj1;
+    objective[1] = obj2;
 }
 
 ObjectiveValues::ObjectiveValues(const ObjectiveValues & toCopy){
-    value = toCopy.getValue();
+    variable_value = toCopy.getValue();
     for (int n_obj = 0; n_obj < 2; ++n_obj){
-        obj[n_obj] = toCopy.getObjective(n_obj);
+        objective[n_obj] = toCopy.getObjective(n_obj);
         distance[n_obj] = toCopy.getDistance(n_obj);
     }
 }
 
+ObjectiveValues::~ObjectiveValues(){
+}
+
 void ObjectiveValues::setValue(int n_value){
-    value = n_value;
+    variable_value = n_value;
 }
 
 void ObjectiveValues::setObjective(int n_objective, int value){
-    obj[n_objective] = value;
+    objective[n_objective] = value;
 }
 
 void ObjectiveValues::setDistance(int n_obj, float n_dist){
@@ -38,11 +41,11 @@ void ObjectiveValues::setDistance(int n_obj, float n_dist){
 }
 
 int ObjectiveValues::getValue() const{
-    return value;
+    return variable_value;
 }
 
 int ObjectiveValues::getObjective(int n_obj) const{
-    return obj[n_obj];
+    return objective[n_obj];
 }
 
 float ObjectiveValues::getDistance(int n_obj) const{
@@ -80,65 +83,65 @@ float ObjectiveValues::getSomethingToSort(const SORTING_TYPES sort) const{
 
 bool ObjectiveValues::operator==(const ObjectiveValues& rhs) const{
     for (int n_obj = 0; n_obj < 2; ++n_obj)
-        if (obj[n_obj] != rhs.getObjective(n_obj))
+        if (objective[n_obj] != rhs.getObjective(n_obj))
             return false;
     return true;
 }
 
 bool ObjectiveValues::operator<(const ObjectiveValues& rhs) const{
     for (int n_obj = 0; n_obj < 2; ++n_obj)
-        if (obj[n_obj] > rhs.getObjective(n_obj))
+        if (objective[n_obj] > rhs.getObjective(n_obj))
             return false;
     return true;
 }
 
 bool ObjectiveValues::operator<=(const ObjectiveValues& rhs) const{
     for (int n_obj = 0; n_obj < 2; ++n_obj)
-        if (obj[n_obj] > rhs.getObjective(n_obj))
+        if (objective[n_obj] > rhs.getObjective(n_obj))
             return false;
     return true;
 }
 
 bool ObjectiveValues::operator>(const ObjectiveValues& rhs) const{
     for (int n_obj = 0; n_obj < 2; ++n_obj)
-        if (obj[n_obj] < rhs.getObjective(n_obj))
+        if (objective[n_obj] < rhs.getObjective(n_obj))
             return false;
     return true;
 }
 
 bool ObjectiveValues::operator>=(const ObjectiveValues& rhs) const{
     for (int n_obj = 0; n_obj < 2; ++n_obj)
-        if (obj[n_obj] <= rhs.getObjective(n_obj))
+        if (objective[n_obj] <= rhs.getObjective(n_obj))
             return false;
     return true;
 }
 
 Dom ObjectiveValues::dominance(const ObjectiveValues& rhs) const{
-    int nObj = 0, objA = 0, objB = 0, localSolIsBetterIn = 0, exterSolIsBetterIn = 0, equals = 1;
+    int n_obj = 0, obj_A = 0, obj_B = 0, local_is_better = 0, extern_is_better = 0, bot_are_equals = 1;
     
-    for (nObj = 0; nObj < 2; ++nObj) {
-        objA = obj[nObj];
-        objB = rhs.getObjective(nObj);
+    for (n_obj = 0; n_obj < 2; ++n_obj) {
+        obj_A = objective[n_obj];
+        obj_B = rhs.getObjective(n_obj);
         
-        if (objA < objB) {
-            localSolIsBetterIn++;
-            equals = 0;
-        } else if (objB < objA) {
-            exterSolIsBetterIn++;
-            equals = 0;
+        if (obj_A < obj_B) {
+            local_is_better++;
+            bot_are_equals = 0;
+        } else if (obj_B < obj_A) {
+            extern_is_better++;
+            bot_are_equals = 0;
         }
     }
     
-    if (equals == 1)
+    if (bot_are_equals == 1)
         return Dom::Eq;
-    else if (localSolIsBetterIn > 0 && exterSolIsBetterIn == 0)
+    else if (local_is_better > 0 && extern_is_better == 0)
         return Dom::Domtes;
-    else if (exterSolIsBetterIn > 0 && localSolIsBetterIn == 0)
+    else if (extern_is_better > 0 && local_is_better == 0)
         return Dom::Domted;
     else
         return Dom::Nondom;
 }
 
 void ObjectiveValues::print(){
-    printf("%3d | %3d %3d | %3.3f %3.3f |\n", value, obj[0], obj[1], distance[0], distance[1]);
+    printf("%3d | %3d %3d | %3.3f %3.3f |\n", variable_value, objective[0], objective[1], distance[0], distance[1]);
 }

@@ -19,22 +19,20 @@ class SortedVector{
     deque<ObjectiveValues> m_data;
     
 public:
-    /**
-     * The elements are sorted by dominance. It also stores the dominated solutions at the end.
-     * returns 1.
-     **/
-    int push(const ObjectiveValues & data, const SORTING_TYPES sort_type);
-    int push_dist1(const ObjectiveValues& data);
-    int push_dist2(const ObjectiveValues& data);
-    int push_dist_comb(const ObjectiveValues& data);
-    int push_dominance(const ObjectiveValues& data);
+    SortedVector();
+    ~SortedVector();
+    
+    int push(const ObjectiveValues & objValues, const SORTING_TYPES sort_type);
+    int push_dist1(const ObjectiveValues& objValues);
+    int push_dist2(const ObjectiveValues& objValues);
+    int push_dist_comb(const ObjectiveValues& objValues);
+    int push_dominance(const ObjectiveValues& objValues);
     
     std::deque<ObjectiveValues>::iterator begin();
     std::deque<ObjectiveValues>::iterator end();
     
-    unsigned long binarySearchIncrement(const ObjectiveValues & data, const SORTING_TYPES sort);
-    unsigned long binarySearchDecrement(const ObjectiveValues & data, const SORTING_TYPES sort);
+    unsigned long binarySearchIncrement(const ObjectiveValues & objValues, const SORTING_TYPES sort_type);
+    unsigned long binarySearchDecrement(const ObjectiveValues & objValues, const SORTING_TYPES sort_type);
     void print();
 };
-
 #endif /* SortedVector_hpp */

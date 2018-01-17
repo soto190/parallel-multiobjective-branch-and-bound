@@ -376,7 +376,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     float distance_error_to_best[2];
     
     SortedVector sorted_elements;
-    ObjectiveValues data;
+    ObjectiveValues obj_values;
     
     int best_values_found[2];
     for (int obj = 0; obj < 2; ++obj)
@@ -421,14 +421,14 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         if ((distance_error_to_best[0] <= 0 || distance_error_to_best[1] <= 0) && improvesTheGrid(solution)) {
                             
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
-                            data.setValue(toAdd);
-                            data.setObjective(0, fjssp_data.getMakespan());
-                            data.setObjective(1, fjssp_data.getMaxWorkload());
+                            obj_values.setValue(toAdd);
+                            obj_values.setObjective(0, fjssp_data.getMakespan());
+                            obj_values.setObjective(1, fjssp_data.getMaxWorkload());
                             
-                            data.setDistance(0, distanceToObjective(data.getObjective(0), problem.getLowerBoundInObj(0)));
-                            data.setDistance(1, distanceToObjective(data.getObjective(1), problem.getLowerBoundInObj(1)));
+                            obj_values.setDistance(0, distanceToObjective(obj_values.getObjective(0), problem.getLowerBoundInObj(0)));
+                            obj_values.setDistance(1, distanceToObjective(obj_values.getObjective(1), problem.getLowerBoundInObj(1)));
                             
-                            sorted_elements.push(data, SORTING_TYPES::DIST_1);/** sorting the nodes to give priority to promising nodes. **/
+                            sorted_elements.push(obj_values, SORTING_TYPES::DIST_1);/** sorting the nodes to give priority to promising nodes. **/
                             
                             //ivm_tree.setNode(currentLevel + 1, toAdd);
                             branches_created++;
