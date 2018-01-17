@@ -23,6 +23,7 @@
 #include "Solution.hpp"
 #include "HandlerContainer.hpp"
 #include "Dominance.hpp"
+#include "SortedVector.hpp"
 #include "IVMTree.hpp"
 #include "Interval.hpp"
 #include "SubproblemsPool.hpp"
