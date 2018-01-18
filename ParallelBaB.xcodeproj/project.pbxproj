@@ -27,6 +27,7 @@
 		214467651FD8D74A00364E2A /* HandlerContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214467631FD8D74A00364E2A /* HandlerContainer.cpp */; };
 		214C92DF200FC65C00B55E58 /* SortedVector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214C92DD200FC65C00B55E58 /* SortedVector.cpp */; };
 		214C92E2200FCB2B00B55E58 /* ObjectiveValues.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214C92E0200FCB2B00B55E58 /* ObjectiveValues.cpp */; };
+		214C92E52010349100B55E58 /* NSGA_II.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214C92E32010349100B55E58 /* NSGA_II.cpp */; };
 		214D559B2023738400C9B4F4 /* libmpi.40.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 214D559A2023738400C9B4F4 /* libmpi.40.dylib */; };
 		214D559D202373A200C9B4F4 /* libmpi_cxx.40.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 214D559C202373A200C9B4F4 /* libmpi_cxx.40.dylib */; };
 		214D559F202373C100C9B4F4 /* libmpi.40.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 214D559E202373C100C9B4F4 /* libmpi.40.dylib */; };
@@ -93,10 +94,9 @@
 		214C92DE200FC65C00B55E58 /* SortedVector.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SortedVector.hpp; sourceTree = "<group>"; };
 		214C92E0200FCB2B00B55E58 /* ObjectiveValues.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjectiveValues.cpp; sourceTree = "<group>"; };
 		214C92E1200FCB2B00B55E58 /* ObjectiveValues.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjectiveValues.hpp; sourceTree = "<group>"; };
-		214D559A2023738400C9B4F4 /* libmpi.40.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi.40.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi.40.dylib"; sourceTree = "<group>"; };
 		214D559C202373A200C9B4F4 /* libmpi_cxx.40.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi_cxx.40.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi_cxx.40.dylib"; sourceTree = "<group>"; };
-		214D559E202373C100C9B4F4 /* libmpi.40.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmpi.40.dylib; sourceTree = "<group>"; };
-		214D55A0202373DA00C9B4F4 /* libmpi_cxx.40.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmpi_cxx.40.dylib; sourceTree = "<group>"; };
+		214C92E32010349100B55E58 /* NSGA_II.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NSGA_II.cpp; sourceTree = "<group>"; };
+		214C92E42010349100B55E58 /* NSGA_II.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NSGA_II.hpp; sourceTree = "<group>"; };
 		216F69B01E5AE5FD00589E5D /* submit-multiple.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "submit-multiple.sh"; sourceTree = "<group>"; };
 		216F69B11E5AE66600589E5D /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		21774E3E1FD85A11007FF333 /* IVMTreeException.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IVMTreeException.cpp; sourceTree = "<group>"; };
@@ -167,6 +167,8 @@
 				21E8EF8B1E48BD0800A716C6 /* ParallelBranchAndBound.hpp */,
 				2112824A1D639AB30038DBEE /* BranchAndBound.cpp */,
 				2112824B1D639AB30038DBEE /* BranchAndBound.hpp */,
+				214C92E32010349100B55E58 /* NSGA_II.cpp */,
+				214C92E42010349100B55E58 /* NSGA_II.hpp */,
 				21F4CBA51DAE97CC004A308F /* Dominance.cpp */,
 				21F4CBA61DAE97CC004A308F /* Dominance.hpp */,
 				214467601FD8C3B000364E2A /* ParetoBucket.cpp */,
@@ -300,6 +302,7 @@
 				2139FC982017BAF300CB70BE /* FJSSPdataException.cpp in Sources */,
 				217D170F1F744B33004CECD8 /* MasterWorkerPBB.cpp in Sources */,
 				218182AE2016777800AE127B /* SolutionException.cpp in Sources */,
+				214C92E52010349100B55E58 /* NSGA_II.cpp in Sources */,
 				21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */,
 				214C92E2200FCB2B00B55E58 /* ObjectiveValues.cpp in Sources */,
 				211282611D639AB30038DBEE /* ProblemVRP.cpp in Sources */,
