@@ -232,6 +232,7 @@ public:
     int getNumberOfJobs() const {
         return n_jobs;
     }
+    
     int getNumberOfMachines() const { return n_machines;}
     int getNumberOfOperations() const { return n_operations;}
     int getMakespanMachine() const { return machine_makespan;}

@@ -373,13 +373,13 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     int machine = 0;
     int branches_created = 0;
     
-    float distance_error_to_best[2];
+    float distance_error_to_best[3];
     
     SortedVector sorted_elements;
     ObjectiveValues obj_values;
     
-    int best_values_found[2];
-    for (int obj = 0; obj < 2; ++obj)
+    int best_values_found[3];
+    for (int obj = 0; obj < solution.getNumberOfObjectives(); ++obj)
         best_values_found[obj] = paretoContainer.getBestValueFoundIn(obj);
     
     switch (problem.getType()) {
@@ -568,7 +568,7 @@ int BranchAndBound::updateParetoGrid(const Solution & solution) {
  *
  */
 int BranchAndBound::improvesTheGrid(const Solution & solution) const {
-    return paretoContainer.improvesTheGrid(solution);
+    return paretoContainer.isImprovingTheGrid(solution);
 }
 
 /**
@@ -966,13 +966,13 @@ int BranchAndBound::saveSummarize() {
     printf("Calls to branching:  %ld\n", getNumberOfCallsToBranch());
     printf("Created branches:    %ld\n", getNumberOfBranches());
     printf("Calls to prune:      %ld\n", getNumberOfCallsToPrune());
-    printf("Pruned branches:        %ld\n", getNumberOfPrunedNodes());
+    printf("Pruned branches:     %ld\n", getNumberOfPrunedNodes());
     printf("Leaves reached:      %ld\n", getNumberOfReachedLeaves());
     printf("Updates in PF:       %ld\n", getNumberOfUpdatesInLowerBound());
     printf("Total time:          %f\n", getElapsedTime());
     printf("Shared work: %ld\n", getSharedWork());
     printf("Grid data:\n");
-    printf("\tGrid dimension:    %d x %d\n", paretoContainer.getCols(), paretoContainer.getRows());
+    printf("\tGrid dimension:    %d x %d x %d\n", paretoContainer.getCols(), paretoContainer.getRows(), paretoContainer.getDeep());
     printf("\tnon-dominated buckets:    %ld\n", paretoContainer.getNumberOfActiveBuckets());
     printf("\tdominated buckets:  %ld\n", paretoContainer.getNumberOfDisabledBuckets());
     printf("\tunexplored buckets:%ld\n", paretoContainer.getNumberOfUnexploredBuckets());
@@ -993,14 +993,14 @@ int BranchAndBound::saveSummarize() {
         myfile << "Calls to branching:  " << number_of_calls_to_branch << endl;
         myfile << "Created branches:    " << number_of_branches << endl;
         myfile << "Calls to prune:      " << number_of_calls_to_prune << endl;
-        myfile << "Pruned branches:        " << number_of_pruned_nodes << endl;
+        myfile << "Pruned branches:     " << number_of_pruned_nodes << endl;
         myfile << "Leaves reached:      " << number_of_reached_leaves << endl;
         myfile << "Updates in PF:       " << number_of_updates_in_lower_bound << endl;
         myfile << "Shared work:         " << number_of_shared_works << endl;
         myfile << "Total time:          " << elapsed_time << endl;
         
         myfile << "Grid data:\n";
-        myfile << "\tdimension:         \t" << paretoContainer.getCols() << " x " << paretoContainer.getRows() << endl;
+        myfile << "\tdimension:         \t" << paretoContainer.getCols() << " x " << paretoContainer.getRows() << " x " << paretoContainer.getDeep() << endl;
         myfile << "\tnon-dominated:     \t" << paretoContainer.getNumberOfActiveBuckets() << endl;
         myfile << "\tdominated:         \t" << paretoContainer.getNumberOfDisabledBuckets() << endl;
         myfile << "\tunexplored:        \t" << paretoContainer.getNumberOfUnexploredBuckets() << endl;

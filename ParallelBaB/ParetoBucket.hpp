@@ -29,6 +29,8 @@ class ParetoBucket{
 private:
     unsigned long posx;
     unsigned long posy;
+    unsigned long posz;
+    
     Lock improving_lock;
     tbb::atomic<unsigned long> size;
     tbb::atomic<BucketState> state;
@@ -37,24 +39,28 @@ private:
 public:
     ParetoBucket();
     ParetoBucket(unsigned long posx, unsigned long posy);
+    ParetoBucket(unsigned long posx, unsigned long posy, unsigned long pos_z);
     ParetoBucket(const ParetoBucket& toCopy);
     ~ParetoBucket();
     
     void setPosX(unsigned long new_posx);
     void setPosY(unsigned long new_posy);
+    void setPosZ(unsigned long new_posz);
     void setPositionXY(unsigned long new_posx, unsigned long new_posy);
+    void setPositionXYZ(unsigned long new_posx, unsigned long new_posy, unsigned long new_posz);
+    unsigned long getPosx() const;
+    unsigned long getPosy() const;
+    unsigned long getPosz() const;
+    unsigned long getSize() const;
     void setUnexplored();
     void setNonDominated();
     void setDominated();
-    unsigned long getPosx() const;
-    unsigned long getPosy() const;
-    unsigned long getSize() const;
     BucketState getState() const;
     tbb::atomic<unsigned long> getSizeAtomic() const;
     tbb::atomic<BucketState> getStateAtomic() const;
     std::vector<Solution>& getVector() ;
     const std::vector<Solution>& getVectorToCopy() const ;
-    int produceImprovement(const Solution& obj);
+    int isImproving(const Solution& obj);
     int push_back(const Solution& obj);
     void clear();
     void print() const;

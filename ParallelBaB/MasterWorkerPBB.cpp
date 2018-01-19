@@ -313,7 +313,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
     
-    paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
+    paretoContainer(25, 25, 1, solution.getObjective(0), solution.getObjective(1), 1, problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1), 0);
     
     BranchAndBound BB_container(rank, 0, problem, branch_init);
     branches_created += BB_container.initGlobalPoolWithInterval(branch_init);
@@ -741,7 +741,7 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
                 solution.setVariable(split_level, value_to_add);
                 problem.evaluateDynamic(solution, fjssp_data, split_level);
                 branches_explored++;
-                if (paretoContainer.improvesTheGrid(solution)) {
+                if (paretoContainer.isImprovingTheGrid(solution)) {
                     branch_to_split.setValueAt(split_level, value_to_add);
                     branch_to_split.setDistance(0, BranchAndBound::distanceToObjective(fjssp_data.getMakespan(), problem.getLowerBoundInObj(0)));
                     branch_to_split.setDistance(1, BranchAndBound::distanceToObjective(fjssp_data.getMaxWorkload(), problem.getLowerBoundInObj(1)));

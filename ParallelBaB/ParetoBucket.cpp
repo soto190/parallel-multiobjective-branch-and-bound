@@ -10,26 +10,40 @@
 
 ParetoBucket::ParetoBucket():
 posx(0),
-posy(0){
+posy(0),
+posz(0){
     size.store(0);
     state.store(BucketState::Unexplored);
-    m_vec.reserve(50);
+    m_vec.reserve(20);
 };
 
 ParetoBucket::ParetoBucket(unsigned long posx, unsigned long posy):
 posx(posx),
-posy(posy){
+posy(posy),
+posz(0){
     size.store(0);
     state.store(BucketState::Unexplored);
-    m_vec.reserve(50);
+    m_vec.reserve(20);
 };
+
+ParetoBucket::ParetoBucket(unsigned long posx, unsigned long posy, unsigned long posz):
+posx(posx),
+posy(posy),
+posz(posz){
+    size.store(0);
+    state.store(BucketState::Unexplored);
+    m_vec.reserve(20);
+};
+
 
 ParetoBucket::ParetoBucket(const ParetoBucket& toCopy):
 posx(toCopy.getPosx()),
 posy(toCopy.getPosy()),
+posz(toCopy.getPosz()),
 size((unsigned long) toCopy.getSizeAtomic()),
 state(toCopy.getStateAtomic()),
 m_vec(toCopy.getVectorToCopy()){
+    
 };
 
 ParetoBucket::~ParetoBucket(){
@@ -44,10 +58,21 @@ void ParetoBucket::setPosY(unsigned long new_posy){
     posy = new_posy;
 }
 
+void ParetoBucket::setPosZ(unsigned long new_posz){
+    posz = new_posz;
+}
+
 void ParetoBucket::setPositionXY(unsigned long new_posx, unsigned long new_posy){
     posx = new_posx;
     posy = new_posy;
 }
+
+void ParetoBucket::setPositionXYZ(unsigned long new_posx, unsigned long new_posy, unsigned long new_posz){
+    posx = new_posx;
+    posy = new_posy;
+    posz = new_posz;
+}
+
 
 void ParetoBucket::setUnexplored(){
     state.fetch_and_store(BucketState::Unexplored);
@@ -67,6 +92,10 @@ unsigned long ParetoBucket::getPosx() const{
 
 unsigned long ParetoBucket::getPosy() const{
     return posy;
+}
+
+unsigned long ParetoBucket::getPosz() const{
+    return posz;
 }
 
 unsigned long ParetoBucket::getSize() const{
@@ -93,7 +122,7 @@ const std::vector<Solution>& ParetoBucket::getVectorToCopy() const {
     return m_vec;
 }
 
-int ParetoBucket::produceImprovement(const Solution& obj){
+int ParetoBucket::isImproving(const Solution& obj){
     tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, false);
     unsigned long index = 0, size_vec = m_vec.size();
     int improves = 1;
@@ -186,7 +215,7 @@ void ParetoBucket::clear(){
 }
 
 void ParetoBucket::print() const{
-    printf("[%3lu %3lu] [%luu %d]:\n", posx, posy, (unsigned long) size, (BucketState) state);
+    printf("[%3lu %3lu %3lu] [%luu %d]:\n", posx, posy, posz, (unsigned long) size, (BucketState) state);
     for (int nSol = 0; nSol < m_vec.size(); ++nSol)
         m_vec[nSol].print();
 }
