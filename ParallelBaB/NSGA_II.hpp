@@ -10,6 +10,7 @@
 #define NSGA_II_hpp
 
 #include <stdio.h>
+#include <random>
 #include "ProblemFJSSP.hpp"
 
 /**
@@ -27,9 +28,11 @@ public:
     void setSampleSolution(const Solution& solution);
     void setCrossoverRate(double rate);
     void setMutationRate(double rate);
-    void setPopulationSize(unsigned long population_size);
+    void setMaxPopulationSize(unsigned long population_size);
     void setMaxNumberOfGenerations(unsigned long max_generations);
     void setMaxNumberOfEvaluations(unsigned long max_evaluations);
+    
+    unsigned long getMaxPopulationSize() const;
 
 private:
     double crossover_rate;
@@ -42,29 +45,36 @@ private:
     
     int generations_is_stop_criteria;
     int evaluations_is_stop_criteria;
-    int max_population;
+    unsigned long max_population;
+    
+    std::default_random_engine generator;
     
     ProblemFJSSP problem;
-    
     vector<Solution> population;
     Solution sample_solution;
     
+    void createInitialPopulation();
+    void selection();
     void crossover();
     void mutation();
-    void selection();
     void evaluatePopulation();
     void replacement();
     
+    vector<Solution> crossoverOperator(const Solution& parent1, const Solution& parent2);
+    void mutationOperator(Solution& solution);
+    double getCrossoverRate() const;
+    double getMutationRate() const;
     void fastNonDominatedSort();
     void crowdingDistance();
     unsigned long increaseNumberOfGenerations();
     unsigned long increaseNumberOfEvaluations();
-    int isStoppingCriteriaReached();
-    int stoppingCriteriaIsGenerations();
-    int stoppingCriteriaIsEvaluations();
-    int isMaxNumberOfGenerationsReached();
-    int isMaxNumberOfEvaluationsReached();
+    int isStoppingCriteriaReached() const;
+    int stoppingCriteriaIsGenerations() const;
+    int stoppingCriteriaIsEvaluations() const;
+    int isMaxNumberOfGenerationsReached() const;
+    int isMaxNumberOfEvaluationsReached() const;
     void updateProgress();
+    
 };
 
 #endif /* NSGA_II_hpp */
