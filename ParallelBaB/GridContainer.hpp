@@ -38,11 +38,10 @@ private:
     tbb::concurrent_vector<ParetoBucket> m_Data;
     
     size_t getIndexPosition(size_t x, size_t y, size_t z) const;
-
+    
 public:
     GridContainer(unsigned int width, unsigned int height);
     GridContainer(unsigned int width, unsigned int height, unsigned int deep);
-
     GridContainer(const GridContainer& toCopy);
     ~GridContainer();
     

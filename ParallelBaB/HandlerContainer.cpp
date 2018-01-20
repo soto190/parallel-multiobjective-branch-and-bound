@@ -9,38 +9,39 @@
 #include "HandlerContainer.hpp"
 
 HandlerContainer::HandlerContainer():
-rangeinx(nullptr),
-rangeiny(nullptr),
-rangeinz(nullptr),
-maxinx(0),
-maxiny(0),
+range_dim_x(nullptr),
+range_dim_y(nullptr),
+range_dim_z(nullptr),
+max_val_in_x(0),
+max_val_in_y(0),
+max_val_in_z(0),
 numberOfElements(0),
 grid(1, 1, 1){
-
+    
 };
 
 HandlerContainer::HandlerContainer(const HandlerContainer& toCopy):
-maxinx(toCopy.maxinx),
-maxiny(toCopy.maxiny),
-maxinz(toCopy.maxinz),
+max_val_in_x(toCopy.max_val_in_x),
+max_val_in_y(toCopy.max_val_in_y),
+max_val_in_z(toCopy.max_val_in_z),
 numberOfElements(toCopy.numberOfElements),
 activeBuckets(toCopy.getNumberOfActiveBuckets()),
 unexploredBuckets(toCopy.getNumberOfUnexploredBuckets()),
 disabledBuckets(toCopy.getNumberOfDisabledBuckets()),
 grid(toCopy.grid){
     
-    rangeinx = new double[toCopy.getCols()];
-    rangeiny = new double[toCopy.getRows()];
-    rangeinz = new double[toCopy.getDeep()];
-
+    range_dim_x = new double[toCopy.getCols()];
+    range_dim_y = new double[toCopy.getRows()];
+    range_dim_z = new double[toCopy.getDeep()];
+    
     for (int indexy = 0; indexy < toCopy.getRows(); ++indexy)
-        rangeiny[indexy] = toCopy.rangeiny[indexy];
+        range_dim_y[indexy] = toCopy.range_dim_y[indexy];
     
     for (int indexx = 0; indexx < toCopy.getCols(); ++indexx)
-        rangeinx[indexx] = toCopy.rangeinx[indexx];
+        range_dim_x[indexx] = toCopy.range_dim_x[indexx];
     
     for (int indexz = 0; indexz < toCopy.getDeep(); ++indexz)
-        rangeinz[indexz] = toCopy.rangeinz[indexz];
+        range_dim_z[indexz] = toCopy.range_dim_z[indexz];
     
     for (int obj = 0; obj < 3; ++obj)
         min_value_found_in_obj[obj].fetch_and_store(toCopy.getBestValueFoundIn(obj));
@@ -62,41 +63,41 @@ grid(cols, rows, 1){
     activeBuckets = 0;
     disabledBuckets = 0;
     
-    rangeinx = new double[cols];
-    rangeiny = new double[rows];
-    rangeinz = new double[getDeep()];
-
-    maxinx = maxValX;
-    maxiny = maxValY;
-    maxinz = 1;
-
+    range_dim_x = new double[cols];
+    range_dim_y = new double[rows];
+    range_dim_z = new double[getDeep()];
+    
+    max_val_in_x = maxValX;
+    max_val_in_y = maxValY;
+    max_val_in_z = 1;
+    
     int divs = 0;
     
     double rx = maxValX / cols;
     double ry = maxValY / rows;
     double rz = maxValZ / deep;
-
-    rangeinx[divs] = 0;
-    rangeiny[divs] = 0;
-    rangeinz[divs] = 0;
+    
+    range_dim_x[divs] = 0;
+    range_dim_y[divs] = 0;
+    range_dim_z[divs] = 0;
     
     for (divs = 1; divs < cols; ++divs)
-        rangeinx[divs] = rangeinx[divs - 1] + rx;
+        range_dim_x[divs] = range_dim_x[divs - 1] + rx;
     
     for (divs = 1; divs < rows; ++divs)
-        rangeiny[divs] = rangeiny[divs - 1] + ry;
+        range_dim_y[divs] = range_dim_y[divs - 1] + ry;
     
     for (divs = 1; divs < deep; ++divs)
-        rangeinz[divs] = rangeinz[divs - 1] + rz;
+        range_dim_z[divs] = range_dim_z[divs - 1] + rz;
     
     for (int obj = 0; obj < 3; ++obj)
         min_value_found_in_obj[obj].fetch_and_store(BIG_VALUE);
 }
 
 HandlerContainer::~HandlerContainer() {
-    delete[] rangeinx;
-    delete[] rangeiny;
-    delete[] rangeinz;
+    delete[] range_dim_x;
+    delete[] range_dim_y;
+    delete[] range_dim_z;
     paretoFront.clear();
 }
 
@@ -109,6 +110,7 @@ HandlerContainer& HandlerContainer::operator()(unsigned int cols, unsigned int r
      */
     if(deep == 0) /** Third dimension can not be 0. **/
         deep = 1;
+    
     grid(cols, rows, deep);
     
     //grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows);
@@ -118,41 +120,41 @@ HandlerContainer& HandlerContainer::operator()(unsigned int cols, unsigned int r
     activeBuckets = 0;
     disabledBuckets = 0;
     
-    if(rangeinx != nullptr)
-        delete rangeinx;
-    if(rangeiny != nullptr)
-        delete rangeiny;
-    if(rangeinz != nullptr)
-        delete rangeinz;
+    if(range_dim_x != nullptr)
+        delete range_dim_x;
+    if(range_dim_y != nullptr)
+        delete range_dim_y;
+    if(range_dim_z != nullptr)
+        delete range_dim_z;
     
     paretoFront.clear();
     
-    rangeinx = new double[cols];
-    rangeiny = new double[rows];
-    rangeinz = new double[deep];
-
-    maxinx = maxValX;
-    maxiny = maxValY;
-    maxinz = maxValZ;
-
+    range_dim_x = new double[cols];
+    range_dim_y = new double[rows];
+    range_dim_z = new double[deep];
+    
+    max_val_in_x = maxValX;
+    max_val_in_y = maxValY;
+    max_val_in_z = maxValZ;
+    
     int divs = 0;
     
     double rx = maxValX / cols;
     double ry = maxValY / rows;
     double rz = maxValZ / deep;
-
-    rangeinx[divs] = minValX;
-    rangeiny[divs] = minValY;
-    rangeinz[divs] = minValZ;
-
+    
+    range_dim_x[divs] = minValX;
+    range_dim_y[divs] = minValY;
+    range_dim_z[divs] = minValZ;
+    
     for (divs = 1; divs < cols; ++divs)
-        rangeinx[divs] = rangeinx[divs - 1] + rx;
+        range_dim_x[divs] = range_dim_x[divs - 1] + rx;
     
     for (divs = 1; divs < rows; ++divs)
-        rangeiny[divs] = rangeiny[divs - 1] + ry;
+        range_dim_y[divs] = range_dim_y[divs - 1] + ry;
     
     for (divs = 1; divs < deep; ++divs)
-        rangeinz[deep] = rangeinz[divs - 1] + rz;
+        range_dim_z[deep] = range_dim_z[divs - 1] + rz;
     
     for (int obj = 0; obj < 3; ++obj)
         min_value_found_in_obj[obj].fetch_and_store(BIG_VALUE);
@@ -161,9 +163,9 @@ HandlerContainer& HandlerContainer::operator()(unsigned int cols, unsigned int r
 }
 
 void HandlerContainer::getCoordinateForSolution(const Solution &solution, int * coordinate) const {
-    coordinate[0] = binarySearch(solution.getObjective(0), rangeinx, getCols());
-    coordinate[1] = binarySearch(solution.getObjective(1), rangeiny, getRows());
-    coordinate[2] = binarySearch(solution.getObjective(2), rangeinz, getDeep());
+    coordinate[0] = binarySearch(solution.getObjective(0), range_dim_x, getCols());
+    coordinate[1] = binarySearch(solution.getObjective(1), range_dim_y, getRows());
+    coordinate[2] = binarySearch(solution.getObjective(2), range_dim_z, getDeep());
 }
 
 /**
@@ -382,11 +384,11 @@ std::vector<Solution>& HandlerContainer::getParetoFront() {
 
 double HandlerContainer::getMaxIn(int dimension) {
     if (dimension == 0)
-        return maxinx;
+        return max_val_in_x;
     else if (dimension == 1)
-        return maxiny;
+        return max_val_in_y;
     else if (dimension == 2)
-        return maxinz;
+        return max_val_in_z;
     else
         return -1;
 }

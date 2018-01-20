@@ -26,9 +26,9 @@ rows(height),
 deep(deep_size){
     numberOfElements.store(0);
     m_Data.reserve(cols * rows * deep);
-    for (int indey = 0; indey < rows; ++indey)
-        for (int index = 0; index < cols; ++index)
-            for (int indez = 0; indez < deep; ++indez)
+    for (int indez = 0; indez < deep; ++indez)
+        for (int indey = 0; indey < rows; ++indey)
+            for (int index = 0; index < cols; ++index)
                 m_Data.push_back(ParetoBucket(index, indey, indez));
 }
 
@@ -52,9 +52,9 @@ GridContainer& GridContainer::operator()(unsigned int width, unsigned int height
     numberOfElements.store(0);
     m_Data.clear();
     m_Data.reserve(cols * rows * deep);
-    for (int indey = 0; indey < rows; ++indey)
-        for (int index = 0; index < cols; ++index)
-            for (int indez = 0; indez < deep; ++indez)
+    for (int indez = 0; indez < deep; ++indez)
+        for (int indey = 0; indey < rows; ++indey)
+            for (int index = 0; index < cols; ++index)
                 m_Data.push_back(ParetoBucket(index, indey, indez));
     
     return *this;

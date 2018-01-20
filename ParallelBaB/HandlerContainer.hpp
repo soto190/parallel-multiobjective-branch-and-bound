@@ -15,13 +15,12 @@
 
 class HandlerContainer {
 private:
-    double * rangeinx;
-    double * rangeiny;
-    double * rangeinz;
-    double maxinx;
-    double maxiny;
-    double maxinz;
-    
+    double * range_dim_x;
+    double * range_dim_y;
+    double * range_dim_z;
+    double max_val_in_x;
+    double max_val_in_y;
+    double max_val_in_z;
     unsigned long numberOfElements;
     
     tbb::atomic<unsigned long> activeBuckets;
@@ -36,7 +35,6 @@ public:
     HandlerContainer();
     HandlerContainer(unsigned int width, unsigned int height, double maxValX, double maxValY);
     HandlerContainer(unsigned int width, unsigned int height, unsigned int deep, double maxValX, double maxValY, double  maxValZ);
-
     HandlerContainer(const HandlerContainer& toCopy);
     ~HandlerContainer();
     
