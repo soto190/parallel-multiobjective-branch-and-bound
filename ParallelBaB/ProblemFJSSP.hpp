@@ -10,23 +10,18 @@
 #define ProblemFJSSP_hpp
 
 #include <stdio.h>
-#include <stdio.h>
 #include <vector>
 #include <deque>
 #include <fstream>
 #include <string>
 #include <math.h>
 #include <regex>
+#include "FJSSPdata.hpp"
 #include "Problem.hpp"
 #include "myutils.hpp"
 
 #define INF_PROC_TIME 9999999
 #define MAX_GANTT_LIMIT 262144
-
-//#define MAKESPAN  0;
-//#define MAXWORKLOAD 1;
-//#define TOTALWORKLOAD 2;
-//enum FJSSPObj{MAKESPAN = 0, MAXWORKLOAD = 1, TOTALWORKLOAD = 2};
 
 /** jobaHasNoperations saids how many operations have each job.
  if we have 2 jobs with 3 operations and 1 job with 2 operations.
@@ -416,7 +411,6 @@ private:
     int ** mapToJobMachine;        /** Length equals to numberOfMaps x 2. Positio 0 is the job, position 1 is the machine.**/
     int ** jobMachineToMap;        /** Length equals to numberOfJobs x numberOfMachines. **/
     int ** jobOperationHasNumber;  /** Length equals to job x numberOfOperationsInJob. **/
-    
     int * earliest_starting_time;  /** Length equals to number of operations. **/
     int * earliest_ending_time;    /** Length equals to number of operations. **/
     int * eet_of_job;              /** Length equals to number of jobs. **/
@@ -427,16 +421,17 @@ private:
     int sum_M_smallest_est;         /** R_MSum of the M smallest starting times (est). **/
     int bestBound_maxWorkload;
     int bestBound_makespan;
+    
 public:
     ProblemFJSSP();
     ProblemFJSSP(const ProblemFJSSP& toCopy);
     ProblemFJSSP(int totalObjectives, int totalVariables);
     ProblemFJSSP(const Payload_problem_fjssp& payload_problem);
-    
     ~ProblemFJSSP();
     
-    ProblemFJSSP& operator=(const ProblemFJSSP& toCopy);
+    Solution goodSolutionWithMaxWorkload;
     
+    ProblemFJSSP& operator=(const ProblemFJSSP& toCopy);
     double evaluate(Solution & solution);
     double evaluatePartial(Solution & solution, int levelEvaluation);
     double evaluateLastLevel(Solution * solution);
@@ -457,7 +452,6 @@ public:
     int getCodeMap(int value1, int value2);
     int getTimesValueIsRepeated(int value);
     
-    Solution goodSolutionWithMaxWorkload;
     void updateBestMaxWorkloadSolution(FJSSPdata& data);
     void updateBestMakespanSolution(FJSSPdata& data);
     void updateBestMakespanSolutionWith(const Solution& solution);
@@ -518,7 +512,6 @@ public:
     void buildSolutionWithGoodMaxWorkload(Solution & solution);
     void buildSolutionWithGoodMaxWorkloadv2(Solution & solution);
     int e_function(double value) const;
-    
     int validateVariablesOf(const Solution& solution) const;
 };
 #endif /* ProblemFJSSP_hpp */
