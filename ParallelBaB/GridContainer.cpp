@@ -72,7 +72,6 @@ int GridContainer::addTo(const Solution& obj, size_t x, size_t y, size_t z) {
 /**
  * The generalization of 'row-major' can be found in:
  * - https://en.wikipedia.org/wiki/Row-_and_column-major_order
- *
  **/
 size_t GridContainer::getIndexPosition(size_t x, size_t y, size_t z) const{
     return z * cols * rows + y * cols + x;

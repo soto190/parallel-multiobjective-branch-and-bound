@@ -13,6 +13,8 @@
 #include "GridContainer.hpp"
 #include "tbb/atomic.h"
 
+#define DIMENSIONS 3
+
 class HandlerContainer {
 private:
     double * range_dim_x;
@@ -26,7 +28,7 @@ private:
     tbb::atomic<unsigned long> activeBuckets;
     tbb::atomic<unsigned long> unexploredBuckets;
     tbb::atomic<unsigned long> disabledBuckets;
-    tbb::atomic<int> min_value_found_in_obj [3]; /** TODO: Change to more objectives. Also this doesnt goes here. Fixed to two objectives **/
+    tbb::atomic<int> min_value_found_in_obj [DIMENSIONS];
     
     GridContainer grid;
     std::vector<Solution> paretoFront;

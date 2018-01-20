@@ -43,7 +43,7 @@ grid(toCopy.grid){
     for (int indexz = 0; indexz < toCopy.getDeep(); ++indexz)
         range_dim_z[indexz] = toCopy.range_dim_z[indexz];
     
-    for (int obj = 0; obj < 3; ++obj)
+    for (int obj = 0; obj < DIMENSIONS; ++obj)
         min_value_found_in_obj[obj].fetch_and_store(toCopy.getBestValueFoundIn(obj));
 }
 
@@ -90,7 +90,7 @@ grid(cols, rows, 1){
     for (divs = 1; divs < deep; ++divs)
         range_dim_z[divs] = range_dim_z[divs - 1] + rz;
     
-    for (int obj = 0; obj < 3; ++obj)
+    for (int obj = 0; obj < DIMENSIONS; ++obj)
         min_value_found_in_obj[obj].fetch_and_store(BIG_VALUE);
 }
 
@@ -156,7 +156,7 @@ HandlerContainer& HandlerContainer::operator()(unsigned int cols, unsigned int r
     for (divs = 1; divs < deep; ++divs)
         range_dim_z[deep] = range_dim_z[divs - 1] + rz;
     
-    for (int obj = 0; obj < 3; ++obj)
+    for (int obj = 0; obj < DIMENSIONS; ++obj)
         min_value_found_in_obj[obj].fetch_and_store(BIG_VALUE);
     
     return *this;
@@ -230,7 +230,7 @@ int HandlerContainer::getBestValueFoundIn(int obj) const{
  * It uses a binary search tree to locate the bucket which will contain the new solution.
  **/
 int HandlerContainer::add(const Solution & solution) {
-    int coordinate[3];
+    int coordinate[DIMENSIONS];
     getCoordinateForSolution(solution, coordinate);
     return set(solution, coordinate[0], coordinate[1], coordinate[2]);
 }
@@ -337,7 +337,7 @@ void HandlerContainer::printStates() const{
  * Stores a copy of the received solution.
  */
 int HandlerContainer::isImprovingTheGrid(const Solution &solution) {
-    int bucketCoordinate[3];
+    int bucketCoordinate[DIMENSIONS];
     int improves = 0;
     getCoordinateForSolution(solution, bucketCoordinate);
     BucketState stateOfBucket = grid.getStateOf(bucketCoordinate[0], bucketCoordinate[1], bucketCoordinate[2]);
