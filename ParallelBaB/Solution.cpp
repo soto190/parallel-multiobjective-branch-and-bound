@@ -99,7 +99,8 @@ Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
 
 Solution& Solution::operator=(const Solution &solution) {
     
-    if (this == &solution) return *this;
+    if (this == &solution)
+        return *this;
     
     build_up_to = solution.getBuildUpTo();
     n_objectives = solution.getNumberOfObjectives();
@@ -133,7 +134,6 @@ Solution& Solution::operator=(const Solution &solution) {
 
 int Solution::operator==(const Solution &solution){
     int index = 1;
-    
     for (index = 0; index < n_objectives; ++index)
         if (objective[index] < solution.getObjective(index) || objective[index] > solution.getObjective(index))
             return 0;
@@ -146,8 +146,14 @@ Solution::~Solution() {
     delete[] execTime;
 }
 
-void Solution::setBuildUpTo(int index){build_up_to = index;}
-void Solution::setObjective(int index, double value) { objective[index] = value; }
+void Solution::setBuildUpTo(int index){
+    build_up_to = index;
+}
+
+void Solution::setObjective(int index, double value) {
+    objective[index] = value;
+}
+
 int Solution::setVariable(int index, int value) {
     int last_value = variable[index];
     variable[index] = value;
@@ -155,32 +161,46 @@ int Solution::setVariable(int index, int value) {
     return last_value;
 }
 
-double Solution::getObjective(int index) const { return objective[index]; }
-int Solution::getVariable(int index) const { return variable[index]; }
-int Solution::getNumberOfVariables() const { return n_variables; }
-int Solution::getNumberOfObjectives() const { return n_objectives; }
-int Solution::getBuildUpTo() const { return build_up_to; }
+double Solution::getObjective(int index) const {
+    return objective[index];
+}
+
+int Solution::getVariable(int index) const {
+    return variable[index];
+}
+
+int Solution::getNumberOfVariables() const {
+    return n_variables;
+}
+
+int Solution::getNumberOfObjectives() const {
+    return n_objectives;
+}
+
+int Solution::getBuildUpTo() const {
+    return build_up_to;
+}
 
 DominanceRelation Solution::dominates(const Solution & solution) const {
-    int nObj = 0;
+    int n_obj = 0;
     int localSolIsBetterIn = 0;
     int exterSolIsBetterIn = 0;
     int equals = 1;
-    double objA = 0;
-    double objB = 0;
+    double obj_A = 0;
+    double obj_B = 0;
     
     /**
      * For more objectives consider
      * if (solAIsBetterIn > 0 and solBIsBetterIn > 0) break the FOR because the solutions are non-dominated.
      **/
-    for (nObj = 0; nObj < n_objectives; ++nObj) {
-        objA = getObjective(nObj);
-        objB = solution.getObjective(nObj);
+    for (n_obj = 0; n_obj < n_objectives; ++n_obj) {
+        obj_A = getObjective(n_obj);
+        obj_B = solution.getObjective(n_obj);
         
-        if (objA < objB) {
+        if (obj_A < obj_B) {
             localSolIsBetterIn++;
             equals = 0;
-        } else if (objB < objA) {
+        } else if (obj_B < obj_A) {
             exterSolIsBetterIn++;
             equals = 0;
         }
@@ -197,34 +217,28 @@ DominanceRelation Solution::dominates(const Solution & solution) const {
 }
 
 void Solution::print() const {
-    int nObj, nVar;
     char sep = '-';
-    for (nObj = 0; nObj < n_objectives; ++nObj)
-        printf("%4.0f", getObjective(nObj));
+    for (int n_obj = 0; n_obj < n_objectives; ++n_obj)
+        printf("%4.0f", getObjective(n_obj));
     
     printf(" | ");
     
-    for (nVar = 0; nVar < n_variables; ++nVar)
-        if (variable[nVar] == -1)
+    for (int n_var = 0; n_var < n_variables; ++n_var)
+        if (variable[n_var] == -1)
             printf("%6c", sep);
         else
-            printf("%6d", variable[nVar]);
-    
+            printf("%6d", variable[n_var]);
     printf(" |\n");
 }
 
 void Solution::printObjectives() const {
-    int nObj;
-    for (nObj = 0; nObj < n_objectives; ++nObj)
-        printf("%f ", getObjective(nObj));
-    
+    for (int n_obj = 0; n_obj < n_objectives; ++n_obj)
+        printf("%f ", getObjective(n_obj));
     printf("\n");
 }
 
 void Solution::printVariables() const {
-    int nVar;
-    for (nVar = 0; nVar < n_variables; ++nVar)
-        printf("%d ", getVariable(nVar));
-    
+    for (int n_var = 0; n_var < n_variables; ++n_var)
+        printf("%d ", getVariable(n_var));
     printf("\n");
 }
