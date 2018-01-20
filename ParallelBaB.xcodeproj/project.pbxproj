@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2103293E2013E3F8008C5679 /* FJSSPdata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2103293C2013E3F8008C5679 /* FJSSPdata.cpp */; };
 		2112825A1D639AB30038DBEE /* BranchAndBound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2112824A1D639AB30038DBEE /* BranchAndBound.cpp */; };
 		2112825B1D639AB30038DBEE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2112824C1D639AB30038DBEE /* main.cpp */; };
 		2112825D1D639AB30038DBEE /* myutils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2112824E1D639AB30038DBEE /* myutils.cpp */; };
@@ -55,6 +56,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2103293C2013E3F8008C5679 /* FJSSPdata.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = FJSSPdata.cpp; sourceTree = "<group>"; };
+		2103293D2013E3F8008C5679 /* FJSSPdata.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = FJSSPdata.hpp; sourceTree = "<group>"; };
 		211282271D63988E0038DBEE /* ParallelBaB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ParallelBaB; sourceTree = BUILT_PRODUCTS_DIR; };
 		2112824A1D639AB30038DBEE /* BranchAndBound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BranchAndBound.cpp; sourceTree = "<group>"; };
 		2112824B1D639AB30038DBEE /* BranchAndBound.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BranchAndBound.hpp; sourceTree = "<group>"; };
@@ -182,6 +185,8 @@
 				214C92DE200FC65C00B55E58 /* SortedVector.hpp */,
 				211282501D639AB30038DBEE /* Problem.cpp */,
 				211282511D639AB30038DBEE /* Problem.hpp */,
+				2103293C2013E3F8008C5679 /* FJSSPdata.cpp */,
+				2103293D2013E3F8008C5679 /* FJSSPdata.hpp */,
 				21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */,
 				21780F1D1DD9B7D80032EECA /* ProblemFJSSP.hpp */,
 				211282521D639AB30038DBEE /* ProblemHCSP.cpp */,
@@ -276,6 +281,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2103293E2013E3F8008C5679 /* FJSSPdata.cpp in Sources */,
 				21774E401FD85A11007FF333 /* IVMTreeException.cpp in Sources */,
 				214C92DF200FC65C00B55E58 /* SortedVector.cpp in Sources */,
 				212AFB1E1E3F35CE004FC057 /* Dominance.cpp in Sources */,
