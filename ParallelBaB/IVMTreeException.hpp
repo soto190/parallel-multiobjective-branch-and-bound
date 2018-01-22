@@ -18,19 +18,18 @@
  * - https://isocpp.org/wiki/faq/exceptions
  */
 
-enum IVMTreeErrorCode{OK, MATRIX_OUT_OF_RANGE, VECTOR_OUT_OF_RANGE, INTEGER_OUT_OF_RANGE};
+enum IVMTreeErrorCode{OK_IVM, MATRIX_OUT_OF_RANGE, VECTOR_OUT_OF_RANGE, INTEGER_OUT_OF_RANGE};
 
 class IVMTreeException : public std::exception{
 
-private:
-    std::string error_message;
-    IVMTreeErrorCode error_code;
 public:
     IVMTreeException(IVMTreeErrorCode error_code, std::string error_msg);
     ~IVMTreeException() throw();
     virtual const char* what() const throw();
 
 private:
+    std::string error_message;
+    IVMTreeErrorCode error_code;
     const char* getError() const;
 };
 #endif /* IVMTreeException_hpp */

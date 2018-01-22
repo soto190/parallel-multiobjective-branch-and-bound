@@ -5,7 +5,7 @@
 //  Created by Carlos Soto on 06/02/17.
 //  Copyright © 2017 Carlos Soto. All rights reserved.
 //
-
+/** Dummy commit**/
 #include "ParallelBranchAndBound.hpp"
 
 ParallelBranchAndBound::ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem):

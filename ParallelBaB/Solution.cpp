@@ -150,23 +150,60 @@ void Solution::setBuildUpTo(int index){
     build_up_to = index;
 }
 
-void Solution::setObjective(int index, double value) {
-    objective[index] = value;
+void Solution::setObjective(int index_obj, double value) throw(SolutionException){
+    try{
+        if (index_obj > n_objectives - 1)
+            throw SolutionException(SolutionErrorCode::OBJECTIVES_OUT_OF_RANGE, "when calling setObjective(obj:" + std::to_string(static_cast<long long>(index_obj)) + ", value:" + std::to_string(static_cast<long long>(value)) + ")");
+        
+        objective[index_obj] = value;
+
+    } catch (SolutionException& SolutionEx) {
+        printf("%s\n",  SolutionEx.what());
+    }
 }
 
-int Solution::setVariable(int index, int value) {
-    int last_value = variable[index];
-    variable[index] = value;
-    build_up_to = index;
-    return last_value;
+int Solution::setVariable(int index_variable, int value) throw(SolutionException){
+    try {
+        if (index_variable > n_variables - 1)
+            throw SolutionException(SolutionErrorCode::VARIABLES_OUT_OF_RANGE, "when calling setVariable(var:" + std::to_string(static_cast<long long>(index_variable)) + ", value:" + std::to_string(static_cast<long long>(value)) + ")");
+
+        int last_value = variable[index_variable];
+        variable[index_variable] = value;
+        build_up_to = index_variable;
+        return last_value;
+        
+    } catch (SolutionException& SolutionEx) {
+        printf("%s\n",  SolutionEx.what());
+    }
+    
+    return -1;
 }
 
-double Solution::getObjective(int index) const {
-    return objective[index];
+double Solution::getObjective(int index_obj) const throw(SolutionException){
+    try{
+        if (index_obj > n_objectives - 1)
+            throw SolutionException(SolutionErrorCode::OBJECTIVES_OUT_OF_RANGE, "when calling getObjective(obj:" + std::to_string(static_cast<long long>(index_obj)) + ")");
+        
+        return objective[index_obj];
+        
+    } catch (SolutionException& solutionEx) {
+        printf("%s\n",  solutionEx.what());
+    }
+    
+    return -1;
 }
 
-int Solution::getVariable(int index) const {
-    return variable[index];
+int Solution::getVariable(int index_variable) const throw(SolutionException){
+    try {
+        if (index_variable > n_variables - 1)
+            throw SolutionException(SolutionErrorCode::VARIABLES_OUT_OF_RANGE, "when calling getVariable(var:" + std::to_string(static_cast<long long>(index_variable)) + ")");
+        
+        return variable[index_variable];
+
+    } catch (SolutionException& SolutionEx) {
+        printf("%s\n",  SolutionEx.what());
+    }
+    return -1;
 }
 
 int Solution::getNumberOfVariables() const {
