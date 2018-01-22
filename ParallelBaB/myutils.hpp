@@ -11,6 +11,9 @@
 
 #include <stdio.h>
 #include <sstream>
+#include <fstream>
+#include <string>
+#include <iterator>
 #include <vector>
 #include <cmath>
 
