@@ -10,6 +10,8 @@
 #define Solution_hpp
 
 #include <stdio.h>
+#include <string>
+#include "SolutionException.hpp"
 
 enum DominanceRelation {
     Dominates = 1, Dominated = -1, Nondominated = 0, Equals = 11
@@ -39,16 +41,16 @@ public:
     double * execTime; /** TODO: this can be removed and all the related functions. **/
     
     Solution();
-    Solution(int totalObjectives, int totalVariables);
+    Solution(int number_of_objectives, int number_of_variables);
     Solution(const Solution &solution);
     ~Solution();
     
-    int setVariable(int index, int value);
-    void setObjective(int index, double value);
+    int setVariable(int index, int value) throw(SolutionException);
+    void setObjective(int index, double value) throw(SolutionException);
     void setBuildUpTo(int index);
     
-    double getObjective(int nObjective) const;
-    int getVariable(int index) const;
+    double getObjective(int n_objective) const throw(SolutionException);
+    int getVariable(int index) const throw(SolutionException);
     int getNumberOfVariables() const;
     int getNumberOfObjectives() const;
     int getBuildUpTo() const;
@@ -57,7 +59,7 @@ public:
     
     /** Overloading operators. **/
     Solution& operator=(const Solution &solution);
-    Solution& operator()(int numberOfObjectives, int numberOfVariables);
+    Solution& operator()(int number_of_objectives, int number_of_variables);
     int operator==(const Solution & solution);
     
     /** print functions. **/
