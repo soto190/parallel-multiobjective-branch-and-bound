@@ -18,26 +18,26 @@ SolutionException::~SolutionException() throw(){
 
 const char* SolutionException::what() const throw(){
     std::string error_text = "SolutionException: ";
-    
+
     switch (error_code) {
         case OK_SOLUTION:
-            return error_message.c_str();
+            error_text += error_message;
             break;
             
         case OBJECTIVES_OUT_OF_RANGE:
-            error_text += "Objectives out of range: ";
-            return (error_text + error_message.c_str()).c_str();
+            error_text += "Objectives out of range " + error_message;
             break;
             
         case VARIABLES_OUT_OF_RANGE:
-            error_text += "Variables out of range: ";
-            return (error_text + error_message.c_str()).c_str();
+            error_text += "Variables out of range " + error_message ;
             break;
             
         default:
-            return (error_text + error_message.c_str()).c_str();
+            error_text += "UNIDENTIFIED error: " +  error_message;
             break;
     }
+    
+    return error_text.c_str();
 }
 
 const char* SolutionException::getError() const {
