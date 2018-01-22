@@ -784,7 +784,7 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
      */
     solution.setObjective(0, makespan);
     solution.setObjective(1, maxWorkload);
-    //    solution.setObjective(1, totalWorkload + minPij);
+    solution.setObjective(2, totalWorkload + minPij); /** SET: update when using 3 objectives. **/
     
     return 0.0;
 }
@@ -851,7 +851,7 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     //data.setTotalWorkload is computed internally when the operation is allocated.
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
-    //    solution.setObjective(1, data.getTotalWorkload());
+    solution.setObjective(2, data.getTotalWorkload());
 }
 
 void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, int level) {
@@ -889,7 +889,7 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
     solution.setVariable(level, -1);
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
-    //    solution.setObjective(1, data.getTotalWorkload());
+    solution.setObjective(2, data.getTotalWorkload());
 }
 
 double ProblemFJSSP::evaluateLastLevel(Solution * solution) {

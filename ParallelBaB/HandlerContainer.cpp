@@ -205,13 +205,13 @@ int HandlerContainer::set(const Solution & solution, int x, int y, int z) {
 }
 
 void HandlerContainer::clearContainersDominatedBy(const int x, const int y, const int z){
-    for (int nRow = y + 1; nRow < grid.getNumberOfRows(); nRow++)
-        for (int nCol = x + 1; nCol < grid.getNumberOfCols(); nCol++)
-            for (int nDeep = z + 1; nCol < grid.getNumberOfDeep(); nDeep++)
-                if (grid.getStateOf(nCol, nRow, nDeep) == BucketState::dominated)
-                    nCol = grid.getNumberOfCols(); /** If the bucket in (nCol, nRow) is dominated then the exploration continues in next row. **/
+    for (int n_deep = z + 1; n_deep < grid.getNumberOfDeep(); ++n_deep)
+        for (int n_row = y + 1; n_row < grid.getNumberOfRows(); ++n_row)
+            for (int n_col = x + 1; n_col < grid.getNumberOfCols(); ++n_col)
+                if (grid.getStateOf(n_col, n_row, n_deep) == BucketState::dominated)
+                    n_col = grid.getNumberOfCols(); /** If the bucket in (nCol, nRow) is dominated then the exploration continues in next row. **/
                 else
-                    clearContainer(nCol, nRow, nDeep);
+                    clearContainer(n_col, n_row, n_deep);
 }
 
 
@@ -363,19 +363,19 @@ int HandlerContainer::improvesTheBucket(const Solution &solution, int x, int y, 
 
 std::vector<Solution>& HandlerContainer::getParetoFront() {
     paretoFront.reserve(getSize());
-    for (int bucketY = 0; bucketY < getRows(); ++bucketY)
-        for (int bucketX = 0; bucketX < getCols(); ++bucketX)
-            for (int bucketZ = 0; bucketZ < getDeep(); ++bucketZ) {
-                BucketState state = grid.getStateOf(bucketX, bucketY, bucketZ);
+    for (int bucket_z = 0; bucket_z < getDeep(); ++bucket_z)
+        for (int bucket_y = 0; bucket_y < getRows(); ++bucket_y)
+            for (int bucket_x = 0; bucket_x < getCols(); ++bucket_x){
+                BucketState state = grid.getStateOf(bucket_x, bucket_y, bucket_z);
                 if (state == BucketState::NonDominated) {
-                    std::vector<Solution> vec = grid.get(bucketX, bucketY, bucketZ);
+                    std::vector<Solution> vec = grid.get(bucket_x, bucket_y, bucket_z);
                     std::vector<Solution>::iterator it = vec.begin();
                     
                     for (it = vec.begin(); it != vec.end(); ++it)
                         paretoFront.push_back(*it);
                     
                 } else if (state == BucketState::dominated)
-                    bucketX = grid.getNumberOfCols();
+                    bucket_x = grid.getNumberOfCols();
             }
     
     extractParetoFront(paretoFront);

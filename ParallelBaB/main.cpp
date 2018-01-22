@@ -38,7 +38,7 @@ void one_node(int argc, char* argv[]){
     const int arg_input_file1 = 3;
     const int arg_input_file2 = 4;
     const int arg_output = 5;
-    ProblemFJSSP  problem (2, 1);
+    ProblemFJSSP  problem (3, 1);
 
     int number_of_threads = stoi(argv[arg_num_threads]);
     printf("Number of threads:%3d\n", number_of_threads);

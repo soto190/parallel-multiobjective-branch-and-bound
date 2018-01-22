@@ -96,9 +96,10 @@ tbb::task * MasterWorkerPBB::execute() {
 }
 
 void MasterWorkerPBB::run() {
-    if (isMaster())
+    if (isMaster()){
+        payload_problem.n_objectives = 3;
         loadInstance(payload_problem, instance_file);
-    
+    }
     preparePayloadProblemPart1(payload_problem, datatype_problem);
     MPI::COMM_WORLD.Bcast(&payload_problem, 1, datatype_problem, MASTER_RANK); /* The MASTER_NODE broadcast the part 1 of payload and the slaves nodes receives it. */
     
@@ -313,7 +314,8 @@ void MasterWorkerPBB::runWorkerProcess() {
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
     
-    paretoContainer(25, 25, 1, solution.getObjective(0), solution.getObjective(1), 1, problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1), 0);
+    /** The parameters are changed when using 3 objectives. **/
+    paretoContainer(8, 8, 8, solution.getObjective(0), solution.getObjective(1), solution.getObjective(2), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1), problem.getLowerBoundInObj(2));
     
     BranchAndBound BB_container(rank, 0, problem, branch_init);
     branches_created += BB_container.initGlobalPoolWithInterval(branch_init);
@@ -487,7 +489,7 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
     char extension[4];
     int instance_with_release_time = 1; /** This is used because the Kacem's instances have release times and the other sets dont. **/
     
-    problem.n_objectives = 2;
+    //problem.n_objectives = 2; /** SET number of objectives.**/
     problem.n_jobs = 0;
     problem.n_machines = 0;
     problem.n_operations = 0;

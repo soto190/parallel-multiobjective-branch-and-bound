@@ -73,7 +73,6 @@ void ParetoBucket::setPositionXYZ(unsigned long new_posx, unsigned long new_posy
     posz = new_posz;
 }
 
-
 void ParetoBucket::setUnexplored(){
     state.fetch_and_store(BucketState::Unexplored);
 }
