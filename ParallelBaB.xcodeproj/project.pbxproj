@@ -31,6 +31,7 @@
 		21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */; };
 		217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */; };
 		217D170F1F744B33004CECD8 /* MasterWorkerPBB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217D170D1F744B33004CECD8 /* MasterWorkerPBB.cpp */; };
+		218182AE2016777800AE127B /* SolutionException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 218182AC2016777800AE127B /* SolutionException.cpp */; };
 		218B0DB91E2D769F000B52F4 /* IVMTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 218B0DB71E2D769F000B52F4 /* IVMTree.cpp */; };
 		21CE205D1F907F40006E0BE4 /* libmpi_cxx.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 21CE205B1F907F3F006E0BE4 /* libmpi_cxx.1.dylib */; };
 		21CE205E1F907F40006E0BE4 /* libmpi.12.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 21CE205C1F907F40006E0BE4 /* libmpi.12.dylib */; };
@@ -101,6 +102,8 @@
 		217A2E8F1D944DBB00A4E9EA /* GridContainer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = GridContainer.hpp; sourceTree = "<group>"; };
 		217D170D1F744B33004CECD8 /* MasterWorkerPBB.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MasterWorkerPBB.cpp; sourceTree = "<group>"; };
 		217D170E1F744B33004CECD8 /* MasterWorkerPBB.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MasterWorkerPBB.hpp; sourceTree = "<group>"; };
+		218182AC2016777800AE127B /* SolutionException.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SolutionException.cpp; sourceTree = "<group>"; };
+		218182AD2016777800AE127B /* SolutionException.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SolutionException.hpp; sourceTree = "<group>"; };
 		218B0DB71E2D769F000B52F4 /* IVMTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IVMTree.cpp; sourceTree = "<group>"; };
 		218B0DB81E2D769F000B52F4 /* IVMTree.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IVMTree.hpp; sourceTree = "<group>"; };
 		21CE205B1F907F3F006E0BE4 /* libmpi_cxx.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi_cxx.1.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi_cxx.1.dylib"; sourceTree = "<group>"; };
@@ -197,6 +200,8 @@
 				211282571D639AB30038DBEE /* ProblemVRP.hpp */,
 				211282581D639AB30038DBEE /* Solution.cpp */,
 				211282591D639AB30038DBEE /* Solution.hpp */,
+				218182AC2016777800AE127B /* SolutionException.cpp */,
+				218182AD2016777800AE127B /* SolutionException.hpp */,
 				2112824C1D639AB30038DBEE /* main.cpp */,
 				212A26C71ED70C7B00648EC9 /* submit-uca.sh */,
 				216F69B01E5AE5FD00589E5D /* submit-multiple.sh */,
@@ -288,6 +293,7 @@
 				217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */,
 				211282621D639AB30038DBEE /* Solution.cpp in Sources */,
 				217D170F1F744B33004CECD8 /* MasterWorkerPBB.cpp in Sources */,
+				218182AE2016777800AE127B /* SolutionException.cpp in Sources */,
 				21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */,
 				214C92E2200FCB2B00B55E58 /* ObjectiveValues.cpp in Sources */,
 				211282611D639AB30038DBEE /* ProblemVRP.cpp in Sources */,

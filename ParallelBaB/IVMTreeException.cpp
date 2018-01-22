@@ -16,8 +16,9 @@ IVMTreeException::~IVMTreeException() throw(){
 
 const char* IVMTreeException::what() const throw(){
     std::string error_text = "IVMTreeException: ";
+    
     switch (error_code) {
-        case OK:
+        case OK_IVM:
             return error_message.c_str();
             break;
         
