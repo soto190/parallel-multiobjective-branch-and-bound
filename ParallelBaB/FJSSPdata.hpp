@@ -10,12 +10,13 @@
 #define FJSSPdata_hpp
 
 #include <stdio.h>
+#include <string>
 #include <vector>
 #include <deque>
 #include <math.h>
+#include "FJSSPdataException.hpp"
 
 class FJSSPdata{
-    
 private:
     int n_jobs;
     int n_operations;
@@ -46,26 +47,26 @@ public:
     int getNumberOfMachines() const;
     int getNumberOfOperations() const;
     int getMakespanMachine() const;
-    int getNumberOfOperationsAllocatedFromJob(int job) const;
-    int getLastOperationAllocatedInJob(int job) const;
-    int getOperationAllocation(int operation) const;
-    int getStartingTime(int operation) const;
-    int getEndingTime(int operation) const;
-    int getTimeOnMachine(int machine) const;
-    int getWorkloadOnMachine(int machine) const;
+    int getNumberOfOperationsAllocatedFromJob(int job) const throw(FJSSPdataException);
+    int getLastOperationAllocatedInJob(int job) const throw(FJSSPdataException);
+    int getOperationAllocation(int operation) const throw(FJSSPdataException);
+    int getStartingTime(int operation) const throw(FJSSPdataException);
+    int getEndingTime(int operation) const throw(FJSSPdataException);
+    int getTimeOnMachine(int machine) const throw(FJSSPdataException);
+    int getWorkloadOnMachine(int machine) const throw(FJSSPdataException);
     int getMakespan() const;
     int getTotalWorkload() const;
     int getMaxWorkload() const;
     int getMinTotalWorkload() const;
     int getObjective(int n_obj) const;
-    int getBestWorkloadInMachine(int machine) const;
-    int getTempBestWorkloadInMachine(int machine) const;
-    size_t getNumberOfOperationsAllocatedIn(int machine) const;
+    int getBestWorkloadInMachine(int machine) const throw(FJSSPdataException);
+    int getTempBestWorkloadInMachine(int machine) const throw(FJSSPdataException);
+    size_t getNumberOfOperationsAllocatedIn(int machine) const throw(FJSSPdataException);
     const std::vector<std::deque<int> >& getMachineAllocations() const;
 
     void setMakespanMachine(int machine);
-    void setNumberOfOperationsAllocatedInJob(int job, int n_allocated);
-    void setOperationAllocation(int job, int operation, int machine, int processing_time);
+    void setNumberOfOperationsAllocatedInJob(int job, int n_allocated) throw(FJSSPdataException);
+    void setOperationAllocation(int job, int operation, int machine, int processing_time) throw(FJSSPdataException);
     void setStartingTime(int operation, int start_time);
     void setEndingTime(int operation, int end_time);
     void setTimeOnMachine(int machine, int time);
