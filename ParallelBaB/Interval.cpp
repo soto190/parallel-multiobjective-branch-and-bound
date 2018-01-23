@@ -19,6 +19,7 @@ deep(Deep::TOP),
 build_up_to(-1),
 max_size(0),
 interval(nullptr){
+
 }
 
 Interval::Interval(int max_size):
@@ -27,6 +28,7 @@ deep(Deep::TOP),
 build_up_to(-1),
 max_size(max_size),
 interval(new int[max_size]){
+    
 }
 
 Interval::Interval(const Interval &toCopy):
@@ -67,6 +69,7 @@ Interval& Interval::operator()(int size){
     
     if(interval != nullptr)
         delete [] interval;
+    
     interval = new int[size];
     for (int index = 0; index < max_size; ++index)
         interval[index] = -1;
@@ -91,6 +94,7 @@ Interval& Interval::operator()(const Payload_interval& payload){
     interval = new int[max_size];
     for (int index = 0; index < max_size; ++index)
         interval[index] = payload.interval[index];
+    
     return *this;
 }
 
@@ -109,8 +113,8 @@ Interval& Interval::operator=(const Interval &toCopy){
     
     if(interval != nullptr)
         delete [] interval; /** Freeing previously used memory. **/
-    interval = new int[max_size];
     
+    interval = new int[max_size];
     for (int index = 0; index < max_size; ++index)
         interval[index] = toCopy.getValueAt(index);
     
@@ -215,5 +219,5 @@ void Interval::print() const{
     for (int index_var = build_up_to + 1; index_var < max_size; ++index_var)
         printf("%3c ", sep);
     
-    printf("] [%3.3f, %3.3f] [%1d, %1d]\n", distance[0], distance[1], deep, priority);
+    printf("] [%3.3f, %3.3f %3.3f] [%1d, %1d]\n", distance[0], distance[1], distance[2], deep, priority);
 }

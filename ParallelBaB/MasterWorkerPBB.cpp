@@ -138,8 +138,10 @@ void MasterWorkerPBB::runMasterProcess() {
     payload_interval.priority = 0;
     payload_interval.deep = 0;
     payload_interval.build_up_to = 0;
-    payload_interval.distance[0] = 0.0;
-    payload_interval.distance[1] = 0.0;
+    
+    for (int objective = 0; objective < problem.getNumberOfObjectives(); ++objective)
+        payload_interval.distance[objective] = 0.0;
+    
     for (int element = 1; element < payload_interval.max_size; ++element)
         payload_interval.interval[element] = -1;
     
@@ -174,8 +176,9 @@ void MasterWorkerPBB::runMasterProcess() {
                     payload_interval.build_up_to = 0;
                     payload_interval.priority = 1;
                     payload_interval.deep = 0;
-                    payload_interval.distance[0] = 0.0;
-                    payload_interval.distance[1] = 0.0;
+                    
+                    for (int obj = 0; obj < problem.getNumberOfObjectives(); ++obj)
+                        payload_interval.distance[obj] = 0.0;
                     
                     for (int var = 1; var < payload_interval.max_size; ++var)
                         payload_interval.interval[var] = -1;
@@ -309,6 +312,9 @@ void MasterWorkerPBB::runWorkerProcess() {
     MPI_Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
     branch_init(payload_interval);
     
+    printf("[WorkerPBB-%03d] Receiving interval.\n", rank);
+    branch_init.print();
+
     globalPool.setSizeEmptying((unsigned long) (branchsandbound_per_worker * 2)); /** If the global pool reach this size then the B&B tasks starts sending part of their work to the global pool. **/
     
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
@@ -317,13 +323,14 @@ void MasterWorkerPBB::runWorkerProcess() {
     /** The parameters are changed when using 3 objectives. **/
     paretoContainer(8, 8, 8, solution.getObjective(0), solution.getObjective(1), solution.getObjective(2), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1), problem.getLowerBoundInObj(2));
     
+    printf("[WorkerPBB-%03d] Pareto container initialized.\n", rank);
+
     BranchAndBound BB_container(rank, 0, problem, branch_init);
     branches_created += BB_container.initGlobalPoolWithInterval(branch_init);
     BB_container.setSummarizeFile(summarize_file);
     BB_container.setParetoFrontFile(pareto_front_file);
     BB_container.setPoolFile(pool_file);
     
-
     printf("[WorkerPBB-%03d] Pool size: %3lu %3lu [%3d %3d]\n", getRank(), globalPool.unsafe_size(), branches_created, problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
     set_ref_count(branchsandbound_per_worker + 1);
