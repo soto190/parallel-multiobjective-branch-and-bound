@@ -932,49 +932,57 @@ void ProblemFJSSP::createDefaultSolution(Solution & solution) {
 }
 
 void ProblemFJSSP::updateBestMaxWorkloadSolution(FJSSPdata& data) {
-    bestWorkloadFound = data.getMaxWorkload();
-    
-    if (bestWorkloadFound < bestBound_maxWorkload)
-        bestBound_maxWorkload = bestWorkloadFound;
-    
-    for (int n_op = 0; n_op < n_operations; ++n_op) {
-        assignationBestWorkload[n_op] = data.getOperationAllocation(n_op);
-        goodSolutionWithMaxWorkload.setVariable(n_op, assignationBestWorkload[n_op]);
+    if (data.getObjective(MAX_WORKLOAD) < bestWorkloadFound) {
+       
+        bestWorkloadFound = data.getMaxWorkload();
+        if (bestWorkloadFound < bestBound_maxWorkload)
+            bestBound_maxWorkload = bestWorkloadFound;
+        
+        for (int n_op = 0; n_op < n_operations; ++n_op) {
+            assignationBestWorkload[n_op] = data.getOperationAllocation(n_op);
+            goodSolutionWithMaxWorkload.setVariable(n_op, assignationBestWorkload[n_op]);
+        }
+        
+        for (int m_mach = 0; m_mach < n_machines; ++m_mach)
+            data.setBestWorkloadInMachine(m_mach, data.getWorkloadOnMachine(m_mach));
     }
-    for (int m_mach = 0; m_mach < n_machines; ++m_mach)
-        data.setBestWorkloadInMachine(m_mach, data.getWorkloadOnMachine(m_mach));
 }
 
 void ProblemFJSSP::updateBestMakespanSolution(FJSSPdata& data) {
-    
-    bestMakespanFound = data.getMakespan();
-    
-    if (bestMakespanFound < bestBound_makespan)
-        bestBound_makespan = bestMakespanFound;
-    
-    for (int n_op = 0; n_op < n_operations; ++n_op)
-        assignationBestMakespan[n_op] = data.getOperationAllocation(n_op);
+    if (data.getObjective(MAKESPAN) < bestMakespanFound) {
+        
+        bestMakespanFound = data.getMakespan();
+        if (bestMakespanFound < bestBound_makespan)
+            bestBound_makespan = bestMakespanFound;
+        
+        for (int n_op = 0; n_op < n_operations; ++n_op)
+            assignationBestMakespan[n_op] = data.getOperationAllocation(n_op);
+    }
 }
 
 void ProblemFJSSP::updateBestMakespanSolutionWith(const Solution& solution) {
-    bestMakespanFound = solution.getObjective(0);
-    
-    if (bestMakespanFound < bestBound_makespan)
-        bestBound_makespan = bestMakespanFound;
-    
-    for (int n_op = 0; n_op < n_operations; ++n_op)
-        assignationBestMakespan[n_op] = getDecodeMap(solution.getVariable(n_op), 1);
+    if (solution.getObjective(MAKESPAN) < bestMakespanFound) {
+
+        bestMakespanFound = solution.getObjective(MAKESPAN);
+        if (bestMakespanFound < bestBound_makespan)
+            bestBound_makespan = bestMakespanFound;
+        
+        for (int n_op = 0; n_op < n_operations; ++n_op)
+            assignationBestMakespan[n_op] = getDecodeMap(solution.getVariable(n_op), 1);
+    }
 }
 
 void ProblemFJSSP::updateBestMaxWorkloadSolutionWith(const Solution& solution) {
-    bestWorkloadFound = solution.getObjective(1);
+    if (solution.getObjective(MAX_WORKLOAD) < bestWorkloadFound) {
     
-    if (bestWorkloadFound < bestBound_maxWorkload)
-        bestBound_maxWorkload = bestWorkloadFound;
-    
-    for (int n_op = 0; n_op < n_operations; ++n_op) {
-        assignationBestWorkload[n_op] = getDecodeMap(solution.getVariable(n_op), 1);
-        goodSolutionWithMaxWorkload.setVariable(n_op, assignationBestWorkload[n_op]);
+        bestWorkloadFound = solution.getObjective(MAX_WORKLOAD);
+        if (bestWorkloadFound < bestBound_maxWorkload)
+            bestBound_maxWorkload = bestWorkloadFound;
+        
+        for (int n_op = 0; n_op < n_operations; ++n_op) {
+            assignationBestWorkload[n_op] = getDecodeMap(solution.getVariable(n_op), 1);
+            goodSolutionWithMaxWorkload.setVariable(n_op, assignationBestWorkload[n_op]);
+        }
     }
 }
 
@@ -982,13 +990,14 @@ void ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution) 
     
     if (nObj == 0)
         createDefaultSolution(solution);
+    
     else if (nObj == 1)
         solution = goodSolutionWithMaxWorkload;
-    else if (nObj == 2) {
-        int operation = 0;
-        for (operation = 0; operation < n_operations; ++operation)
+    
+    else if (nObj == 2)
+        for (int operation = 0; operation < n_operations; ++operation)
             solution.setVariable(operation, jobMachineToMap[operationIsFromJob[operation]][assignationMinPij[operation]]);
-    }
+    
     evaluate(solution);
 }
 
@@ -1595,15 +1604,19 @@ void ProblemFJSSP::loadInstanceTXT(char filePath[2][255], char file_extension[10
 ProblemType ProblemFJSSP::getType() const {
     return ProblemType::permutation_with_repetition_and_combination;
 }
+
 int ProblemFJSSP::getStartingRow() {
     return 0;
 }
+
 int ProblemFJSSP::getFinalLevel() {
     return n_operations - 1;
 }
+
 int ProblemFJSSP::getTotalElements() {
     return n_jobs;
 }
+
 int * ProblemFJSSP::getElemensToRepeat() {
     return n_operations_in_job;
 }
@@ -1617,33 +1630,43 @@ int ProblemFJSSP::getDecodeMap(int map, int position) {
 int ProblemFJSSP::getCodeMap(int job, int machine) {
     return jobMachineToMap[job][machine];
 }
+
 int ProblemFJSSP::getTimesValueIsRepeated(int value) {
     return n_operations_in_job[value];
 }
+
 int ProblemFJSSP::getNumberOfJobs() const {
     return n_jobs;
 }
+
 int ProblemFJSSP::getNumberOfOperations() const {
     return n_operations;
 }
+
 int ProblemFJSSP::getNumberOfMachines() const {
     return n_machines;
 }
+
 int ProblemFJSSP::getSumOfMinPij() const {
     return sumOfMinPij;
 }
+
 int ProblemFJSSP::getBestWorkloadFound() const {
     return bestWorkloadFound;
 }
+
 int ProblemFJSSP::getBestMakespanFound() const {
     return bestMakespanFound;
 }
+
 int ProblemFJSSP::getAssignationMinPij(int n_operation) const {
     return assignationMinPij[n_operation];
 }
+
 int ProblemFJSSP::getAssignationBestWorkload(int n_operation) const {
     return assignationBestWorkload[n_operation];
 }
+
 int ProblemFJSSP::getAssignationBestMakespan(int n_operation) const {
     return assignationBestMakespan[n_operation];
 }
@@ -1651,30 +1674,39 @@ int ProblemFJSSP::getAssignationBestMakespan(int n_operation) const {
 int ProblemFJSSP::getBestWorkload(int n_machine) const {
     return bestWorkloads[n_machine];
 }
+
 int ProblemFJSSP::getMinWorkload(int n_machine) const {
     return minWorkload[n_machine];
 }
+
 int ProblemFJSSP::getMapOfJobMachine(int map, int machine_or_job) const {
     return mapToJobMachine[map][machine_or_job];
 }
+
 int ProblemFJSSP::getJobMachineToMap(int job, int machine) const {
     return jobMachineToMap[job][machine];
 }
+
 int ProblemFJSSP::getOperationInJobIsNumber(int job, int operation) const {
     return jobOperationHasNumber[job][operation];
 }
+
 int ProblemFJSSP::getOperationIsFromJob(int n_operation) const {
     return operationIsFromJob[n_operation];
 }
+
 int ProblemFJSSP::getProccessingTime(int operation, int machine) const {
     return processingTime[operation][machine];
 }
+
 int ProblemFJSSP::getNumberOfOperationsInJob(int job) const {
     return n_operations_in_job[job];
 }
+
 int ProblemFJSSP::getReleaseTimeOfJob(int job) const {
     return releaseTime[job];
 }
+
 int ProblemFJSSP::e_function(double value) const {
     return floor(value) + 1;
 }
@@ -1682,24 +1714,31 @@ int ProblemFJSSP::e_function(double value) const {
 int ProblemFJSSP::getEarliestStartingTime(int nOperation) const {
     return earliest_starting_time[nOperation];
 }
+
 int ProblemFJSSP::getEarliestEndingTime(int nOperation) const {
     return earliest_ending_time[nOperation];
 }
+
 int ProblemFJSSP::getEarliestEndingJobTime(int nJob) const {
     return eet_of_job[nJob];
 }
+
 int ProblemFJSSP::getSumShortestProcTimeInMachine(int nMachine) const {
     return sum_shortest_proc_times[nMachine];
 }
+
 int ProblemFJSSP::getAvgOperationPerMachine() const {
     return avg_op_per_machine;
 }
+
 int ProblemFJSSP::getMinSumShortestProcTime() const {
     return min_sum_shortest_proc_times;
 }
+
 int ProblemFJSSP::getMaxEarliestEndingTime() const {
     return max_eet_of_jobs;
 }
+
 int ProblemFJSSP::getSumOf_M_smallestEST() const {
     return sum_M_smallest_est;
 }
@@ -1707,24 +1746,31 @@ int ProblemFJSSP::getSumOf_M_smallestEST() const {
 void ProblemFJSSP::setEarliestStartingTime(int nOperation, int nValue) {
     earliest_starting_time[nOperation] = nValue;
 }
+
 void ProblemFJSSP::setEarliestEndingTime(int nOperation, int nValue) {
     earliest_ending_time[nOperation] = nValue;
 }
+
 void ProblemFJSSP::setEarliestEndingJobTime(int nJob, int nValue) {
     eet_of_job[nJob] = nValue;
 }
+
 void ProblemFJSSP::setSumShortestProcTimeInMachine(int nMachine, int nValue) {
     sum_shortest_proc_times[nMachine] = nValue;
 }
+
 void ProblemFJSSP::setAvgOperationPerMachine(int nValue) {
     avg_op_per_machine = nValue;
 }
+
 void ProblemFJSSP::setMinShortestProcTime(int nValue) {
     min_sum_shortest_proc_times = nValue;
 }
+
 void ProblemFJSSP::setMaxEarliestEndingTime(int nValue) {
     max_eet_of_jobs = nValue;
 }
+
 void ProblemFJSSP::setSumOf_M_smallestEST(int nValue) {
     sum_M_smallest_est = nValue;
 }
@@ -1942,4 +1988,3 @@ int ProblemFJSSP::validateVariablesOf(const Solution& solution) const {
             number_of_invalid_variables++;
     return number_of_invalid_variables;
 }
-

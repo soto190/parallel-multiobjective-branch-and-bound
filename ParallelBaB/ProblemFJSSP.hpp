@@ -67,6 +67,8 @@ typedef struct {
     int * processing_times; /** length is n_operations x n_machines **/
 } Payload_problem_fjssp;
 
+enum FJSSPobjectives {MAKESPAN = 0, MAX_WORKLOAD = 1, TOTAL_WORKLOAD =2};
+
 class ProblemFJSSP: public Problem {
 private:
     //    const unsigned int MAX_GANTT_LIMIT = 4096;
