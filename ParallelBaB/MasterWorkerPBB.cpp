@@ -499,7 +499,6 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
     std::vector<std::string> name_file_ext;
     
     elemens = split(filePath, '/');
-    
     unsigned long int sizeOfElems = elemens.size();
     name_file_ext = split(elemens[sizeOfElems - 1], '.');
     printf("[Master] Name: %s extension: %s\n", name_file_ext[0].c_str(), name_file_ext[1].c_str());
@@ -613,7 +612,7 @@ void MasterWorkerPBB::preparePayloadProblemPart2(const Payload_problem_fjssp &pr
 
 void MasterWorkerPBB::preparePayloadInterval(const Payload_interval &interval, MPI_Datatype &datatype_interval) {
     const int n_blocks = 6;
-    int blocks[n_blocks] = { 1, 1, 1, 1, 2, interval.max_size };
+    int blocks[n_blocks] = { 1, 1, 1, 1, 3, interval.max_size };
     MPI_Aint displacements_interval[n_blocks];
     MPI_Datatype types[n_blocks] = { MPI_INT, MPI_INT, MPI_INT, MPI_INT, MPI_FLOAT, MPI_INT };
     MPI_Aint addr_base, addr_priority, addr_deep, addr_build, addr_max_size, addr_distance, addr_interval;
@@ -768,22 +767,26 @@ void MasterWorkerPBB::storesPayloadInterval(Payload_interval& payload, const Int
     payload.max_size = interval.getSize();
     payload.distance[0] = interval.getDistance(0);
     payload.distance[1] = interval.getDistance(1);
+    payload.distance[2] = interval.getDistance(2);
     
     for (int var = 0; var < interval.getSize(); ++var)
         payload.interval[var] = interval.getValueAt(var);
 }
 
 void MasterWorkerPBB::recoverSolutionFromPayload(const Payload_interval &payload, Solution &solution){
-    solution.setObjective(0, payload.distance[0]);
-    solution.setObjective(1, payload.distance[1]);
+
+    for (int n_obj = 0; n_obj < solution.getNumberOfObjectives(); ++n_obj)
+        solution.setObjective(n_obj, payload.distance[n_obj]);
     
     for (int n_var = 0; n_var < solution.getNumberOfVariables(); ++n_var)
         solution.setVariable(n_var, payload.interval[n_var]);
 }
 
 void MasterWorkerPBB::storesSolutionInInterval(Payload_interval &payload, const Solution& solution){
-    payload.distance[0] = solution.getObjective(0); /** This stores the first objective. **/
-    payload.distance[1] = solution.getObjective(1); /** This stores the second objective. **/
+    
+    for (int n_obj = 0; n_obj < solution.getNumberOfObjectives(); ++n_obj)
+      payload.distance[n_obj] =  solution.getObjective(n_obj); /** Storing each objective on the distance field.**/
+    
     for (int var = 0; var < solution.getNumberOfVariables(); ++var)
         payload.interval[var] = solution.getVariable(var);
 }

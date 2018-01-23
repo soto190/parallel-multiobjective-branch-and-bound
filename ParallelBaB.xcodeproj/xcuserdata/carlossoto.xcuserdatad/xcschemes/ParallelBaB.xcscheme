@@ -75,7 +75,7 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "-n 1"
+            argument = "-n 2"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -103,7 +103,7 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/carlossoto/workspace/Instances/FJSSP/set-BehnkeGeiger/6_Fattahi/Fattahi7.fjs"
+            argument = "/Users/carlossoto/workspace/Instances/FJSSP/set-BehnkeGeiger/6_Fattahi/Fattahi9.fjs"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

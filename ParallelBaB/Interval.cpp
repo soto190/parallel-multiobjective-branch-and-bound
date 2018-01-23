@@ -38,18 +38,21 @@ interval(new int[toCopy.getSize()]){
     
     distance[0] = toCopy.getDistance(0);
     distance[1] = toCopy.getDistance(1);
-    
+    distance[2] = toCopy.getDistance(2);
+
     for (int index = 0; index < max_size; ++index)
         interval[index] = toCopy.getValueAt(index);
-    
 }
 
 Interval::Interval(const Payload_interval& payload){
     build_up_to = payload.build_up_to;
     max_size = payload.max_size;
-    
     priority = (Priority) payload.priority;
     deep = (Deep) payload.deep;
+    
+    distance[0] = payload.distance[0];
+    distance[1] = payload.distance[1];
+    distance[2] = payload.distance[2];
     
     interval = new int[max_size];
     for (int index = 0; index < max_size; ++index)
@@ -57,13 +60,13 @@ Interval::Interval(const Payload_interval& payload){
 }
 
 Interval& Interval::operator()(int size){
-    
     build_up_to = -1;
     max_size = size;
     priority = Priority::P_Low;
     deep = Deep::TOP;
     
-    delete [] interval; /** Freeing previously used memory. **/
+    if(interval != nullptr)
+        delete [] interval;
     interval = new int[size];
     for (int index = 0; index < max_size; ++index)
         interval[index] = -1;
@@ -80,6 +83,7 @@ Interval& Interval::operator()(const Payload_interval& payload){
     
     distance[0] = payload.distance[0];
     distance[1] = payload.distance[1];
+    distance[2] = payload.distance[2];
     
     if(interval != nullptr)
         delete [] interval;
@@ -101,6 +105,7 @@ Interval& Interval::operator=(const Interval &toCopy){
     
     distance[0] = toCopy.getDistance(0);
     distance[1] = toCopy.getDistance(1);
+    distance[2] = toCopy.getDistance(2);
     
     if(interval != nullptr)
         delete [] interval; /** Freeing previously used memory. **/

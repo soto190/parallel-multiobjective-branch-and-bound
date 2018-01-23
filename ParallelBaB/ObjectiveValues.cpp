@@ -12,14 +12,26 @@
 ObjectiveValues::ObjectiveValues(){
 }
 
+ObjectiveValues::ObjectiveValues(int number_of_objectives){
+    n_objectives = number_of_objectives;
+}
+
 ObjectiveValues::ObjectiveValues(int var_value, int obj1, int obj2): variable_value(var_value){
+    n_objectives = 3;
     objective[0] = obj1;
     objective[1] = obj2;
+    objective[2] = 0;
+}
+
+ObjectiveValues::ObjectiveValues(int var_value, int obj1, int obj2, int obj3): variable_value(var_value){
+    objective[0] = obj1;
+    objective[1] = obj2;
+    objective[2] = obj3;
 }
 
 ObjectiveValues::ObjectiveValues(const ObjectiveValues & toCopy){
     variable_value = toCopy.getValue();
-    for (int n_obj = 0; n_obj < 2; ++n_obj){
+    for (int n_obj = 0; n_obj < 3; ++n_obj){
         objective[n_obj] = toCopy.getObjective(n_obj);
         distance[n_obj] = toCopy.getDistance(n_obj);
     }
@@ -48,12 +60,16 @@ int ObjectiveValues::getObjective(int n_obj) const{
     return objective[n_obj];
 }
 
+int ObjectiveValues::getNumberOfObjectives() const{
+    return  n_objectives;
+}
+
 float ObjectiveValues::getDistance(int n_obj) const{
     return distance[n_obj];
 }
 
 float ObjectiveValues::getCombination() const{
-    return distance[0] + distance[1];
+    return distance[0] + distance[1] + distance[2];
 }
 
 float ObjectiveValues::getSomethingToSort(const SORTING_TYPES sort) const{
@@ -72,7 +88,7 @@ float ObjectiveValues::getSomethingToSort(const SORTING_TYPES sort) const{
             break;
             
         case SORTING_TYPES::DIST_COMB: /** This part can be used to combine the distances. **/
-            return distance[0] + distance[1];
+            return distance[0] + distance[1] + distance[2];
             break;
             
         default:
@@ -82,35 +98,35 @@ float ObjectiveValues::getSomethingToSort(const SORTING_TYPES sort) const{
 }
 
 bool ObjectiveValues::operator==(const ObjectiveValues& rhs) const{
-    for (int n_obj = 0; n_obj < 2; ++n_obj)
+    for (int n_obj = 0; n_obj < n_objectives; ++n_obj)
         if (objective[n_obj] != rhs.getObjective(n_obj))
             return false;
     return true;
 }
 
 bool ObjectiveValues::operator<(const ObjectiveValues& rhs) const{
-    for (int n_obj = 0; n_obj < 2; ++n_obj)
+    for (int n_obj = 0; n_obj < n_objectives; ++n_obj)
         if (objective[n_obj] > rhs.getObjective(n_obj))
             return false;
     return true;
 }
 
 bool ObjectiveValues::operator<=(const ObjectiveValues& rhs) const{
-    for (int n_obj = 0; n_obj < 2; ++n_obj)
+    for (int n_obj = 0; n_obj < n_objectives; ++n_obj)
         if (objective[n_obj] > rhs.getObjective(n_obj))
             return false;
     return true;
 }
 
 bool ObjectiveValues::operator>(const ObjectiveValues& rhs) const{
-    for (int n_obj = 0; n_obj < 2; ++n_obj)
+    for (int n_obj = 0; n_obj < n_objectives; ++n_obj)
         if (objective[n_obj] < rhs.getObjective(n_obj))
             return false;
     return true;
 }
 
 bool ObjectiveValues::operator>=(const ObjectiveValues& rhs) const{
-    for (int n_obj = 0; n_obj < 2; ++n_obj)
+    for (int n_obj = 0; n_obj < n_objectives; ++n_obj)
         if (objective[n_obj] <= rhs.getObjective(n_obj))
             return false;
     return true;
@@ -119,7 +135,7 @@ bool ObjectiveValues::operator>=(const ObjectiveValues& rhs) const{
 Dom ObjectiveValues::dominance(const ObjectiveValues& rhs) const{
     int n_obj = 0, obj_A = 0, obj_B = 0, local_is_better = 0, extern_is_better = 0, bot_are_equals = 1;
     
-    for (n_obj = 0; n_obj < 2; ++n_obj) {
+    for (n_obj = 0; n_obj < n_objectives; ++n_obj) {
         obj_A = objective[n_obj];
         obj_B = rhs.getObjective(n_obj);
         
@@ -143,5 +159,5 @@ Dom ObjectiveValues::dominance(const ObjectiveValues& rhs) const{
 }
 
 void ObjectiveValues::print(){
-    printf("%3d | %3d %3d | %3.3f %3.3f |\n", variable_value, objective[0], objective[1], distance[0], distance[1]);
+    printf("%3d | %3d %3d %3d | %3.3f %3.3f %3.3f |\n", variable_value, objective[0], objective[1], objective[2], distance[0], distance[1], distance[2]);
 }

@@ -16,14 +16,18 @@ enum Dom {Domtes = 1, Domted = -1, Nondom = 0, Eq = 11};
 enum SORTING_TYPES{DIST_1 = 0, DIST_2 = 1, DIST_COMB = 3, DOMINANCE = 4};
 
 class ObjectiveValues{
+    int n_objectives;
     int variable_value;
-    int objective[2];
-    float distance[2];
+    int objective[3];
+    float distance[3];
     float mixed;
     
 public:
     ObjectiveValues();
+    ObjectiveValues(int numbr_of_objectives);
     ObjectiveValues(int var_value, int obj1, int obj2);
+    ObjectiveValues(int var_value, int obj1, int obj2, int obj3);
+
     ObjectiveValues(const ObjectiveValues & toCopy);
     ~ObjectiveValues();
     
@@ -32,6 +36,7 @@ public:
     void setDistance(int n_obj, float n_dist);
     int getValue() const;
     int getObjective(int n_obj) const;
+    int getNumberOfObjectives() const;
     float getDistance(int n_obj) const;
     float getCombination() const;
     float getSomethingToSort(const SORTING_TYPES sort) const;

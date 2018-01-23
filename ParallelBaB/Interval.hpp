@@ -30,7 +30,7 @@ typedef struct {
     int deep;
     int build_up_to;
     int max_size;
-    float distance[2];
+    float distance[3];
     int * interval;
 } Payload_interval;
 
@@ -40,7 +40,7 @@ private:
     Deep deep;
     int build_up_to = -1;
     int max_size = 0;
-    float distance[2];
+    float distance[3];
     int * interval;
     
 public:
