@@ -166,14 +166,22 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     
     Interval branch_to_split(branch_init);
     
+    Solution temp_obj2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    Solution temp_obj3(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+
     problem.createDefaultSolution(incumbent_s);
-    Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    problem.getSolutionWithLowerBoundInObj(1, temp);
-    temp.print();
+    problem.getSolutionWithLowerBoundInObj(1, temp_obj2);
+    problem.getSolutionWithLowerBoundInObj(2, temp_obj3);
+    
     incumbent_s.print();
+    temp_obj2.print();
+    temp_obj3.print();
+    
     updateParetoGrid(incumbent_s);
-    updateParetoGrid(temp);
-    updateBoundsWithSolution(temp);
+    updateParetoGrid(temp_obj2);
+    updateParetoGrid(temp_obj3);
+    
+    updateBoundsWithSolution(temp_obj2);
     
     int row = 0;
     int split_level = branch_to_split.getBuildUpTo() + 1;

@@ -323,10 +323,14 @@ void MasterWorkerPBB::runWorkerProcess() {
     /** The parameters are changed when using 3 objectives. **/
     paretoContainer(8, 8, 8, solution.getObjective(0), solution.getObjective(1), solution.getObjective(2), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1), problem.getLowerBoundInObj(2));
     
-    printf("[WorkerPBB-%03d] Pareto container initialized.\n", rank);
+    printf("[DEBUG: WorkerPBB-%03d] Pareto container created.\n", rank);
 
     BranchAndBound BB_container(rank, 0, problem, branch_init);
+    printf("[DEBUG: WorkerPBB-%03d] BB container created.\n", rank);
+
     branches_created += BB_container.initGlobalPoolWithInterval(branch_init);
+    printf("[DEBUG: WorkerPBB-%03d] Pareto container initialized.\n", rank);
+
     BB_container.setSummarizeFile(summarize_file);
     BB_container.setParetoFrontFile(pareto_front_file);
     BB_container.setPoolFile(pool_file);
@@ -367,7 +371,6 @@ void MasterWorkerPBB::runWorkerProcess() {
             printMessageStatus(status.MPI_SOURCE, status.MPI_TAG);
             
             switch (status.MPI_TAG) {
-                    
                 case TAG_INTERVAL:
                     branch_init(payload_interval);
                     
