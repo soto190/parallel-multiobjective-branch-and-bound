@@ -21,7 +21,6 @@ MasterWorkerPBB::MasterWorkerPBB() {
     datatype_interval = 0;
     datatype_problem = 0;
     datatype_solution = 0;
-    
     branches_explored = 0;
     branches_created = 0;
     branches_pruned = 0;
@@ -36,13 +35,13 @@ branchsandbound_per_worker(num_threads) {
     datatype_interval = 0;
     datatype_problem = 0;
     datatype_solution = 0;
-    
     branches_explored = 0;
     branches_created = 0;
     branches_pruned = 0;
 }
 
 MasterWorkerPBB::~MasterWorkerPBB() {
+    
 }
 
 tbb::task * MasterWorkerPBB::execute() {
@@ -335,6 +334,8 @@ void MasterWorkerPBB::runWorkerProcess() {
     paretoContainer.add(temp_obj1);
     paretoContainer.add(temp_obj2);
     paretoContainer.add(temp_obj3);
+    printf("[DEBUG: WorkerPBB-%03d] Added solutions to container.\n", rank);
+
 
     BranchAndBound BB_container(rank, 0, problem, branch_init);
     printf("[DEBUG: WorkerPBB-%03d] BB container created.\n", rank);

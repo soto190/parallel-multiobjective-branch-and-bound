@@ -65,7 +65,7 @@ grid(cols, rows, 1){
     
     range_dim_x = new double[cols];
     range_dim_y = new double[rows];
-    range_dim_z = new double[getDeep()];
+    range_dim_z = new double[deep];
     
     max_val_in_x = maxValX;
     max_val_in_y = maxValY;
@@ -164,8 +164,13 @@ HandlerContainer& HandlerContainer::operator()(unsigned int cols, unsigned int r
 
 void HandlerContainer::getCoordinateForSolution(const Solution &solution, int * coordinate) const {
     coordinate[0] = binarySearch(solution.getObjective(0), range_dim_x, getCols());
+    printf("[DEBUG:binarysearch]  coordinate[0]%d\n", coordinate[0]);
+    
     coordinate[1] = binarySearch(solution.getObjective(1), range_dim_y, getRows());
+    printf("[DEBUG:binarysearch]  coordinate[1]%d\n", coordinate[1]);
+    
     coordinate[2] = binarySearch(solution.getObjective(2), range_dim_z, getDeep());
+    printf("[DEBUG:binarysearch]  coordinate[0]%d\n", coordinate[2]);
 }
 
 /**
@@ -232,6 +237,8 @@ int HandlerContainer::getBestValueFoundIn(int obj) const{
 int HandlerContainer::add(const Solution & solution) {
     int coordinate[DIMENSIONS];
     getCoordinateForSolution(solution, coordinate);
+    printf("[DEBUG:HandlerContainer:coordinates] %d %d %d.\n", coordinate[0], coordinate[1], coordinate[2]);
+
     return set(solution, coordinate[0], coordinate[1], coordinate[2]);
 }
 
@@ -264,7 +271,6 @@ unsigned int HandlerContainer::getRows() const {
 unsigned int HandlerContainer::getCols() const {
     return grid.getNumberOfCols();
 }
-
 
 unsigned int HandlerContainer::getDeep() const {
     return grid.getNumberOfDeep();
