@@ -69,7 +69,7 @@ grid(cols, rows, 1){
     
     max_val_in_x = maxValX;
     max_val_in_y = maxValY;
-    max_val_in_z = 1;
+    max_val_in_z = maxValZ;
     
     int divs = 0;
     
@@ -154,7 +154,7 @@ HandlerContainer& HandlerContainer::operator()(unsigned int cols, unsigned int r
         range_dim_y[divs] = range_dim_y[divs - 1] + ry;
     
     for (divs = 1; divs < deep; ++divs)
-        range_dim_z[deep] = range_dim_z[divs - 1] + rz;
+        range_dim_z[divs] = range_dim_z[divs - 1] + rz;
     
     for (int obj = 0; obj < DIMENSIONS; ++obj)
         min_value_found_in_obj[obj].fetch_and_store(BIG_VALUE);
@@ -237,7 +237,7 @@ int HandlerContainer::getBestValueFoundIn(int obj) const{
 int HandlerContainer::add(const Solution & solution) {
     int coordinate[DIMENSIONS];
     getCoordinateForSolution(solution, coordinate);
-    printf("[DEBUG:HandlerContainer:coordinates] %d %d %d.\n", coordinate[0], coordinate[1], coordinate[2]);
+    //printf("[DEBUG:HandlerContainer:coordinates] %d %d %d.\n", coordinate[0], coordinate[1], coordinate[2]);
 
     return set(solution, coordinate[0], coordinate[1], coordinate[2]);
 }

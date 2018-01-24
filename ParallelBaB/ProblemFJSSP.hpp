@@ -67,37 +67,39 @@ typedef struct {
     int * processing_times; /** length is n_operations x n_machines **/
 } Payload_problem_fjssp;
 
+enum FJSSPobjectives {MAKESPAN = 0, MAX_WORKLOAD = 1, TOTAL_WORKLOAD = 2};
+
 class ProblemFJSSP: public Problem {
 private:
     //    const unsigned int MAX_GANTT_LIMIT = 4096;
     int n_jobs;
     int n_operations;
     int n_machines;
-    int sumOfMinPij;
-    int bestWorkloadFound;
-    int bestMakespanFound;
-    int * assignationMinPij;       /** Length equals to numberOfOperations. **/
-    int * assignationBestWorkload; /** Length equals to numberOfOperations. **/
-    int * assignationBestMakespan; /** Lenght equals to numberOfOperations. **/
-    int * bestWorkloads;           /** Length equals to number of machines. **/
-    int * minWorkload;             /** Length equals to number of machines. **/
-    int * n_operations_in_job;     /** Length equals to number of Jobs. **/
-    int * releaseTime;             /** Length equals to number of Jobs. **/
-    int * operationIsFromJob;      /** Length equals to numberOfOperations. **/
-    int ** processingTime;         /** Length equals to numberOfOperations x numberOfMachines. **/
-    int ** mapToJobMachine;        /** Length equals to numberOfMaps x 2. Positio 0 is the job, position 1 is the machine.**/
-    int ** jobMachineToMap;        /** Length equals to numberOfJobs x numberOfMachines. **/
-    int ** jobOperationHasNumber;  /** Length equals to job x numberOfOperationsInJob. **/
+    int sum_of_min_Pij;
+    int best_max_workload_found;
+    int best_makespan_found;
+    int * assignation_min_Pij;       /** Length equals to numberOfOperations. **/
+    int * assignation_best_workload; /** Length equals to numberOfOperations. **/
+    int * assignation_best_makespan; /** Lenght equals to numberOfOperations. **/
+    int * best_workloads;            /** Length equals to number of machines. **/
+    int * min_workload;              /** Length equals to number of machines. **/
+    int * n_operations_in_job;       /** Length equals to number of Jobs. **/
+    int * release_time;              /** Length equals to number of Jobs. **/
+    int * operation_is_from_job;     /** Length equals to numberOfOperations. **/
+    int ** processing_time;          /** Length equals to numberOfOperations x numberOfMachines. **/
+    int ** map_to_job_machine;        /** Length equals to numberOfMaps x 2. Positio 0 is the job, position 1 is the machine.**/
+    int ** job_machine_to_map;        /** Length equals to numberOfJobs x numberOfMachines. **/
+    int ** job_operation_has_number;  /** Length equals to job x numberOfOperationsInJob. **/
     int * earliest_starting_time;  /** Length equals to number of operations. **/
     int * earliest_ending_time;    /** Length equals to number of operations. **/
     int * eet_of_job;              /** Length equals to number of jobs. **/
     int * sum_shortest_proc_times; /** D^{k}_{Ñ}. Length equals to number of machines.**/
     int avg_op_per_machine;        /** Ñ parameter (N tilde).  **/
-    int min_sum_shortest_proc_times; /** D_{{k_0}, Ñ}. **/
+    int min_sum_shortest_proc_times;/** D_{{k_0}, Ñ}. **/
     int max_eet_of_jobs;            /** Maximum earliest ending time of jobs. **/
     int sum_M_smallest_est;         /** R_MSum of the M smallest starting times (est). **/
-    int bestBound_maxWorkload;
-    int bestBound_makespan;
+    int best_bound_max_workload;
+    int best_bound_makespan;
     
 public:
     ProblemFJSSP();
@@ -126,7 +128,7 @@ public:
     int * getElemensToRepeat();
     int getTotalElements();
     int getDecodeMap(int map, int position);
-    int getCodeMap(int value1, int value2);
+    int getCodeMap(int job, int machine);
     int getTimesValueIsRepeated(int value);
     
     void updateBestMaxWorkloadSolution(FJSSPdata& data);

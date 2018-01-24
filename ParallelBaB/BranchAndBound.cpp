@@ -91,7 +91,7 @@ BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, cons
     bb_rank = rank_new;
     problem = problem_to_copy;
     fjssp_data(problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
-    
+    fjssp_data.setTotalWorkload(problem.getSumOfMinPij());
     currentLevel = 0;
     number_of_tree_levels = 0;
     number_of_nodes = 0;

@@ -256,7 +256,7 @@ DominanceRelation Solution::dominates(const Solution & solution) const {
 void Solution::print() const {
     char sep = '-';
     for (int n_obj = 0; n_obj < n_objectives; ++n_obj)
-        printf("%4.0f", getObjective(n_obj));
+        printf("%6.0f", getObjective(n_obj));
     
     printf(" | ");
     

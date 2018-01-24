@@ -170,7 +170,6 @@ private:
     void updateBoundsWithSolution(const Solution & solution);
     void setPriorityTo(Interval & interval) const;
     
-    
     int getLimitLevelToShare() const;
     void computeLastBranch(Interval & branch);
     
