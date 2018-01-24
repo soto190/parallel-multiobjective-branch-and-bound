@@ -895,40 +895,41 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
 double ProblemFJSSP::evaluateLastLevel(Solution * solution) {
     return 0.0;
 }
+
 double ProblemFJSSP::removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel) {
     return 0.0;
 }
+
 double ProblemFJSSP::removeLastLevelEvaluation(Solution * solution, int newLevel) {
     return 0.0;
 }
 
 void ProblemFJSSP::createDefaultSolution(Solution & solution) {
     
-    int job = 0;
-    int operation = 0;
-    int countOperations = 0;
+    int operations_counter = 0;
     int map = 0;
     int machine = 0;
     
     FJSSPdata fjsspd(n_jobs, n_operations, n_machines);
     
-    for (job = 0; job < n_jobs; ++job)
-        for (operation = 0; operation < n_operations_in_job[job]; ++operation) {
+    for (int job = 0; job < getNumberOfJobs(); ++job)
+        for (int operation = 0; operation < getNumberOfOperationsInJob(job); ++operation) {
             
-            while (processingTime[countOperations][machine] == INF_PROC_TIME)
+            while (getProccessingTime(operations_counter, machine) == INF_PROC_TIME)
                 if (machine++ == n_machines - 1)
                     machine = 0;
             
-            map = jobMachineToMap[job][machine];
-            solution.setVariable(countOperations, map);
+            map = getCodeMap(job, machine);
+            solution.setVariable(operations_counter, map);
             
             if (machine++ == n_machines - 1)
                 machine = 0;
             
-            countOperations++;
+            operations_counter++;
         }
     
     evaluate(solution);
+    printf("[DEBUG] Evaluating default solution.\n");
 }
 
 void ProblemFJSSP::updateBestMaxWorkloadSolution(FJSSPdata& data) {
