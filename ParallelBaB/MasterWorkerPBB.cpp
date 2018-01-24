@@ -326,10 +326,14 @@ void MasterWorkerPBB::runWorkerProcess() {
     Solution temp_obj1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     Solution temp_obj2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     Solution temp_obj3(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    
+    printf("[DEBUG: WorkerPBB-%03d] Created solutions.\n", rank);
+
     problem.createDefaultSolution(temp_obj1);
+    printf("[DEBUG: WorkerPBB-%03d] Created solutions obj1.\n", rank);
     problem.getSolutionWithLowerBoundInObj(1, temp_obj2);
+    printf("[DEBUG: WorkerPBB-%03d] Created solutions obj2.\n", rank);
     problem.getSolutionWithLowerBoundInObj(2, temp_obj3);
+    printf("[DEBUG: WorkerPBB-%03d] Created solutions obj3.\n", rank);
     
     paretoContainer.add(temp_obj1);
     paretoContainer.add(temp_obj2);

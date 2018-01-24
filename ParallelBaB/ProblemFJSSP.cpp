@@ -985,9 +985,8 @@ void ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution) 
     else if (nObj == 1)
         solution = goodSolutionWithMaxWorkload;
     else if (nObj == 2) {
-        int operation = 0;
-        for (operation = 0; operation < n_operations; ++operation)
-            solution.setVariable(operation, jobMachineToMap[operationIsFromJob[operation]][assignationMinPij[operation]]);
+        for (int operation = 0; operation < n_operations; ++operation)
+            solution.setVariable(operation, getCodeMap(getOperationIsFromJob(operation), getAssignationMinPij(operation)));
     }
     evaluate(solution);
 }

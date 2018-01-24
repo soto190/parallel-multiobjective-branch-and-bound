@@ -164,13 +164,13 @@ HandlerContainer& HandlerContainer::operator()(unsigned int cols, unsigned int r
 
 void HandlerContainer::getCoordinateForSolution(const Solution &solution, int * coordinate) const {
     coordinate[0] = binarySearch(solution.getObjective(0), range_dim_x, getCols());
-    printf("[DEBUG:binarysearch]  coordinate[0]%d\n", coordinate[0]);
+    // printf("[DEBUG:binarysearch]  coordinate[0]%d\n", coordinate[0]);
     
     coordinate[1] = binarySearch(solution.getObjective(1), range_dim_y, getRows());
-    printf("[DEBUG:binarysearch]  coordinate[1]%d\n", coordinate[1]);
+    // printf("[DEBUG:binarysearch]  coordinate[1]%d\n", coordinate[1]);
     
     coordinate[2] = binarySearch(solution.getObjective(2), range_dim_z, getDeep());
-    printf("[DEBUG:binarysearch]  coordinate[0]%d\n", coordinate[2]);
+    // printf("[DEBUG:binarysearch]  coordinate[0]%d\n", coordinate[2]);
 }
 
 /**
