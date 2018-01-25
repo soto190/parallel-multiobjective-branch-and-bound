@@ -5,7 +5,7 @@
 //  Created by Carlos Soto on 06/02/17.
 //  Copyright © 2017 Carlos Soto. All rights reserved.
 //
-
+/** Dummy commit**/
 #include "ParallelBranchAndBound.hpp"
 
 ParallelBranchAndBound::ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem):
@@ -23,7 +23,7 @@ tbb::task * ParallelBranchAndBound::execute() {
    
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
-    
+
     paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
     BranchAndBound BB_container(rank, 0, problem, branch_init);

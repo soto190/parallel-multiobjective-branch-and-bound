@@ -23,18 +23,18 @@ public:
     
     Problem();
     Problem(const Problem& toCopy);
-    Problem (int totalObjectives, int totalVariables);
+    Problem (int n_objectives, int n_variables);
     virtual ~Problem();
     virtual Problem& operator=(const Problem& toCopy);
     
     char name[255];
     ProblemType type;
-    int startingLevel;
-    int totalObjectives;
-    int totalVariables;
-    int totalConstraints;
-    int * lowerBound;
-    int * upperBound;
+    int starting_level;
+    int n_objectives;
+    int n_variables;
+    int n_constraints;
+    int * lower_bound;
+    int * upper_bound;
     
     virtual double evaluate(Solution & solution) = 0;
     virtual double evaluatePartial(Solution & solution, int levelEvaluation) = 0;

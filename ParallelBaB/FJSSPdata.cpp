@@ -158,32 +158,95 @@ int FJSSPdata::getMakespanMachine() const {
     return machine_makespan;
 }
 
-int FJSSPdata::getNumberOfOperationsAllocatedFromJob(int job) const {
-    return n_operations_allocated[job];
+int FJSSPdata::getNumberOfOperationsAllocatedFromJob(int job) const throw(FJSSPdataException){
+    try {
+        if (job >= n_jobs)
+            throw FJSSPdataException(JOB_OUT_OF_RANGE, "when calling getNumberOfOperationsAllocatedFromJob(job:" + std::to_string(static_cast<long long>(job)) + ")");
+        
+        return n_operations_allocated[job];
+
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
+    return -1;
 }
 
-int FJSSPdata::getLastOperationAllocatedInJob(int job) const {
-    return n_operations_allocated[job] - 1;
+int FJSSPdata::getLastOperationAllocatedInJob(int job) const throw(FJSSPdataException){
+    try {
+        if (job >= n_jobs)
+            throw FJSSPdataException(JOB_OUT_OF_RANGE, "when calling getLastOperationAllocatedInJob(job:" + std::to_string(static_cast<long long>(job)) + ")");
+        
+        return n_operations_allocated[job] - 1;
+        
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
+    return - 1;
 }
 
-int FJSSPdata::getOperationAllocation(int operation) const {
-    return operation_allocated_in[operation];
+int FJSSPdata::getOperationAllocation(int operation) const throw(FJSSPdataException){
+    try {
+        if (operation >= n_operations)
+            throw FJSSPdataException(OPERATION_OUT_OF_RANGE, "when calling getOperationAllocation(op:" + std::to_string(static_cast<long long>(operation)) + ")");
+        
+        return operation_allocated_in[operation];
+        
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
+    return -1;
 }
 
-int FJSSPdata::getStartingTime(int operation) const {
-    return starting_time[operation];
+int FJSSPdata::getStartingTime(int operation) const throw(FJSSPdataException){
+    try {
+        if (operation >= n_operations)
+            throw FJSSPdataException(OPERATION_OUT_OF_RANGE, "when calling getStartingTime(op:" + std::to_string(static_cast<long long>(operation)) + ")");
+        
+        return starting_time[operation];
+        
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
+    return -1;
 }
 
-int FJSSPdata::getEndingTime(int operation) const {
-    return ending_time[operation];
+int FJSSPdata::getEndingTime(int operation) const throw(FJSSPdataException){
+    try {
+        if (operation >= n_operations)
+            throw FJSSPdataException(OPERATION_OUT_OF_RANGE, "when calling getEndingTime(op:" + std::to_string(static_cast<long long>(operation)) + ")");
+        
+        return ending_time[operation];
+        
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
+    return -1;
 }
 
-int FJSSPdata::getTimeOnMachine(int machine) const {
-    return time_on_machine[machine];
+int FJSSPdata::getTimeOnMachine(int machine) const throw(FJSSPdataException){
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling getTimeOnMachine(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+        
+        return time_on_machine[machine];
+        
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
+    return -1;
 }
 
-int FJSSPdata::getWorkloadOnMachine(int machine) const {
-    return workload_in_machine[machine];
+int FJSSPdata::getWorkloadOnMachine(int machine) const throw(FJSSPdataException){
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling getWorkloadOnMachine(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+        
+        return workload_in_machine[machine];
+        
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
+    return -1;
 }
 
 int FJSSPdata::getMakespan() const{
@@ -221,14 +284,43 @@ int FJSSPdata::getObjective(int n_obj) const{
     return value;
 }
 
-int FJSSPdata::getBestWorkloadInMachine(int machine) const{
-    return best_workloads_in_machine[machine];
+int FJSSPdata::getBestWorkloadInMachine(int machine) const throw(FJSSPdataException){
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling getBestWorkloadInMachine(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+        
+        return best_workloads_in_machine[machine];
+        
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
+    return -1;
 }
 
-int FJSSPdata::getTempBestWorkloadInMachine(int machine) const{return temp_best_wl_m[machine];}
+int FJSSPdata::getTempBestWorkloadInMachine(int machine) const throw(FJSSPdataException){
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling getTempBestWorkloadInMachine(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+        
+        return temp_best_wl_m[machine];
+        
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
+    return -1;
+}
 
-size_t FJSSPdata::getNumberOfOperationsAllocatedIn(int machine) const {
-    return machine_allocations[machine].size();
+size_t FJSSPdata::getNumberOfOperationsAllocatedIn(int machine) const throw(FJSSPdataException) {
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling getNumberOfOperationsAllocatedIn(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+        
+        return machine_allocations[machine].size();
+        
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
+    return -1;
 }
 
 const std::vector<std::deque<int> >& FJSSPdata::getMachineAllocations() const {
@@ -239,36 +331,89 @@ void FJSSPdata::setMakespanMachine(int machine) {
     machine_makespan = machine;
 }
 
-void FJSSPdata::setNumberOfOperationsAllocatedInJob(int job, int n_allocated) {
-    n_operations_allocated[job] = n_allocated;
+void FJSSPdata::setNumberOfOperationsAllocatedInJob(int job, int n_allocated) throw(FJSSPdataException){
+    try {
+        if (job >= n_jobs)
+            throw FJSSPdataException(JOB_OUT_OF_RANGE, "when calling setNumberOfOperationsAllocatedInJob(job:" + std::to_string(static_cast<long long>(job)) + ")");
+        
+        n_operations_allocated[job] = n_allocated;
+        
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
 }
 
-void FJSSPdata::setOperationAllocation(int job, int operation, int machine, int processing_time){
-    
-    total_workload += processing_time;
-    workload_in_machine[machine] += processing_time;
-    n_operations_allocated[job]++;
-    operation_allocated_in[operation] = machine;
-    machine_allocations[machine].push_back(operation);
-    
+void FJSSPdata::setOperationAllocation(int job, int operation, int machine, int processing_time) throw(FJSSPdataException){
+    try {
+        if (job >= n_jobs)
+            throw FJSSPdataException(JOB_OUT_OF_RANGE, "when calling setOperationAllocation(job:" + std::to_string(static_cast<long long>(job)) + ")");
+        
+        if (operation >= n_operations)
+            throw FJSSPdataException(OPERATION_OUT_OF_RANGE, "when calling setOperationAllocation(operation:" + std::to_string(static_cast<long long>(operation)) + ")");
+        
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling setOperationAllocation(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+        
+        total_workload += processing_time;
+        workload_in_machine[machine] += processing_time;
+        n_operations_allocated[job]++;
+        operation_allocated_in[operation] = machine;
+        machine_allocations[machine].push_back(operation);
+        
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
 }
 
-void FJSSPdata::setStartingTime(int operation, int start_time) {
+void FJSSPdata::setStartingTime(int operation, int start_time) throw(FJSSPdataException) {
+    try {
+        if (operation >= n_operations)
+            throw FJSSPdataException(OPERATION_OUT_OF_RANGE, "when calling setStartingTime(op:" + std::to_string(static_cast<long long>(operation)) + ")");
+        
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
+    
     starting_time[operation] = start_time;
 }
 
-void FJSSPdata::setEndingTime(int operation, int end_time) {
-    ending_time[operation] = end_time;
+void FJSSPdata::setEndingTime(int operation, int end_time) throw(FJSSPdataException){
+    try {
+        if (operation >= n_operations)
+            throw FJSSPdataException(OPERATION_OUT_OF_RANGE, "when calling setEndingTime(op:" + std::to_string(static_cast<long long>(operation)) + ")");
+
+        ending_time[operation] = end_time;
+
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
 }
 
-void FJSSPdata::setTimeOnMachine(int machine, int time) {
-    time_on_machine[machine] = time;}
-
-void FJSSPdata::setWorkloadOnMachine(int machine, int workload) {
-    workload_in_machine[machine] = workload;
+void FJSSPdata::setTimeOnMachine(int machine, int time) throw(FJSSPdataException){
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling setTimeOnMachine(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+        
+        time_on_machine[machine] = time;
+        
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
 }
 
-void FJSSPdata::setMakespan(int value){
+void FJSSPdata::setWorkloadOnMachine(int machine, int workload) throw(FJSSPdataException){
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling setWorkloadOnMachine(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+        
+        workload_in_machine[machine] = workload;
+
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
+}
+
+void FJSSPdata::setMakespan(int value) {
     makespan = value;
 }
 
@@ -280,48 +425,129 @@ void FJSSPdata::setMaxWorkload(int workload) {
     max_workload = workload;
 }
 
-void FJSSPdata::setTempBestWorkloadInMachine(int machine, int value){
-    temp_best_wl_m[machine] = value;
+void FJSSPdata::setTempBestWorkloadInMachine(int machine, int value) throw(FJSSPdataException){
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling setTempBestWorkloadInMachine(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+        
+        temp_best_wl_m[machine] = value;
+
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
+    
 }
 
-void FJSSPdata::setBestWorkloadInMachine(int machine, int value){
-    best_workloads_in_machine[machine] = value;
+void FJSSPdata::setBestWorkloadInMachine(int machine, int value) throw(FJSSPdataException){
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling setBestWorkloadInMachine(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+       
+        best_workloads_in_machine[machine] = value;
+
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
 }
 
 void FJSSPdata::setMinTotalWorkload(int value){
     min_total_workload = value;
 }
 
-void FJSSPdata::increaseTempWorkloadIn(int machine, int time){
-    temp_best_wl_m[machine] += time;
+void FJSSPdata::increaseTempWorkloadIn(int machine, int time) throw(FJSSPdataException){
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling increaseTempWorkloadIn(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+
+        temp_best_wl_m[machine] += time;
+
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
 }
 
-void FJSSPdata::decreaseTempWorkloadIn(int machine, int time){
-    temp_best_wl_m[machine] -= time;
+void FJSSPdata::decreaseTempWorkloadIn(int machine, int time) throw(FJSSPdataException){
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling decreaseTempWorkloadIn(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+        
+        temp_best_wl_m[machine] -= time;
+
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
 }
 
-void FJSSPdata::increaseOperationsAllocatedIn(int job){
-    n_operations_allocated[job]++;
+void FJSSPdata::increaseOperationsAllocatedIn(int job) throw(FJSSPdataException){
+    try {
+        if (job >= n_jobs)
+            throw FJSSPdataException(JOB_OUT_OF_RANGE, "when calling increaseOperationsAllocatedIn(job:" + std::to_string(static_cast<long long>(job)) + ")");
+        
+        n_operations_allocated[job]++;
+
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
 }
 
-void FJSSPdata::decreaseOperationsAllocatedIn(int job){
-    n_operations_allocated[job]--;
+void FJSSPdata::decreaseOperationsAllocatedIn(int job) throw(FJSSPdataException){
+    try {
+        if (job >= n_jobs)
+            throw FJSSPdataException(JOB_OUT_OF_RANGE, "when calling decreaseOperationsAllocatedIn(job:" + std::to_string(static_cast<long long>(job)) + ")");
+        
+        n_operations_allocated[job]--;
+
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
 }
 
-void FJSSPdata::increaseWorkloadIn(int machine, int time){
-    workload_in_machine[machine] += time;
+void FJSSPdata::increaseWorkloadIn(int machine, int time) throw(FJSSPdataException){
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling increaseWorkloadIn(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+        
+        workload_in_machine[machine] += time;
+
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
 }
 
-void FJSSPdata::decreaseWorkloadIn(int machine, int time){
-    workload_in_machine[machine] -= time;
+void FJSSPdata::decreaseWorkloadIn(int machine, int time) throw(FJSSPdataException){
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling decreaseWorkloadIn(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+        
+        workload_in_machine[machine] -= time;
+
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
 }
 
-void FJSSPdata::increaseTimeOnMachine(int machine, int time){
-    time_on_machine[machine] += time;
+void FJSSPdata::increaseTimeOnMachine(int machine, int time) throw(FJSSPdataException){
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling increaseTimeOnMachine(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+        
+        time_on_machine[machine] += time;
+
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
 }
 
-void FJSSPdata::decreaseTimeOnMachine(int machine, int time){
-    time_on_machine[machine] -= time;
+void FJSSPdata::decreaseTimeOnMachine(int machine, int time) throw(FJSSPdataException){
+    try {
+        if (machine >= n_machines)
+            throw FJSSPdataException(MACHINE_OUT_OF_RANGE, "when calling decreaseTimeOnMachine(machine:" + std::to_string(static_cast<long long>(machine)) + ")");
+        
+        time_on_machine[machine] -= time;
+
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
 }
 
 void FJSSPdata::increaseToltalWorkload(int time){
@@ -332,23 +558,35 @@ void FJSSPdata::decreaseToltalWorkload(int time){
     total_workload -= time;
 }
 
-void FJSSPdata::deallocateOperation(int job, int operation){
-    int procceessiinngg = ending_time[operation] - starting_time[operation];
-    int machine = operation_allocated_in[operation]; /** Get the machine in which the operation was allocated. **/
-    machine_allocations[machine].pop_back(); /** Remove the operation from machine. **/
+void FJSSPdata::deallocateOperation(int job, int operation) throw(FJSSPdataException){
     
-    if(machine_allocations[machine].empty())
-        time_on_machine[machine] = 0;
-    else
-        time_on_machine[machine] = ending_time[machine_allocations[machine].back()]; /** Reduce time_on_machine. **/
-    
-    operation_allocated_in[operation] = -1;
-    starting_time[operation] = 0;
-    ending_time[operation] = 0;
-    
-    n_operations_allocated[job]--;
-    total_workload -= procceessiinngg;
-    workload_in_machine[machine] -= procceessiinngg;
+    try {
+        if (job >= n_jobs)
+            throw FJSSPdataException(JOB_OUT_OF_RANGE, "when calling deallocateOperation(job:" + std::to_string(static_cast<long long>(job)) + ")");
+        
+        if (operation >= n_operations)
+            throw FJSSPdataException(OPERATION_OUT_OF_RANGE, "when calling deallocateOperation(op:" + std::to_string(static_cast<long long>(operation)) + ")");
+        
+        int opertion_time_processing = ending_time[operation] - starting_time[operation];
+        int machine = operation_allocated_in[operation]; /** Get the machine in which the operation was allocated. **/
+        machine_allocations[machine].pop_back(); /** Remove the operation from machine. **/
+        
+        if(machine_allocations[machine].empty())
+            time_on_machine[machine] = 0;
+        else
+            time_on_machine[machine] = ending_time[machine_allocations[machine].back()]; /** Reduce time_on_machine. **/
+        
+        operation_allocated_in[operation] = -1;
+        starting_time[operation] = 0;
+        ending_time[operation] = 0;
+        
+        n_operations_allocated[job]--;
+        total_workload -= opertion_time_processing;
+        workload_in_machine[machine] -= opertion_time_processing;
+        
+    } catch (FJSSPdataException& fjssp_data_ex) {
+        printf("%s\n",  fjssp_data_ex.what());
+    }
 }
 
 void FJSSPdata::reset(){

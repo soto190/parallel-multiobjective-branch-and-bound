@@ -10,19 +10,19 @@
 
 
 ProblemTSP::ProblemTSP(const ProblemTSP& toCopy):Problem(toCopy){
-    this->costCoord = new int * [toCopy.totalVariables];
-    this->costs = new double * [toCopy.totalVariables];
-    this->cityCoord = new int * [toCopy.totalVariables];
-    this->euclideanDistance = new double * [toCopy.totalVariables];
+    this->costCoord = new int * [toCopy.n_variables];
+    this->costs = new double * [toCopy.n_variables];
+    this->cityCoord = new int * [toCopy.n_variables];
+    this->euclideanDistance = new double * [toCopy.n_variables];
     
     int origin = 0, dest = 0;
-    for (origin = 0; origin < this->totalVariables; origin++) {
-        this->costCoord[origin] = new int [toCopy.totalVariables];
-        this->costs[origin] = new double [toCopy.totalVariables];
-        this->cityCoord[origin] = new int [toCopy.totalVariables];
-        this->euclideanDistance[origin] = new double [toCopy.totalVariables];
+    for (origin = 0; origin < this->n_variables; origin++) {
+        this->costCoord[origin] = new int [toCopy.n_variables];
+        this->costs[origin] = new double [toCopy.n_variables];
+        this->cityCoord[origin] = new int [toCopy.n_variables];
+        this->euclideanDistance[origin] = new double [toCopy.n_variables];
         
-        for (dest = 0; dest < this->totalVariables; ++dest) {
+        for (dest = 0; dest < this->n_variables; ++dest) {
             this->costCoord[origin][dest] = toCopy.costCoord[origin][dest];
             this->costs[origin][dest] = toCopy.costs[origin][dest];
             this->cityCoord[origin][dest] = toCopy.cityCoord[origin][dest];
@@ -42,7 +42,7 @@ ProblemTSP::ProblemTSP(int totalObjectives, int totalVariables):Problem(totalObj
 
 ProblemTSP::~ProblemTSP(){
     int city = 0;
-    for (city = 0; city < this->totalVariables; city++) {
+    for (city = 0; city < this->n_variables; city++) {
         delete[] euclideanDistance[city];
         delete[] cityCoord[city];
         delete[] costs[city];
@@ -58,19 +58,19 @@ ProblemTSP::~ProblemTSP(){
 
 ProblemTSP& ProblemTSP::operator=(const ProblemTSP& toCopy){
     
-    this->costCoord = new int * [toCopy.totalVariables];
-    this->costs = new double * [toCopy.totalVariables];
-    this->cityCoord = new int * [toCopy.totalVariables];
-    this->euclideanDistance = new double * [toCopy.totalVariables];
+    this->costCoord = new int * [toCopy.n_variables];
+    this->costs = new double * [toCopy.n_variables];
+    this->cityCoord = new int * [toCopy.n_variables];
+    this->euclideanDistance = new double * [toCopy.n_variables];
     
     int origin = 0, dest = 0;
-    for (origin = 0; origin < this->totalVariables; origin++) {
-        this->costCoord[origin] = new int [toCopy.totalVariables];
-        this->costs[origin] = new double [toCopy.totalVariables];
-        this->cityCoord[origin] = new int [toCopy.totalVariables];
-        this->euclideanDistance[origin] = new double [toCopy.totalVariables];
+    for (origin = 0; origin < this->n_variables; origin++) {
+        this->costCoord[origin] = new int [toCopy.n_variables];
+        this->costs[origin] = new double [toCopy.n_variables];
+        this->cityCoord[origin] = new int [toCopy.n_variables];
+        this->euclideanDistance[origin] = new double [toCopy.n_variables];
         
-        for (dest = 0; dest < this->totalVariables; ++dest) {
+        for (dest = 0; dest < this->n_variables; ++dest) {
             this->costCoord[origin][dest] = toCopy.costCoord[origin][dest];
             this->costs[origin][dest] = toCopy.costs[origin][dest];
             this->cityCoord[origin][dest] = toCopy.cityCoord[origin][dest];
@@ -283,17 +283,17 @@ void ProblemTSP::printInstance(){
 void ProblemTSP::printProblemInfo() const{
     int row = 0, col = 0;
     
-    for (row = 0; row < this->totalVariables; row++) {
+    for (row = 0; row < this->n_variables; row++) {
         printf("[%6d] ", row);
-        for (col = 0; col < this->totalVariables; col++)
+        for (col = 0; col < this->n_variables; col++)
             printf("%10.3f ", this->euclideanDistance[row][col]);
         printf("\n");
     }
     
     printf("\n");
-    for (row = 0; row < this->totalVariables; row++) {
+    for (row = 0; row < this->n_variables; row++) {
         printf("[%6d] ", row);
-        for (col = 0; col < this->totalVariables; col++)
+        for (col = 0; col < this->n_variables; col++)
             printf("%10.3f ", this->costs[row][col]);
         printf("\n");
     }
@@ -345,7 +345,7 @@ void ProblemTSP::loadInstance(char filePath[2][255], char file_extension[4]){
         }
         else if(label.compare("NODE_COORD_SECTION") == 0){
             /** Reads the coordenates of each city and computes the distances between cities. **/
-            int totalCities = this->totalVariables;
+            int totalCities = this->n_variables;
             int city = 0;
             
             this->cityCoord = new int*[totalCities];
@@ -418,7 +418,7 @@ void ProblemTSP::readCost(char filePath[255]){
             printf("Dimension read...\n");
             dimensionInSecondFile = std::stoi(elemens.at(2).c_str());
             
-            if(dimensionInSecondFile != this->totalVariables){
+            if(dimensionInSecondFile != this->n_variables){
                 printf("##### Dimensions from input files are different!!!!...");
             }
         }
@@ -429,7 +429,7 @@ void ProblemTSP::readCost(char filePath[255]){
         else if(label.compare("NODE_COORD_SECTION") == 0){
             /** Reads the coordenates of each city and computes the distances between cities. **/
             
-            int totalCities = this->totalVariables;
+            int totalCities = this->n_variables;
             int city = 0;
             
             this->costCoord = new int *[totalCities];
@@ -470,6 +470,6 @@ void ProblemTSP::readCost(char filePath[255]){
     infile.close();
 }
 
-void ProblemTSP::printSolution(const Solution & solution) const{ printPartialSolution(solution, this->totalVariables);}
+void ProblemTSP::printSolution(const Solution & solution) const{ printPartialSolution(solution, this->n_variables);}
 void ProblemTSP::printSolutionInfo(const Solution & solution) const{ printf("TODO: Implement this function.\n");}
 void ProblemTSP::printPartialSolution(const Solution & solution, int level) const{}

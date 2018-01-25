@@ -22,6 +22,7 @@
 		212AFB1E1E3F35CE004FC057 /* Dominance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21F4CBA51DAE97CC004A308F /* Dominance.cpp */; };
 		21390E601F30CEB800C96853 /* libtbb.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 21390E5E1F30CEB800C96853 /* libtbb.dylib */; };
 		21390E611F30CEB800C96853 /* libtbbmalloc.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 21390E5F1F30CEB800C96853 /* libtbbmalloc.dylib */; };
+		2139FC982017BAF300CB70BE /* FJSSPdataException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2139FC962017BAF300CB70BE /* FJSSPdataException.cpp */; };
 		214467621FD8C3B000364E2A /* ParetoBucket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214467601FD8C3B000364E2A /* ParetoBucket.cpp */; };
 		214467651FD8D74A00364E2A /* HandlerContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214467631FD8D74A00364E2A /* HandlerContainer.cpp */; };
 		214C92DF200FC65C00B55E58 /* SortedVector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214C92DD200FC65C00B55E58 /* SortedVector.cpp */; };
@@ -32,6 +33,7 @@
 		21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */; };
 		217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */; };
 		217D170F1F744B33004CECD8 /* MasterWorkerPBB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217D170D1F744B33004CECD8 /* MasterWorkerPBB.cpp */; };
+		218182AE2016777800AE127B /* SolutionException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 218182AC2016777800AE127B /* SolutionException.cpp */; };
 		218B0DB91E2D769F000B52F4 /* IVMTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 218B0DB71E2D769F000B52F4 /* IVMTree.cpp */; };
 		21CE205D1F907F40006E0BE4 /* libmpi_cxx.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 21CE205B1F907F3F006E0BE4 /* libmpi_cxx.1.dylib */; };
 		21CE205E1F907F40006E0BE4 /* libmpi.12.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 21CE205C1F907F40006E0BE4 /* libmpi.12.dylib */; };
@@ -82,6 +84,8 @@
 		212A26C71ED70C7B00648EC9 /* submit-uca.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = "submit-uca.sh"; sourceTree = "<group>"; };
 		21390E5E1F30CEB800C96853 /* libtbb.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libtbb.dylib; sourceTree = "<group>"; };
 		21390E5F1F30CEB800C96853 /* libtbbmalloc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libtbbmalloc.dylib; sourceTree = "<group>"; };
+		2139FC962017BAF300CB70BE /* FJSSPdataException.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = FJSSPdataException.cpp; sourceTree = "<group>"; };
+		2139FC972017BAF300CB70BE /* FJSSPdataException.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = FJSSPdataException.hpp; sourceTree = "<group>"; };
 		214467601FD8C3B000364E2A /* ParetoBucket.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ParetoBucket.cpp; sourceTree = "<group>"; };
 		214467611FD8C3B000364E2A /* ParetoBucket.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ParetoBucket.hpp; sourceTree = "<group>"; };
 		214467631FD8D74A00364E2A /* HandlerContainer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = HandlerContainer.cpp; sourceTree = "<group>"; };
@@ -104,6 +108,8 @@
 		217A2E8F1D944DBB00A4E9EA /* GridContainer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = GridContainer.hpp; sourceTree = "<group>"; };
 		217D170D1F744B33004CECD8 /* MasterWorkerPBB.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MasterWorkerPBB.cpp; sourceTree = "<group>"; };
 		217D170E1F744B33004CECD8 /* MasterWorkerPBB.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MasterWorkerPBB.hpp; sourceTree = "<group>"; };
+		218182AC2016777800AE127B /* SolutionException.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SolutionException.cpp; sourceTree = "<group>"; };
+		218182AD2016777800AE127B /* SolutionException.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SolutionException.hpp; sourceTree = "<group>"; };
 		218B0DB71E2D769F000B52F4 /* IVMTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IVMTree.cpp; sourceTree = "<group>"; };
 		218B0DB81E2D769F000B52F4 /* IVMTree.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IVMTree.hpp; sourceTree = "<group>"; };
 		21CE205B1F907F3F006E0BE4 /* libmpi_cxx.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi_cxx.1.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi_cxx.1.dylib"; sourceTree = "<group>"; };
@@ -192,6 +198,8 @@
 				211282511D639AB30038DBEE /* Problem.hpp */,
 				2103293C2013E3F8008C5679 /* FJSSPdata.cpp */,
 				2103293D2013E3F8008C5679 /* FJSSPdata.hpp */,
+				2139FC962017BAF300CB70BE /* FJSSPdataException.cpp */,
+				2139FC972017BAF300CB70BE /* FJSSPdataException.hpp */,
 				21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */,
 				21780F1D1DD9B7D80032EECA /* ProblemFJSSP.hpp */,
 				211282521D639AB30038DBEE /* ProblemHCSP.cpp */,
@@ -202,6 +210,8 @@
 				211282571D639AB30038DBEE /* ProblemVRP.hpp */,
 				211282581D639AB30038DBEE /* Solution.cpp */,
 				211282591D639AB30038DBEE /* Solution.hpp */,
+				218182AC2016777800AE127B /* SolutionException.cpp */,
+				218182AD2016777800AE127B /* SolutionException.hpp */,
 				2112824C1D639AB30038DBEE /* main.cpp */,
 				212A26C71ED70C7B00648EC9 /* submit-uca.sh */,
 				216F69B01E5AE5FD00589E5D /* submit-multiple.sh */,
@@ -292,6 +302,7 @@
 				212AFB1E1E3F35CE004FC057 /* Dominance.cpp in Sources */,
 				217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */,
 				211282621D639AB30038DBEE /* Solution.cpp in Sources */,
+				2139FC982017BAF300CB70BE /* FJSSPdataException.cpp in Sources */,
 				217D170F1F744B33004CECD8 /* MasterWorkerPBB.cpp in Sources */,
 				214C92E52010349100B55E58 /* NSGA_II.cpp in Sources */,
 				21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */,
