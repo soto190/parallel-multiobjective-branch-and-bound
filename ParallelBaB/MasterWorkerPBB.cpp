@@ -321,34 +321,24 @@ void MasterWorkerPBB::runWorkerProcess() {
     
     /** The parameters are changed when using 3 objectives. **/
     paretoContainer(8, 8, 8, solution.getObjective(0), solution.getObjective(1), solution.getObjective(2), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1), problem.getLowerBoundInObj(2));
-    printf("[DEBUG: WorkerPBB-%03d] Pareto container created.\n", rank);
 
-    Solution temp_obj1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+   /* Solution temp_obj1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     Solution temp_obj2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     Solution temp_obj3(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    printf("[DEBUG: WorkerPBB-%03d] Created solutions.\n", rank);
 
     problem.createDefaultSolution(temp_obj1);
-    printf("[DEBUG: WorkerPBB-%03d] Created solutions obj1.\n", rank);
     problem.getSolutionWithLowerBoundInObj(1, temp_obj2);
-    printf("[DEBUG: WorkerPBB-%03d] Created solutions obj2.\n", rank);
     problem.getSolutionWithLowerBoundInObj(2, temp_obj3);
-    printf("[DEBUG: WorkerPBB-%03d] Created solutions obj3.\n", rank);
     
     paretoContainer.add(temp_obj1);
     paretoContainer.add(temp_obj2);
     paretoContainer.add(temp_obj3);
-    printf("[DEBUG: WorkerPBB-%03d] Added solutions to container.\n", rank);
-
-
+*/
     BranchAndBound BB_container(rank, 0, problem, branch_init);
-    printf("[DEBUG: WorkerPBB-%03d] BB container created.\n", rank);
     
-    //branches_created += BB_container.initGlobalPoolWithInterval(branch_init);
-  //  printf("[DEBUG: WorkerPBB-%03d] BB container initialized.\n", rank);
+    branches_created += BB_container.initGlobalPoolWithInterval(branch_init);
    
-    branches_created += splitInterval(branch_init);
-    printf("[DEBUG: WorkerPBB-%03d] globalPool initialized.\n", rank);
+   // branches_created += splitInterval(branch_init);
 
     BB_container.setSummarizeFile(summarize_file);
     BB_container.setParetoFrontFile(pareto_front_file);

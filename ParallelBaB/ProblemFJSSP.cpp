@@ -925,8 +925,6 @@ void ProblemFJSSP::createDefaultSolution(Solution & solution) {
             
             operations_counter++;
         }
-    
-    printf("[DEBUG] Evaluating default solution.\n");
 }
 
 void ProblemFJSSP::updateBestMaxWorkloadSolution(FJSSPdata& data) {
