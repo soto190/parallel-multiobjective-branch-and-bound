@@ -64,7 +64,7 @@ public:
     int getFinalLevel();
     
     int getDecodeMap(int map, int position);
-    int getCodeMap(int value1, int value2);
+    int getEncode(int value1, int value2);
     int getTimesValueIsRepeated(int value);
     
     int * getElemensToRepeat();

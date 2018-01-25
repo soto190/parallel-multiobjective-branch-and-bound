@@ -171,7 +171,6 @@ private:
     void setPriorityTo(Interval & interval) const;
     
     int getLimitLevelToShare() const;
-    void computeLastBranch(Interval & branch);
     
     int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);
     int intializeIVM_data(Interval& branch, IVMTree & tree);

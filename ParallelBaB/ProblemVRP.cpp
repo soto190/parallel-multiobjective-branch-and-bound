@@ -28,13 +28,13 @@ int ProblemVRP::getFinalLevel(){return 0;}
 int ProblemVRP::getTotalElements(){return 0;}
 int * ProblemVRP::getElemensToRepeat(){return nullptr;}
 int ProblemVRP::getDecodeMap(int map, int position){ return 0;}
-int ProblemVRP::getCodeMap(int value1, int value2){return 0;}
+int ProblemVRP::getEncode(int value1, int value2){return 0;}
 int ProblemVRP::getTimesValueIsRepeated(int value){return 0;}
 void ProblemVRP::createDefaultSolution(Solution& solution){}
 void ProblemVRP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){}
 void ProblemVRP::printInstance(){ printf("Hello from Problem VRP!\n");}
 void ProblemVRP::printProblemInfo()const{}
 void ProblemVRP::loadInstance(char filePath[2][255], char file_extension[4]){}
-void ProblemVRP::printSolution(const Solution & solution) const{ printPartialSolution(solution, this->totalVariables);}
+void ProblemVRP::printSolution(const Solution & solution) const{ printPartialSolution(solution, this->n_variables);}
 void ProblemVRP::printPartialSolution(const Solution & solution, int level) const{}
 void ProblemVRP::printSolutionInfo(const Solution & solution) const{ printf("TODO: Implement this function.\n"); }

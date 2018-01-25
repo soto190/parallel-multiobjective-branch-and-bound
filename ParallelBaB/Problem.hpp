@@ -23,18 +23,18 @@ public:
     
     Problem();
     Problem(const Problem& toCopy);
-    Problem (int totalObjectives, int totalVariables);
+    Problem (int number_of_objectives, int number_of_variables);
     virtual ~Problem();
     virtual Problem& operator=(const Problem& toCopy);
     
     char name[255];
     ProblemType type;
-    int startingLevel;
-    int totalObjectives;
-    int totalVariables;
-    int totalConstraints;
-    int * lowerBound;
-    int * upperBound;
+    int starting_level;
+    int n_objectives;
+    int n_variables;
+    int n_constraints;
+    int * lower_bound;
+    int * upper_bound;
     
     virtual double evaluate(Solution & solution) = 0;
     virtual double evaluatePartial(Solution & solution, int levelEvaluation) = 0;
@@ -62,12 +62,12 @@ public:
     virtual int getTotalElements() = 0;
     virtual int * getElemensToRepeat() = 0;
     virtual int getDecodeMap(int map, int position) = 0;
-    virtual int getCodeMap(int value1, int value2);
+    virtual int getEncode(int value1, int value2);
     virtual int getTimesValueIsRepeated(int value);
     
     virtual int getLowerBound(int index) const = 0;
     virtual int getUpperBound(int index) const = 0;
-    
+
     virtual int getLowerBoundInObj(int nObj) const = 0;
     
     virtual void printSolution(const Solution & solution) const;
@@ -78,4 +78,3 @@ public:
     virtual void printProblemInfo() const;
 };
 #endif /* Problem_hpp */
-

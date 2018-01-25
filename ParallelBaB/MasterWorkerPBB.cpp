@@ -757,7 +757,7 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
     for (int job = 0; job < num_elements; ++job)
         if (fjssp_data.getNumberOfOperationsAllocatedFromJob(job) < problem.getTimesValueIsRepeated(job))
             for (int machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
-                value_to_add = problem.getCodeMap(job, machine);
+                value_to_add = problem.getEncode(job, machine);
                 solution.setVariable(split_level, value_to_add);
                 problem.evaluateDynamic(solution, fjssp_data, split_level);
                 branches_explored++;

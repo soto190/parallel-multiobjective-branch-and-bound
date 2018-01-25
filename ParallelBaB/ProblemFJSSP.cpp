@@ -36,8 +36,8 @@ Problem() {
     job_operation_has_number = nullptr;
     processing_time = nullptr;
     
-    lowerBound = nullptr;
-    upperBound = nullptr;
+    lower_bound = nullptr;
+    upper_bound = nullptr;
     
     earliest_starting_time = nullptr; /** Length equals to number of operations. **/
     earliest_ending_time = nullptr; /** Length equals to number of operations. **/
@@ -90,8 +90,8 @@ Problem(totalObjectives, totalVariables) {
     job_operation_has_number = nullptr;
     processing_time = nullptr;
     
-    lowerBound = nullptr;
-    upperBound = nullptr;
+    lower_bound = nullptr;
+    upper_bound = nullptr;
     
     earliest_starting_time = nullptr; /** Length equals to number of operations. **/
     earliest_ending_time = nullptr; /** Length equals to number of operations. **/
@@ -109,8 +109,8 @@ best_max_workload_found(toCopy.getBestWorkloadFound()),
 best_makespan_found(toCopy.getBestMakespanFound()),
 goodSolutionWithMaxWorkload(toCopy.goodSolutionWithMaxWorkload) {
     
-    lowerBound = new int[totalVariables];
-    upperBound = new int[totalVariables];
+    lower_bound = new int[n_variables];
+    upper_bound = new int[n_variables];
     
     avg_op_per_machine = toCopy.getAvgOperationPerMachine();
     min_sum_shortest_proc_times = toCopy.getMinSumShortestProcTime();
@@ -166,8 +166,8 @@ goodSolutionWithMaxWorkload(toCopy.goodSolutionWithMaxWorkload) {
     }
     
     for (operation = 0; operation < n_operations; ++operation) {
-        lowerBound[operation] = toCopy.getLowerBound(operation);
-        upperBound[operation] = toCopy.getUpperBound(operation);
+        lower_bound[operation] = toCopy.getLowerBound(operation);
+        upper_bound[operation] = toCopy.getUpperBound(operation);
         earliest_starting_time[operation] = toCopy.getEarliestStartingTime(operation);
         earliest_ending_time[operation] = toCopy.getEarliestEndingTime(operation);
         
@@ -193,8 +193,8 @@ goodSolutionWithMaxWorkload(toCopy.goodSolutionWithMaxWorkload) {
 
 ProblemFJSSP::ProblemFJSSP(const Payload_problem_fjssp& problem) :
 Problem(problem.n_objectives, problem.n_operations) {
-    totalObjectives = problem.n_objectives;
-    totalVariables = problem.n_operations;
+    n_objectives = problem.n_objectives;
+    n_variables = problem.n_operations;
     n_jobs = problem.n_jobs;
     n_machines = problem.n_machines;
     n_operations = problem.n_operations;
@@ -334,8 +334,8 @@ Problem(problem.n_objectives, problem.n_operations) {
 }
 
 void ProblemFJSSP::loadInstancePayload(const Payload_problem_fjssp& problem) {
-    totalObjectives = problem.n_objectives;
-    totalVariables = problem.n_operations;
+    n_objectives = problem.n_objectives;
+    n_variables = problem.n_operations;
     n_jobs = problem.n_jobs;
     n_machines = problem.n_machines;
     n_operations = problem.n_operations;
@@ -343,8 +343,8 @@ void ProblemFJSSP::loadInstancePayload(const Payload_problem_fjssp& problem) {
     sum_of_min_Pij = 0;
     best_max_workload_found = INT_MAX;
     
-    upperBound = new int[n_operations];
-    lowerBound = new int[n_operations];
+    upper_bound = new int[n_operations];
+    lower_bound = new int[n_operations];
     
     n_operations_in_job = new int[n_jobs];
     release_time = new int[n_jobs];
@@ -381,8 +381,8 @@ void ProblemFJSSP::loadInstancePayload(const Payload_problem_fjssp& problem) {
         processing_time[n_op] = new int[n_machines];
         for (int n_mach = 0; n_mach < n_machines; ++n_mach)
             processing_time[n_op][n_mach] = problem.processing_times[n_op * problem.n_machines + n_mach];
-        lowerBound[n_op] = 0;
-        upperBound[n_op] = n_jobs * n_machines;
+        lower_bound[n_op] = 0;
+        upper_bound[n_op] = n_jobs * n_machines;
     }
     
     /** Creates the mapping. **/
@@ -485,9 +485,9 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy) {
     n_jobs = toCopy.getNumberOfJobs();
     n_operations = toCopy.getNumberOfOperations();
     n_machines = toCopy.getNumberOfMachines();
-    totalVariables = toCopy.getNumberOfVariables();
-    totalObjectives = toCopy.getNumberOfObjectives();
-    totalConstraints = toCopy.getNumberOfConstraints();
+    n_variables = toCopy.getNumberOfVariables();
+    n_objectives = toCopy.getNumberOfObjectives();
+    n_constraints = toCopy.getNumberOfConstraints();
     
     sum_M_smallest_est = toCopy.getSumOf_M_smallestEST();
     avg_op_per_machine = toCopy.getAvgOperationPerMachine();
@@ -522,8 +522,8 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy) {
         delete[] assignation_best_makespan;
         delete[] best_workloads;
         
-        delete[] upperBound;
-        delete[] lowerBound;
+        delete[] upper_bound;
+        delete[] lower_bound;
         
         delete[] earliest_starting_time;
         delete[] earliest_ending_time;
@@ -531,8 +531,8 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy) {
         delete[] sum_shortest_proc_times;
     }
     
-    lowerBound = new int[totalVariables];
-    upperBound = new int[totalVariables];
+    lower_bound = new int[n_variables];
+    upper_bound = new int[n_variables];
     
     std::strcpy(name, toCopy.name);
     
@@ -587,8 +587,8 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy) {
     processing_time = new int *[n_operations];
     
     for (operation = 0; operation < n_operations; ++operation) {
-        lowerBound[operation] = toCopy.getLowerBound(operation);
-        upperBound[operation] = toCopy.getUpperBound(operation);
+        lower_bound[operation] = toCopy.getLowerBound(operation);
+        upper_bound[operation] = toCopy.getUpperBound(operation);
         
         earliest_starting_time[operation] = toCopy.getEarliestStartingTime(operation);
         earliest_ending_time[operation] = toCopy.getEarliestEndingTime(operation);
@@ -641,8 +641,8 @@ ProblemFJSSP::~ProblemFJSSP() {
     delete[] assignation_best_makespan;
     delete[] best_workloads;
     
-    delete[] upperBound;
-    delete[] lowerBound;
+    delete[] upper_bound;
+    delete[] lower_bound;
     
     delete[] earliest_starting_time;
     delete[] earliest_ending_time;
@@ -786,107 +786,117 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
     return 0.0;
 }
 
-void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int level) {
-    
-    int makespan = 0;
-    int max_workload = 0;
-    int map = solution.getVariable(level);
-    int job = getDecodeMap(map, 0);
-    int machine = getDecodeMap(map, 1);
-    int numberOp = getOperationInJobIsNumber(job, data.getNumberOfOperationsAllocatedFromJob(job));
-    
-    /** With the operation number and the machine we can continue. **/
-    int proccessingTime = getProccessingTime(numberOp, machine);
-    data.decreaseToltalWorkload(getProccessingTime(numberOp, getAssignationMinPij(numberOp)));
-    
-    data.decreaseTempWorkloadIn(getAssignationBestWorkload(numberOp), getProccessingTime(numberOp, getAssignationBestWorkload(numberOp)));
-    data.increaseTempWorkloadIn(machine, proccessingTime);
-    data.setOperationAllocation(job, numberOp, machine, proccessingTime);
-    
-    if (data.getLastOperationAllocatedInJob(job) == 0) { /** If it is the first operation of the job.**/
-        if (data.getTimeOnMachine(machine) >= getReleaseTimeOfJob(job)) {
-            
-            data.setStartingTime(numberOp, data.getTimeOnMachine(machine));
-            data.increaseTimeOnMachine(machine, proccessingTime);
-            data.setEndingTime(numberOp, data.getTimeOnMachine(machine));
-            
-        } else { /** If the job has to wait for the release time.**/
-            
-            data.setStartingTime(numberOp, getReleaseTimeOfJob(job));
-            data.setTimeOnMachine(machine, getReleaseTimeOfJob(job) + proccessingTime);
-            data.setEndingTime(numberOp, data.getTimeOnMachine(machine));
+void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int level) throw(ProblemFJSSPException) {
+    try {
+        
+        int makespan = 0;
+        int max_workload = 0;
+        int map = solution.getVariable(level);
+        int job = getDecodeMap(map, 0);
+        int machine = getDecodeMap(map, 1);
+        int numberOp = getOperationInJobIsNumber(job, data.getNumberOfOperationsAllocatedFromJob(job));
+        
+        /** With the operation number and the machine we can continue. **/
+        int proccessingTime = getProccessingTime(numberOp, machine);
+        data.decreaseToltalWorkload(getProccessingTime(numberOp, getAssignationMinPij(numberOp)));
+        
+        data.decreaseTempWorkloadIn(getAssignationBestWorkload(numberOp), getProccessingTime(numberOp, getAssignationBestWorkload(numberOp)));
+        data.increaseTempWorkloadIn(machine, proccessingTime);
+        data.setOperationAllocation(job, numberOp, machine, proccessingTime);
+        
+        if (data.getLastOperationAllocatedInJob(job) == 0) { /** If it is the first operation of the job.**/
+            if (data.getTimeOnMachine(machine) >= getReleaseTimeOfJob(job)) {
+                
+                data.setStartingTime(numberOp, data.getTimeOnMachine(machine));
+                data.increaseTimeOnMachine(machine, proccessingTime);
+                data.setEndingTime(numberOp, data.getTimeOnMachine(machine));
+                
+            } else { /** If the job has to wait for the release time.**/
+                
+                data.setStartingTime(numberOp, getReleaseTimeOfJob(job));
+                data.setTimeOnMachine(machine, getReleaseTimeOfJob(job) + proccessingTime);
+                data.setEndingTime(numberOp, data.getTimeOnMachine(machine));
+            }
+        } else {
+            if (data.getEndingTime(numberOp - 1) > data.getTimeOnMachine(machine)) {
+                
+                data.setStartingTime(numberOp, data.getEndingTime(numberOp - 1));
+                data.setTimeOnMachine(machine, data.getEndingTime(numberOp - 1) + proccessingTime);
+                data.setEndingTime(numberOp, data.getTimeOnMachine(machine));
+                
+            } else { /**The operation starts when the machine is avaliable.**/
+                
+                data.setStartingTime(numberOp, data.getTimeOnMachine(machine));
+                data.increaseTimeOnMachine(machine, proccessingTime);
+                data.setEndingTime(numberOp, data.getTimeOnMachine(machine));
+            }
         }
-    } else {
-        if (data.getEndingTime(numberOp - 1) > data.getTimeOnMachine(machine)) {
+        
+        for (machine = 0; machine < getNumberOfMachines(); ++machine) {
             
-            data.setStartingTime(numberOp, data.getEndingTime(numberOp - 1));
-            data.setTimeOnMachine(machine, data.getEndingTime(numberOp - 1) + proccessingTime);
-            data.setEndingTime(numberOp, data.getTimeOnMachine(machine));
+            if (data.getTimeOnMachine(machine) > makespan)
+                makespan = data.getTimeOnMachine(machine);
             
-        } else { /**The operation starts when the machine is avaliable.**/
+            if (data.getWorkloadOnMachine(machine) > max_workload)
+                max_workload = data.getWorkloadOnMachine(machine);
             
-            data.setStartingTime(numberOp, data.getTimeOnMachine(machine));
-            data.increaseTimeOnMachine(machine, proccessingTime);
-            data.setEndingTime(numberOp, data.getTimeOnMachine(machine));
+            //        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
+            //            max_workload = data.getTempBestWorkloadInMachine(machine);
         }
+        
+        data.setMakespan(makespan);
+        data.setMaxWorkload(max_workload);
+        //data.setTotalWorkload is computed internally when the operation is allocated.
+        solution.setObjective(MAKESPAN, makespan);
+        solution.setObjective(MAX_WORKLOAD, max_workload);
+        solution.setObjective(TOTAL_WORKLOAD, data.getTotalWorkload());
+        
+    } catch (ProblemFJSSPException& problem_ex) {
+        printf("%s\n", problem_ex.what());
     }
-    
-    for (machine = 0; machine < getNumberOfMachines(); ++machine) {
-        
-        if (data.getTimeOnMachine(machine) > makespan)
-            makespan = data.getTimeOnMachine(machine);
-        
-        if (data.getWorkloadOnMachine(machine) > max_workload)
-            max_workload = data.getWorkloadOnMachine(machine);
-        
-        //        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
-        //            max_workload = data.getTempBestWorkloadInMachine(machine);
-    }
-    
-    data.setMakespan(makespan);
-    data.setMaxWorkload(max_workload);
-    //data.setTotalWorkload is computed internally when the operation is allocated.
-    solution.setObjective(MAKESPAN, makespan);
-    solution.setObjective(MAX_WORKLOAD, max_workload);
-    solution.setObjective(TOTAL_WORKLOAD, data.getTotalWorkload());
 }
 
-void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, int level) {
-    int makespan = 0;
-    int max_workload = 0;
-    
-    int map = solution.getVariable(level);
-    int job = getDecodeMap(map, 0);
-    int machine = getDecodeMap(map, 1);
-    int numberOp = getOperationInJobIsNumber(job, data.getLastOperationAllocatedInJob(job));
-    
-    /** With the operation number and the machine we can continue. **/
-    data.increaseToltalWorkload(getProccessingTime(numberOp, getAssignationMinPij(numberOp))); /** Using the best total_workload. **/
-    
-    data.increaseTempWorkloadIn(getAssignationBestWorkload(numberOp), getProccessingTime(numberOp, getAssignationBestWorkload(numberOp)));
-    data.decreaseTempWorkloadIn(machine, getProccessingTime(numberOp, machine));
-    
-    data.deallocateOperation(job, numberOp);
-    
-    for (machine = 0; machine < getNumberOfMachines(); ++machine) {
+void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, int level) throw(ProblemFJSSPException){
+    try {
         
-        if (data.getTimeOnMachine(machine) > makespan)
-            makespan = data.getTimeOnMachine(machine);
+        int makespan = 0;
+        int max_workload = 0;
+        int map = solution.getVariable(level);
+        int job = getDecodeMap(map, 0);
+        int machine = getDecodeMap(map, 1);
+        int numberOp = getOperationInJobIsNumber(job, data.getLastOperationAllocatedInJob(job));
         
-        if (data.getWorkloadOnMachine(machine) > max_workload)
-            max_workload = data.getWorkloadOnMachine(machine);
+        /** With the operation number and the machine we can continue. **/
+        data.increaseToltalWorkload(getProccessingTime(numberOp, getAssignationMinPij(numberOp))); /** Using the best total_workload. **/
         
-        //        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
-        //            max_workload = data.getTempBestWorkloadInMachine(machine);
+        data.increaseTempWorkloadIn(getAssignationBestWorkload(numberOp), getProccessingTime(numberOp, getAssignationBestWorkload(numberOp)));
+        data.decreaseTempWorkloadIn(machine, getProccessingTime(numberOp, machine));
+        
+        data.deallocateOperation(job, numberOp);
+        
+        for (machine = 0; machine < getNumberOfMachines(); ++machine) {
+            
+            if (data.getTimeOnMachine(machine) > makespan)
+                makespan = data.getTimeOnMachine(machine);
+            
+            if (data.getWorkloadOnMachine(machine) > max_workload)
+                max_workload = data.getWorkloadOnMachine(machine);
+            
+            //        if(data.getTempBestWorkloadInMachine(machine) > max_workload)
+            //            max_workload = data.getTempBestWorkloadInMachine(machine);
+        }
+        
+        data.setMakespan(makespan);
+        data.setMaxWorkload(max_workload);
+        
+        solution.setVariable(level, -1);
+        solution.setObjective(MAKESPAN, makespan);
+        solution.setObjective(MAX_WORKLOAD, max_workload);
+        solution.setObjective(TOTAL_WORKLOAD, data.getTotalWorkload());
+        
+    } catch (ProblemFJSSPException& problem_ex) {
+        printf("%s\n", problem_ex.what());
     }
-    
-    data.setMakespan(makespan);
-    data.setMaxWorkload(max_workload);
-    
-    solution.setVariable(level, -1);
-    solution.setObjective(MAKESPAN, makespan);
-    solution.setObjective(MAX_WORKLOAD, max_workload);
-    solution.setObjective(TOTAL_WORKLOAD, data.getTotalWorkload());
 }
 
 double ProblemFJSSP::evaluateLastLevel(Solution * solution) {
@@ -916,7 +926,7 @@ void ProblemFJSSP::createDefaultSolution(Solution & solution) {
                 if (machine++ == n_machines - 1)
                     machine = 0;
             
-            map = getCodeMap(job, machine);
+            map = getEncode(job, machine);
             solution.setVariable(operations_counter, map);
             
             evaluateDynamic(solution, fjsspd, operations_counter);
@@ -986,7 +996,7 @@ void ProblemFJSSP::getSolutionWithLowerBoundInObj(int n_obj, Solution& solution)
         solution = goodSolutionWithMaxWorkload;
     else if (n_obj == TOTAL_WORKLOAD) {
         for (int operation = 0; operation < getNumberOfOperations(); ++operation)
-            solution.setVariable(operation, getCodeMap(getOperationIsFromJob(operation), getAssignationMinPij(operation)));
+            solution.setVariable(operation, getEncode(getOperationIsFromJob(operation), getAssignationMinPij(operation)));
     }
     evaluate(solution);
 }
@@ -1364,7 +1374,7 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
                     min_sum_shortest_proc_times = sum_shortest_proc_times[machine];
             }
             
-            totalVariables = n_operations;
+            n_variables = n_operations;
             
             int operationCounter = 0;
             for (int job = 0; job < n_jobs; ++job) {
@@ -1561,7 +1571,7 @@ void ProblemFJSSP::loadInstanceTXT(char filePath[2][255], char file_extension[10
                     min_sum_shortest_proc_times = sum_shortest_proc_times[machine];
             }
             
-            totalVariables = n_operations;
+            n_variables = n_operations;
             
             int operationCounter = 0;
             for (int job = 0; job < n_jobs; ++job) {
@@ -1612,13 +1622,40 @@ int * ProblemFJSSP::getElemensToRepeat() {
 }
 
 /** If position = 0 returns the job, if position = 1 returns the machine. (Decodes the map in job or machine). **/
-int ProblemFJSSP::getDecodeMap(int map, int position) {
-    return map_to_job_machine[map][position];
+int ProblemFJSSP::getDecodeMap(int map, int position) throw(ProblemFJSSPException) {
+    try {
+        if (map >= n_jobs * n_machines)
+            throw ProblemFJSSPException(P_OPERATION_OUT_OF_RANGE, "error occurred when calling getDecodeMap");
+        
+        if (position >= 2)
+            throw ProblemFJSSPException(P_OPERATION_OUT_OF_RANGE, "error occurred when calling getDecodeMap the code only contains two positions [0, 1]");
+        
+         return map_to_job_machine[map][position];
+        
+    } catch (ProblemFJSSPException& problem_ex) {
+        printf("%s\n",  problem_ex.what());
+    }
+    
+    return -1;
 }
 
 /** Returns the map corresponding to the configuration of job and machine. (Codes the job and machine in a map). **/
-int ProblemFJSSP::getCodeMap(int job, int machine) {
-    return job_machine_to_map[job][machine];
+int ProblemFJSSP::getEncode(int job, int machine) throw(ProblemFJSSPException) {
+    try {
+        
+        if (job >= getNumberOfJobs())
+            throw ProblemFJSSPException(P_JOB_OUT_OF_RANGE, "when calling getEncode()");
+        
+        if (machine >= getNumberOfMachines())
+            throw ProblemFJSSPException(P_MACHINE_OUT_OF_RANGE, "when calling getEncode()");
+
+        return job_machine_to_map[job][machine];
+        
+    } catch (ProblemFJSSPException& problem_ex) {
+        printf("%s\n",  problem_ex.what());
+    }
+    
+    return -1;
 }
 
 int ProblemFJSSP::getTimesValueIsRepeated(int value) {
@@ -1974,8 +2011,8 @@ void ProblemFJSSP::printPartialSolution(const Solution & solution, int level) co
 /** This function return the number of variables which are out of range from varible values.**/
 int ProblemFJSSP::validateVariablesOf(const Solution& solution) const {
     int number_of_invalid_variables = 0;
-    for (int variable = 0; variable < totalVariables; ++variable)
-        if (solution.getVariable(variable) < lowerBound[variable] || solution.getVariable(variable) > upperBound[variable])
+    for (int variable = 0; variable < n_variables; ++variable)
+        if (solution.getVariable(variable) < lower_bound[variable] || solution.getVariable(variable) > upper_bound[variable])
             number_of_invalid_variables++;
     return number_of_invalid_variables;
 }

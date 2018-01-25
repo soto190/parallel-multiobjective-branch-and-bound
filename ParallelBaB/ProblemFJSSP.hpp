@@ -16,6 +16,7 @@
 #include <string>
 #include <math.h>
 #include <regex>
+#include "ProblemFJSSPException.hpp"
 #include "FJSSPdata.hpp"
 #include "Problem.hpp"
 #include "myutils.hpp"
@@ -116,8 +117,8 @@ public:
     double evaluateLastLevel(Solution * solution);
     double removeLastEvaluation(Solution * solution, int levelEvaluation, int lastLevel);
     double removeLastLevelEvaluation(Solution * solution, int newLevel);
-    void evaluateDynamic(Solution & solution, FJSSPdata& data, int level);
-    void evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, int level);
+    void evaluateDynamic(Solution & solution, FJSSPdata& data, int level) throw(ProblemFJSSPException);
+    void evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, int level) throw(ProblemFJSSPException);
     void createDefaultSolution(Solution & solution);
     void getSolutionWithLowerBoundInObj(int nObj, Solution& solution);
     int getLowerBound(int indexVar) const;
@@ -127,8 +128,8 @@ public:
     int getFinalLevel();
     int * getElemensToRepeat();
     int getTotalElements();
-    int getDecodeMap(int map, int position);
-    int getCodeMap(int job, int machine);
+    int getDecodeMap(int map, int position) throw(ProblemFJSSPException);
+    int getEncode(int job, int machine) throw(ProblemFJSSPException);
     int getTimesValueIsRepeated(int value);
     
     void updateBestMaxWorkloadSolution(FJSSPdata& data);

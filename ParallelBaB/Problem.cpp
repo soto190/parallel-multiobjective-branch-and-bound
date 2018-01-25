@@ -9,42 +9,42 @@
 #include "Problem.hpp"
 
 Problem::Problem() {
-    totalObjectives = 0;
-    totalVariables = 0;
-    totalConstraints = 0;
-    startingLevel = 0;
-    lowerBound = nullptr;
-    upperBound = nullptr;
+    n_objectives = 0;
+    n_variables = 0;
+    n_constraints = 0;
+    starting_level = 0;
+    lower_bound = nullptr;
+    upper_bound = nullptr;
     type = ProblemType::combination;
 }
 
 Problem::Problem(const Problem& toCopy) :
 type(toCopy.getType()),
-startingLevel(toCopy.getStartingRow()),
-totalObjectives(toCopy.getNumberOfObjectives()),
-totalVariables(toCopy.getNumberOfVariables()),
-totalConstraints(toCopy.getNumberOfConstraints()) {
+starting_level(toCopy.getStartingRow()),
+n_objectives(toCopy.getNumberOfObjectives()),
+n_variables(toCopy.getNumberOfVariables()),
+n_constraints(toCopy.getNumberOfConstraints()) {
     
     std::strcpy(name, toCopy.name);
-    lowerBound = new int[toCopy.getNumberOfVariables()];
-    upperBound = new int[toCopy.getNumberOfVariables()];
+    lower_bound = new int[toCopy.getNumberOfVariables()];
+    upper_bound = new int[toCopy.getNumberOfVariables()];
     
     int index = 0;
-    for (index = 0; index < totalVariables; index++) {
-        lowerBound[index] = toCopy.getLowerBound(index);
-        upperBound[index] = toCopy.getUpperBound(index);
+    for (index = 0; index < n_variables; index++) {
+        lower_bound[index] = toCopy.getLowerBound(index);
+        upper_bound[index] = toCopy.getUpperBound(index);
     }
 }
 
 Problem::Problem(int numberOfObjectives, int numberOfVariables) :
 type(ProblemType::XD),
-startingLevel(0),
-totalObjectives(numberOfObjectives),
-totalVariables(numberOfVariables),
-totalConstraints(0) {
+starting_level(0),
+n_objectives(numberOfObjectives),
+n_variables(numberOfVariables),
+n_constraints(0) {
     
-    lowerBound = new int[numberOfVariables];
-    upperBound = new int[numberOfVariables];
+    lower_bound = new int[numberOfVariables];
+    upper_bound = new int[numberOfVariables];
 }
 
 Problem::~Problem() {
@@ -60,15 +60,15 @@ Problem& Problem::operator=(const Problem &toCopy) {
     if (this == &toCopy)
         return *this;
     
-    totalObjectives = toCopy.getNumberOfObjectives();
-    totalVariables = toCopy.getNumberOfVariables();
+    n_objectives = toCopy.getNumberOfObjectives();
+    n_variables = toCopy.getNumberOfVariables();
     type = toCopy.getType();
-    startingLevel = toCopy.getStartingRow();
-    totalConstraints = toCopy.getNumberOfConstraints();
+    starting_level = toCopy.getStartingRow();
+    n_constraints = toCopy.getNumberOfConstraints();
     
-    if (lowerBound != nullptr) {
-        delete[] lowerBound;
-        delete[] upperBound;
+    if (lower_bound != nullptr) {
+        delete[] lower_bound;
+        delete[] upper_bound;
     }
     
     std::strcpy(name, toCopy.name);
@@ -90,7 +90,7 @@ void Problem::setName(const char* new_name) {
 }
 
 void Problem::setNumberOfVariables(int numberOfVariables) {
-    totalVariables = numberOfVariables;
+    n_variables = numberOfVariables;
 }
 
 char * Problem::getName() {
@@ -102,19 +102,19 @@ int * Problem::getElemensToRepeat() {
 }
 
 int Problem::getNumberOfObjectives() const {
-    return totalObjectives;
+    return n_objectives;
 }
 
 int Problem::getNumberOfVariables() const {
-    return totalVariables;
+    return n_variables;
 }
 
 int Problem::getNumberOfConstraints() const {
-    return totalConstraints;
+    return n_constraints;
 }
 
 int Problem::getStartingRow() const {
-    return startingLevel;
+    return starting_level;
 }
 
 int Problem::getLowerBound(int index) const {
@@ -137,7 +137,7 @@ int Problem::getDecodeMap(int map, int position) {
     return 0;
 }
 
-int Problem::getCodeMap(int value1, int value2) {
+int Problem::getEncode(int value1, int value2) {
     return 0;
 }
 

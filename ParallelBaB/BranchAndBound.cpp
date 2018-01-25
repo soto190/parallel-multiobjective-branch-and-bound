@@ -209,7 +209,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
         if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesValueIsRepeated(element))
             for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
                 
-                toAdd = problem.getCodeMap(element, machine);
+                toAdd = problem.getEncode(element, machine);
                 incumbent_s.setVariable(split_level, toAdd);
                 problem.evaluateDynamic(incumbent_s, fjssp_data, split_level);
                 increaseExploredNodes();
@@ -418,7 +418,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             for (element = 0; element < problem.getTotalElements(); ++element)
                 if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesValueIsRepeated(element))
                     for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
-                        toAdd = problem.getCodeMap(element, machine);
+                        toAdd = problem.getEncode(element, machine);
                         
                         solution.setVariable(currentLevel + 1, toAdd);
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
@@ -578,54 +578,6 @@ int BranchAndBound::updateParetoGrid(const Solution & solution) {
  */
 int BranchAndBound::improvesTheGrid(const Solution & solution) const {
     return paretoContainer.isImprovingTheGrid(solution);
-}
-
-/**
- *
- * TODO: method not used, delete later.
- *
- * The branch must contains all the nodes before the indicated level.
- *
- **/
-void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
-    /** This is only for the FJSSP. **/
-    int level = branch_to_compute.getBuildUpTo();
-    int totalLevels = branch_to_compute.getBuildUpTo() + 1;
-    int job = 0;
-    int isIn = 0;
-    int varInPos = 0;
-    int * numberOfRepetitionsAllowed = problem.getElemensToRepeat();
-    int timesRepeated[problem.getTotalElements()];
-    int map = 0;
-    int jobToCheck = 0;
-    int jobAllocated = 0;
-    
-    if (level == -1) {
-        branch_to_compute.setValueAt(0, problem.getUpperBound(0));
-    } else
-    /** For each level search the job to allocate.**/
-        for (job = problem.getTotalElements() - 1; job >= 0; --job) {
-            isIn = 0;
-            jobToCheck = job;
-            timesRepeated[jobToCheck] = 0;
-            
-            for (varInPos = 0; varInPos < totalLevels; ++varInPos) {
-                map = branch_to_compute.getValueAt(varInPos);// branch.interval[varInPos];
-                jobAllocated = problem.getDecodeMap(map, 0);
-                if (jobToCheck == jobAllocated) {
-                    timesRepeated[jobToCheck]++;
-                    if (timesRepeated[jobToCheck] == numberOfRepetitionsAllowed[jobToCheck]) {
-                        isIn = 1;
-                        varInPos = totalLevels + 1;
-                    }
-                }
-            }
-            
-            if (isIn == 0) {
-                branch_to_compute.setValueAt(totalLevels, problem.getCodeMap(jobToCheck, problem.getTimesValueIsRepeated(0) - 1));
-                job = 0; /** To end loop. **/
-            }
-        }
 }
 
 unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) const {
