@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2103293E2013E3F8008C5679 /* FJSSPdata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2103293C2013E3F8008C5679 /* FJSSPdata.cpp */; };
+		210751DF2019AB1D005F1A1D /* SolutionException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 218182AC2016777800AE127B /* SolutionException.cpp */; };
 		2112825A1D639AB30038DBEE /* BranchAndBound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2112824A1D639AB30038DBEE /* BranchAndBound.cpp */; };
 		2112825B1D639AB30038DBEE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2112824C1D639AB30038DBEE /* main.cpp */; };
 		2112825D1D639AB30038DBEE /* myutils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2112824E1D639AB30038DBEE /* myutils.cpp */; };
@@ -37,7 +38,6 @@
 		21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */; };
 		217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */; };
 		217D170F1F744B33004CECD8 /* MasterWorkerPBB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217D170D1F744B33004CECD8 /* MasterWorkerPBB.cpp */; };
-		218182AE2016777800AE127B /* SolutionException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 218182AC2016777800AE127B /* SolutionException.cpp */; };
 		218B0DB91E2D769F000B52F4 /* IVMTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 218B0DB71E2D769F000B52F4 /* IVMTree.cpp */; };
 		21E8EF8C1E48BD0800A716C6 /* ParallelBranchAndBound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21E8EF8A1E48BD0800A716C6 /* ParallelBranchAndBound.cpp */; };
 /* End PBXBuildFile section */
@@ -293,6 +293,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				210751DF2019AB1D005F1A1D /* SolutionException.cpp in Sources */,
 				2103293E2013E3F8008C5679 /* FJSSPdata.cpp in Sources */,
 				21774E401FD85A11007FF333 /* IVMTreeException.cpp in Sources */,
 				214C92DF200FC65C00B55E58 /* SortedVector.cpp in Sources */,
