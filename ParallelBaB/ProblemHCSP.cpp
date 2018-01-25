@@ -132,7 +132,7 @@ ProblemHCSP& ProblemHCSP::operator=(const ProblemHCSP &toCopy){
 
 ProblemType ProblemHCSP::getType() const{ return ProblemType::combination;}
 int ProblemHCSP::getStartingRow(){ return 0; }
-int ProblemHCSP::getFinalLevel(){ return this->totalVariables - 1;}
+int ProblemHCSP::getFinalLevel(){ return this->n_variables - 1;}
 int ProblemHCSP::getLowerBound(int indexVar) const{ return 0;}
 int ProblemHCSP::getUpperBound(int indexVar) const{ return this->totalMappings - 1; }
 int ProblemHCSP::getLowerBoundInObj(int nObj) const{ return INT_MAX; }
@@ -382,7 +382,7 @@ void ProblemHCSP::loadInstance(char filePath[2][255], char file_extension[4]){
     this->totalTasks = std::stoi(elemens.at(sizeElemens - 2));
     this->totalMachines = std::stoi(elemens.at(sizeElemens - 3));
     
-    this->totalVariables = this->totalTasks;
+    this->n_variables = this->totalTasks;
     
     std::getline(infile, line);
     std::getline(infile, line);
@@ -500,7 +500,7 @@ void ProblemHCSP::readMachinesConfigurations(char filePath[255]){
 }
 
 void ProblemHCSP::printSolution(const Solution & solution) const{
-    printPartialSolution(solution, this->totalVariables);
+    printPartialSolution(solution, this->n_variables);
 }
 
 void ProblemHCSP::printSolutionInfo(const Solution & solution) const{

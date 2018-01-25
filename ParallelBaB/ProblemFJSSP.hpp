@@ -75,21 +75,21 @@ private:
     int n_jobs;
     int n_operations;
     int n_machines;
-    int sumOfMinPij;
-    int bestWorkloadFound;
-    int bestMakespanFound;
-    int * assignationMinPij;       /** Length equals to numberOfOperations. **/
-    int * assignationBestWorkload; /** Length equals to numberOfOperations. **/
-    int * assignationBestMakespan; /** Lenght equals to numberOfOperations. **/
-    int * bestWorkloads;           /** Length equals to number of machines. **/
-    int * minWorkload;             /** Length equals to number of machines. **/
+    int sum_of_min_Pij;
+    int best_workload_found;
+    int best_makespan_found;
+    int * assignation_min_Pij;       /** Length equals to numberOfOperations. **/
+    int * assignation_best_max_workload; /** Length equals to numberOfOperations. **/
+    int * assignation_best_makespan; /** Lenght equals to numberOfOperations. **/
+    int * best_workloads;           /** Length equals to number of machines. **/
+    int * min_workloads;             /** Length equals to number of machines. **/
     int * n_operations_in_job;     /** Length equals to number of Jobs. **/
-    int * releaseTime;             /** Length equals to number of Jobs. **/
-    int * operationIsFromJob;      /** Length equals to numberOfOperations. **/
-    int ** processingTime;         /** Length equals to numberOfOperations x numberOfMachines. **/
-    int ** mapToJobMachine;        /** Length equals to numberOfMaps x 2. Positio 0 is the job, position 1 is the machine.**/
-    int ** jobMachineToMap;        /** Length equals to numberOfJobs x numberOfMachines. **/
-    int ** jobOperationHasNumber;  /** Length equals to job x numberOfOperationsInJob. **/
+    int * release_time;             /** Length equals to number of Jobs. **/
+    int * operation_belongs_to_job;      /** Length equals to numberOfOperations. **/
+    int ** processing_time;         /** Length equals to numberOfOperations x numberOfMachines. **/
+    int ** decode_map_to_job_machine;        /** Length equals to numberOfMaps x 2. Positio 0 is the job, position 1 is the machine.**/
+    int ** encode_job_machine_to_map;        /** Length equals to numberOfJobs x numberOfMachines. **/
+    int ** job_operation_is_number;  /** Length equals to job x numberOfOperationsInJob. **/
     int * earliest_starting_time;  /** Length equals to number of operations. **/
     int * earliest_ending_time;    /** Length equals to number of operations. **/
     int * eet_of_job;              /** Length equals to number of jobs. **/
@@ -98,8 +98,8 @@ private:
     int min_sum_shortest_proc_times; /** D_{{k_0}, Ñ}. **/
     int max_eet_of_jobs;            /** Maximum earliest ending time of jobs. **/
     int sum_M_smallest_est;         /** R_MSum of the M smallest starting times (est). **/
-    int bestBound_maxWorkload;
-    int bestBound_makespan;
+    int best_bound_max_workload;
+    int best_bound_makespan;
     
 public:
     ProblemFJSSP();
