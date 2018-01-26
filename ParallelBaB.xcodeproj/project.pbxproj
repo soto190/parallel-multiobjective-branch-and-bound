@@ -24,6 +24,7 @@
 		21390E601F30CEB800C96853 /* libtbb.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 21390E5E1F30CEB800C96853 /* libtbb.dylib */; };
 		21390E611F30CEB800C96853 /* libtbbmalloc.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 21390E5F1F30CEB800C96853 /* libtbbmalloc.dylib */; };
 		2139FC982017BAF300CB70BE /* FJSSPdataException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2139FC962017BAF300CB70BE /* FJSSPdataException.cpp */; };
+		213FAF15201BA2CB0044890D /* MOSA.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 213FAF13201BA2CB0044890D /* MOSA.cpp */; };
 		214467621FD8C3B000364E2A /* ParetoBucket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214467601FD8C3B000364E2A /* ParetoBucket.cpp */; };
 		214467651FD8D74A00364E2A /* HandlerContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214467631FD8D74A00364E2A /* HandlerContainer.cpp */; };
 		214C92DF200FC65C00B55E58 /* SortedVector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214C92DD200FC65C00B55E58 /* SortedVector.cpp */; };
@@ -86,6 +87,8 @@
 		21390E5F1F30CEB800C96853 /* libtbbmalloc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libtbbmalloc.dylib; sourceTree = "<group>"; };
 		2139FC962017BAF300CB70BE /* FJSSPdataException.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = FJSSPdataException.cpp; sourceTree = "<group>"; };
 		2139FC972017BAF300CB70BE /* FJSSPdataException.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = FJSSPdataException.hpp; sourceTree = "<group>"; };
+		213FAF13201BA2CB0044890D /* MOSA.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MOSA.cpp; sourceTree = "<group>"; };
+		213FAF14201BA2CB0044890D /* MOSA.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = MOSA.hpp; sourceTree = "<group>"; };
 		214467601FD8C3B000364E2A /* ParetoBucket.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ParetoBucket.cpp; sourceTree = "<group>"; };
 		214467611FD8C3B000364E2A /* ParetoBucket.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ParetoBucket.hpp; sourceTree = "<group>"; };
 		214467631FD8D74A00364E2A /* HandlerContainer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = HandlerContainer.cpp; sourceTree = "<group>"; };
@@ -170,8 +173,6 @@
 				21E8EF8B1E48BD0800A716C6 /* ParallelBranchAndBound.hpp */,
 				2112824A1D639AB30038DBEE /* BranchAndBound.cpp */,
 				2112824B1D639AB30038DBEE /* BranchAndBound.hpp */,
-				214C92E32010349100B55E58 /* NSGA_II.cpp */,
-				214C92E42010349100B55E58 /* NSGA_II.hpp */,
 				21F4CBA51DAE97CC004A308F /* Dominance.cpp */,
 				21F4CBA61DAE97CC004A308F /* Dominance.hpp */,
 				214467601FD8C3B000364E2A /* ParetoBucket.cpp */,
@@ -212,6 +213,10 @@
 				211282591D639AB30038DBEE /* Solution.hpp */,
 				218182AC2016777800AE127B /* SolutionException.cpp */,
 				218182AD2016777800AE127B /* SolutionException.hpp */,
+				214C92E32010349100B55E58 /* NSGA_II.cpp */,
+				214C92E42010349100B55E58 /* NSGA_II.hpp */,
+				213FAF13201BA2CB0044890D /* MOSA.cpp */,
+				213FAF14201BA2CB0044890D /* MOSA.hpp */,
 				2112824C1D639AB30038DBEE /* main.cpp */,
 				212A26C71ED70C7B00648EC9 /* submit-uca.sh */,
 				216F69B01E5AE5FD00589E5D /* submit-multiple.sh */,
@@ -297,6 +302,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				210751DF2019AB1D005F1A1D /* SolutionException.cpp in Sources */,
+				213FAF15201BA2CB0044890D /* MOSA.cpp in Sources */,
 				2103293E2013E3F8008C5679 /* FJSSPdata.cpp in Sources */,
 				21774E401FD85A11007FF333 /* IVMTreeException.cpp in Sources */,
 				214C92DF200FC65C00B55E58 /* SortedVector.cpp in Sources */,
