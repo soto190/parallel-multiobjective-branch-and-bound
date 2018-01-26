@@ -13,7 +13,6 @@ NSGA_II::NSGA_II(const ProblemFJSSP& problem):problem(problem){
     evaluations_is_stop_criteria = 0;
     max_population = 10;
     population.reserve(10);
-    
 }
 
 NSGA_II::~NSGA_II(){
@@ -188,7 +187,7 @@ void NSGA_II::updateProgress(){
     increaseNumberOfGenerations();
 }
 
-void NSGA_II::execute(){
+void NSGA_II::solve(){
     while (!isStoppingCriteriaReached()) {
         selection();
         crossover();

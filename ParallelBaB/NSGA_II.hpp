@@ -23,7 +23,7 @@ public:
     NSGA_II(const ProblemFJSSP& problem);
     ~NSGA_II();
 
-    void execute();
+    void solve();
 
     void setSampleSolution(const Solution& solution);
     void setCrossoverRate(double rate);
@@ -31,7 +31,6 @@ public:
     void setMaxPopulationSize(unsigned long population_size);
     void setMaxNumberOfGenerations(unsigned long max_generations);
     void setMaxNumberOfEvaluations(unsigned long max_evaluations);
-    
     unsigned long getMaxPopulationSize() const;
 
 private:
@@ -50,8 +49,8 @@ private:
     std::default_random_engine generator;
     
     ProblemFJSSP problem;
-    vector<Solution> population;
     Solution sample_solution;
+    vector<Solution> population;
     
     void createInitialPopulation();
     void selection();
@@ -74,7 +73,5 @@ private:
     int isMaxNumberOfGenerationsReached() const;
     int isMaxNumberOfEvaluationsReached() const;
     void updateProgress();
-    
 };
-
 #endif /* NSGA_II_hpp */
