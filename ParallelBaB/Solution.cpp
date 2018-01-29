@@ -218,10 +218,10 @@ int Solution::getBuildUpTo() const {
     return build_up_to;
 }
 
-DominanceRelation Solution::dominates(const Solution & solution) const {
+DominanceRelation Solution::dominates(const Solution & ex_solution) const {
     int n_obj = 0;
-    int localSolIsBetterIn = 0;
-    int exterSolIsBetterIn = 0;
+    int local_is_better_in = 0;
+    int exter_is_better_in = 0;
     int equals = 1;
     double obj_A = 0;
     double obj_B = 0;
@@ -232,22 +232,22 @@ DominanceRelation Solution::dominates(const Solution & solution) const {
      **/
     for (n_obj = 0; n_obj < n_objectives; ++n_obj) {
         obj_A = getObjective(n_obj);
-        obj_B = solution.getObjective(n_obj);
+        obj_B = ex_solution.getObjective(n_obj);
         
         if (obj_A < obj_B) {
-            localSolIsBetterIn++;
+            local_is_better_in++;
             equals = 0;
         } else if (obj_B < obj_A) {
-            exterSolIsBetterIn++;
+            exter_is_better_in++;
             equals = 0;
         }
     }
     
     if (equals == 1)
         return DominanceRelation::Equals;
-    else if (localSolIsBetterIn > 0 && exterSolIsBetterIn == 0)
+    else if (local_is_better_in > 0 && exter_is_better_in == 0)
         return DominanceRelation::Dominates;
-    else if (exterSolIsBetterIn > 0 && localSolIsBetterIn == 0)
+    else if (exter_is_better_in > 0 && local_is_better_in == 0)
         return DominanceRelation::Dominated;
     else
         return DominanceRelation::Nondominated;

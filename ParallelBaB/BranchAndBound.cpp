@@ -426,8 +426,10 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         
                         distance_error_to_best[0] = distanceToObjective(fjssp_data.getMakespan(), best_values_found[0]);
                         distance_error_to_best[1] = distanceToObjective(fjssp_data.getMaxWorkload(), best_values_found[1]);
+                        distance_error_to_best[2] = distanceToObjective(fjssp_data.getTotalWorkload(), best_values_found[2]);
+
                         /** If distance in obj1 is better  or distance in ob2 is better then it can produce an improvement. **/
-                        if ((distance_error_to_best[0] <= 0 || distance_error_to_best[1] <= 0) && improvesTheGrid(solution)) {
+                        if ((distance_error_to_best[0] <= 0 || distance_error_to_best[1] <= 0 || distance_error_to_best[2] <= 0) && improvesTheGrid(solution)) {
                             
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
                             obj_values.setValue(toAdd);

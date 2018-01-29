@@ -216,9 +216,8 @@ void HandlerContainer::clearContainersDominatedBy(const int x, const int y, cons
 
 
 void HandlerContainer::updateMinValueFound(const Solution &solution){
-    int n_obj = solution.getNumberOfObjectives();
-    for (int objective = 0; objective < n_obj; ++objective)
-        if (solution.getObjective(objective) < min_value_found_in_obj[objective])
+    for (int objective = 0; objective < solution.getNumberOfObjectives(); ++objective)
+        if (solution.getObjective(objective) < getBestValueFoundIn(objective))
             min_value_found_in_obj[objective].fetch_and_store(solution.getObjective(objective));
 }
 

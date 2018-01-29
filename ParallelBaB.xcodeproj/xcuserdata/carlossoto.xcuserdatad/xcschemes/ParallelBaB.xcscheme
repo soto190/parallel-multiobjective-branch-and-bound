@@ -83,7 +83,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "2"
+            argument = "1"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -104,7 +104,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/workspace/Instances/FJSSP/set-BehnkeGeiger/6_Fattahi/Fattahi9.fjs"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/workspace/Instances/FJSSP/set-Kacem/Kacem0.fjs"
@@ -112,7 +112,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/workspace/Instances/FJSSP/set-Kacem/Kacem1.fjs"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/carlossoto/workspace/Instances/FJSSP/Kacem/Kacem-I00.txt"
