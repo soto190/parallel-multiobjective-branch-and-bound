@@ -13,9 +13,12 @@ rank(rank),
 number_of_bbs(n_threads),
 problem(problem),
 branch_init(problem.getNumberOfVariables()){
+    
 }
 
-ParallelBranchAndBound::~ParallelBranchAndBound(){}
+ParallelBranchAndBound::~ParallelBranchAndBound(){
+    
+}
 
 tbb::task * ParallelBranchAndBound::execute() {
     
@@ -35,7 +38,6 @@ tbb::task * ParallelBranchAndBound::execute() {
     vector<BranchAndBound *> bb_threads;
     int n_bb = 0;
     while (n_bb++ < number_of_bbs) {
-        
         BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb, problem, branch_init);
         BaB_task->setSummarizeFile(summarizeFile);
         bb_threads.push_back(BaB_task);

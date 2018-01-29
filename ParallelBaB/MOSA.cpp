@@ -28,10 +28,11 @@ void MOSA::solve(){
     initProgress();
     Solution current(sampleSolution);
     Solution candidate (sampleSolution);
+    float energy_diff = 0;
     while (!isStoppingCriteriaReached()) {
         while (isMetropolisCycleActive()) {
             candidate = perturbate(current);
-            float energy_diff = computeEnergy(current, candidate);
+            energy_diff = computeEnergy(current, candidate);
             if (energy_diff <= 0) {
                 current = candidate;
             }else if(acceptanceCriterion(energy_diff, getCurrentTemperature())){
@@ -118,7 +119,8 @@ void MOSA::increaseMetropolisIterations(){
 
 int MOSA::acceptanceCriterion(float energy, float temperature){
     std::uniform_real_distribution<double> unif_dis(0.0, 1.0);
- /** Boltzmann acceptance criterion. **/
+
+    /** Boltzmann acceptance criterion. **/
     if (exp( (-energy) / temperature) < unif_dis(generator))
         return 1;
     return 0;
@@ -129,11 +131,14 @@ void MOSA::coolingScheme(){
 }
 
 float MOSA::computeEnergy(const Solution &candidate, const Solution &current){
-    return 0.0;
+    float energy = 0.0;
+    for (int obj = 0; obj < candidate.getNumberOfObjectives(); ++obj)
+        energy += candidate.getObjective(obj) - current.getObjective(obj);
+    return energy;
 }
 
 void MOSA::update(){
-    
+    metropolis_iterations = 0;
 }
 
 const Solution MOSA::perturbate(const Solution& solution_input){
