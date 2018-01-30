@@ -375,10 +375,10 @@ int BranchAndBound::explore(Solution & solution) {
 int BranchAndBound::branch(Solution& solution, int currentLevel) {
     number_of_calls_to_branch++;
     int element = 0;
-    int isInPermut = 0;
+    int is_in_permut = 0;
     int row = 0;
-    int levelStarting= 0;
-    int toAdd = 0;
+    int starting_level= 0;
+    int code_to_add = 0;
     int machine = 0;
     int branches_created = 0;
     
@@ -394,17 +394,17 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     switch (problem.getType()) {
             
         case ProblemType::permutation:
-            levelStarting = problem.getStartingRow();
+            starting_level = problem.getStartingRow();
             
             for (element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
-                isInPermut = 0;
-                for (row = levelStarting; row <= currentLevel; ++row)
+                is_in_permut = 0;
+                for (row = starting_level; row <= currentLevel; ++row)
                     if (solution.getVariable(row) == element) {
-                        isInPermut = 1;
+                        is_in_permut = 1;
                         row = currentLevel + 1;
                     }
                 
-                if (isInPermut == 0) {
+                if (is_in_permut == 0) {
                     ivm_tree.addNodeToRow(currentLevel + 1, element);
                     number_of_branches++;
                     branches_created++;
@@ -418,9 +418,9 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             for (element = 0; element < problem.getTotalElements(); ++element)
                 if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesValueIsRepeated(element))
                     for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
-                        toAdd = problem.getEncode(element, machine);
+                        code_to_add = problem.getEncode(element, machine);
                         
-                        solution.setVariable(currentLevel + 1, toAdd);
+                        solution.setVariable(currentLevel + 1, code_to_add);
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
                         increaseExploredNodes();
                         
@@ -432,7 +432,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         if ((distance_error_to_best[0] <= 0 || distance_error_to_best[1] <= 0 || distance_error_to_best[2] <= 0) && improvesTheGrid(solution)) {
                             
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
-                            obj_values.setValue(toAdd);
+                            obj_values.setValue(code_to_add);
                             obj_values.setObjective(0, fjssp_data.getMakespan());
                             obj_values.setObjective(1, fjssp_data.getMaxWorkload());
                             
@@ -690,8 +690,8 @@ void BranchAndBound::setPriorityTo(Interval& interval) const{
 /** Returns the proximity to the given objective. When minimizing objectives, if it is less than 0 then it produces an improvement.
  *  other distance: (objective - value) / objective;
  ***/
-float BranchAndBound::distanceToObjective(int value, int objective){
-    return (value - objective) / value;
+float BranchAndBound::distanceToObjective(int value, int to_objective){
+    return (value - to_objective) / value;
 }
 
 int BranchAndBound::getNodeRank() const{
