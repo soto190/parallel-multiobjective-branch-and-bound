@@ -15,8 +15,10 @@
  */
 Solution::Solution():
 n_objectives(0),
-n_variables(0) {
-    machineWithMakespan = 0;
+n_variables(0),
+rank(0),
+dominated_by(0){
+    index = 0;
     build_up_to = -1;
     objective = nullptr;
     variable = nullptr;
@@ -26,10 +28,12 @@ n_variables(0) {
 Solution::Solution(int numberOfObjectives, int numberOfVariables):
 n_objectives(numberOfObjectives),
 n_variables(numberOfVariables),
+rank(0),
+dominated_by(0),
 build_up_to(-1),
 objective(new double[numberOfObjectives]),
 variable(new int[numberOfVariables]),
-machineWithMakespan(0),
+index(0),
 execTime(new double[16]){
     
     int var = 0, obj = 0;
@@ -46,8 +50,10 @@ execTime(new double[16]){
 Solution::Solution(const Solution &solution):
 n_objectives(solution.getNumberOfObjectives()),
 n_variables(solution.getNumberOfVariables()),
+rank(solution.getRank()),
+dominated_by(solution.getDominatedBy()),
 build_up_to(solution.getBuildUpTo()),
-machineWithMakespan(solution.machineWithMakespan){
+index(solution.index){
     
     objective = new double[n_objectives];
     variable = new int[n_variables];
@@ -67,7 +73,9 @@ machineWithMakespan(solution.machineWithMakespan){
 
 Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
     
-    machineWithMakespan = 0;
+    index = 0;
+    rank = 0;
+    dominated_by = 0;
     build_up_to = -1;
     n_objectives = numberOfObjectives;
     n_variables = numberOfVariables;
@@ -105,6 +113,8 @@ Solution& Solution::operator=(const Solution &solution) {
     build_up_to = solution.getBuildUpTo();
     n_objectives = solution.getNumberOfObjectives();
     n_variables = solution.getNumberOfVariables();
+    rank = solution.getRank();
+    dominated_by = solution.getDominatedBy();
     
     /** Freeing previously used memory. **/
     if (objective != nullptr) {
@@ -148,6 +158,14 @@ Solution::~Solution() {
 
 void Solution::setBuildUpTo(int index){
     build_up_to = index;
+}
+
+void Solution::setRank(int n_rank){
+    rank = n_rank;
+}
+
+void Solution::setDominatedBy(int n_value){
+    dominated_by = n_value;
 }
 
 void Solution::setObjective(int index_obj, double value) throw(SolutionException){
@@ -216,6 +234,22 @@ int Solution::getNumberOfObjectives() const {
 
 int Solution::getBuildUpTo() const {
     return build_up_to;
+}
+
+int Solution::getRank() const{
+    return rank;
+}
+
+int Solution::getDominatedBy() const{
+    return dominated_by;
+}
+
+void Solution::incrementDominatedBy(){
+    dominated_by++;
+}
+
+void Solution::decrementDominatedBy(){
+    dominated_by--;
 }
 
 DominanceRelation Solution::dominates(const Solution & solution) const {

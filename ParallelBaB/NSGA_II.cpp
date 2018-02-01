@@ -138,6 +138,53 @@ double NSGA_II::getMutationRate() const{
 
 void NSGA_II::fastNonDominatedSort(){
     
+    vector<vector<Solution>> dominates_to;
+    vector<vector<Solution>> pareto_fronts;
+    vector<Solution> paretoFront;
+
+    dominates_to.reserve(getMaxPopulationSize());
+    pareto_fronts.reserve(getMaxPopulationSize());
+    
+    for (int n_sol = 0; n_sol < population.size(); ++n_sol){
+        population[n_sol].setRank(-1);
+        population[n_sol].setDominatedBy(0);
+    }
+    
+    for (int n_sol_p = 0; n_sol_p < population.size(); ++n_sol_p) {
+        Solution sol_p = population[n_sol_p];
+        sol_p.index = n_sol_p;
+        for (int n_sol_q = 0; n_sol_q < population.size(); ++n_sol_q){
+            if (n_sol_p != n_sol_q){
+                Solution sol_q = population[n_sol_q];
+                DominanceRelation dom = sol_p.dominates(sol_q);
+                if (dom == DominanceRelation::Dominates) {
+                    dominates_to[n_sol_p].push_back(sol_q);
+                }else if (dom == DominanceRelation::Dominated){
+                    sol_p.incrementDominatedBy();
+                }
+            }
+        }
+        if (sol_p.getDominatedBy() == 0) {
+            sol_p.setRank(0);
+            pareto_fronts[0].push_back(sol_p);
+        }
+    }
+    
+    int idx_pf = 0;
+    while (!pareto_fronts[idx_pf].empty()) {
+        for (int n_sol_p = 0; n_sol_p < pareto_fronts[idx_pf].size(); ++n_sol_p) {
+            Solution solution_p = pareto_fronts[idx_pf].at(n_sol_p);
+            for (int n_sol_q = 0; n_sol_q < dominates_to[0].size(); ++n_sol_q) {
+                Solution solution_q =  dominates_to[solution_p.index].at(n_sol_q);
+                solution_q.decrementDominatedBy();
+                if (dominates_to[solution_p.index].at(n_sol_q).getDominatedBy() == 0) {
+                    pareto_fronts[idx_pf + 1].push_back(solution_q);
+                }
+            }
+        }
+        idx_pf++;
+        
+    }
 }
 
 void NSGA_II::crowdingDistance(){
