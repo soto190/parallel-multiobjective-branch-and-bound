@@ -30,16 +30,16 @@
 		214C92DF200FC65C00B55E58 /* SortedVector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214C92DD200FC65C00B55E58 /* SortedVector.cpp */; };
 		214C92E2200FCB2B00B55E58 /* ObjectiveValues.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214C92E0200FCB2B00B55E58 /* ObjectiveValues.cpp */; };
 		214C92E52010349100B55E58 /* NSGA_II.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 214C92E32010349100B55E58 /* NSGA_II.cpp */; };
+		214D55932022AAE800C9B4F4 /* libmpi.40.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 214D55922022AAE800C9B4F4 /* libmpi.40.dylib */; };
+		214D55952022AB0A00C9B4F4 /* libmpi_cxx.40.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 214D55942022AB0A00C9B4F4 /* libmpi_cxx.40.dylib */; };
+		214D55972022AB3800C9B4F4 /* libmpi.40.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 214D55962022AB3800C9B4F4 /* libmpi.40.dylib */; };
+		214D55992022AB5900C9B4F4 /* libmpi_cxx.40.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 214D55982022AB5900C9B4F4 /* libmpi_cxx.40.dylib */; };
 		21774E401FD85A11007FF333 /* IVMTreeException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21774E3E1FD85A11007FF333 /* IVMTreeException.cpp */; };
 		21774E431FD8883B007FF333 /* SubproblemsPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21774E411FD8883B007FF333 /* SubproblemsPool.cpp */; };
 		21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */; };
 		217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */; };
 		217D170F1F744B33004CECD8 /* MasterWorkerPBB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217D170D1F744B33004CECD8 /* MasterWorkerPBB.cpp */; };
 		218B0DB91E2D769F000B52F4 /* IVMTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 218B0DB71E2D769F000B52F4 /* IVMTree.cpp */; };
-		21CE205D1F907F40006E0BE4 /* libmpi_cxx.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 21CE205B1F907F3F006E0BE4 /* libmpi_cxx.1.dylib */; };
-		21CE205E1F907F40006E0BE4 /* libmpi.12.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 21CE205C1F907F40006E0BE4 /* libmpi.12.dylib */; };
-		21CE20611F907F6A006E0BE4 /* libmpi_cxx.1.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 21CE205F1F907F6A006E0BE4 /* libmpi_cxx.1.dylib */; };
-		21CE20621F907F6A006E0BE4 /* libmpi.12.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 21CE20601F907F6A006E0BE4 /* libmpi.12.dylib */; };
 		21E8EF8C1E48BD0800A716C6 /* ParallelBranchAndBound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21E8EF8A1E48BD0800A716C6 /* ParallelBranchAndBound.cpp */; };
 /* End PBXBuildFile section */
 
@@ -50,8 +50,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
-				21CE20611F907F6A006E0BE4 /* libmpi_cxx.1.dylib in CopyFiles */,
-				21CE20621F907F6A006E0BE4 /* libmpi.12.dylib in CopyFiles */,
+				214D55992022AB5900C9B4F4 /* libmpi_cxx.40.dylib in CopyFiles */,
+				214D55972022AB3800C9B4F4 /* libmpi.40.dylib in CopyFiles */,
 				21390E601F30CEB800C96853 /* libtbb.dylib in CopyFiles */,
 				21390E611F30CEB800C96853 /* libtbbmalloc.dylib in CopyFiles */,
 			);
@@ -99,6 +99,10 @@
 		214C92E1200FCB2B00B55E58 /* ObjectiveValues.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjectiveValues.hpp; sourceTree = "<group>"; };
 		214C92E32010349100B55E58 /* NSGA_II.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NSGA_II.cpp; sourceTree = "<group>"; };
 		214C92E42010349100B55E58 /* NSGA_II.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NSGA_II.hpp; sourceTree = "<group>"; };
+		214D55922022AAE800C9B4F4 /* libmpi.40.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi.40.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi.40.dylib"; sourceTree = "<group>"; };
+		214D55942022AB0A00C9B4F4 /* libmpi_cxx.40.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi_cxx.40.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi_cxx.40.dylib"; sourceTree = "<group>"; };
+		214D55962022AB3800C9B4F4 /* libmpi.40.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmpi.40.dylib; sourceTree = "<group>"; };
+		214D55982022AB5900C9B4F4 /* libmpi_cxx.40.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmpi_cxx.40.dylib; sourceTree = "<group>"; };
 		216F69B01E5AE5FD00589E5D /* submit-multiple.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "submit-multiple.sh"; sourceTree = "<group>"; };
 		216F69B11E5AE66600589E5D /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		21774E3E1FD85A11007FF333 /* IVMTreeException.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IVMTreeException.cpp; sourceTree = "<group>"; };
@@ -117,8 +121,6 @@
 		218B0DB81E2D769F000B52F4 /* IVMTree.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IVMTree.hpp; sourceTree = "<group>"; };
 		21CE205B1F907F3F006E0BE4 /* libmpi_cxx.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi_cxx.1.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi_cxx.1.dylib"; sourceTree = "<group>"; };
 		21CE205C1F907F40006E0BE4 /* libmpi.12.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi.12.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi.12.dylib"; sourceTree = "<group>"; };
-		21CE205F1F907F6A006E0BE4 /* libmpi_cxx.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi_cxx.1.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi_cxx.1.dylib"; sourceTree = "<group>"; };
-		21CE20601F907F6A006E0BE4 /* libmpi.12.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi.12.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi.12.dylib"; sourceTree = "<group>"; };
 		21CE20631F9132C1006E0BE4 /* libtbb_debug.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtbb_debug.dylib; path = ../../../../../opt/intel/compilers_and_libraries_2017.1.126/mac/tbb/lib/libtbb_debug.dylib; sourceTree = "<group>"; };
 		21CE20641F9132C1006E0BE4 /* libtbbmalloc_debug.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtbbmalloc_debug.dylib; path = ../../../../../opt/intel/compilers_and_libraries_2017.1.126/mac/tbb/lib/libtbbmalloc_debug.dylib; sourceTree = "<group>"; };
 		21E8EF8A1E48BD0800A716C6 /* ParallelBranchAndBound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParallelBranchAndBound.cpp; sourceTree = "<group>"; };
@@ -132,8 +134,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				21CE205D1F907F40006E0BE4 /* libmpi_cxx.1.dylib in Frameworks */,
-				21CE205E1F907F40006E0BE4 /* libmpi.12.dylib in Frameworks */,
+				214D55952022AB0A00C9B4F4 /* libmpi_cxx.40.dylib in Frameworks */,
+				214D55932022AAE800C9B4F4 /* libmpi.40.dylib in Frameworks */,
 				2119FB501E434B4200197CE4 /* libtbb.dylib in Frameworks */,
 				2119FB511E434B4200197CE4 /* libtbbmalloc.dylib in Frameworks */,
 			);
@@ -145,8 +147,8 @@
 		2112821E1D63988D0038DBEE = {
 			isa = PBXGroup;
 			children = (
-				21CE205F1F907F6A006E0BE4 /* libmpi_cxx.1.dylib */,
-				21CE20601F907F6A006E0BE4 /* libmpi.12.dylib */,
+				214D55982022AB5900C9B4F4 /* libmpi_cxx.40.dylib */,
+				214D55962022AB3800C9B4F4 /* libmpi.40.dylib */,
 				21390E5E1F30CEB800C96853 /* libtbb.dylib */,
 				21390E5F1F30CEB800C96853 /* libtbbmalloc.dylib */,
 				216F69AF1E5AE5A900589E5D /* results */,
@@ -228,6 +230,8 @@
 		2119FB4D1E434B4200197CE4 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				214D55942022AB0A00C9B4F4 /* libmpi_cxx.40.dylib */,
+				214D55922022AAE800C9B4F4 /* libmpi.40.dylib */,
 				21CE20631F9132C1006E0BE4 /* libtbb_debug.dylib */,
 				21CE20641F9132C1006E0BE4 /* libtbbmalloc_debug.dylib */,
 				21CE205B1F907F3F006E0BE4 /* libmpi_cxx.1.dylib */,
@@ -461,7 +465,7 @@
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
-					"/opt/local/include/openmpi-mp",
+					"/opt/local/include/openmpi-mp/",
 					/opt/intel/compilers_and_libraries_2017.1.126/mac/tbb/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
@@ -478,7 +482,7 @@
 				FRAMEWORK_SEARCH_PATHS = "";
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
-					"/opt/local/include/openmpi-mp",
+					"/opt/local/include/openmpi-mp/",
 					/opt/intel/compilers_and_libraries_2017.1.126/mac/tbb/include,
 				);
 				LIBRARY_SEARCH_PATHS = (
