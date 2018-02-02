@@ -42,7 +42,7 @@ public:
     int getTotalElements();
     int getDecodeMap(int map, int position);
     int getCodeMap(int value1, int value2);
-    int getTimesValueIsRepeated(int value);
+    int getTimesThatValueCanBeRepeated(int value);
     
     void printSolution(const Solution & solution) const;
     void printPartialSolution(const Solution & solution, int level) const;

@@ -121,7 +121,7 @@ int ProblemTSP::getCodeMap(int value1, int value2){
     return 0;
 }
 
-int ProblemTSP::getTimesValueIsRepeated(int value){
+int ProblemTSP::getTimesThatValueCanBeRepeated(int value){
     return 0;
 }
 

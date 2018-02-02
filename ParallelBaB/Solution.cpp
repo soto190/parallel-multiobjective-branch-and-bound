@@ -252,7 +252,7 @@ void Solution::decrementDominatedBy(){
     dominated_by--;
 }
 
-DominanceRelation Solution::dominates(const Solution & solution) const {
+DominanceRelation Solution::dominanceTest(const Solution & solution) const {
     int n_obj = 0;
     int localSolIsBetterIn = 0;
     int exterSolIsBetterIn = 0;

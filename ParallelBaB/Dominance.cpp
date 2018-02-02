@@ -62,7 +62,7 @@ int updateFront(Solution & solution, std::vector<Solution>& paretoFront) {
     
     for (nSol = 0; nSol < paretoFront.size(); ++nSol) {
         
-        domination = solution.dominates(paretoFront.at(nSol)); //dominanceOperator(solution, paretoFront.at(nSol));
+        domination = solution.dominanceTest(paretoFront.at(nSol)); //dominanceOperator(solution, paretoFront.at(nSol));
         
         switch (domination) {
                 

@@ -63,7 +63,7 @@ public:
     virtual int * getElemensToRepeat() = 0;
     virtual int getDecodeMap(int map, int position) = 0;
     virtual int getCodeMap(int value1, int value2);
-    virtual int getTimesValueIsRepeated(int value);
+    virtual int getTimesThatValueCanBeRepeated(int value);
     
     virtual int getLowerBound(int index) const = 0;
     virtual int getUpperBound(int index) const = 0;

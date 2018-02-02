@@ -59,7 +59,7 @@ public:
     int getTotalElements();
     int getDecodeMap(int map, int position);
     int getCodeMap(int value1, int value2);
-    int getTimesValueIsRepeated(int value);
+    int getTimesThatValueCanBeRepeated(int value);
     
     /**TSP functions**/
     int** cityCoord;

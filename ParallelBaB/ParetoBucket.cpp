@@ -98,7 +98,7 @@ int ParetoBucket::produceImprovement(const Solution& obj){
     unsigned long index = 0, size_vec = m_vec.size();
     int improves = 1;
     for (index = 0; index < size_vec; ++index)
-        switch (obj.dominates(m_vec[index])) {
+        switch (obj.dominanceTest(m_vec[index])) {
                 
             case DominanceRelation::Dominated:
                 improves = 0;
@@ -140,7 +140,7 @@ int ParetoBucket::push_back(const Solution& obj){
     std::vector<Solution>::iterator begin = m_vec.begin();
     int wasAdded = 0;
     for (unsigned long nSol = 0; nSol < m_vec.size(); ++nSol)
-        switch (obj.dominates(m_vec.at(nSol))) {
+        switch (obj.dominanceTest(m_vec.at(nSol))) {
                 
             case DominanceRelation::Dominates:
                 m_vec.erase(begin + nSol);

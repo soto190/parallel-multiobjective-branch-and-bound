@@ -40,6 +40,7 @@
 		217A2E901D944DBB00A4E9EA /* GridContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */; };
 		217D170F1F744B33004CECD8 /* MasterWorkerPBB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217D170D1F744B33004CECD8 /* MasterWorkerPBB.cpp */; };
 		218B0DB91E2D769F000B52F4 /* IVMTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 218B0DB71E2D769F000B52F4 /* IVMTree.cpp */; };
+		21D0D5002024C87A00CC599D /* ParetoFront.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21D0D4FE2024C87A00CC599D /* ParetoFront.cpp */; };
 		21E8EF8C1E48BD0800A716C6 /* ParallelBranchAndBound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21E8EF8A1E48BD0800A716C6 /* ParallelBranchAndBound.cpp */; };
 /* End PBXBuildFile section */
 
@@ -119,10 +120,10 @@
 		218182AD2016777800AE127B /* SolutionException.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SolutionException.hpp; sourceTree = "<group>"; };
 		218B0DB71E2D769F000B52F4 /* IVMTree.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IVMTree.cpp; sourceTree = "<group>"; };
 		218B0DB81E2D769F000B52F4 /* IVMTree.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IVMTree.hpp; sourceTree = "<group>"; };
-		21CE205B1F907F3F006E0BE4 /* libmpi_cxx.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi_cxx.1.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi_cxx.1.dylib"; sourceTree = "<group>"; };
-		21CE205C1F907F40006E0BE4 /* libmpi.12.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi.12.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi.12.dylib"; sourceTree = "<group>"; };
 		21CE20631F9132C1006E0BE4 /* libtbb_debug.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtbb_debug.dylib; path = ../../../../../opt/intel/compilers_and_libraries_2017.1.126/mac/tbb/lib/libtbb_debug.dylib; sourceTree = "<group>"; };
 		21CE20641F9132C1006E0BE4 /* libtbbmalloc_debug.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtbbmalloc_debug.dylib; path = ../../../../../opt/intel/compilers_and_libraries_2017.1.126/mac/tbb/lib/libtbbmalloc_debug.dylib; sourceTree = "<group>"; };
+		21D0D4FE2024C87A00CC599D /* ParetoFront.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ParetoFront.cpp; sourceTree = "<group>"; };
+		21D0D4FF2024C87A00CC599D /* ParetoFront.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ParetoFront.hpp; sourceTree = "<group>"; };
 		21E8EF8A1E48BD0800A716C6 /* ParallelBranchAndBound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParallelBranchAndBound.cpp; sourceTree = "<group>"; };
 		21E8EF8B1E48BD0800A716C6 /* ParallelBranchAndBound.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ParallelBranchAndBound.hpp; sourceTree = "<group>"; };
 		21F4CBA51DAE97CC004A308F /* Dominance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Dominance.cpp; sourceTree = "<group>"; };
@@ -179,6 +180,8 @@
 				21F4CBA61DAE97CC004A308F /* Dominance.hpp */,
 				214467601FD8C3B000364E2A /* ParetoBucket.cpp */,
 				214467611FD8C3B000364E2A /* ParetoBucket.hpp */,
+				21D0D4FE2024C87A00CC599D /* ParetoFront.cpp */,
+				21D0D4FF2024C87A00CC599D /* ParetoFront.hpp */,
 				217A2E8E1D944DBB00A4E9EA /* GridContainer.cpp */,
 				217A2E8F1D944DBB00A4E9EA /* GridContainer.hpp */,
 				214467631FD8D74A00364E2A /* HandlerContainer.cpp */,
@@ -234,8 +237,6 @@
 				214D55922022AAE800C9B4F4 /* libmpi.40.dylib */,
 				21CE20631F9132C1006E0BE4 /* libtbb_debug.dylib */,
 				21CE20641F9132C1006E0BE4 /* libtbbmalloc_debug.dylib */,
-				21CE205B1F907F3F006E0BE4 /* libmpi_cxx.1.dylib */,
-				21CE205C1F907F40006E0BE4 /* libmpi.12.dylib */,
 				2119FB4E1E434B4200197CE4 /* libtbb.dylib */,
 				2119FB4F1E434B4200197CE4 /* libtbbmalloc.dylib */,
 			);
@@ -320,6 +321,7 @@
 				214C92E2200FCB2B00B55E58 /* ObjectiveValues.cpp in Sources */,
 				211282611D639AB30038DBEE /* ProblemVRP.cpp in Sources */,
 				211282601D639AB30038DBEE /* ProblemTSP.cpp in Sources */,
+				21D0D5002024C87A00CC599D /* ParetoFront.cpp in Sources */,
 				214467621FD8C3B000364E2A /* ParetoBucket.cpp in Sources */,
 				2112825B1D639AB30038DBEE /* main.cpp in Sources */,
 				2112825E1D639AB30038DBEE /* Problem.cpp in Sources */,

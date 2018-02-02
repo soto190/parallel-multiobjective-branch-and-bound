@@ -156,7 +156,7 @@ void NSGA_II::fastNonDominatedSort(){
         for (int n_sol_q = 0; n_sol_q < population.size(); ++n_sol_q){
             if (n_sol_p != n_sol_q){
                 Solution sol_q = population[n_sol_q];
-                DominanceRelation dom = sol_p.dominates(sol_q);
+                DominanceRelation dom = sol_p.dominanceTest(sol_q);
                 if (dom == DominanceRelation::Dominates) {
                     dominates_to[n_sol_p].push_back(sol_q);
                 }else if (dom == DominanceRelation::Dominated){
