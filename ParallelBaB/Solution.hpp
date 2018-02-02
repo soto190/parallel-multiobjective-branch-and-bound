@@ -63,7 +63,7 @@ public:
     int getRank() const;
     int getDominatedBy() const;
     
-    DominanceRelation dominates(const Solution &solution) const;
+    DominanceRelation dominanceTest(const Solution &solution) const;
     
     /** Overloading operators. **/
     Solution& operator=(const Solution &solution);

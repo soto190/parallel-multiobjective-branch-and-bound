@@ -197,7 +197,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     }
     
     for (element = 0; element < num_elements; ++element)
-        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesValueIsRepeated(element))
+        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element))
             for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
                 
                 toAdd = problem.getCodeMap(element, machine);
@@ -407,7 +407,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
         case ProblemType::permutation_with_repetition_and_combination:
             
             for (element = 0; element < problem.getTotalElements(); ++element)
-                if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesValueIsRepeated(element))
+                if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element))
                     for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
                         toAdd = problem.getCodeMap(element, machine);
                         
@@ -613,7 +613,7 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
             }
             
             if (isIn == 0) {
-                branch_to_compute.setValueAt(totalLevels, problem.getCodeMap(jobToCheck, problem.getTimesValueIsRepeated(0) - 1));
+                branch_to_compute.setValueAt(totalLevels, problem.getCodeMap(jobToCheck, problem.getTimesThatValueCanBeRepeated(0) - 1));
                 job = 0; /** To end loop. **/
             }
         }

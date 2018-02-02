@@ -14,6 +14,10 @@
 #include <iostream>
 #include <cstring>
 #include <exception>
+#include <tbb/task_scheduler_init.h>
+#include <tbb/blocked_range.h>
+#include <tbb/parallel_for.h>
+#include <tbb/task_group.h>
 #include "Solution.hpp"
 #include "Problem.hpp"
 #include "ProblemHCSP.hpp"
@@ -25,10 +29,7 @@
 #include "myutils.hpp"
 #include "GridContainer.hpp"
 #include "MasterWorkerPBB.hpp"
-#include <tbb/task_scheduler_init.h>
-#include <tbb/blocked_range.h>
-#include <tbb/parallel_for.h>
-#include <tbb/task_group.h>
+#include "MOSA.hpp"
 
 using namespace std;
 
@@ -75,13 +76,37 @@ void one_node(int argc, char* argv[]){
     try {
         
         tbb::task_scheduler_init init(number_of_threads);
+        
+        Solution sample_solution(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+        sample_solution.setVariable(0, 6);
+        sample_solution.setVariable(1, 7);
+        sample_solution.setVariable(2, 8);
+        sample_solution.setVariable(3, 3);
+        sample_solution.setVariable(4, 3);
+        sample_solution.setVariable(5, 5);
+        sample_solution.setVariable(6, 0);
+        sample_solution.setVariable(7, 1);
+        sample_solution.setVariable(8, 1);
+        problem.evaluate(sample_solution);
+        sample_solution.print();
+        MOSA algorithm(problem);
+        
+        algorithm.setSampleSolution(sample_solution);
+        algorithm.setCoolingRate(0.95);
+        algorithm.setMaxMetropolisIterations(10);
+        algorithm.setInitialTemperature(100);
+        algorithm.setFinalTemperature(0.1);
+        algorithm.setPerturbationRate(0.25);
+        algorithm.solve();
+        
+        /*
         ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(0, number_of_threads, problem);
         pbb->setParetoFrontFile(outputFile.c_str());
         pbb->setSummarizeFile(summarizeFile.c_str());
         
         printf("Spawning root...\n");
         tbb::task::spawn_root_and_wait(*pbb);
-        
+        */
     } catch (tbb::tbb_exception& e) {
         std::cerr << "Intercepted exception:\n" << e.name();
         std::cerr << "Reason is:\n" << e.what();

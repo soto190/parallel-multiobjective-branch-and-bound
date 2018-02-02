@@ -1610,7 +1610,7 @@ int ProblemFJSSP::getCodeMap(int job, int machine) {
     return encode_job_machine_to_map[job][machine];
 }
 
-int ProblemFJSSP::getTimesValueIsRepeated(int value) {
+int ProblemFJSSP::getTimesThatValueCanBeRepeated(int value) {
     return n_operations_in_job[value];
 }
 

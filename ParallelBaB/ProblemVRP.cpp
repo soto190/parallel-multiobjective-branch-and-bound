@@ -29,7 +29,7 @@ int ProblemVRP::getTotalElements(){return 0;}
 int * ProblemVRP::getElemensToRepeat(){return nullptr;}
 int ProblemVRP::getDecodeMap(int map, int position){ return 0;}
 int ProblemVRP::getCodeMap(int value1, int value2){return 0;}
-int ProblemVRP::getTimesValueIsRepeated(int value){return 0;}
+int ProblemVRP::getTimesThatValueCanBeRepeated(int value){return 0;}
 void ProblemVRP::createDefaultSolution(Solution& solution){}
 void ProblemVRP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){}
 void ProblemVRP::printInstance(){ printf("Hello from Problem VRP!\n");}

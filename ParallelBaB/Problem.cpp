@@ -140,7 +140,7 @@ int Problem::getCodeMap(int value1, int value2) {
     return 0;
 }
 
-int Problem::getTimesValueIsRepeated(int value) {
+int Problem::getTimesThatValueCanBeRepeated(int value) {
     return 0;
 }
 
