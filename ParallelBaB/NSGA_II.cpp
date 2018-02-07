@@ -140,7 +140,7 @@ void NSGA_II::fastNonDominatedSort(){
     
     vector<vector<Solution>> dominates_to;
     vector<vector<Solution>> pareto_fronts;
-    vector<Solution> paretoFront;
+    ParetoFront paretoFront;
 
     dominates_to.reserve(getMaxPopulationSize());
     pareto_fronts.reserve(getMaxPopulationSize());
@@ -183,7 +183,6 @@ void NSGA_II::fastNonDominatedSort(){
             }
         }
         idx_pf++;
-        
     }
 }
 

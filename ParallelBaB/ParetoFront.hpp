@@ -27,6 +27,9 @@ public:
     const std::vector<Solution>& getVectorToCopy() const ;
     int produceImprovement(const Solution& obj);
     int push_back(const Solution& obj);
+    const Solution at(unsigned long position) const;
+    const Solution back() const;
+    const Solution front() const;
     unsigned long size();
     bool empty();
     void clear();

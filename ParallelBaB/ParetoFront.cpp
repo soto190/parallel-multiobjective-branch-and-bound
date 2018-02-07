@@ -20,6 +20,18 @@ ParetoFront::~ParetoFront(){
     
 }
 
+const Solution ParetoFront::at(unsigned long position) const{
+   return m_vec.at(position);
+}
+
+const Solution ParetoFront::back() const{
+    return m_vec.back();
+}
+
+const Solution ParetoFront::front() const{
+    return m_vec.front();
+}
+
 std::vector<Solution>& ParetoFront::getVector(){
     return m_vec;
 }

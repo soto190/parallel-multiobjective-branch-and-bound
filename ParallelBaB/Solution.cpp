@@ -290,9 +290,9 @@ DominanceRelation Solution::dominanceTest(const Solution & solution) const {
 void Solution::print() const {
     char sep = '-';
     for (int n_obj = 0; n_obj < n_objectives; ++n_obj)
-        printf("%4.0f", getObjective(n_obj));
+        printf("%4.0f ", getObjective(n_obj));
     
-    printf(" | ");
+    printf("| ");
     
     for (int n_var = 0; n_var < n_variables; ++n_var)
         if (variable[n_var] == -1)
