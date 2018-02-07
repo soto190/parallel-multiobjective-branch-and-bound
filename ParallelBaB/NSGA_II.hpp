@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <random>
 #include "ProblemFJSSP.hpp"
+#include "ParetoFront.hpp"
 
 /**
  *

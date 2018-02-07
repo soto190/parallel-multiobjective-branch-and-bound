@@ -78,25 +78,27 @@ void one_node(int argc, char* argv[]){
         tbb::task_scheduler_init init(number_of_threads);
         
         Solution sample_solution(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-        sample_solution.setVariable(0, 6);
-        sample_solution.setVariable(1, 7);
-        sample_solution.setVariable(2, 8);
-        sample_solution.setVariable(3, 3);
-        sample_solution.setVariable(4, 3);
-        sample_solution.setVariable(5, 5);
-        sample_solution.setVariable(6, 0);
-        sample_solution.setVariable(7, 1);
-        sample_solution.setVariable(8, 1);
+//        sample_solution.setVariable(0, 6);
+//        sample_solution.setVariable(1, 7);
+//        sample_solution.setVariable(2, 8);
+//        sample_solution.setVariable(3, 3);
+//        sample_solution.setVariable(4, 3);
+//        sample_solution.setVariable(5, 5);
+//        sample_solution.setVariable(6, 0);
+//        sample_solution.setVariable(7, 1);
+//        sample_solution.setVariable(8, 1);
+        
+        problem.createDefaultSolution(sample_solution);
         problem.evaluate(sample_solution);
         sample_solution.print();
-        MOSA algorithm(problem);
         
+        MOSA algorithm(problem);
         algorithm.setSampleSolution(sample_solution);
-        algorithm.setCoolingRate(0.95);
+        algorithm.setCoolingRate(0.96);
         algorithm.setMaxMetropolisIterations(10);
-        algorithm.setInitialTemperature(100);
-        algorithm.setFinalTemperature(0.1);
-        algorithm.setPerturbationRate(0.25);
+        algorithm.setInitialTemperature(1000);
+        algorithm.setFinalTemperature(0.01);
+        algorithm.setPerturbationRate(0.950);
         algorithm.solve();
         
         /*
@@ -114,6 +116,7 @@ void one_node(int argc, char* argv[]){
     
     printf("Done.\n");
 }
+
 /**
  * argv[1] = number of threads.
  * argv[2] = problem: TSP, HCSP, VRP, and FJSSP.

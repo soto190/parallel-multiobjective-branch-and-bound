@@ -27,6 +27,7 @@ public:
     unsigned long getCurrentMetropolisIterations() const;
     unsigned long getMaxMetropolisIterations() const;
     double getPerturbationRate() const;
+    unsigned long getNumberOfEvaluations() const;
     void setInitialTemperature(float temperature);
     void setFinalTemperature(float temperature);
     void setMaxMetropolisIterations(unsigned long iterations);
@@ -45,6 +46,7 @@ private:
     float max_energy_found;
     float min_energy_found;
     double perturbation_rate;
+    unsigned int number_of_evaluations;
     
     unsigned long metropolis_iterations;
     unsigned long max_metropolis_iterations;
@@ -58,7 +60,7 @@ private:
     int isMetropolisCycleActive() const;
     void increaseMetropolisIterations();
     int acceptanceCriterion(float energy, float temperature);
-    void coolingScheme();
+    float coolingScheme();
     float computeEnergy(const Solution& current, const Solution& candidate);
     void update();
     const Solution perturbate(const Solution& solution_input);
@@ -68,7 +70,7 @@ private:
     void setMaxEnergyFound(float energy);
     void setMinEnergyFound(float energy);
     void updateEnergies(float energy);
-    
+    void increaseNumberOfEvaluations();
     void printDebug() const;
 };
 #endif /* MOSA_hpp */
