@@ -64,6 +64,14 @@ void NSGA_II::selection(){
 
 void NSGA_II::crossover(){
     
+    vector<Solution> offsprings;
+    offsprings.reserve(population.size());
+    for (int pop = 0; pop < population.size(); ++pop) {
+        vector<Solution> offs = crossoverOperator(population.at(pop), population.at(pop + 1));
+        offsprings.insert(offsprings.end(), offs.begin(), offs.end());
+        pop++;
+    }
+    population.insert(population.end(), offsprings.begin(), offsprings.end());
 }
 
 void NSGA_II::mutation(){
@@ -89,6 +97,57 @@ vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solut
     Solution offspring1(parent1);
     Solution offspring2(parent2);
     
+    int mid = parent1.getNumberOfVariables() / 2;
+    int chromosome_size = parent1.getNumberOfVariables();
+    int n_code_values = problem.getNumberOfMachines();
+    int allel_p1;
+    int allel_p2;
+    int allel_p1_is_job;
+    int allel_p2_is_job;
+
+    FJSSPdata data_os1(problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
+    FJSSPdata data_os2(problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
+    
+    for (int gene = 0; gene < mid; ++gene) {
+        problem.evaluateDynamic(offspring1, data_os1, gene);
+        problem.evaluateDynamic(offspring2, data_os2, gene);
+    }
+    
+    for (int gene = mid; gene < chromosome_size; ++gene) {
+        
+        allel_p1 = parent1.getVariable(gene);
+        allel_p2 = parent1.getVariable(gene);
+        
+        allel_p1_is_job = floor(allel_p1 / n_code_values);
+        allel_p2_is_job = floor(allel_p2 / n_code_values);
+
+        if (data_os1.getNumberOfOperationsAllocatedFromJob(allel_p2_is_job) < problem.getNumberOfOperationsInJob(allel_p2_is_job)) {
+            offspring1.setVariable(gene, allel_p2);
+        } else {
+            for (int job = 0; job < problem.getNumberOfJobs(); ++job) {
+                if (data_os1.getNumberOfOperationsAllocatedFromJob(allel_p2_is_job) < problem.getNumberOfOperationsInJob(allel_p2_is_job)) {
+                    job = problem.getNumberOfJobs();
+                    allel_p2 = problem.getCodeMap(allel_p2_is_job, 0);
+                    offspring1.setVariable(gene, allel_p2);
+                }
+            }
+        }
+        
+        if (data_os2.getNumberOfOperationsAllocatedFromJob(allel_p1_is_job) < problem.getNumberOfOperationsInJob(allel_p1_is_job)) {
+            offspring2.setVariable(gene, allel_p1);
+        }else {
+            for (int job = 0; job < problem.getNumberOfJobs(); ++job) {
+                if (data_os2.getNumberOfOperationsAllocatedFromJob(allel_p1_is_job) < problem.getNumberOfOperationsInJob(allel_p1_is_job)) {
+                    job = problem.getNumberOfJobs();
+                    allel_p1 = problem.getCodeMap(allel_p1_is_job, 0);
+                    offspring2.setVariable(gene, allel_p1);
+                }
+            }
+        }
+        
+        problem.evaluateDynamic(offspring1, data_os1, gene);
+        problem.evaluateDynamic(offspring2, data_os2, gene);
+    }
     
     
     offspring.push_back(offspring1);
@@ -104,28 +163,26 @@ void NSGA_II::mutationOperator(Solution &solution){
     
     double mutation_probability;
     int chromosome_size = solution.getNumberOfVariables();
+    int n_options = problem.getNumberOfMachines();
+    int new_machine = 0;
+    int gene_to_mutate = 0;
+    int allel_is_from_job = 0;
     int new_allel = 0;
+    
     std::uniform_real_distribution<double> unif_dis(0.0, 1.0);
-    std::uniform_int_distribution<> unif_int_dis(0, problem.getUpperBound(0));
-
-    FJSSPdata fjssp_data(problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
+    std::uniform_int_distribution<> unif_int_mach_dis(0, problem.getNumberOfMachines() - 1);
     
     for (int gene = 0; gene < chromosome_size; ++gene){
         mutation_probability = unif_dis(generator);
         if (mutation_probability < getMutationRate()) {
-            new_allel = unif_int_dis(generator);
-            
+            gene_to_mutate = solution.getVariable(gene);
+            allel_is_from_job = floor(gene_to_mutate / n_options);
+            new_machine = unif_int_mach_dis(generator);
+            new_allel = problem.getCodeMap(allel_is_from_job, new_machine);
             solution.setVariable(gene, new_allel);
-            problem.evaluateDynamic(solution, fjssp_data, gene);
-            
-            /**
-             * NOTE: If the new allel produces an infactible schedule; consider to undo the gene mutation or
-             * search for anothe posible allel. This can be time consuming when the schedule is almost complete.
-             **/
-        }else{
-            problem.evaluateDynamic(solution, fjssp_data, gene);
         }
     }
+    problem.evaluate(solution);
 }
 
 double NSGA_II::getCrossoverRate() const{

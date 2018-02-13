@@ -181,7 +181,6 @@ const Solution MOSA::perturbate(const Solution& solution_input){
     std::uniform_int_distribution<> unif_int_dis(0, problem.getNumberOfVariables() - 1);
     std::uniform_int_distribution<> unif_int_mach_dis(0, problem.getNumberOfMachines() - 1);
 
-    FJSSPdata test_data(problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
     for (int position = 0; position < solution_input.getNumberOfVariables(); ++position){
         perturbation_probability = unif_dis(generator);
         if (perturbation_probability < getPerturbationRate()) {
