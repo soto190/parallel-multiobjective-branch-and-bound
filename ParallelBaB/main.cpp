@@ -29,6 +29,7 @@
 #include "myutils.hpp"
 #include "GridContainer.hpp"
 #include "MasterWorkerPBB.hpp"
+#include "NSGA_II.hpp"
 #include "MOSA.hpp"
 
 using namespace std;
@@ -92,7 +93,17 @@ void one_node(int argc, char* argv[]){
         problem.evaluate(sample_solution);
         sample_solution.print();
         
-        MOSA algorithm(problem);
+
+        NSGA_II nsgaii_algorithm(problem);
+        nsgaii_algorithm.setSampleSolution(sample_solution);
+        nsgaii_algorithm.setCrossoverRate(0.90);
+        nsgaii_algorithm.setMutationRate(0.80);
+        nsgaii_algorithm.setMaxPopulationSize(20);
+        nsgaii_algorithm.setMaxNumberOfGenerations(50);
+        nsgaii_algorithm.solve();
+        
+        
+        /*MOSA algorithm(problem);
         algorithm.setSampleSolution(sample_solution);
         algorithm.setCoolingRate(0.96);
         algorithm.setMaxMetropolisIterations(10);
@@ -100,7 +111,7 @@ void one_node(int argc, char* argv[]){
         algorithm.setFinalTemperature(0.01);
         algorithm.setPerturbationRate(0.950);
         algorithm.solve();
-        
+        */
         /*
         ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(0, number_of_threads, problem);
         pbb->setParetoFrontFile(outputFile.c_str());

@@ -98,7 +98,7 @@
 		214C92DE200FC65C00B55E58 /* SortedVector.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = SortedVector.hpp; sourceTree = "<group>"; };
 		214C92E0200FCB2B00B55E58 /* ObjectiveValues.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ObjectiveValues.cpp; sourceTree = "<group>"; };
 		214C92E1200FCB2B00B55E58 /* ObjectiveValues.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ObjectiveValues.hpp; sourceTree = "<group>"; };
-		214C92E32010349100B55E58 /* NSGA_II.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NSGA_II.cpp; sourceTree = "<group>"; };
+		214C92E32010349100B55E58 /* NSGA_II.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = NSGA_II.cpp; sourceTree = "<group>"; };
 		214C92E42010349100B55E58 /* NSGA_II.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = NSGA_II.hpp; sourceTree = "<group>"; };
 		214D55922022AAE800C9B4F4 /* libmpi.40.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi.40.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi.40.dylib"; sourceTree = "<group>"; };
 		214D55942022AB0A00C9B4F4 /* libmpi_cxx.40.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi_cxx.40.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi_cxx.40.dylib"; sourceTree = "<group>"; };
