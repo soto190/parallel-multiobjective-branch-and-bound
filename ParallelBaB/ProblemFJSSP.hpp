@@ -101,16 +101,19 @@ private:
     int best_bound_max_workload;
     int best_bound_makespan;
     
+    vector<vector<int>> machines_aviability;
+    
 public:
+    Solution goodSolutionWithMaxWorkload;
+
     ProblemFJSSP();
     ProblemFJSSP(const ProblemFJSSP& toCopy);
     ProblemFJSSP(int totalObjectives, int totalVariables);
     ProblemFJSSP(const Payload_problem_fjssp& payload_problem);
     ~ProblemFJSSP();
-    
-    Solution goodSolutionWithMaxWorkload;
-    
+
     ProblemFJSSP& operator=(const ProblemFJSSP& toCopy);
+    
     double evaluate(Solution & solution);
     double evaluatePartial(Solution & solution, int levelEvaluation);
     double evaluateLastLevel(Solution * solution);
@@ -127,8 +130,8 @@ public:
     int getFinalLevel();
     int * getElemensToRepeat();
     int getTotalElements();
-    int getDecodeMap(int map, int position);
-    int getCodeMap(int value1, int value2);
+    int getDecodeMap(int code, int parameter) const;
+    int getEncodeMap(int parameter1, int parameter2) const;
     int getTimesThatValueCanBeRepeated(int value);
     
     void updateBestMaxWorkloadSolution(FJSSPdata& data);
@@ -165,6 +168,10 @@ public:
     int getMinSumShortestProcTime() const;
     int getMaxEarliestEndingTime() const;
     int getSumOf_M_smallestEST() const;
+    unsigned long getNumberOfMachinesAvaibleForOperation(unsigned long nOperation) const;
+    int getMachinesAvaibleForOperation(unsigned long nOperation, unsigned long machine) const;
+
+    bool operationCanBeAllocatedInMachine(int operation, int machine) const;
     
     void setEarliestStartingTime(int nOperation, int nValue);
     void setEarliestEndingTime(int nOperation, int nValue);
@@ -191,6 +198,6 @@ public:
     void buildSolutionWithGoodMaxWorkload(Solution & solution);
     void buildSolutionWithGoodMaxWorkloadv2(Solution & solution);
     int e_function(double value) const;
-    int validateVariablesOf(const Solution& solution) const;
+    bool validateVariablesOf(const Solution& solution) const;
 };
 #endif /* ProblemFJSSP_hpp */

@@ -9,10 +9,10 @@
 #include "NSGA_II.hpp"
 
 NSGA_II::NSGA_II(const ProblemFJSSP& problem):problem(problem){
-    generations_is_stop_criteria = 0;
-    evaluations_is_stop_criteria = 0;
+    generations_is_stop_criteria = false;
+    evaluations_is_stop_criteria = false;
     max_population = 10;
-    population.reserve(10);
+    population.reserve(max_population);
 }
 
 NSGA_II::~NSGA_II(){
@@ -37,12 +37,12 @@ void NSGA_II::setMaxPopulationSize(unsigned long population_size){
 
 void NSGA_II::setMaxNumberOfGenerations(unsigned long max_generations){
     max_number_of_generations = max_generations;
-    generations_is_stop_criteria = 1;
+    generations_is_stop_criteria = true;
 }
 
 void NSGA_II::setMaxNumberOfEvaluations(unsigned long max_evaluations){
     max_number_of_evaluations = max_evaluations;
-    evaluations_is_stop_criteria = 1;
+    evaluations_is_stop_criteria = true;
 }
 
 unsigned long NSGA_II::getMaxPopulationSize() const{
@@ -50,12 +50,20 @@ unsigned long NSGA_II::getMaxPopulationSize() const{
 }
 
 void NSGA_II::createInitialPopulation(){
-    
+    population.reserve(getMaxPopulationSize());
     population.push_back(sample_solution);
-    
-    for (int n_solutions = 1; n_solutions < getMaxPopulationSize(); ++n_solutions) {
+
+    double stored_mutation = getMutationRate();
+    setMutationRate(0.99);
+    for (unsigned long p = population.size(); p < getMaxPopulationSize(); ++p) {
+        mutationOperator(sample_solution);
         population.push_back(sample_solution);
     }
+    setMutationRate(stored_mutation);
+
+    printf("Initial population.\n");
+    printPopulation();
+    printf("\n");
 }
 
 void NSGA_II::selection(){
@@ -63,14 +71,13 @@ void NSGA_II::selection(){
 }
 
 void NSGA_II::crossover(){
-    
     vector<Solution> offsprings;
     offsprings.reserve(population.size());
-    for (int pop = 0; pop < population.size(); ++pop) {
+    for (unsigned long pop = 0; pop < population.size() - 1; pop += 2) {
         vector<Solution> offs = crossoverOperator(population.at(pop), population.at(pop + 1));
         offsprings.insert(offsprings.end(), offs.begin(), offs.end());
-        pop++;
     }
+
     population.insert(population.end(), offsprings.begin(), offsprings.end());
 }
 
@@ -87,72 +94,89 @@ void NSGA_II::evaluatePopulation(){
 }
 
 void NSGA_II::replacement(){
-    
+    //fastNonDominatedSort();
+    population.erase(population.begin(), population.begin() + getMaxPopulationSize());
 }
 
 vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solution &parent2){
     vector<Solution> offspring;
     offspring.reserve(2);
-    
+
+    parent1.print();
+    parent2.print();
     Solution offspring1(parent1);
     Solution offspring2(parent2);
     
     int mid = parent1.getNumberOfVariables() / 2;
     int chromosome_size = parent1.getNumberOfVariables();
-    int n_code_values = problem.getNumberOfMachines();
     int allel_p1;
     int allel_p2;
     int allel_p1_is_job;
     int allel_p2_is_job;
 
-    FJSSPdata data_os1(problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
-    FJSSPdata data_os2(problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
-    
-    for (int gene = 0; gene < mid; ++gene) {
-        problem.evaluateDynamic(offspring1, data_os1, gene);
-        problem.evaluateDynamic(offspring2, data_os2, gene);
-    }
-    
-    for (int gene = mid; gene < chromosome_size; ++gene) {
-        
-        allel_p1 = parent1.getVariable(gene);
-        allel_p2 = parent1.getVariable(gene);
-        
-        allel_p1_is_job = floor(allel_p1 / n_code_values);
-        allel_p2_is_job = floor(allel_p2 / n_code_values);
+    int jobs_op_allocated_off1[problem.getNumberOfJobs()];
+    int jobs_op_allocated_off2[problem.getNumberOfJobs()];
 
-        if (data_os1.getNumberOfOperationsAllocatedFromJob(allel_p2_is_job) < problem.getNumberOfOperationsInJob(allel_p2_is_job)) {
-            offspring1.setVariable(gene, allel_p2);
-        } else {
-            for (int job = 0; job < problem.getNumberOfJobs(); ++job) {
-                if (data_os1.getNumberOfOperationsAllocatedFromJob(allel_p2_is_job) < problem.getNumberOfOperationsInJob(allel_p2_is_job)) {
-                    job = problem.getNumberOfJobs();
-                    allel_p2 = problem.getCodeMap(allel_p2_is_job, 0);
-                    offspring1.setVariable(gene, allel_p2);
-                }
-            }
-        }
-        
-        if (data_os2.getNumberOfOperationsAllocatedFromJob(allel_p1_is_job) < problem.getNumberOfOperationsInJob(allel_p1_is_job)) {
-            offspring2.setVariable(gene, allel_p1);
-        }else {
-            for (int job = 0; job < problem.getNumberOfJobs(); ++job) {
-                if (data_os2.getNumberOfOperationsAllocatedFromJob(allel_p1_is_job) < problem.getNumberOfOperationsInJob(allel_p1_is_job)) {
-                    job = problem.getNumberOfJobs();
-                    allel_p1 = problem.getCodeMap(allel_p1_is_job, 0);
-                    offspring2.setVariable(gene, allel_p1);
-                }
-            }
-        }
-        
-        problem.evaluateDynamic(offspring1, data_os1, gene);
-        problem.evaluateDynamic(offspring2, data_os2, gene);
+    for (int job = 0; job < problem.getNumberOfJobs(); ++job) {
+        jobs_op_allocated_off1[job] = 0;
+        jobs_op_allocated_off2[job] = 0;
     }
-    
-    
+
+    for (int gene = 0; gene < mid; ++gene) {
+        allel_p1_is_job = problem.getDecodeMap(parent1.getVariable(gene), 0);
+        allel_p2_is_job = problem.getDecodeMap(parent2.getVariable(gene), 0);
+
+        jobs_op_allocated_off1[allel_p1_is_job]++;
+        jobs_op_allocated_off2[allel_p2_is_job]++;
+    }
+
+    for (int gene = mid; gene < chromosome_size; ++gene) {
+        allel_p1 = parent1.getVariable(gene);
+        allel_p2 = parent2.getVariable(gene);
+
+        allel_p1_is_job = problem.getDecodeMap(allel_p1, 0);
+        allel_p2_is_job = problem.getDecodeMap(allel_p2, 0);
+
+        if (jobs_op_allocated_off1[allel_p2_is_job] < problem.getNumberOfOperationsInJob(allel_p2_is_job)) {
+            offspring1.setVariable(gene, allel_p2);
+        } else
+            for (int job = 0; job < problem.getNumberOfJobs(); ++job)
+                if (jobs_op_allocated_off1[job] < problem.getNumberOfOperationsInJob(job)) {
+                    int operation = problem.getOperationInJobIsNumber(job, jobs_op_allocated_off1[job]);
+                    unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(operation);
+                    std::uniform_int_distribution<> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
+                    
+                    int new_machine = problem.getMachinesAvaibleForOperation(operation, unif_int_mach_dis(generator));
+                    allel_p2 = problem.getEncodeMap(job, new_machine);
+                    offspring1.setVariable(gene, allel_p2);
+                    job = problem.getNumberOfJobs();
+                }
+
+        if (jobs_op_allocated_off2[allel_p1_is_job] < problem.getNumberOfOperationsInJob(allel_p1_is_job)) {
+            offspring2.setVariable(gene, allel_p1);
+        }else
+            for (int job = 0; job < problem.getNumberOfJobs(); ++job)
+                if (jobs_op_allocated_off2[job] < problem.getNumberOfOperationsInJob(job)) {
+                    int operation = problem.getOperationInJobIsNumber(job, jobs_op_allocated_off2[job]);
+                    unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(operation);
+                    std::uniform_int_distribution<> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
+                    
+                    int new_machine = problem.getMachinesAvaibleForOperation(operation, unif_int_mach_dis(generator));
+                    allel_p1 = problem.getEncodeMap(job, new_machine);
+                    offspring2.setVariable(gene, allel_p1);
+                    job = problem.getNumberOfJobs();
+                }
+
+        allel_p1_is_job = problem.getDecodeMap(offspring1.getVariable(gene), 0);
+        allel_p2_is_job = problem.getDecodeMap(offspring2.getVariable(gene), 0);
+
+        jobs_op_allocated_off1[allel_p1_is_job]++;
+        jobs_op_allocated_off2[allel_p2_is_job]++;
+    }
+
     offspring.push_back(offspring1);
     offspring.push_back(offspring2);
-    
+
     return offspring;
 }
 
@@ -160,28 +184,49 @@ vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solut
  *  Each gene has a probability to be mutated. The probability is given by the mutation rate.
  **/
 void NSGA_II::mutationOperator(Solution &solution){
-    
-    double mutation_probability;
+
     int chromosome_size = solution.getNumberOfVariables();
-    int n_options = problem.getNumberOfMachines();
-    int new_machine = 0;
-    int gene_to_mutate = 0;
-    int allel_is_from_job = 0;
-    int new_allel = 0;
-    
+
     std::uniform_real_distribution<double> unif_dis(0.0, 1.0);
-    std::uniform_int_distribution<> unif_int_mach_dis(0, problem.getNumberOfMachines() - 1);
+    std::uniform_int_distribution<int> unif_position(0, chromosome_size - 1);
+
+    int jobs_op_allocated[problem.getNumberOfJobs()];
     
+    for (int job = 0; job < problem.getNumberOfJobs(); ++job)
+        jobs_op_allocated[job] = 0;
+
+    /**
+     * The genes are shaked to move them to other position.
+     **/
+    for (int gene = 0; gene < chromosome_size; ++gene)
+        if (unif_dis(generator) < getMutationRate()) {
+            int allel_value = solution.getVariable(gene);
+            int new_position = unif_position(generator);
+            solution.setVariable(gene, solution.getVariable(new_position));
+            solution.setVariable(new_position, allel_value);
+        }
+
+    /**
+     * Then they are mutated to new values.
+     **/
     for (int gene = 0; gene < chromosome_size; ++gene){
-        mutation_probability = unif_dis(generator);
-        if (mutation_probability < getMutationRate()) {
-            gene_to_mutate = solution.getVariable(gene);
-            allel_is_from_job = floor(gene_to_mutate / n_options);
-            new_machine = unif_int_mach_dis(generator);
-            new_allel = problem.getCodeMap(allel_is_from_job, new_machine);
+        int allel_value = solution.getVariable(gene);
+        int allel_is_from_job = problem.getDecodeMap(allel_value, 0);
+        int machine = problem.getDecodeMap(allel_value, 1);
+        int operation = problem.getOperationInJobIsNumber(allel_is_from_job, jobs_op_allocated[allel_is_from_job]);
+
+        if (unif_dis(generator) < getMutationRate() || !problem.operationCanBeAllocatedInMachine(operation, machine)) {
+            unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(operation);
+            std::uniform_int_distribution<> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
+
+            int new_machine = problem.getMachinesAvaibleForOperation(operation, unif_int_mach_dis(generator));
+            int new_allel = problem.getEncodeMap(allel_is_from_job, new_machine);
             solution.setVariable(gene, new_allel);
         }
+
+        jobs_op_allocated[allel_is_from_job]++;
     }
+
     problem.evaluate(solution);
 }
 
@@ -255,43 +300,55 @@ unsigned long NSGA_II::increaseNumberOfEvaluations(){
     return number_of_evaluations_performed++;
 }
 
-int NSGA_II::isStoppingCriteriaReached() const{
+bool NSGA_II::isStoppingCriteriaReached() const{
+    if (stoppingCriteriaIsGenerations())
+        return isMaxNumberOfGenerationsReached();
     
-    if (stoppingCriteriaIsGenerations() && isMaxNumberOfGenerationsReached())
-        return 1;
+    else if (stoppingCriteriaIsEvaluations())
+        return isMaxNumberOfEvaluationsReached();
     
-    if (stoppingCriteriaIsEvaluations() && isMaxNumberOfEvaluationsReached())
-        return 1;
-    
-    return 0;
+    return false;
 }
 
-int NSGA_II::stoppingCriteriaIsGenerations() const{
+bool NSGA_II::stoppingCriteriaIsGenerations() const{
     return generations_is_stop_criteria;
 }
 
-int NSGA_II::stoppingCriteriaIsEvaluations() const{
+bool NSGA_II::stoppingCriteriaIsEvaluations() const{
     return evaluations_is_stop_criteria;
 }
 
-int NSGA_II::isMaxNumberOfGenerationsReached() const{
-    if(number_of_generations_performed < max_number_of_generations)
-        return 0;
-    return 1;
+bool NSGA_II::isMaxNumberOfGenerationsReached() const{
+    if(number_of_generations_performed >= max_number_of_generations)
+        return true;
+    return false;
 }
 
-int NSGA_II::isMaxNumberOfEvaluationsReached() const{
-    if (number_of_evaluations_performed < max_number_of_evaluations)
-        return 0;
-    return 1;
+bool NSGA_II::isMaxNumberOfEvaluationsReached() const{
+    if (number_of_evaluations_performed >= max_number_of_evaluations)
+        return true;
+    return false;
 }
 
 void NSGA_II::updateProgress(){
     increaseNumberOfGenerations();
 }
 
+void NSGA_II::printPopulation() const{
+    for (int nSol = 0; nSol < population.size(); ++nSol)
+        population[nSol].print();
+}
+
+void NSGA_II::initialize(){
+    number_of_generations_performed = 0;
+    number_of_evaluations_performed = 0;
+    createInitialPopulation();
+}
+
 void NSGA_II::solve(){
+    initialize();
     while (!isStoppingCriteriaReached()) {
+        printf("%lu \n", number_of_generations_performed);
         selection();
         crossover();
         mutation();
@@ -299,4 +356,5 @@ void NSGA_II::solve(){
         replacement();
         updateProgress();
     }
+    printPopulation();
 }

@@ -57,8 +57,8 @@ public:
     
     int * getElemensToRepeat();
     int getTotalElements();
-    int getDecodeMap(int map, int position);
-    int getCodeMap(int value1, int value2);
+    int getDecodeMap(int map, int position) const;
+    int getEncodeMap(int value1, int value2) const;
     int getTimesThatValueCanBeRepeated(int value);
     
     /**TSP functions**/
