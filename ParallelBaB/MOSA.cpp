@@ -188,7 +188,7 @@ const Solution MOSA::perturbate(const Solution& solution_input){
             new_machine = unif_int_mach_dis(generator);
             code_to_move = perturbated_output.getVariable(position);
             code_is_from_job = floor(code_to_move / n_code_values);
-            new_code = problem.getCodeMap(code_is_from_job, new_machine);
+            new_code = problem.getEncodeMap(code_is_from_job, new_machine);
             perturbated_output.setVariable(position, perturbated_output.getVariable(new_position));
             perturbated_output.setVariable(new_position, new_code);
         }

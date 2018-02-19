@@ -43,8 +43,8 @@ private:
     unsigned long number_of_generations_performed;
     unsigned long number_of_evaluations_performed;
     
-    int generations_is_stop_criteria;
-    int evaluations_is_stop_criteria;
+    bool generations_is_stop_criteria;
+    bool evaluations_is_stop_criteria;
     unsigned long max_population;
     
     std::default_random_engine generator;
@@ -53,6 +53,7 @@ private:
     Solution sample_solution;
     vector<Solution> population;
     
+    void initialize();
     void createInitialPopulation();
     void selection();
     void crossover();
@@ -68,11 +69,12 @@ private:
     void crowdingDistance();
     unsigned long increaseNumberOfGenerations();
     unsigned long increaseNumberOfEvaluations();
-    int isStoppingCriteriaReached() const;
-    int stoppingCriteriaIsGenerations() const;
-    int stoppingCriteriaIsEvaluations() const;
-    int isMaxNumberOfGenerationsReached() const;
-    int isMaxNumberOfEvaluationsReached() const;
+    bool isStoppingCriteriaReached() const;
+    bool stoppingCriteriaIsGenerations() const;
+    bool stoppingCriteriaIsEvaluations() const;
+    bool isMaxNumberOfGenerationsReached() const;
+    bool isMaxNumberOfEvaluationsReached() const;
     void updateProgress();
+    void printPopulation() const;
 };
 #endif /* NSGA_II_hpp */

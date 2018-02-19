@@ -43,6 +43,7 @@ Problem() {
     earliest_ending_time = nullptr; /** Length equals to number of operations. **/
     eet_of_job = nullptr; /** Length equals to number of jobs. **/
     sum_shortest_proc_times = nullptr; /** D^{k}_{Ñ}. Length equals to number of machines.**/
+    machines_aviability.reserve(0);
 }
 
 ProblemFJSSP::ProblemFJSSP(int totalObjectives, int totalVariables) :
@@ -74,11 +75,13 @@ Problem(totalObjectives, totalVariables) {
     
     lower_bound = nullptr;
     upper_bound = nullptr;
-    
+
     earliest_starting_time = nullptr; /** Length equals to number of operations. **/
     earliest_ending_time = nullptr; /** Length equals to number of operations. **/
     eet_of_job = nullptr; /** Length equals to number of jobs. **/
     sum_shortest_proc_times = nullptr; /** D^{k}_{Ñ}. Length equals to number of machines.**/
+
+    machines_aviability.reserve(totalVariables);
 }
 
 ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy) :
@@ -90,7 +93,7 @@ sum_of_min_Pij(toCopy.getSumOfMinPij()),
 best_workload_found(toCopy.getBestWorkloadFound()),
 best_makespan_found(toCopy.getBestMakespanFound()),
 goodSolutionWithMaxWorkload(toCopy.goodSolutionWithMaxWorkload) {
-    
+
     lower_bound = new int[n_variables];
     upper_bound = new int[n_variables];
     
@@ -170,6 +173,14 @@ goodSolutionWithMaxWorkload(toCopy.goodSolutionWithMaxWorkload) {
             operation_belongs_to_job[operationCounter] = toCopy.getOperationIsFromJob(operationCounter);
             operationCounter++;
         }
+    }
+
+    machines_aviability.reserve(n_operations);
+    for (int operation = 0; operation < toCopy.getNumberOfOperations(); ++operation) {
+        unsigned long machines_aviable = toCopy.getNumberOfMachinesAvaibleForOperation(operation);
+        machines_aviability.push_back(vector<int>());
+        for (unsigned long machine = 0; machine < machines_aviable; ++machine)
+            machines_aviability.at(operation).push_back(toCopy.getMachinesAvaibleForOperation(operation, machine));
     }
 }
 
@@ -581,7 +592,6 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy) {
         assignation_min_Pij[operation] = toCopy.getAssignationMinPij(operation);
         assignation_best_max_workload[operation] = toCopy.getAssignationBestWorkload(operation);
         assignation_best_makespan[operation] = toCopy.getAssignationBestMakespan(operation);
-        
     }
     
     for (job = 0; job < n_jobs; ++job) {
@@ -592,6 +602,15 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy) {
             operationCounter++;
         }
     }
+
+    machines_aviability.reserve(n_operations);
+    for (int operation = 0; operation < toCopy.getNumberOfOperations(); ++operation) {
+        unsigned long machines_aviable = toCopy.getNumberOfMachinesAvaibleForOperation(operation);
+        machines_aviability.push_back(vector<int>());
+        for (unsigned long machine = 0; machine < machines_aviable; ++machine)
+            machines_aviability[operation].push_back(toCopy.getMachinesAvaibleForOperation(operation, machine));
+    }
+
     return *this;
 }
 
@@ -628,7 +647,8 @@ ProblemFJSSP::~ProblemFJSSP() {
     delete[] earliest_ending_time;
     delete[] eet_of_job;
     delete[] sum_shortest_proc_times;
-    
+
+    machines_aviability.clear();
     //delete [] name;
 }
 
@@ -1274,16 +1294,21 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
                     map++;
                 }
             }
-            int sorted_processing[n_machines][n_operations]; //new int * [n_machines];/** Stores the processing times from min to max for each machine. **/
-            int sorted_est[n_operations]; // new int [n_operations];
+            int sorted_processing[n_machines][n_operations]; /** Stores the processing times from min to max for each machine. **/
+            int sorted_est[n_operations];
+            
+            for (int operation = 0; operation < n_operations; ++operation)
+                machines_aviability.push_back(vector<int>());
             
             for (int machine = 0; machine < n_machines; ++machine)
                 min_workloads[machine] = 0;
+            
             int op_counter = 0;
             for (int n_job = 0; n_job < n_jobs; ++n_job) {
-                int token = (instance_with_release_time == 1)?2:1;
+                int token = (instance_with_release_time == 1) ? 2 : 1;
                 split(job_line[n_job], ' ', elemens);
                 for (int n_op_in_job = 0; n_op_in_job < n_operations_in_job[n_job]; ++n_op_in_job) {
+                    
                     int op_can_be_proc_in_n_mach = std::stoi(elemens.at(token++));
                     processing_time[op_counter] = new int[n_machines];
                     
@@ -1294,7 +1319,11 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
                         int machine = std::stoi(elemens.at(token++));
                         int proc_ti = std::stoi(elemens.at(token++));
                         processing_time[op_counter][machine - 1] = proc_ti;
+                        
+                        if (processing_time[op_counter][machine - 1] != INF_PROC_TIME)
+                            machines_aviability.at(op_counter).push_back(machine - 1);
                     }
+                    
                     op_counter++;
                 }
             }
@@ -1601,12 +1630,12 @@ int * ProblemFJSSP::getElemensToRepeat() {
 }
 
 /** If position = 0 returns the job, if position = 1 returns the machine. (Decodes the map in job or machine). **/
-int ProblemFJSSP::getDecodeMap(int map, int position) {
-    return decode_map_to_job_machine[map][position];
+int ProblemFJSSP::getDecodeMap(int code, int parameter) const {
+    return decode_map_to_job_machine[code][parameter];
 }
 
 /** Returns the map corresponding to the configuration of job and machine. (Codes the job and machine in a map). **/
-int ProblemFJSSP::getCodeMap(int job, int machine) {
+int ProblemFJSSP::getEncodeMap(int job, int machine) const{
     return encode_job_machine_to_map[job][machine];
 }
 
@@ -1720,6 +1749,20 @@ int ProblemFJSSP::getMaxEarliestEndingTime() const {
 
 int ProblemFJSSP::getSumOf_M_smallestEST() const {
     return sum_M_smallest_est;
+}
+
+unsigned long ProblemFJSSP::getNumberOfMachinesAvaibleForOperation(unsigned long operation) const{
+    return machines_aviability.at(operation).size();
+}
+
+int ProblemFJSSP::getMachinesAvaibleForOperation(unsigned long operation, unsigned long machine) const {
+    return machines_aviability.at(operation).at(machine);
+}
+
+bool ProblemFJSSP::operationCanBeAllocatedInMachine(int operation, int machine ) const {
+    if (getProccessingTime(operation, machine) != INF_PROC_TIME)
+        return true;
+    return false;
 }
 
 void ProblemFJSSP::setEarliestStartingTime(int nOperation, int nValue) {
@@ -1960,10 +2003,26 @@ void ProblemFJSSP::printPartialSolution(const Solution & solution, int level) co
 }
 
 /** This function return the number of variables which are out of range from varible values.**/
-int ProblemFJSSP::validateVariablesOf(const Solution& solution) const {
-    int number_of_invalid_variables = 0;
-    for (int variable = 0; variable < n_variables; ++variable)
-        if (solution.getVariable(variable) < lower_bound[variable] || solution.getVariable(variable) > upper_bound[variable])
-            number_of_invalid_variables++;
-    return number_of_invalid_variables;
+bool ProblemFJSSP::validateVariablesOf(const Solution& solution) const {
+    bool is_valid = true;
+    int number_of_operations_allocated_from_job[getNumberOfOperations()];
+
+    for (int job = 0; job < getNumberOfJobs(); job++)
+        number_of_operations_allocated_from_job[job] = 0;
+
+    for (int variable = 0; variable < n_variables; ++variable){
+        int code = solution.getVariable(variable);
+        int job = getDecodeMap(code, 0);
+        int machine = getDecodeMap(code, 1);
+        int operation = getOperationInJobIsNumber(job, number_of_operations_allocated_from_job[job]);
+
+        if (operationCanBeAllocatedInMachine(operation, machine) && number_of_operations_allocated_from_job[job] < getNumberOfOperationsInJob(job))
+            is_valid = true;
+        else
+            is_valid = false;
+
+        number_of_operations_allocated_from_job[job]++;
+    }
+
+    return is_valid;
 }

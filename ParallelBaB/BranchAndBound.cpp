@@ -200,7 +200,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
         if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element))
             for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
                 
-                toAdd = problem.getCodeMap(element, machine);
+                toAdd = problem.getEncodeMap(element, machine);
                 incumbent_s.setVariable(split_level, toAdd);
                 problem.evaluateDynamic(incumbent_s, fjssp_data, split_level);
                 increaseExploredNodes();
@@ -409,7 +409,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             for (element = 0; element < problem.getTotalElements(); ++element)
                 if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element))
                     for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
-                        toAdd = problem.getCodeMap(element, machine);
+                        toAdd = problem.getEncodeMap(element, machine);
                         
                         solution.setVariable(currentLevel + 1, toAdd);
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
@@ -613,7 +613,7 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
             }
             
             if (isIn == 0) {
-                branch_to_compute.setValueAt(totalLevels, problem.getCodeMap(jobToCheck, problem.getTimesThatValueCanBeRepeated(0) - 1));
+                branch_to_compute.setValueAt(totalLevels, problem.getEncodeMap(jobToCheck, problem.getTimesThatValueCanBeRepeated(0) - 1));
                 job = 0; /** To end loop. **/
             }
         }

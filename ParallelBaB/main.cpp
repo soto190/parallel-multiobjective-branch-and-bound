@@ -40,7 +40,7 @@ void one_node(int argc, char* argv[]){
     const int arg_input_file1 = 3;
     const int arg_input_file2 = 4;
     const int arg_output = 5;
-    ProblemFJSSP  problem (2, 1);
+    ProblemFJSSP problem (2, 1);
 
     int number_of_threads = stoi(argv[arg_num_threads]);
     printf("Number of threads:%3d\n", number_of_threads);
@@ -65,6 +65,7 @@ void one_node(int argc, char* argv[]){
     problem.setName(splited[0].c_str());
     problem.loadInstance(files, extension);
     problem.printProblemInfo();
+    
     /** End **/
     
     /** Preparing output files:
@@ -92,17 +93,15 @@ void one_node(int argc, char* argv[]){
         problem.createDefaultSolution(sample_solution);
         problem.evaluate(sample_solution);
         sample_solution.print();
-        
 
         NSGA_II nsgaii_algorithm(problem);
         nsgaii_algorithm.setSampleSolution(sample_solution);
         nsgaii_algorithm.setCrossoverRate(0.90);
-        nsgaii_algorithm.setMutationRate(0.80);
-        nsgaii_algorithm.setMaxPopulationSize(20);
-        nsgaii_algorithm.setMaxNumberOfGenerations(50);
+        nsgaii_algorithm.setMutationRate(0.90);
+        nsgaii_algorithm.setMaxPopulationSize(50);
+        nsgaii_algorithm.setMaxNumberOfGenerations(100);
         nsgaii_algorithm.solve();
-        
-        
+
         /*MOSA algorithm(problem);
         algorithm.setSampleSolution(sample_solution);
         algorithm.setCoolingRate(0.96);
