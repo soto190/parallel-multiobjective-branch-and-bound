@@ -18,6 +18,8 @@
 #include <ctime>
 #include <fstream>
 #include <iomanip>
+#include "NSGA_II.hpp"
+#include "MOSA.hpp"
 #include "Problem.hpp"
 #include "ProblemFJSSP.hpp"
 #include "Solution.hpp"

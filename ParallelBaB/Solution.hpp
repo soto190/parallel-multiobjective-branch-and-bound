@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <random>
 #include "SolutionException.hpp"
 
 enum DominanceRelation {
@@ -32,12 +33,16 @@ private:
     int n_objectives;
     int n_variables;
     int build_up_to = -1;
+    int rank;
+    int dominated_by;
+    int index;
+    double distance;
     double * objective;
     int * variable;
-    
+
+    unsigned int sort_by;
 public:
     
-    int machineWithMakespan; /** TODO: this can be removed and all the related functions. **/
     double * execTime; /** TODO: this can be removed and all the related functions. **/
     
     Solution();
@@ -48,19 +53,33 @@ public:
     int setVariable(int index, int value) throw(SolutionException);
     void setObjective(int index, double value) throw(SolutionException);
     void setBuildUpTo(int index);
+    void setRank(int n_rank);
+    void setDominatedBy(int n_value);
+    void setDistance(double distance);
+    void setIndex(int new_index);
+    void setSortByObjective(unsigned int objective);
+    void incrementDominatedBy();
+    void decrementDominatedBy();
     
     double getObjective(int n_objective) const throw(SolutionException);
     int getVariable(int index) const throw(SolutionException);
     int getNumberOfVariables() const;
     int getNumberOfObjectives() const;
     int getBuildUpTo() const;
+    int getRank() const;
+    double getDistance() const;
+    int getIndex() const;
+    unsigned int getSortByObjective() const;
+    int getDominatedBy() const;
     
-    DominanceRelation dominates(const Solution &solution) const;
+    DominanceRelation dominanceTest(const Solution &solution) const;
     
     /** Overloading operators. **/
     Solution& operator=(const Solution &solution);
     Solution& operator()(int number_of_objectives, int number_of_variables);
-    int operator==(const Solution & solution);
+    bool operator==(const Solution & solution) const;
+    bool operator>(const Solution& solution) const;
+    bool operator<(const Solution& solution) const;
     
     /** print functions. **/
     void print() const;

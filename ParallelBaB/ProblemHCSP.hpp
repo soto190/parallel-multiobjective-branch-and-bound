@@ -63,9 +63,9 @@ public:
     int getStartingRow();
     int getFinalLevel();
     
-    int getDecodeMap(int map, int position);
-    int getCodeMap(int value1, int value2);
-    int getTimesValueIsRepeated(int value);
+    int getDecodeMap(int map, int position) const;
+    int getEncodeMap(int value1, int value2) const;
+    int getTimesThatValueCanBeRepeated(int value);
     
     int * getElemensToRepeat();
     int getTotalElements();

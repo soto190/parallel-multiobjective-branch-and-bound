@@ -132,15 +132,15 @@ int Problem::getTotalElements() {
     return 0;
 }
 
-int Problem::getDecodeMap(int map, int position) {
+int Problem::getDecodeMap(int code, int parameter) const {
     return 0;
 }
 
-int Problem::getCodeMap(int value1, int value2) {
+int Problem::getEncodeMap(int parameter1, int parameter2) const {
     return 0;
 }
 
-int Problem::getTimesValueIsRepeated(int value) {
+int Problem::getTimesThatValueCanBeRepeated(int value) {
     return 0;
 }
 

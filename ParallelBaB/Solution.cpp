@@ -15,8 +15,12 @@
  */
 Solution::Solution():
 n_objectives(0),
-n_variables(0) {
-    machineWithMakespan = 0;
+n_variables(0),
+rank(0),
+distance(0),
+sort_by(0),
+index(0),
+dominated_by(0){
     build_up_to = -1;
     objective = nullptr;
     variable = nullptr;
@@ -26,10 +30,14 @@ n_variables(0) {
 Solution::Solution(int numberOfObjectives, int numberOfVariables):
 n_objectives(numberOfObjectives),
 n_variables(numberOfVariables),
+rank(0),
+distance(0),
+sort_by(0),
+dominated_by(0),
 build_up_to(-1),
 objective(new double[numberOfObjectives]),
 variable(new int[numberOfVariables]),
-machineWithMakespan(0),
+index(0),
 execTime(new double[16]){
     
     int var = 0, obj = 0;
@@ -46,8 +54,12 @@ execTime(new double[16]){
 Solution::Solution(const Solution &solution):
 n_objectives(solution.getNumberOfObjectives()),
 n_variables(solution.getNumberOfVariables()),
+rank(solution.getRank()),
+distance(solution.getDistance()),
+sort_by(solution.getSortByObjective()),
+dominated_by(solution.getDominatedBy()),
 build_up_to(solution.getBuildUpTo()),
-machineWithMakespan(solution.machineWithMakespan){
+index(solution.getIndex()){
     
     objective = new double[n_objectives];
     variable = new int[n_variables];
@@ -61,13 +73,17 @@ machineWithMakespan(solution.machineWithMakespan){
     for (var = 0; var < n_variables; ++var)
         variable[var] = solution.getVariable(var);
     
-    for (var = 0; var < 16; ++var)
-        execTime[var] = solution.execTime[var];
+    //for (var = 0; var < 16; ++var)
+      //  execTime[var] = solution.execTime[var];
 }
 
 Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
     
-    machineWithMakespan = 0;
+    index = 0;
+    rank = 0;
+    dominated_by = 0;
+    distance = 0;
+    sort_by = 0;
     build_up_to = -1;
     n_objectives = numberOfObjectives;
     n_variables = numberOfVariables;
@@ -105,7 +121,11 @@ Solution& Solution::operator=(const Solution &solution) {
     build_up_to = solution.getBuildUpTo();
     n_objectives = solution.getNumberOfObjectives();
     n_variables = solution.getNumberOfVariables();
-    
+    rank = solution.getRank();
+    distance = solution.getDistance();
+    index = solution.getIndex();
+    sort_by = solution.getSortByObjective();
+    dominated_by = solution.getDominatedBy();
     /** Freeing previously used memory. **/
     if (objective != nullptr) {
         delete[] objective;
@@ -126,18 +146,10 @@ Solution& Solution::operator=(const Solution &solution) {
         variable[var] = solution.getVariable(var);
     
     /**Section for the HCSP problem**/
-    for (var = 0; var < 16; ++var)
-        execTime[var] = solution.execTime[var];
+    //for (var = 0; var < 16; ++var)
+      //  execTime[var] = solution.execTime[var];
     
     return *this;
-}
-
-int Solution::operator==(const Solution &solution){
-    int index = 1;
-    for (index = 0; index < n_objectives; ++index)
-        if (objective[index] < solution.getObjective(index) || objective[index] > solution.getObjective(index))
-            return 0;
-    return index;
 }
 
 Solution::~Solution() {
@@ -146,11 +158,78 @@ Solution::~Solution() {
     delete[] execTime;
 }
 
-void Solution::setBuildUpTo(int index){
+bool Solution::operator==(const Solution &solution) const {
+    for (int index = 0; index < n_objectives; ++index)
+        if (objective[index] < solution.getObjective(index) || objective[index] > solution.getObjective(index))
+            return false;
+    return true;
+}
+
+bool Solution::operator>(const Solution &solution) const {
+    bool result = true;
+    switch (sort_by) {
+        case 0:
+            result = objective[sort_by] > solution.getObjective(sort_by);
+            break;
+
+        case 1:
+            result = objective[sort_by] > solution.getObjective(sort_by);
+            break;
+
+        case 2:
+            result = distance > solution.getDistance();
+            break;
+
+        default:
+            result = objective[0] > solution.getObjective(0);
+            break;
+    }
+    return result;
+}
+
+bool Solution::operator<(const Solution &solution) const {
+    bool result = true;
+    switch (sort_by) {
+        case 0:
+            result = objective[sort_by] < solution.getObjective(sort_by);
+            break;
+
+        case 1:
+            result = objective[sort_by] < solution.getObjective(sort_by);
+            break;
+
+        case 2:
+            result = distance < solution.getDistance();
+            break;
+
+        default:
+            result = objective[0] < solution.getObjective(0);
+            break;
+    }
+    return result;
+}
+
+void Solution::setBuildUpTo(int index) {
     build_up_to = index;
 }
 
-void Solution::setObjective(int index_obj, double value) throw(SolutionException){
+void Solution::setRank(int n_rank) {
+    rank = n_rank;
+}
+
+void Solution::setDistance(double n_distance) {
+    distance = n_distance;
+}
+
+void Solution::setIndex(int new_index) {
+    index = new_index;
+}
+
+void Solution::setDominatedBy(int n_value) {
+    dominated_by = n_value;
+}
+
+void Solution::setObjective(int index_obj, double value) throw(SolutionException) {
     try{
         if (index_obj >= n_objectives)
             throw SolutionException(SolutionErrorCode::OBJECTIVES_OUT_OF_RANGE, "when calling setObjective(obj:" + std::to_string(static_cast<long long>(index_obj)) + ", value:" + std::to_string(static_cast<long long>(value)) + ")");
@@ -162,7 +241,7 @@ void Solution::setObjective(int index_obj, double value) throw(SolutionException
     }
 }
 
-int Solution::setVariable(int index_variable, int value) throw(SolutionException){
+int Solution::setVariable(int index_variable, int value) throw(SolutionException) {
     try {
         if (index_variable >= n_variables)
             throw SolutionException(SolutionErrorCode::VARIABLES_OUT_OF_RANGE, "when calling setVariable(var:" + std::to_string(static_cast<long long>(index_variable)) + ", value:" + std::to_string(static_cast<long long>(value)) + ")");
@@ -179,7 +258,11 @@ int Solution::setVariable(int index_variable, int value) throw(SolutionException
     return -1;
 }
 
-double Solution::getObjective(int index_obj) const throw(SolutionException){
+void Solution::setSortByObjective(unsigned int objective) {
+    sort_by = objective;
+}
+
+double Solution::getObjective(int index_obj) const throw(SolutionException) {
     try{
         if (index_obj >= n_objectives)
             throw SolutionException(SolutionErrorCode::OBJECTIVES_OUT_OF_RANGE, "when calling getObjective(obj:" + std::to_string(static_cast<long long>(index_obj)) + ")");
@@ -193,7 +276,7 @@ double Solution::getObjective(int index_obj) const throw(SolutionException){
     return -1;
 }
 
-int Solution::getVariable(int index_variable) const throw(SolutionException){
+int Solution::getVariable(int index_variable) const throw(SolutionException) {
     try {
         if (index_variable >= n_variables)
             throw SolutionException(SolutionErrorCode::VARIABLES_OUT_OF_RANGE, "when calling getVariable(var:" + std::to_string(static_cast<long long>(index_variable)) + ")");
@@ -218,7 +301,35 @@ int Solution::getBuildUpTo() const {
     return build_up_to;
 }
 
-DominanceRelation Solution::dominates(const Solution & solution) const {
+int Solution::getRank() const {
+    return rank;
+}
+
+double Solution::getDistance() const {
+    return distance;
+}
+
+int Solution::getIndex() const {
+    return index;
+}
+
+unsigned int Solution::getSortByObjective() const {
+    return sort_by;
+}
+
+int Solution::getDominatedBy() const {
+    return dominated_by;
+}
+
+void Solution::incrementDominatedBy() {
+    dominated_by++;
+}
+
+void Solution::decrementDominatedBy() {
+    dominated_by--;
+}
+
+DominanceRelation Solution::dominanceTest(const Solution & solution) const {
     int n_obj = 0;
     int localSolIsBetterIn = 0;
     int exterSolIsBetterIn = 0;
@@ -256,15 +367,17 @@ DominanceRelation Solution::dominates(const Solution & solution) const {
 void Solution::print() const {
     char sep = '-';
     for (int n_obj = 0; n_obj < n_objectives; ++n_obj)
-        printf("%4.0f", getObjective(n_obj));
+        printf("%4.0f ", getObjective(n_obj));
     
-    printf(" | ");
+    printf("| ");
     
     for (int n_var = 0; n_var < n_variables; ++n_var)
         if (variable[n_var] == -1)
             printf("%6c", sep);
         else
             printf("%6d", variable[n_var]);
+    printf(" | ");
+    printf("%6.3f", (distance == MAXFLOAT? 999999.999:distance));
     printf(" |\n");
 }
 

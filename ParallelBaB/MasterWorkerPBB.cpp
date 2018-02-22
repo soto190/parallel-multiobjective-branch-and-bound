@@ -376,7 +376,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                             sSub = subFront.at(sub_sol);
                             send_sol = 1;
                             for (int fro_sol = 0; fro_sol < paretoFront.size(); ++fro_sol) {
-                                DominanceRelation result_dom = sSub.dominates(paretoFront.at(fro_sol));
+                                DominanceRelation result_dom = sSub.dominanceTest(paretoFront.at(fro_sol));
                                 if(result_dom == Equals || result_dom == Dominated){
                                     send_sol = 0;
                                     fro_sol = (int) paretoFront.size();
@@ -735,9 +735,9 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split){
     }
     
     for (int job = 0; job < num_elements; ++job)
-        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(job) < problem.getTimesValueIsRepeated(job))
+        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(job) < problem.getTimesThatValueCanBeRepeated(job))
             for (int machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
-                value_to_add = problem.getCodeMap(job, machine);
+                value_to_add = problem.getEncodeMap(job, machine);
                 solution.setVariable(split_level, value_to_add);
                 problem.evaluateDynamic(solution, fjssp_data, split_level);
                 branches_explored++;

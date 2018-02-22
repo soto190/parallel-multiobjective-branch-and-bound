@@ -143,7 +143,33 @@ void BranchAndBound::initialize(int starts_tree) {
     number_of_updates_in_lower_bound = 0;
     number_of_nodes = computeTotalNodes(number_of_tree_levels);
     number_of_shared_works = 0;
-    
+
+    Solution sample_solution(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.createDefaultSolution(sample_solution);
+    problem.evaluate(sample_solution);
+
+    NSGA_II nsgaii_algorithm(problem);
+    nsgaii_algorithm.setSampleSolution(sample_solution);
+    nsgaii_algorithm.setCrossoverRate(0.90);
+    nsgaii_algorithm.setMutationRate(0.90);
+    nsgaii_algorithm.setMaxPopulationSize(50);
+    nsgaii_algorithm.setMaxNumberOfGenerations(50);
+    ParetoFront nsgaii_pf = nsgaii_algorithm.solve();
+
+    MOSA mosa_algorithm(problem);
+    mosa_algorithm.setSampleSolution(sample_solution);
+    mosa_algorithm.setCoolingRate(0.96);
+    mosa_algorithm.setMaxMetropolisIterations(16);
+    mosa_algorithm.setInitialTemperature(1000);
+    mosa_algorithm.setFinalTemperature(0.001);
+    mosa_algorithm.setPerturbationRate(0.950);
+    ParetoFront mosa_pf = mosa_algorithm.solve();
+
+    nsgaii_pf.join(mosa_pf);
+
+    for (unsigned long solution_pf = 0; solution_pf < nsgaii_pf.size(); ++solution_pf)
+        updateBoundsWithSolution(nsgaii_pf.at(solution_pf));
+
     problem.createDefaultSolution(incumbent_s);
     updateBoundsWithSolution(incumbent_s);
 }
@@ -197,10 +223,10 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     }
     
     for (element = 0; element < num_elements; ++element)
-        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesValueIsRepeated(element))
+        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element))
             for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
                 
-                toAdd = problem.getCodeMap(element, machine);
+                toAdd = problem.getEncodeMap(element, machine);
                 incumbent_s.setVariable(split_level, toAdd);
                 problem.evaluateDynamic(incumbent_s, fjssp_data, split_level);
                 increaseExploredNodes();
@@ -405,11 +431,11 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             break;
             
         case ProblemType::permutation_with_repetition_and_combination:
-            
+            /** TODO: test to add only nodes with feasible solutions. **/
             for (element = 0; element < problem.getTotalElements(); ++element)
-                if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesValueIsRepeated(element))
+                if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element))
                     for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
-                        toAdd = problem.getCodeMap(element, machine);
+                        toAdd = problem.getEncodeMap(element, machine);
                         
                         solution.setVariable(currentLevel + 1, toAdd);
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
@@ -613,7 +639,7 @@ void BranchAndBound::computeLastBranch(Interval & branch_to_compute) {
             }
             
             if (isIn == 0) {
-                branch_to_compute.setValueAt(totalLevels, problem.getCodeMap(jobToCheck, problem.getTimesValueIsRepeated(0) - 1));
+                branch_to_compute.setValueAt(totalLevels, problem.getEncodeMap(jobToCheck, problem.getTimesThatValueCanBeRepeated(0) - 1));
                 job = 0; /** To end loop. **/
             }
         }

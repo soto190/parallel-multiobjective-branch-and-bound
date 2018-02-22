@@ -23,13 +23,13 @@ int ProblemVRP::getUpperBound(int indexVar) const{ return 1; }
 int ProblemVRP::getLowerBoundInObj(int nObj) const{ return INT_MAX;}
 
 ProblemType ProblemVRP::getType() const {return ProblemType::combination;}
-int ProblemVRP::getStartingRow(){return 0;}
-int ProblemVRP::getFinalLevel(){return 0;}
-int ProblemVRP::getTotalElements(){return 0;}
-int * ProblemVRP::getElemensToRepeat(){return nullptr;}
-int ProblemVRP::getDecodeMap(int map, int position){ return 0;}
-int ProblemVRP::getCodeMap(int value1, int value2){return 0;}
-int ProblemVRP::getTimesValueIsRepeated(int value){return 0;}
+int ProblemVRP::getStartingRow() {return 0;}
+int ProblemVRP::getFinalLevel() {return 0;}
+int ProblemVRP::getTotalElements() {return 0;}
+int * ProblemVRP::getElemensToRepeat() {return nullptr;}
+int ProblemVRP::getDecodeMap(int map, int position) const {return 0;}
+int ProblemVRP::getEncodeMap(int value1, int value2) const {return 0;}
+int ProblemVRP::getTimesThatValueCanBeRepeated(int value){return 0;}
 void ProblemVRP::createDefaultSolution(Solution& solution){}
 void ProblemVRP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){}
 void ProblemVRP::printInstance(){ printf("Hello from Problem VRP!\n");}

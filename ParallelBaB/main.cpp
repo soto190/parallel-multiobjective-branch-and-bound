@@ -14,6 +14,10 @@
 #include <iostream>
 #include <cstring>
 #include <exception>
+#include <tbb/task_scheduler_init.h>
+#include <tbb/blocked_range.h>
+#include <tbb/parallel_for.h>
+#include <tbb/task_group.h>
 #include "Solution.hpp"
 #include "Problem.hpp"
 #include "ProblemHCSP.hpp"
@@ -25,10 +29,8 @@
 #include "myutils.hpp"
 #include "GridContainer.hpp"
 #include "MasterWorkerPBB.hpp"
-#include <tbb/task_scheduler_init.h>
-#include <tbb/blocked_range.h>
-#include <tbb/parallel_for.h>
-#include <tbb/task_group.h>
+#include "NSGA_II.hpp"
+#include "MOSA.hpp"
 
 using namespace std;
 
@@ -38,7 +40,7 @@ void one_node(int argc, char* argv[]){
     const int arg_input_file1 = 3;
     const int arg_input_file2 = 4;
     const int arg_output = 5;
-    ProblemFJSSP  problem (2, 1);
+    ProblemFJSSP problem (2, 1);
 
     int number_of_threads = stoi(argv[arg_num_threads]);
     printf("Number of threads:%3d\n", number_of_threads);
@@ -63,6 +65,7 @@ void one_node(int argc, char* argv[]){
     problem.setName(splited[0].c_str());
     problem.loadInstance(files, extension);
     problem.printProblemInfo();
+    
     /** End **/
     
     /** Preparing output files:
@@ -75,13 +78,14 @@ void one_node(int argc, char* argv[]){
     try {
         
         tbb::task_scheduler_init init(number_of_threads);
+
         ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(0, number_of_threads, problem);
         pbb->setParetoFrontFile(outputFile.c_str());
         pbb->setSummarizeFile(summarizeFile.c_str());
         
         printf("Spawning root...\n");
         tbb::task::spawn_root_and_wait(*pbb);
-        
+
     } catch (tbb::tbb_exception& e) {
         std::cerr << "Intercepted exception:\n" << e.name();
         std::cerr << "Reason is:\n" << e.what();
@@ -89,6 +93,7 @@ void one_node(int argc, char* argv[]){
     
     printf("Done.\n");
 }
+
 /**
  * argv[1] = number of threads.
  * argv[2] = problem: TSP, HCSP, VRP, and FJSSP.
