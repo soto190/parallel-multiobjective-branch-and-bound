@@ -115,7 +115,7 @@ void extractParetoFront(std::vector<Solution>& front) {
     unsigned long nextSol = 0;
     unsigned long currentSol = 0;
     DominanceRelation domination;
-    if (front.size() > 0) {
+    if (front.size() > 0)
         for (currentSol = 0; currentSol < front.size() - 1; ++currentSol) {
             Solution solution = front.at(currentSol);
             for (nextSol = currentSol + 1; nextSol < front.size(); ++nextSol) {
@@ -133,5 +133,4 @@ void extractParetoFront(std::vector<Solution>& front) {
                 }
             }
         }
-    }
 }

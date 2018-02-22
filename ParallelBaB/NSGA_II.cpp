@@ -8,48 +8,48 @@
 
 #include "NSGA_II.hpp"
 
-NSGA_II::NSGA_II(const ProblemFJSSP& problem):problem(problem){
+NSGA_II::NSGA_II(const ProblemFJSSP& problem):problem(problem) {
     generations_is_stop_criteria = false;
     evaluations_is_stop_criteria = false;
     max_population = 10;
     population.reserve(max_population * 2);
 }
 
-NSGA_II::~NSGA_II(){
+NSGA_II::~NSGA_II() {
     population.clear();
 }
 
-void NSGA_II::setSampleSolution(const Solution &solution){
+void NSGA_II::setSampleSolution(const Solution &solution) {
     sample_solution = solution;
 }
 
-void NSGA_II::setCrossoverRate(double rate){
+void NSGA_II::setCrossoverRate(double rate) {
     crossover_rate = rate;
 }
 
-void NSGA_II::setMutationRate(double rate){
+void NSGA_II::setMutationRate(double rate) {
     mutation_rate = rate;
 }
 
-void NSGA_II::setMaxPopulationSize(unsigned long population_size){
+void NSGA_II::setMaxPopulationSize(unsigned long population_size) {
     max_population = population_size;
 }
 
-void NSGA_II::setMaxNumberOfGenerations(unsigned long max_generations){
+void NSGA_II::setMaxNumberOfGenerations(unsigned long max_generations) {
     max_number_of_generations = max_generations;
     generations_is_stop_criteria = true;
 }
 
-void NSGA_II::setMaxNumberOfEvaluations(unsigned long max_evaluations){
+void NSGA_II::setMaxNumberOfEvaluations(unsigned long max_evaluations) {
     max_number_of_evaluations = max_evaluations;
     evaluations_is_stop_criteria = true;
 }
 
-unsigned long NSGA_II::getMaxPopulationSize() const{
+unsigned long NSGA_II::getMaxPopulationSize() const {
     return max_population;
 }
 
-void NSGA_II::createInitialPopulation(){
+void NSGA_II::createInitialPopulation() {
     population.reserve(getMaxPopulationSize() * 2);
     population.push_back(sample_solution);
 
@@ -62,11 +62,11 @@ void NSGA_II::createInitialPopulation(){
     setMutationRate(stored_mutation);
 }
 
-void NSGA_II::selection(){
+void NSGA_II::selection() {
     
 }
 
-void NSGA_II::crossover(){
+void NSGA_II::crossover() {
     vector<Solution> offsprings;
     offsprings.reserve(population.size());
     for (unsigned long pop = 0; pop < population.size() - 1; pop += 2) {
@@ -77,23 +77,23 @@ void NSGA_II::crossover(){
     population.insert(population.end(), offsprings.begin(), offsprings.end());
 }
 
-void NSGA_II::mutation(){
+void NSGA_II::mutation() {
     std::vector<Solution>::iterator it_solution;
     for (it_solution = population.begin(); it_solution != population.end(); ++it_solution)
         mutationOperator(*it_solution);
 }
 
-void NSGA_II::evaluatePopulation(){
+void NSGA_II::evaluatePopulation() {
     std::vector<Solution>::iterator it_solution;
     for (it_solution = population.begin(); it_solution != population.end(); ++it_solution)
         problem.evaluate(*it_solution);
 }
 
-void NSGA_II::replacement(){
+void NSGA_II::replacement() {
     population = fastNonDominatedSort(population);
 }
 
-vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solution &parent2){
+vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solution &parent2) {
     vector<Solution> offspring;
     offspring.reserve(2);
 
@@ -130,9 +130,9 @@ vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solut
         allel_p1_is_job = problem.getDecodeMap(allel_p1, 0);
         allel_p2_is_job = problem.getDecodeMap(allel_p2, 0);
 
-        if (jobs_op_allocated_off1[allel_p2_is_job] < problem.getNumberOfOperationsInJob(allel_p2_is_job)) {
+        if (jobs_op_allocated_off1[allel_p2_is_job] < problem.getNumberOfOperationsInJob(allel_p2_is_job))
             offspring1.setVariable(gene, allel_p2);
-        } else
+        else
             for (int job = 0; job < problem.getNumberOfJobs(); ++job)
                 if (jobs_op_allocated_off1[job] < problem.getNumberOfOperationsInJob(job)) {
                     int operation = problem.getOperationInJobIsNumber(job, jobs_op_allocated_off1[job]);
@@ -145,9 +145,9 @@ vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solut
                     job = problem.getNumberOfJobs();
                 }
 
-        if (jobs_op_allocated_off2[allel_p1_is_job] < problem.getNumberOfOperationsInJob(allel_p1_is_job)) {
+        if (jobs_op_allocated_off2[allel_p1_is_job] < problem.getNumberOfOperationsInJob(allel_p1_is_job))
             offspring2.setVariable(gene, allel_p1);
-        }else
+        else
             for (int job = 0; job < problem.getNumberOfJobs(); ++job)
                 if (jobs_op_allocated_off2[job] < problem.getNumberOfOperationsInJob(job)) {
                     int operation = problem.getOperationInJobIsNumber(job, jobs_op_allocated_off2[job]);
@@ -176,7 +176,7 @@ vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solut
 /**
  *  Each gene has a probability to be mutated. The probability is given by the mutation rate.
  **/
-void NSGA_II::mutationOperator(Solution &solution){
+void NSGA_II::mutationOperator(Solution &solution) {
 
     int chromosome_size = solution.getNumberOfVariables();
 
@@ -223,11 +223,11 @@ void NSGA_II::mutationOperator(Solution &solution){
     problem.evaluate(solution);
 }
 
-double NSGA_II::getCrossoverRate() const{
+double NSGA_II::getCrossoverRate() const {
     return crossover_rate;
 }
 
-double NSGA_II::getMutationRate() const{
+double NSGA_II::getMutationRate() const {
     return mutation_rate;
 }
 
@@ -288,7 +288,7 @@ vector<Solution> NSGA_II::fastNonDominatedSort(vector<Solution>& population_to_s
             if (getMaxPopulationSize() - new_population.size() > pareto_fronts.at(front).size())
                 for (std::vector<Solution*>::iterator solution_p = pareto_fronts.at(front).begin(); solution_p != pareto_fronts.at(front).end(); ++solution_p)
                     new_population.push_back(Solution(*(*solution_p)));
-            else{
+            else {
                 vector<Solution> crowded_front;
                 crowded_front.reserve(pareto_fronts.at(front).size());
 
@@ -305,7 +305,7 @@ vector<Solution> NSGA_II::fastNonDominatedSort(vector<Solution>& population_to_s
     return new_population;
 }
 
-vector<Solution> NSGA_II::crowdingDistanceAssignment(vector<Solution>& front){
+vector<Solution> NSGA_II::crowdingDistanceAssignment(vector<Solution>& front) {
     unsigned long length = front.size() - 1;
     unsigned int n_objectives = front.at(0).getNumberOfObjectives();
 
@@ -332,15 +332,15 @@ vector<Solution> NSGA_II::crowdingDistanceAssignment(vector<Solution>& front){
     return front;
 }
 
-unsigned long NSGA_II::increaseNumberOfGenerations(){
+unsigned long NSGA_II::increaseNumberOfGenerations() {
     return number_of_generations_performed++;
 }
 
-unsigned long NSGA_II::increaseNumberOfEvaluations(){
+unsigned long NSGA_II::increaseNumberOfEvaluations() {
     return number_of_evaluations_performed++;
 }
 
-bool NSGA_II::isStoppingCriteriaReached() const{
+bool NSGA_II::isStoppingCriteriaReached() const {
     if (stoppingCriteriaIsGenerations())
         return isMaxNumberOfGenerationsReached();
     
@@ -350,67 +350,44 @@ bool NSGA_II::isStoppingCriteriaReached() const{
     return false;
 }
 
-bool NSGA_II::stoppingCriteriaIsGenerations() const{
+bool NSGA_II::stoppingCriteriaIsGenerations() const {
     return generations_is_stop_criteria;
 }
 
-bool NSGA_II::stoppingCriteriaIsEvaluations() const{
+bool NSGA_II::stoppingCriteriaIsEvaluations() const {
     return evaluations_is_stop_criteria;
 }
 
-bool NSGA_II::isMaxNumberOfGenerationsReached() const{
+bool NSGA_II::isMaxNumberOfGenerationsReached() const {
     if(number_of_generations_performed >= max_number_of_generations)
         return true;
     return false;
 }
 
-bool NSGA_II::isMaxNumberOfEvaluationsReached() const{
+bool NSGA_II::isMaxNumberOfEvaluationsReached() const {
     if (number_of_evaluations_performed >= max_number_of_evaluations)
         return true;
     return false;
 }
 
-void NSGA_II::updateProgress(){
+void NSGA_II::updateProgress() {
     increaseNumberOfGenerations();
 }
 
-void NSGA_II::printPopulation() const{
+void NSGA_II::printPopulation() const {
     for (int nSol = 0; nSol < population.size(); ++nSol){
         printf("[%3d] ", nSol);
         population.at(nSol).print();
     }
 }
 
-void NSGA_II::printFastNonDominatedSort(){
-    /* printf("=======Start========\n");
-     int solution_counter = 0;
-     for (std::vector<Solution>::iterator solution_p = population_to_sort.begin(); solution_p != population_to_sort.end(); ++solution_p) {
-     (*solution_p).print();
-     printf("[%d] Dominates to: \n", solution_counter);
-     for (std::vector<Solution*>::iterator solution_q = dominates_to.at((*solution_p).index).begin(); solution_q != dominates_to.at((*solution_p).index).end(); ++solution_q) {
-     (*solution_q)->print();
-     }
-     solution_counter++;
-     printf("\n");
-     }
-     printf("=======End========\n");
-     printf("=======Fronts========\n");
-
-     for (unsigned long front = 0; front < pareto_fronts.size(); ++front) {
-     printf("Front [%lu]:\n", front);
-     for (unsigned long solution = 0; solution < pareto_fronts.at(front).size(); ++solution)
-     pareto_fronts.at(front).at(solution)->print();
-     }
-     printf("=======End========\n");*/
-}
-
-void NSGA_II::initialize(){
+void NSGA_II::initialize() {
     number_of_generations_performed = 0;
     number_of_evaluations_performed = 0;
     createInitialPopulation();
 }
 
-void NSGA_II::solve(){
+void NSGA_II::solve() {
     initialize();
     while (!isStoppingCriteriaReached()) {
         selection();
@@ -420,7 +397,6 @@ void NSGA_II::solve(){
         replacement();
         updateProgress();
     }
-    printPopulation();
     printf("Pareto front:\n");
     extractParetoFront(population);
     printPopulation();
