@@ -405,7 +405,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             break;
             
         case ProblemType::permutation_with_repetition_and_combination:
-            
+            /** TODO: test to add only nodes with feasible solutions. **/
             for (element = 0; element < problem.getTotalElements(); ++element)
                 if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element))
                     for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {

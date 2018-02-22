@@ -65,8 +65,8 @@ private:
     void mutationOperator(Solution& solution);
     double getCrossoverRate() const;
     double getMutationRate() const;
-    void fastNonDominatedSort();
-    void crowdingDistance();
+    vector<Solution> fastNonDominatedSort(vector<Solution>& population_to_sort);
+    vector<Solution> crowdingDistanceAssignment(vector<Solution>& front);
     unsigned long increaseNumberOfGenerations();
     unsigned long increaseNumberOfEvaluations();
     bool isStoppingCriteriaReached() const;
@@ -76,5 +76,6 @@ private:
     bool isMaxNumberOfEvaluationsReached() const;
     void updateProgress();
     void printPopulation() const;
+    void printFastNonDominatedSort();
 };
 #endif /* NSGA_II_hpp */

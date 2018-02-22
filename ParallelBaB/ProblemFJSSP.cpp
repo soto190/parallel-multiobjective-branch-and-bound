@@ -2002,7 +2002,7 @@ void ProblemFJSSP::printPartialSolution(const Solution & solution, int level) co
     }
 }
 
-/** This function return the number of variables which are out of range from varible values.**/
+/** This function returns true if the solution is valid. **/
 bool ProblemFJSSP::validateVariablesOf(const Solution& solution) const {
     bool is_valid = true;
     int number_of_operations_allocated_from_job[getNumberOfOperations()];
@@ -2010,15 +2010,13 @@ bool ProblemFJSSP::validateVariablesOf(const Solution& solution) const {
     for (int job = 0; job < getNumberOfJobs(); job++)
         number_of_operations_allocated_from_job[job] = 0;
 
-    for (int variable = 0; variable < n_variables; ++variable){
+    for (int variable = 0; variable < n_variables && is_valid; ++variable){
         int code = solution.getVariable(variable);
         int job = getDecodeMap(code, 0);
         int machine = getDecodeMap(code, 1);
         int operation = getOperationInJobIsNumber(job, number_of_operations_allocated_from_job[job]);
 
-        if (operationCanBeAllocatedInMachine(operation, machine) && number_of_operations_allocated_from_job[job] < getNumberOfOperationsInJob(job))
-            is_valid = true;
-        else
+        if (!(operationCanBeAllocatedInMachine(operation, machine) && number_of_operations_allocated_from_job[job] < getNumberOfOperationsInJob(job)))
             is_valid = false;
 
         number_of_operations_allocated_from_job[job]++;

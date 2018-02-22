@@ -174,8 +174,8 @@ double ProblemHCSP::evaluate(Solution & solution){
         solution.execTime[machine] += proc_prime;
         energy += proc_prime * this->voltage[config][machine] * this->voltage[config][machine];
         
-        if(solution.execTime[machine] >= solution.execTime[solution.index]){
-            solution.index = machine;
+        if(solution.execTime[machine] >= solution.execTime[solution.getIndex()]){
+            solution.setIndex(machine);
             makespan = solution.execTime[machine];
         }
     }
@@ -236,8 +236,8 @@ double ProblemHCSP::evaluatePartial(Solution & solution, int levelEvaluation){
         proc_prime = this->computeProcessingTime(i_task, machine, config);// this->processingTime[i_task][machine] / this->speed[config][machine];
         solution.execTime[machine] += proc_prime;
         energy += this->computeEnergy(i_task, machine, config, proc_prime);
-        if(solution.execTime[machine] >= solution.execTime[solution.index]){
-            solution.index = machine;
+        if(solution.execTime[machine] >= solution.execTime[solution.getIndex()]){
+            solution.setIndex(machine);
             makespan = solution.execTime[machine];
         }
     }
@@ -289,8 +289,8 @@ double ProblemHCSP::removeLastEvaluation(Solution * solution, int lastLevel, int
     }
     
     for (machine = 0; machine < this->totalMachines; machine++)
-        if(solution->execTime[machine] >= solution->execTime[solution->index]){
-            solution->index = machine;
+        if(solution->execTime[machine] >= solution->execTime[solution->getIndex()]){
+            solution->setIndex(machine);
             solution->setObjective(0, solution->execTime[machine]);
         }
     
@@ -319,8 +319,8 @@ double ProblemHCSP::removeLastLevelEvaluation(Solution * solution, int newLevel)
         }
         
         for (machine = 0; machine < this->totalMachines; machine++)
-            if(solution->execTime[machine] >= solution->execTime[solution->index]){
-                solution->index = machine;
+            if(solution->execTime[machine] >= solution->execTime[solution->getIndex()]){
+                solution->setIndex(machine);
                 solution->setObjective(0, solution->execTime[machine]);
             }
     }
