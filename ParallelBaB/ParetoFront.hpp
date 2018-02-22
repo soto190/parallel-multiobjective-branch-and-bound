@@ -21,17 +21,19 @@ private:
 public:
     ParetoFront();
     ParetoFront(const ParetoFront& toCopy);
+    ParetoFront(const std::vector<Solution>& set_of_solutions);
     ~ParetoFront();
     
     std::vector<Solution>& getVector() ;
-    const std::vector<Solution>& getVectorToCopy() const ;
+    const std::vector<Solution>& getVectorToCopy() const;
     int produceImprovement(const Solution& obj);
-    int push_back(const Solution& obj);
+    bool push_back(const Solution& obj);
+    void join(const ParetoFront& to_join);
     const Solution at(unsigned long position) const;
     const Solution back() const;
     const Solution front() const;
-    unsigned long size();
-    bool empty();
+    unsigned long size() const;
+    bool empty() const;
     void clear();
     void print() const;
 };

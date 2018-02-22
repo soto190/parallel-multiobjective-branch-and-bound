@@ -19,12 +19,12 @@
  * This is a micro-genetic algorithm based on NSGA-II. It receives an initial solution to create the population.
  *
  **/
-class NSGA_II{
+class NSGA_II {
 public:
     NSGA_II(const ProblemFJSSP& problem);
     ~NSGA_II();
 
-    void solve();
+    ParetoFront solve();
 
     void setSampleSolution(const Solution& solution);
     void setCrossoverRate(double rate);
@@ -33,6 +33,7 @@ public:
     void setMaxNumberOfGenerations(unsigned long max_generations);
     void setMaxNumberOfEvaluations(unsigned long max_evaluations);
     unsigned long getMaxPopulationSize() const;
+    unsigned long getNumberOfEvaluations() const;
 
 private:
     double crossover_rate;

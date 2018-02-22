@@ -19,7 +19,7 @@ public:
     MOSA(const ProblemFJSSP& problem);
     ~MOSA();
 
-    void solve();
+    ParetoFront solve();
     float getInitialTemperature() const;
     float getFinalTemperature() const;
     float getCurrentTemperature() const;
