@@ -85,8 +85,10 @@ void NSGA_II::mutation() {
 
 void NSGA_II::evaluatePopulation() {
     std::vector<Solution>::iterator it_solution;
-    for (it_solution = population.begin(); it_solution != population.end(); ++it_solution)
+    for (it_solution = population.begin(); it_solution != population.end(); ++it_solution){
         problem.evaluate(*it_solution);
+        increaseNumberOfEvaluations();
+    }
 }
 
 void NSGA_II::replacement() {
@@ -229,6 +231,10 @@ double NSGA_II::getCrossoverRate() const {
 
 double NSGA_II::getMutationRate() const {
     return mutation_rate;
+}
+
+unsigned long NSGA_II::getNumberOfEvaluations() const {
+    return number_of_evaluations_performed;
 }
 
 vector<Solution> NSGA_II::fastNonDominatedSort(vector<Solution>& population_to_sort) {
@@ -387,7 +393,7 @@ void NSGA_II::initialize() {
     createInitialPopulation();
 }
 
-void NSGA_II::solve() {
+ParetoFront NSGA_II::solve() {
     initialize();
     while (!isStoppingCriteriaReached()) {
         selection();
@@ -397,7 +403,7 @@ void NSGA_II::solve() {
         replacement();
         updateProgress();
     }
-    printf("Pareto front:\n");
-    extractParetoFront(population);
-    printPopulation();
+
+    ParetoFront pareto_front (population);
+    return pareto_front;
 }

@@ -16,6 +16,11 @@ ParetoFront::ParetoFront(const ParetoFront& toCopy){
     
 }
 
+ParetoFront::ParetoFront(const std::vector<Solution>& set_of_solutions) {
+    for (unsigned long n_sol = 0; n_sol < set_of_solutions.size(); ++n_sol)
+        push_back(set_of_solutions.at(n_sol));
+}
+
 ParetoFront::~ParetoFront(){
     
 }
@@ -72,12 +77,17 @@ int ParetoFront::produceImprovement(const Solution& obj){
     return improves_the_front;
 }
 
-int ParetoFront::push_back(const Solution& obj){
+void ParetoFront::join(const ParetoFront &to_join) {
+    for (unsigned long nSol = 0; nSol < to_join.size(); ++nSol)
+        push_back(to_join.at(nSol));
+}
+
+bool ParetoFront::push_back(const Solution& obj){
     unsigned int dominates = 0;
     unsigned int nondominated = 0;
     unsigned int dominated = 0;
     unsigned int equals = 0;
-    int is_added = 0;
+    bool is_added = false;
 
     std::vector<Solution>::iterator begin = m_vec.begin();
     
@@ -111,17 +121,17 @@ int ParetoFront::push_back(const Solution& obj){
             || nondominated == m_vec.size()
             || dominated == 0)) {
             m_vec.push_back(obj);
-            is_added = 1;
+            is_added = true;
         }
     
     return is_added;
 }
 
-unsigned long ParetoFront::size(){
+unsigned long ParetoFront::size() const {
     return m_vec.size();
 }
 
-bool ParetoFront::empty(){
+bool ParetoFront::empty() const {
     return m_vec.empty();
 }
 
@@ -129,7 +139,7 @@ void ParetoFront::clear(){
     m_vec.clear();
 }
 
-void ParetoFront::print() const{
+void ParetoFront::print() const {
     for (int nSol = 0; nSol < m_vec.size(); ++nSol)
-        m_vec[nSol].print();
+        m_vec.at(nSol).print();
 }

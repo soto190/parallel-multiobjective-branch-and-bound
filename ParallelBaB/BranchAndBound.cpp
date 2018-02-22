@@ -143,7 +143,33 @@ void BranchAndBound::initialize(int starts_tree) {
     number_of_updates_in_lower_bound = 0;
     number_of_nodes = computeTotalNodes(number_of_tree_levels);
     number_of_shared_works = 0;
-    
+
+    Solution sample_solution(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.createDefaultSolution(sample_solution);
+    problem.evaluate(sample_solution);
+
+    NSGA_II nsgaii_algorithm(problem);
+    nsgaii_algorithm.setSampleSolution(sample_solution);
+    nsgaii_algorithm.setCrossoverRate(0.90);
+    nsgaii_algorithm.setMutationRate(0.90);
+    nsgaii_algorithm.setMaxPopulationSize(50);
+    nsgaii_algorithm.setMaxNumberOfGenerations(50);
+    ParetoFront nsgaii_pf = nsgaii_algorithm.solve();
+
+    MOSA mosa_algorithm(problem);
+    mosa_algorithm.setSampleSolution(sample_solution);
+    mosa_algorithm.setCoolingRate(0.96);
+    mosa_algorithm.setMaxMetropolisIterations(16);
+    mosa_algorithm.setInitialTemperature(1000);
+    mosa_algorithm.setFinalTemperature(0.001);
+    mosa_algorithm.setPerturbationRate(0.950);
+    ParetoFront mosa_pf = mosa_algorithm.solve();
+
+    nsgaii_pf.join(mosa_pf);
+
+    for (unsigned long solution_pf = 0; solution_pf < nsgaii_pf.size(); ++solution_pf)
+        updateBoundsWithSolution(nsgaii_pf.at(solution_pf));
+
     problem.createDefaultSolution(incumbent_s);
     updateBoundsWithSolution(incumbent_s);
 }
