@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <random>
 #include "SolutionException.hpp"
 
 enum DominanceRelation {
@@ -34,12 +35,14 @@ private:
     int build_up_to = -1;
     int rank;
     int dominated_by;
+    int index;
+    double distance;
     double * objective;
     int * variable;
-    
+
+    unsigned int sort_by;
 public:
     
-    int index; /** TODO: this can be removed and all the related functions. **/
     double * execTime; /** TODO: this can be removed and all the related functions. **/
     
     Solution();
@@ -52,6 +55,9 @@ public:
     void setBuildUpTo(int index);
     void setRank(int n_rank);
     void setDominatedBy(int n_value);
+    void setDistance(double distance);
+    void setIndex(int new_index);
+    void setSortByObjective(unsigned int objective);
     void incrementDominatedBy();
     void decrementDominatedBy();
     
@@ -61,6 +67,9 @@ public:
     int getNumberOfObjectives() const;
     int getBuildUpTo() const;
     int getRank() const;
+    double getDistance() const;
+    int getIndex() const;
+    unsigned int getSortByObjective() const;
     int getDominatedBy() const;
     
     DominanceRelation dominanceTest(const Solution &solution) const;
@@ -68,7 +77,9 @@ public:
     /** Overloading operators. **/
     Solution& operator=(const Solution &solution);
     Solution& operator()(int number_of_objectives, int number_of_variables);
-    int operator==(const Solution & solution);
+    bool operator==(const Solution & solution) const;
+    bool operator>(const Solution& solution) const;
+    bool operator<(const Solution& solution) const;
     
     /** print functions. **/
     void print() const;

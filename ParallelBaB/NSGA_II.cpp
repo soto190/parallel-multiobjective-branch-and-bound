@@ -12,7 +12,7 @@ NSGA_II::NSGA_II(const ProblemFJSSP& problem):problem(problem){
     generations_is_stop_criteria = false;
     evaluations_is_stop_criteria = false;
     max_population = 10;
-    population.reserve(max_population);
+    population.reserve(max_population * 2);
 }
 
 NSGA_II::~NSGA_II(){
@@ -50,7 +50,7 @@ unsigned long NSGA_II::getMaxPopulationSize() const{
 }
 
 void NSGA_II::createInitialPopulation(){
-    population.reserve(getMaxPopulationSize());
+    population.reserve(getMaxPopulationSize() * 2);
     population.push_back(sample_solution);
 
     double stored_mutation = getMutationRate();
@@ -60,10 +60,6 @@ void NSGA_II::createInitialPopulation(){
         population.push_back(sample_solution);
     }
     setMutationRate(stored_mutation);
-
-    printf("Initial population.\n");
-    printPopulation();
-    printf("\n");
 }
 
 void NSGA_II::selection(){
@@ -94,16 +90,13 @@ void NSGA_II::evaluatePopulation(){
 }
 
 void NSGA_II::replacement(){
-    //fastNonDominatedSort();
-    population.erase(population.begin(), population.begin() + getMaxPopulationSize());
+    population = fastNonDominatedSort(population);
 }
 
 vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solution &parent2){
     vector<Solution> offspring;
     offspring.reserve(2);
 
-    parent1.print();
-    parent2.print();
     Solution offspring1(parent1);
     Solution offspring2(parent2);
     
@@ -209,7 +202,7 @@ void NSGA_II::mutationOperator(Solution &solution){
     /**
      * Then they are mutated to new values.
      **/
-    for (int gene = 0; gene < chromosome_size; ++gene){
+    for (int gene = 0; gene < chromosome_size; ++gene) {
         int allel_value = solution.getVariable(gene);
         int allel_is_from_job = problem.getDecodeMap(allel_value, 0);
         int machine = problem.getDecodeMap(allel_value, 1);
@@ -238,58 +231,105 @@ double NSGA_II::getMutationRate() const{
     return mutation_rate;
 }
 
-void NSGA_II::fastNonDominatedSort(){
+vector<Solution> NSGA_II::fastNonDominatedSort(vector<Solution>& population_to_sort) {
     
-    vector<vector<Solution>> dominates_to;
-    vector<vector<Solution>> pareto_fronts;
-    ParetoFront paretoFront;
+    vector<vector<Solution*>> dominates_to;
+    vector<vector<Solution*>> pareto_fronts;
 
-    dominates_to.reserve(getMaxPopulationSize());
-    pareto_fronts.reserve(getMaxPopulationSize());
+    dominates_to.reserve(getMaxPopulationSize() * 2);
+    pareto_fronts.reserve(getMaxPopulationSize() * 2);
+
+    vector<Solution> new_population;
+    new_population.reserve(getMaxPopulationSize() * 2);
     
-    for (int n_sol = 0; n_sol < population.size(); ++n_sol){
-        population[n_sol].setRank(-1);
-        population[n_sol].setDominatedBy(0);
+    for (int n_sol = 0; n_sol < population_to_sort.size(); ++n_sol) {
+        population_to_sort.at(n_sol).setRank(-1);
+        population_to_sort.at(n_sol).setDominatedBy(0);
+        dominates_to.push_back(vector<Solution*>());
     }
-    
-    for (int n_sol_p = 0; n_sol_p < population.size(); ++n_sol_p) {
-        Solution sol_p = population[n_sol_p];
-        sol_p.index = n_sol_p;
-        for (int n_sol_q = 0; n_sol_q < population.size(); ++n_sol_q){
-            if (n_sol_p != n_sol_q){
-                Solution sol_q = population[n_sol_q];
-                DominanceRelation dom = sol_p.dominanceTest(sol_q);
-                if (dom == DominanceRelation::Dominates) {
-                    dominates_to[n_sol_p].push_back(sol_q);
-                }else if (dom == DominanceRelation::Dominated){
-                    sol_p.incrementDominatedBy();
-                }
+
+    pareto_fronts.push_back(vector<Solution*>());
+
+    int solution_counter_p = 0;
+    for (std::vector<Solution>::iterator sol_p = population_to_sort.begin(); sol_p != population_to_sort.end(); ++sol_p) {
+        (*sol_p).setIndex(solution_counter_p);
+        for (std::vector<Solution>::iterator sol_q = population_to_sort.begin(); sol_q != population_to_sort.end(); ++sol_q) {
+            DominanceRelation dom = (*sol_p).dominanceTest(*sol_q);
+            if (dom == DominanceRelation::Dominates)
+                dominates_to.at(solution_counter_p).push_back(&(*sol_q));
+            else if (dom == DominanceRelation::Dominated){
+                (*sol_p).incrementDominatedBy();
             }
         }
-        if (sol_p.getDominatedBy() == 0) {
-            sol_p.setRank(0);
-            pareto_fronts[0].push_back(sol_p);
+        if ((*sol_p).getDominatedBy() == 0) {
+            (*sol_p).setRank(0);
+            pareto_fronts.at(0).push_back(&(*sol_p));
         }
+        solution_counter_p++;
     }
     
     int idx_pf = 0;
-    while (!pareto_fronts[idx_pf].empty()) {
-        for (int n_sol_p = 0; n_sol_p < pareto_fronts[idx_pf].size(); ++n_sol_p) {
-            Solution solution_p = pareto_fronts[idx_pf].at(n_sol_p);
-            for (int n_sol_q = 0; n_sol_q < dominates_to[0].size(); ++n_sol_q) {
-                Solution solution_q =  dominates_to[solution_p.index].at(n_sol_q);
-                solution_q.decrementDominatedBy();
-                if (dominates_to[solution_p.index].at(n_sol_q).getDominatedBy() == 0) {
-                    pareto_fronts[idx_pf + 1].push_back(solution_q);
+    while (!pareto_fronts.at(idx_pf).empty()) {
+        pareto_fronts.push_back(vector<Solution*>());
+        for (std::vector<Solution*>::iterator solution_p = pareto_fronts.at(idx_pf).begin(); solution_p != pareto_fronts.at(idx_pf).end(); ++solution_p)
+            for (std::vector<Solution*>::iterator solution_q = dominates_to.at((*solution_p)->getIndex()).begin(); solution_q != dominates_to.at((*solution_p)->getIndex()).end(); ++solution_q) {
+                (*solution_q)->decrementDominatedBy();
+                if ((*solution_q)->getDominatedBy() == 0 && (*solution_q)->getRank() == -1) {
+                    (*solution_q)->setRank(idx_pf + 1);
+                    pareto_fronts.at(idx_pf + 1).push_back(*solution_q);
                 }
             }
-        }
         idx_pf++;
     }
+
+    /** Crowding distance assignment. **/
+    while (new_population.size() < getMaxPopulationSize())
+        for (unsigned long front = 0; front < pareto_fronts.size(); ++front)
+            if (getMaxPopulationSize() - new_population.size() > pareto_fronts.at(front).size())
+                for (std::vector<Solution*>::iterator solution_p = pareto_fronts.at(front).begin(); solution_p != pareto_fronts.at(front).end(); ++solution_p)
+                    new_population.push_back(Solution(*(*solution_p)));
+            else{
+                vector<Solution> crowded_front;
+                crowded_front.reserve(pareto_fronts.at(front).size());
+
+                for (std::vector<Solution*>::iterator solution_p = pareto_fronts.at(front).begin(); solution_p != pareto_fronts.at(front).end(); ++solution_p)
+                    crowded_front.push_back(Solution(*(*solution_p)));
+
+                if (pareto_fronts.at(front).size() > 2)
+                    crowdingDistanceAssignment(crowded_front);
+
+                for (std::vector<Solution>::iterator solution_p = crowded_front.begin(); solution_p != crowded_front.end() && new_population.size() < getMaxPopulationSize(); ++solution_p)
+                    new_population.push_back(*solution_p);
+            }
+
+    return new_population;
 }
 
-void NSGA_II::crowdingDistance(){
-    
+vector<Solution> NSGA_II::crowdingDistanceAssignment(vector<Solution>& front){
+    unsigned long length = front.size() - 1;
+    unsigned int n_objectives = front.at(0).getNumberOfObjectives();
+
+    for (std::vector<Solution>::iterator solution_p = front.begin(); solution_p != front.end(); ++solution_p) {
+        (*solution_p).setDistance(0);
+        (*solution_p).setSortByObjective(0);
+    }
+
+    for (unsigned int n_obj = 0; n_obj < n_objectives; ++n_obj) {
+        sort(front.begin(), front.end());
+        front.at(0).setDistance(MAXFLOAT);
+        front.at(0).setSortByObjective(n_obj + 1);
+        front.at(length).setDistance(MAXFLOAT);
+        front.at(length).setSortByObjective(n_obj + 1);
+        for (unsigned long sol = 1; sol <= length - 1; ++sol) {
+            double actual_distance = front.at(sol).getDistance();
+            double new_distance = abs(front.at(sol + 1).getObjective(n_obj) - front.at(sol - 1).getObjective(n_obj));
+            front.at(sol).setDistance(actual_distance + new_distance);
+            front.at(sol).setSortByObjective(n_obj + 1);
+        }
+    }
+
+    sort(front.begin(), front.end());
+    return front;
 }
 
 unsigned long NSGA_II::increaseNumberOfGenerations(){
@@ -335,8 +375,33 @@ void NSGA_II::updateProgress(){
 }
 
 void NSGA_II::printPopulation() const{
-    for (int nSol = 0; nSol < population.size(); ++nSol)
-        population[nSol].print();
+    for (int nSol = 0; nSol < population.size(); ++nSol){
+        printf("[%3d] ", nSol);
+        population.at(nSol).print();
+    }
+}
+
+void NSGA_II::printFastNonDominatedSort(){
+    /* printf("=======Start========\n");
+     int solution_counter = 0;
+     for (std::vector<Solution>::iterator solution_p = population_to_sort.begin(); solution_p != population_to_sort.end(); ++solution_p) {
+     (*solution_p).print();
+     printf("[%d] Dominates to: \n", solution_counter);
+     for (std::vector<Solution*>::iterator solution_q = dominates_to.at((*solution_p).index).begin(); solution_q != dominates_to.at((*solution_p).index).end(); ++solution_q) {
+     (*solution_q)->print();
+     }
+     solution_counter++;
+     printf("\n");
+     }
+     printf("=======End========\n");
+     printf("=======Fronts========\n");
+
+     for (unsigned long front = 0; front < pareto_fronts.size(); ++front) {
+     printf("Front [%lu]:\n", front);
+     for (unsigned long solution = 0; solution < pareto_fronts.at(front).size(); ++solution)
+     pareto_fronts.at(front).at(solution)->print();
+     }
+     printf("=======End========\n");*/
 }
 
 void NSGA_II::initialize(){
@@ -348,7 +413,6 @@ void NSGA_II::initialize(){
 void NSGA_II::solve(){
     initialize();
     while (!isStoppingCriteriaReached()) {
-        printf("%lu \n", number_of_generations_performed);
         selection();
         crossover();
         mutation();
@@ -356,5 +420,8 @@ void NSGA_II::solve(){
         replacement();
         updateProgress();
     }
+    printPopulation();
+    printf("Pareto front:\n");
+    extractParetoFront(population);
     printPopulation();
 }

@@ -99,7 +99,7 @@ void one_node(int argc, char* argv[]){
         nsgaii_algorithm.setCrossoverRate(0.90);
         nsgaii_algorithm.setMutationRate(0.90);
         nsgaii_algorithm.setMaxPopulationSize(50);
-        nsgaii_algorithm.setMaxNumberOfGenerations(100);
+        nsgaii_algorithm.setMaxNumberOfGenerations(50);
         nsgaii_algorithm.solve();
 
         /*MOSA algorithm(problem);
