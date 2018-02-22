@@ -76,6 +76,5 @@ private:
     bool isMaxNumberOfEvaluationsReached() const;
     void updateProgress();
     void printPopulation() const;
-    void printFastNonDominatedSort();
 };
 #endif /* NSGA_II_hpp */
