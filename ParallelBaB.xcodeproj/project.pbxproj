@@ -316,7 +316,6 @@
 				211282621D639AB30038DBEE /* Solution.cpp in Sources */,
 				2139FC982017BAF300CB70BE /* FJSSPdataException.cpp in Sources */,
 				217D170F1F744B33004CECD8 /* MasterWorkerPBB.cpp in Sources */,
-				218182AE2016777800AE127B /* SolutionException.cpp in Sources */,
 				214C92E52010349100B55E58 /* NSGA_II.cpp in Sources */,
 				21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */,
 				214C92E2200FCB2B00B55E58 /* ObjectiveValues.cpp in Sources */,
