@@ -14,8 +14,6 @@
 #include "ParetoFront.hpp"
 #include "ProblemFJSSP.hpp"
 
-#define INF_ENERGY 9999999
-
 class MOSA {
     
 public:

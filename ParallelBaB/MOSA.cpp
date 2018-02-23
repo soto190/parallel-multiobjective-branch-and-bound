@@ -19,7 +19,7 @@ problem(problem) {
     metropolis_iterations = 0;
     max_metropolis_iterations = 0;
     max_energy_found = 0;
-    min_energy_found = INF_ENERGY;
+    min_energy_found = INFINITY;
 
     std::random_device seed;
     generator.seed(seed());

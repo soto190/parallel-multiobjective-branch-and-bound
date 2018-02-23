@@ -324,9 +324,9 @@ vector<Solution> NSGA_II::crowdingDistanceAssignment(vector<Solution>& front) {
 
     for (unsigned int n_obj = 0; n_obj < n_objectives; ++n_obj) {
         sort(front.begin(), front.end());
-        front.at(0).setDistance(MAXFLOAT);
+        front.at(0).setDistance(INFINITY);
         front.at(0).setSortByObjective(n_obj + 1);
-        front.at(length).setDistance(MAXFLOAT);
+        front.at(length).setDistance(INFINITY);
         front.at(length).setSortByObjective(n_obj + 1);
         for (unsigned long sol = 1; sol <= length - 1; ++sol) {
             double actual_distance = front.at(sol).getDistance();
