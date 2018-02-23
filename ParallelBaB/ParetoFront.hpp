@@ -24,13 +24,14 @@ public:
     ParetoFront(const ParetoFront& toCopy);
     ParetoFront(const std::vector<Solution>& set_of_solutions);
     ~ParetoFront();
+    
     ParetoFront& operator=(const ParetoFront& rhs);
     ParetoFront& operator+=(const ParetoFront& rhs);
     ParetoFront& operator+(const ParetoFront& rhs);
 
     std::vector<Solution>& getVector();
     const std::vector<Solution>& getVectorToCopy() const;
-    int produceImprovement(const Solution& obj);
+    bool produceImprovement(const Solution& obj);
     bool push_back(const Solution& obj);
     void join(const ParetoFront& to_join);
     const Solution at(unsigned long position) const;

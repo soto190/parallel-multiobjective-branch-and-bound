@@ -8,13 +8,15 @@
 
 #include "IVMTreeException.hpp"
 
-IVMTreeException::IVMTreeException(IVMTreeErrorCode error_code, std::string error_msg):error_code(error_code), error_message(error_msg){
+IVMTreeException::IVMTreeException(IVMTreeErrorCode error_code, std::string error_msg):error_code(error_code), error_message(error_msg) {
+    
 }
 
-IVMTreeException::~IVMTreeException() throw(){
+IVMTreeException::~IVMTreeException() throw() {
+
 }
 
-const char* IVMTreeException::what() const throw(){
+const char* IVMTreeException::what() const throw() {
     std::string error_text = "IVMTreeException: ";
     
     switch (error_code) {

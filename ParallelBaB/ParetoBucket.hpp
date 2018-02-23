@@ -54,14 +54,14 @@ public:
     tbb::atomic<BucketState> getStateAtomic() const;
     std::vector<Solution>& getVector() ;
     const std::vector<Solution>& getVectorToCopy() const ;
-    int produceImprovement(const Solution& obj);
-    int push_back(const Solution& obj);
+    bool produceImprovement(const Solution& obj);
+    bool push_back(const Solution& obj);
     void clear();
     void print() const;
     
     /*
      //Join two buckets;
-     Bucket<T> operator+(const Bucket<T>& bucket){
+     Bucket<T> operator+(const Bucket<T>& bucket) {
      Bucket<T> new_bucket;
      new_bucket.m_vec = bucket.m_vec.clone();
      new_bucket._vec.push_back(m_vec);

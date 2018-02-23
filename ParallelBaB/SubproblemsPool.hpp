@@ -14,6 +14,7 @@
 #include "Interval.hpp"
 
 class SubproblemsPool {
+
 private:
     tbb::concurrent_queue<Interval> priority_queues[P_Low + 1];   // One queue for each priority level.
     tbb::atomic<unsigned int> size;

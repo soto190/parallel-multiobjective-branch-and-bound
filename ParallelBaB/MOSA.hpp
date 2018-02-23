@@ -14,7 +14,8 @@
 #include "ParetoFront.hpp"
 #include "ProblemFJSSP.hpp"
 
-class MOSA{
+class MOSA {
+    
 public:
     MOSA(const ProblemFJSSP& problem);
     ~MOSA();

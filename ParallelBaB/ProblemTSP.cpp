@@ -9,7 +9,7 @@
 #include "ProblemTSP.hpp"
 
 
-ProblemTSP::ProblemTSP(const ProblemTSP& toCopy):Problem(toCopy){
+ProblemTSP::ProblemTSP(const ProblemTSP& toCopy):Problem(toCopy) {
     this->costCoord = new int * [toCopy.n_variables];
     this->costs = new double * [toCopy.n_variables];
     this->cityCoord = new int * [toCopy.n_variables];
@@ -32,7 +32,7 @@ ProblemTSP::ProblemTSP(const ProblemTSP& toCopy):Problem(toCopy){
     }
 }
 
-ProblemTSP::ProblemTSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
+ProblemTSP::ProblemTSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables) {
     this->costCoord = new int * [1];
     this->costs = new double * [1];
     this->cityCoord = new int * [1];
@@ -40,7 +40,7 @@ ProblemTSP::ProblemTSP(int totalObjectives, int totalVariables):Problem(totalObj
     
 }
 
-ProblemTSP::~ProblemTSP(){
+ProblemTSP::~ProblemTSP() {
     int city = 0;
     for (city = 0; city < this->n_variables; city++) {
         delete[] euclideanDistance[city];
@@ -56,7 +56,7 @@ ProblemTSP::~ProblemTSP(){
     
 }
 
-ProblemTSP& ProblemTSP::operator=(const ProblemTSP& toCopy){
+ProblemTSP& ProblemTSP::operator=(const ProblemTSP& toCopy) {
     
     this->costCoord = new int * [toCopy.n_variables];
     this->costs = new double * [toCopy.n_variables];
@@ -81,35 +81,35 @@ ProblemTSP& ProblemTSP::operator=(const ProblemTSP& toCopy){
     return *this;
 }
 
-ProblemType ProblemTSP::getType() const{
+ProblemType ProblemTSP::getType() const {
     return ProblemType::permutation;
 }
 
-int ProblemTSP::getStartingRow(){
+int ProblemTSP::getStartingRow() {
     return 1;
 }
 
-int ProblemTSP::getFinalLevel(){
+int ProblemTSP::getFinalLevel() {
     return this->getNumberOfVariables() - getStartingRow();
 }
 
-int ProblemTSP::getLowerBound(int indexVar) const{
+int ProblemTSP::getLowerBound(int indexVar) const {
     return 1;
 }
 
-int ProblemTSP::getUpperBound(int indexVar) const{
+int ProblemTSP::getUpperBound(int indexVar) const {
     return this->getNumberOfVariables() - 1;
 }
 
-int ProblemTSP::getLowerBoundInObj(int nObj) const{
+int ProblemTSP::getLowerBoundInObj(int nObj) const {
     return INT_MAX;
 }
 
-int ProblemTSP::getTotalElements(){
+int ProblemTSP::getTotalElements() {
     return 0;
 }
 
-int * ProblemTSP::getElemensToRepeat(){
+int * ProblemTSP::getElemensToRepeat() {
     return nullptr;
 }
 
@@ -117,15 +117,15 @@ int ProblemTSP::getDecodeMap(int map, int position) const {
     return 0;
 }
 
-int ProblemTSP::getEncodeMap(int value1, int value2) const{
+int ProblemTSP::getEncodeMap(int value1, int value2) const {
     return 0;
 }
 
-int ProblemTSP::getTimesThatValueCanBeRepeated(int value){
+int ProblemTSP::getTimesThatValueCanBeRepeated(int value) {
     return 0;
 }
 
-double ProblemTSP::evaluate(Solution & solution){
+double ProblemTSP::evaluate(Solution & solution) {
     double sumDist = 0;
     double sumCost = 0;
     int city = 0;
@@ -155,7 +155,7 @@ double ProblemTSP::evaluate(Solution & solution){
  * This functions adds the distance and cost from the actual city and previous city.
  *
  **/
-double ProblemTSP::evaluatePartial(Solution& solution, int levelEvaluation){
+double ProblemTSP::evaluatePartial(Solution& solution, int levelEvaluation) {
     /*
      
      int origin = solution->getVariable(levelEvaluation - 1);
@@ -193,7 +193,7 @@ double ProblemTSP::evaluatePartial(Solution& solution, int levelEvaluation){
  * Some problems requieres a different evaluation in the leaf or last variable.
  * For example in TSP the las level includes the sum of the cost of the last city with the first city.
  */
-double ProblemTSP::evaluateLastLevel(Solution * solution){
+double ProblemTSP::evaluateLastLevel(Solution * solution) {
     int last = solution->getVariable(this->getNumberOfVariables() - 1);
     int first = solution->getVariable(0);
     
@@ -207,9 +207,9 @@ double ProblemTSP::evaluateLastLevel(Solution * solution){
     
 }
 
-double ProblemTSP::removeLastEvaluation(Solution* solution, int lastLevel, int nextLevel){
+double ProblemTSP::removeLastEvaluation(Solution* solution, int lastLevel, int nextLevel) {
     
-    if(nextLevel <= lastLevel && nextLevel > 0){
+    if(nextLevel <= lastLevel && nextLevel > 0) {
         
         int origen = 0, destino = 0;
         double distance = 0;
@@ -235,8 +235,8 @@ double ProblemTSP::removeLastEvaluation(Solution* solution, int lastLevel, int n
     return 0.0;
 }
 
-double ProblemTSP::removeLastLevelEvaluation(Solution * solution, int newLevel){
-    if(newLevel > 0){
+double ProblemTSP::removeLastLevelEvaluation(Solution * solution, int newLevel) {
+    if(newLevel > 0) {
         int last = solution->getVariable(this->getNumberOfVariables() - 1);
         int first = solution->getVariable(0);
         
@@ -265,22 +265,22 @@ double ProblemTSP::removeLastLevelEvaluation(Solution * solution, int newLevel){
     return 0.0;
 }
 
-void ProblemTSP::createDefaultSolution(Solution& solution){
+void ProblemTSP::createDefaultSolution(Solution& solution) {
     int city = 0;
     for (city = 0; city < this->getUpperBound(0); city++)
         solution.setVariable(city, city);
     
 }
 
-void ProblemTSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution){
+void ProblemTSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution) {
 }
 
-void ProblemTSP::printInstance(){
+void ProblemTSP::printInstance() {
     
     printf("Hello from Problem TSP!\n");
 }
 
-void ProblemTSP::printProblemInfo() const{
+void ProblemTSP::printProblemInfo() const {
     int row = 0, col = 0;
     
     for (row = 0; row < this->n_variables; row++) {
@@ -299,7 +299,7 @@ void ProblemTSP::printProblemInfo() const{
     }
 }
 
-double ProblemTSP::computeEuclideanDistance(int x1, int y1, int x2, int y2){
+double ProblemTSP::computeEuclideanDistance(int x1, int y1, int x2, int y2) {
     
     double x = x1 - x2;
     double y = y1 - y2;
@@ -307,7 +307,7 @@ double ProblemTSP::computeEuclideanDistance(int x1, int y1, int x2, int y2){
     return std::sqrt(std::pow(x, 2) + std::pow(y, 2));
 }
 
-void ProblemTSP::loadInstance(char filePath[2][255], char file_extension[4]){
+void ProblemTSP::loadInstance(char filePath[2][255], char file_extension[4]) {
     
     std::ifstream infile(filePath[0]);
     std::string line;
@@ -323,27 +323,27 @@ void ProblemTSP::loadInstance(char filePath[2][255], char file_extension[4]){
         label.erase(label.size() - 1);
         
         /** Reads the total of cities. **/
-        if(label.compare("NAME") == 0){
+        if(label.compare("NAME") == 0) {
             printf("Name read...\n");
         }
         
-        else if(label.compare("COMMENT") == 0){
+        else if(label.compare("COMMENT") == 0) {
             printf("Comment read...\n");
         }
         
-        else if(label.compare("TYPE") == 0){
+        else if(label.compare("TYPE") == 0) {
             printf("Type read...\n");
         }
         
-        else if(label.compare("DIMENSION") == 0){
+        else if(label.compare("DIMENSION") == 0) {
             printf("Dimension read...\n");
             this->setNumberOfVariables(std::stoi(elemens.at(2).c_str()));
         }
         
-        else if(label.compare("EDGE_WEIGHT_TYPE") == 0){
+        else if(label.compare("EDGE_WEIGHT_TYPE") == 0) {
             printf("Edge weight type read...\n");
         }
-        else if(label.compare("NODE_COORD_SECTION") == 0){
+        else if(label.compare("NODE_COORD_SECTION") == 0) {
             /** Reads the coordenates of each city and computes the distances between cities. **/
             int totalCities = this->n_variables;
             int city = 0;
@@ -386,7 +386,7 @@ void ProblemTSP::loadInstance(char filePath[2][255], char file_extension[4]){
     
 }
 
-void ProblemTSP::readCost(char filePath[255]){
+void ProblemTSP::readCost(char filePath[255]) {
     
     std::ifstream infile(filePath);
     std::string line;
@@ -402,31 +402,31 @@ void ProblemTSP::readCost(char filePath[255]){
         //label = std::regex_replace(label, std::regex("(\r)"), "");
         
         /** Reads the total of cities. **/
-        if(label.compare("NAME") == 0){
+        if(label.compare("NAME") == 0) {
             printf("Name read...\n");
         }
         
-        else if(label.compare("COMMENT") == 0){
+        else if(label.compare("COMMENT") == 0) {
             printf("Comment read...\n");
         }
         
-        else if(label.compare("TYPE") == 0){
+        else if(label.compare("TYPE") == 0) {
             printf("Type read...\n");
         }
         
-        else if(label.compare("DIMENSION") == 0){
+        else if(label.compare("DIMENSION") == 0) {
             printf("Dimension read...\n");
             dimensionInSecondFile = std::stoi(elemens.at(2).c_str());
             
-            if(dimensionInSecondFile != this->n_variables){
+            if(dimensionInSecondFile != this->n_variables) {
                 printf("##### Dimensions from input files are different!!!!...");
             }
         }
         
-        else if(label.compare("EDGE_WEIGHT_TYPE") == 0){
+        else if(label.compare("EDGE_WEIGHT_TYPE") == 0) {
             printf("Edge weight type read...\n");
         }
-        else if(label.compare("NODE_COORD_SECTION") == 0){
+        else if(label.compare("NODE_COORD_SECTION") == 0) {
             /** Reads the coordenates of each city and computes the distances between cities. **/
             
             int totalCities = this->n_variables;
@@ -470,6 +470,6 @@ void ProblemTSP::readCost(char filePath[255]){
     infile.close();
 }
 
-void ProblemTSP::printSolution(const Solution & solution) const{ printPartialSolution(solution, this->n_variables);}
-void ProblemTSP::printSolutionInfo(const Solution & solution) const{ printf("TODO: Implement this function.\n");}
-void ProblemTSP::printPartialSolution(const Solution & solution, int level) const{}
+void ProblemTSP::printSolution(const Solution & solution) const { printPartialSolution(solution, this->n_variables);}
+void ProblemTSP::printSolutionInfo(const Solution & solution) const { printf("TODO: Implement this function.\n");}
+void ProblemTSP::printPartialSolution(const Solution & solution, int level) const {}

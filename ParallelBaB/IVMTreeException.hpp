@@ -20,7 +20,7 @@
 
 enum IVMTreeErrorCode{OK_IVM, MATRIX_OUT_OF_RANGE, VECTOR_OUT_OF_RANGE, INTEGER_OUT_OF_RANGE};
 
-class IVMTreeException : public std::exception{
+class IVMTreeException : public std::exception {
 
 public:
     IVMTreeException(IVMTreeErrorCode error_code, std::string error_msg);

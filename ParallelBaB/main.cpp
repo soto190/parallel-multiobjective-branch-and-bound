@@ -34,7 +34,7 @@
 
 using namespace std;
 
-void one_node(int argc, char* argv[]){
+void one_node(int argc, char* argv[]) {
     const int arg_num_threads = 1;
     //const int arg_problem = 2;
     const int arg_input_file1 = 3;
@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
     
     if (size_world == 1) { /** MPI disable or one node request: shared memory version. **/
         one_node(argc, argv);
-    }else{/** MPI enable: Distributed memory. **/
+    } else {/** MPI enable: Distributed memory. **/
         
         try {
             tbb::task_scheduler_init init(stoi(argv[arg_num_threads]));

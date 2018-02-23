@@ -8,10 +8,10 @@
 
 #include "SortedVector.hpp"
 
-SortedVector::SortedVector(){
+SortedVector::SortedVector() {
 }
 
-SortedVector::~SortedVector(){
+SortedVector::~SortedVector() {
     m_data.clear();
 }
 
@@ -19,7 +19,7 @@ SortedVector::~SortedVector(){
  * The elements are sorted by dominance. It also stores the dominated solutions at the end.
  * returns 1.
  **/
-int SortedVector::push(const ObjectiveValues & objValues, const SORTING_TYPES sort_type){
+int SortedVector::push(const ObjectiveValues & objValues, const SORTING_TYPES sort_type) {
     
     switch (sort_type) {
         case SORTING_TYPES::DOMINANCE:
@@ -45,7 +45,7 @@ int SortedVector::push(const ObjectiveValues & objValues, const SORTING_TYPES so
     return 1;
 }
 
-int SortedVector::push_dist1(const ObjectiveValues& objValues){
+int SortedVector::push_dist1(const ObjectiveValues& objValues) {
     
     switch (m_data.size()) {
         case 0:
@@ -80,7 +80,7 @@ int SortedVector::push_dist1(const ObjectiveValues& objValues){
     return 1;
 }
 
-int SortedVector::push_dist2(const ObjectiveValues& objValues){
+int SortedVector::push_dist2(const ObjectiveValues& objValues) {
     switch (m_data.size()) {
         case 0:
             m_data.push_back(objValues);
@@ -116,11 +116,11 @@ int SortedVector::push_dist2(const ObjectiveValues& objValues){
     return 1;
 }
 
-int SortedVector::push_dist_comb(const ObjectiveValues& objValues){
+int SortedVector::push_dist_comb(const ObjectiveValues& objValues) {
     return 1;
 }
 
-int SortedVector::push_dominance(const ObjectiveValues& objValues){
+int SortedVector::push_dominance(const ObjectiveValues& objValues) {
     Dom domF, domB;
     bool inserted = 0;
     
@@ -166,7 +166,7 @@ int SortedVector::push_dominance(const ObjectiveValues& objValues){
                 m_data.push_front(objValues);
             else if(domB == Dom::Domted || domB == Dom::Nondom || domB == Dom::Eq)
                 m_data.push_back(objValues);
-            else{
+            else {
                 for (size_t count = 1; count < m_data.size(); ++count)
                     switch (objValues.dominance(m_data[count])) {
                         case Dom::Eq:
@@ -197,15 +197,15 @@ int SortedVector::push_dominance(const ObjectiveValues& objValues){
     return 1;
 }
 
-std::deque<ObjectiveValues>::iterator SortedVector::begin(){
+std::deque<ObjectiveValues>::iterator SortedVector::begin() {
     return m_data.begin();
 }
 
-std::deque<ObjectiveValues>::iterator SortedVector::end(){
+std::deque<ObjectiveValues>::iterator SortedVector::end() {
     return m_data.end();
 }
 
-unsigned long SortedVector::binarySearchIncrement(const ObjectiveValues & objValues, const SORTING_TYPES sort){
+unsigned long SortedVector::binarySearchIncrement(const ObjectiveValues & objValues, const SORTING_TYPES sort) {
     unsigned long low, high, mid;
     
     float value = objValues.getSomethingToSort(sort);
@@ -231,7 +231,7 @@ unsigned long SortedVector::binarySearchIncrement(const ObjectiveValues & objVal
     return high;
 }
 
-unsigned long SortedVector::binarySearchDecrement(const ObjectiveValues & objValues, const SORTING_TYPES sort){
+unsigned long SortedVector::binarySearchDecrement(const ObjectiveValues & objValues, const SORTING_TYPES sort) {
     unsigned long low, high, mid;
     float value = objValues.getSomethingToSort(sort);
     low = 0;
@@ -260,7 +260,7 @@ unsigned long SortedVector::binarySearchDecrement(const ObjectiveValues & objVal
 void SortedVector::print() {
     std::deque<ObjectiveValues>::iterator it = m_data.begin();
     int counter = 0;
-    for (it = m_data.begin(); it != m_data.end(); ++it){
+    for (it = m_data.begin(); it != m_data.end(); ++it) {
         printf("[%3d] ", counter++);
         (*it).print();
     }

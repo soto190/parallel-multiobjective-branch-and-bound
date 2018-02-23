@@ -18,7 +18,8 @@ priority(Priority::P_Low),
 deep(Deep::TOP),
 build_up_to(-1),
 max_size(0),
-interval(nullptr){
+interval(nullptr) {
+
 }
 
 Interval::Interval(int max_size):
@@ -26,7 +27,8 @@ priority(Priority::P_Low),
 deep(Deep::TOP),
 build_up_to(-1),
 max_size(max_size),
-interval(new int[max_size]){
+interval(new int[max_size]) {
+
 }
 
 Interval::Interval(const Interval &toCopy):
@@ -34,7 +36,7 @@ priority(toCopy.getPriority()),
 deep(toCopy.getDeep()),
 build_up_to(toCopy.getBuildUpTo()),
 max_size(toCopy.getSize()),
-interval(new int[toCopy.getSize()]){
+interval(new int[toCopy.getSize()]) {
     
     distance[0] = toCopy.getDistance(0);
     distance[1] = toCopy.getDistance(1);
@@ -44,7 +46,7 @@ interval(new int[toCopy.getSize()]){
     
 }
 
-Interval::Interval(const Payload_interval& payload){
+Interval::Interval(const Payload_interval& payload) {
     build_up_to = payload.build_up_to;
     max_size = payload.max_size;
     
@@ -56,7 +58,7 @@ Interval::Interval(const Payload_interval& payload){
         interval[index] = payload.interval[index];
 }
 
-Interval& Interval::operator()(int size){
+Interval& Interval::operator()(int size) {
     
     build_up_to = -1;
     max_size = size;
@@ -71,7 +73,7 @@ Interval& Interval::operator()(int size){
     return *this;
 }
 
-Interval& Interval::operator()(const Payload_interval& payload){
+Interval& Interval::operator()(const Payload_interval& payload) {
     build_up_to = payload.build_up_to;
     max_size = payload.max_size;
     
@@ -90,7 +92,7 @@ Interval& Interval::operator()(const Payload_interval& payload){
     return *this;
 }
 
-Interval& Interval::operator=(const Interval &toCopy){
+Interval& Interval::operator=(const Interval &toCopy) {
     
     if (this == &toCopy) return *this;
     
@@ -112,19 +114,19 @@ Interval& Interval::operator=(const Interval &toCopy){
     return *this;
 }
 
-Interval::~Interval(){
+Interval::~Interval() {
     delete [] interval;
 }
 
-int Interval::getSize() const{
+int Interval::getSize() const {
     return max_size;
 }
 
-int Interval::getBuildUpTo() const{
+int Interval::getBuildUpTo() const {
     return build_up_to;
 }
 
-int Interval::getValueAt(int position) const{
+int Interval::getValueAt(int position) const {
     return interval[position];
 }
 
@@ -132,7 +134,7 @@ Priority Interval::getPriority() const {
     return priority;
 }
 
-Deep Interval::getDeep() const{
+Deep Interval::getDeep() const {
     return deep;
 }
 
@@ -140,28 +142,28 @@ float Interval::getDistance(int n_dim) const {
     return distance[n_dim];
 }
 
-void Interval::setLowPriority(){
+void Interval::setLowPriority() {
     priority = Priority::P_Low;
 }
 
-void Interval::setHighPriority(){
+void Interval::setHighPriority() {
     priority = Priority::P_High;
 }
 
-void Interval::setMediumPriority(){
+void Interval::setMediumPriority() {
     priority = Priority::P_Medium;
 }
 
-void Interval::setDistance(int n_dim, float n_val){
+void Interval::setDistance(int n_dim, float n_val) {
     distance[n_dim] = n_val;
 }
 
-void Interval::setValueAt(int index, int value){
+void Interval::setValueAt(int index, int value) {
     interval[index] = value;
     setBuildUpTo(index);
 }
 
-void Interval::setBuildUpTo(int n_build){
+void Interval::setBuildUpTo(int n_build) {
     build_up_to = n_build;
     if (isShortBranch())
         deep = Deep::TOP;
@@ -171,36 +173,36 @@ void Interval::setBuildUpTo(int n_build){
         deep = Deep::BOTTOM;
 }
 
-int Interval::isShortBranch() const{
+bool Interval::isShortBranch() const {
     return build_up_to < max_size * short_branch;
 }
 
-int Interval::isMediumBranch() const{ /** (short_size < branch_size < large_size)**/
+bool Interval::isMediumBranch() const { /** (short_size < branch_size < large_size)**/
     return  max_size * short_branch < build_up_to && build_up_to < max_size * large_branch;
 }
 
-int Interval::isLargeBranch() const{
+bool Interval::isLargeBranch() const {
     return build_up_to > max_size * large_branch;
 }
 
 /** TODO: Verify if we try to remove a value when it doesn't has values. **/
-void Interval::removeLastValue(){
+void Interval::removeLastValue() {
     interval[build_up_to] = -1;
     build_up_to--;
 }
 
-int Interval::increaseBuildUpTo(){
+int Interval::increaseBuildUpTo() {
     return build_up_to++;
 }
 
-bool Interval::verify() const{
+bool Interval::verify() const {
     for (int in = 0; in <= build_up_to; ++in)
         if (interval[in] == -1)
             return false;
     return true;
 }
 
-void Interval::print() const{
+void Interval::print() const {
     const char sep = '-';
     
     printf("[%3d][", build_up_to);

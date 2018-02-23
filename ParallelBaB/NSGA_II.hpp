@@ -16,7 +16,7 @@
 
 /**
  *
- * This is a micro-genetic algorithm based on NSGA-II. It receives an initial solution to create the population.
+ * This is a NSGA-II. It receives an initial solution to create the population.
  *
  **/
 class NSGA_II {

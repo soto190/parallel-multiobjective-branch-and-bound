@@ -15,7 +15,8 @@
 #include "myutils.hpp"
 #include "ObjectiveValues.hpp"
 
-class SortedVector{
+class SortedVector {
+    
     deque<ObjectiveValues> m_data;
     
 public:

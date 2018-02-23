@@ -35,6 +35,7 @@ typedef struct {
 } Payload_interval;
 
 class Interval {
+    
 private:
     Priority priority;
     Deep deep;
@@ -72,8 +73,8 @@ public:
     
 private:
     void setBuildUpTo(int newBuild);
-    int isShortBranch() const;
-    int isMediumBranch() const;
-    int isLargeBranch() const;
+    bool isShortBranch() const;
+    bool isMediumBranch() const;
+    bool isLargeBranch() const;
 };
 #endif /* Interval_hpp */

@@ -27,7 +27,7 @@ typedef struct {
 } Payload_solution;
 
 //template <class TypeVariable>
-class Solution{
+class Solution {
     
 private:
     int n_objectives;

@@ -23,7 +23,7 @@ currentLevel(toCopy.getCurrentLevel()),
 problem(toCopy.getProblem()),
 fjssp_data(toCopy.getFJSSPdata()),
 incumbent_s(toCopy.getIncumbentSolution()),
-ivm_tree(toCopy.getIVMTree()){
+ivm_tree(toCopy.getIVMTree()) {
     number_of_shared_works.store(toCopy.getSharedWork());
     number_of_tree_levels.store(toCopy.getNumberOfLevels());
     number_of_nodes.store(toCopy.getNumberOfNodes());
@@ -56,7 +56,7 @@ fjssp_data(problemToCopy.getNumberOfJobs(),
 incumbent_s(problemToCopy.getNumberOfObjectives(), problemToCopy.getNumberOfVariables()),
 ivm_tree(problemToCopy.getNumberOfVariables(), problemToCopy.getUpperBound(0) + 1),
 interval_to_solve(branch),
-elapsed_time(0){
+elapsed_time(0) {
     number_of_shared_works.store(0);
     number_of_tree_levels.store(problemToCopy.getNumberOfVariables());
     number_of_nodes.store(0);
@@ -81,7 +81,7 @@ elapsed_time(0){
     ivm_tree.setOwnerId(rank);
 }
 
-BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch){
+BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch) {
     t1 = std::chrono::high_resolution_clock::now();
     t2 = std::chrono::high_resolution_clock::now();
     
@@ -212,7 +212,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     
     fjssp_data.reset(); /** This function call is not necesary because the structurs are empty.**/
     fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
-    for (int m = 0; m < problem.getNumberOfMachines(); ++m){
+    for (int m = 0; m < problem.getNumberOfMachines(); ++m) {
         fjssp_data.setBestWorkloadInMachine(m, problem.getBestWorkload(m));
         fjssp_data.setTempBestWorkloadInMachine(m, problem.getBestWorkload(m));
     }
@@ -249,7 +249,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     return branches_created;
 }
 
-int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
+int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
     
     int col = 0;
     int row = 0; /** Counter level.**/
@@ -262,7 +262,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree){
     tree.setActiveRow(build_up_to);
     
     fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
-    for (int m = 0; m < problem.getNumberOfMachines(); ++m){
+    for (int m = 0; m < problem.getNumberOfMachines(); ++m) {
         fjssp_data.setBestWorkloadInMachine(m, problem.getBestWorkload(m));
         fjssp_data.setTempBestWorkloadInMachine(m, problem.getBestWorkload(m));
     }
@@ -330,7 +330,7 @@ tbb::task* BranchAndBound::execute() {
     return NULL;
 }
 
-int BranchAndBound::thereIsMoreWork() const{
+int BranchAndBound::thereIsMoreWork() const {
     return there_is_more_work;
 }
 
@@ -342,14 +342,14 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
-        if (!aLeafHasBeenReached() && theTreeHasMoreNodes()){
+        if (!aLeafHasBeenReached() && theTreeHasMoreNodes()) {
             if (improvesTheGrid(incumbent_s))
                 branch(incumbent_s, currentLevel);
             else
                 prune(incumbent_s, currentLevel);
         }else {
             increaseReachedLeaves();
-            if (updateParetoGrid(incumbent_s)){
+            if (updateParetoGrid(incumbent_s)) {
                 increaseUpdatesInLowerBound();
                 /*printf("[B&B-%03d] ", bb_rank);
                  printCurrentSolution();
@@ -511,7 +511,7 @@ bool BranchAndBound::aLeafHasBeenReached() const {
  * All the remanent of root_row + 1 is moved to the global pool.
  *
  ***/
-void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_solve){
+void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_solve) {
     
     int next_row = ivm_tree.getRootRow() + 1;
     unsigned long branches_to_move_to_global_pool = ivm_tree.getActiveRow() - ivm_tree.getNumberOfPendingNodes() - 1;
@@ -522,7 +522,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
      * - If the level at which we are going to share is not too deep.
      * - If we have branches to share.
      */
-    if (globalPool.isEmptying() && next_row < getLimitLevelToShare() && branches_to_move_to_global_pool > 1){
+    if (globalPool.isEmptying() && next_row < getLimitLevelToShare() && branches_to_move_to_global_pool > 1) {
         
         Solution temp(incumbent_s.getNumberOfObjectives(), incumbent_s.getNumberOfVariables());
         FJSSPdata data(fjssp_data);
@@ -541,10 +541,10 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
         while(globalPool.isEmptying()
               && next_row < getLimitLevelToShare()
               && next_row <= ivm_tree.getActiveRow()
-              && total_moved < ivm_tree.getActiveRow() - ivm_tree.getNumberOfPendingNodes() - 1){
+              && total_moved < ivm_tree.getActiveRow() - ivm_tree.getNumberOfPendingNodes() - 1) {
             
             branches_to_move_to_global_pool = ivm_tree.getNumberOfNodesAt(next_row) - 1;
-            for(int moved = 0; moved < branches_to_move_to_global_pool; ++moved){
+            for(int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
                 int value = ivm_tree.removeLastNodeAtRow(next_row);
                 
                 branch_to_send.setValueAt(next_row, value);
@@ -646,7 +646,7 @@ unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) co
     return n_nodes;
 }
 
-void BranchAndBound::updateBounds(const Solution& sol, FJSSPdata& data){
+void BranchAndBound::updateBounds(const Solution& sol, FJSSPdata& data) {
     
     if (data.getMakespan() < problem.getBestMakespanFound())
         problem.updateBestMakespanSolution(data);
@@ -655,7 +655,7 @@ void BranchAndBound::updateBounds(const Solution& sol, FJSSPdata& data){
         problem.updateBestMaxWorkloadSolution(data);
 }
 
-void BranchAndBound::updateBoundsWithSolution(const Solution & solution){
+void BranchAndBound::updateBoundsWithSolution(const Solution & solution) {
     
     if (solution.getObjective(0) < problem.getBestMakespanFound())
         problem.updateBestMakespanSolutionWith(solution);
@@ -668,7 +668,7 @@ void BranchAndBound::updateBoundsWithSolution(const Solution & solution){
  * The priority needs to consider the Deep of the branch and the distance to the lower bound.
  *
  **/
-void BranchAndBound::setPriorityTo(Interval& interval) const{
+void BranchAndBound::setPriorityTo(Interval& interval) const {
     /** TODO: This can be replaced by a Fuzzy Logic Controller. **/
     const float close = 0.25f; /** If it is less than 0.333f then it is close. **/
     const float half = 0.50f;   /** If it is more than 0.25f and less than 0.5f then it is at half distance. **/
@@ -706,119 +706,119 @@ void BranchAndBound::setPriorityTo(Interval& interval) const{
 /** Returns the proximity to the given objective. When minimizing objectives, if it is less than 0 then it produces an improvement.
  *  other distance: (objective - value) / objective;
  ***/
-float BranchAndBound::distanceToObjective(int value, int objective){
+float BranchAndBound::distanceToObjective(int value, int objective) {
     return (value - objective) / value;
 }
 
-int BranchAndBound::getNodeRank() const{
+int BranchAndBound::getNodeRank() const {
     return bb_rank;
 }
 
-int BranchAndBound::getBBRank() const{
+int BranchAndBound::getBBRank() const {
     return bb_rank;
 }
 
-int BranchAndBound::getCurrentLevel() const{
+int BranchAndBound::getCurrentLevel() const {
     return currentLevel;
 }
 
-unsigned long BranchAndBound::getNumberOfLevels() const{
+unsigned long BranchAndBound::getNumberOfLevels() const {
     return number_of_tree_levels;
 }
 
-unsigned long BranchAndBound::getNumberOfNodes( ) const{
+unsigned long BranchAndBound::getNumberOfNodes( ) const {
     return number_of_nodes;
 }
 
-unsigned long BranchAndBound::getNumberOfNodesCreated( ) const{
+unsigned long BranchAndBound::getNumberOfNodesCreated( ) const {
     return number_of_nodes_created;
 }
 
-unsigned long BranchAndBound::getNumberOfNodesExplored( ) const{
+unsigned long BranchAndBound::getNumberOfNodesExplored( ) const {
     return number_of_nodes_explored;
 }
 
-unsigned long BranchAndBound::getNumberOfCallsToBranch( ) const{
+unsigned long BranchAndBound::getNumberOfCallsToBranch( ) const {
     return number_of_calls_to_branch;
 }
 
-unsigned long BranchAndBound::getNumberOfReachedLeaves( ) const{
+unsigned long BranchAndBound::getNumberOfReachedLeaves( ) const {
     return number_of_reached_leaves;
 }
 
-unsigned long BranchAndBound::getNumberOfNodesUnexplored( ) const{
+unsigned long BranchAndBound::getNumberOfNodesUnexplored( ) const {
     return number_of_nodes_unexplored;
 }
 
-unsigned long BranchAndBound::getNumberOfNodesPruned( ) const{
+unsigned long BranchAndBound::getNumberOfNodesPruned( ) const {
     return number_of_nodes_pruned;
 }
 
-unsigned long BranchAndBound::getNumberOfCallsToPrune( ) const{
+unsigned long BranchAndBound::getNumberOfCallsToPrune( ) const {
     return number_of_calls_to_prune;
 }
 
-unsigned long BranchAndBound::getNumberOfUpdatesInLowerBound( ) const{
+unsigned long BranchAndBound::getNumberOfUpdatesInLowerBound( ) const {
     return number_of_updates_in_lower_bound;
 }
 
-unsigned long BranchAndBound::getSharedWork() const{
+unsigned long BranchAndBound::getSharedWork() const {
     return number_of_shared_works;
 }
 
-void BranchAndBound::increaseNumberOfNodesExplored(unsigned long value){
+void BranchAndBound::increaseNumberOfNodesExplored(unsigned long value) {
     number_of_nodes_explored.fetch_and_add(value);
 }
 
-void BranchAndBound::increaseNumberOfCallsToBranch(unsigned long value){
+void BranchAndBound::increaseNumberOfCallsToBranch(unsigned long value) {
     number_of_calls_to_branch.fetch_and_add(value);
 }
 
-void BranchAndBound::increaseNumberOfNodesCreated(unsigned long value){
+void BranchAndBound::increaseNumberOfNodesCreated(unsigned long value) {
     number_of_nodes_created.fetch_and_add(value);
 }
 
-void BranchAndBound::increaseNumberOfCallsToPrune(unsigned long value){
+void BranchAndBound::increaseNumberOfCallsToPrune(unsigned long value) {
     number_of_calls_to_prune.fetch_and_add(value);
 }
 
-void BranchAndBound::increaseNumberOfNodesPruned(unsigned long value){
+void BranchAndBound::increaseNumberOfNodesPruned(unsigned long value) {
     number_of_nodes_pruned.fetch_and_add(value);
 }
 
-void BranchAndBound::increaseNumberOfReachedLeaves(unsigned long value){
+void BranchAndBound::increaseNumberOfReachedLeaves(unsigned long value) {
     number_of_reached_leaves.fetch_and_add(value);
 }
 
-void BranchAndBound::increaseNumberOfUpdatesInLowerBound(unsigned long value){
+void BranchAndBound::increaseNumberOfUpdatesInLowerBound(unsigned long value) {
     number_of_updates_in_lower_bound.fetch_and_add(value);
 }
 
-void BranchAndBound::increaseSharedWork(unsigned long value){
+void BranchAndBound::increaseSharedWork(unsigned long value) {
     number_of_shared_works.fetch_and_add(value);
 }
 
-void BranchAndBound::increaseExploredNodes(){
+void BranchAndBound::increaseExploredNodes() {
     number_of_nodes_explored++;
 }
 
-void BranchAndBound::increasePrunedNodes(){
+void BranchAndBound::increasePrunedNodes() {
     number_of_nodes_pruned++;
 }
 
-void BranchAndBound::increaseNodesCreated(){
+void BranchAndBound::increaseNodesCreated() {
     number_of_nodes_created++;
 }
 
-void BranchAndBound::increaseReachedLeaves(){
+void BranchAndBound::increaseReachedLeaves() {
     number_of_reached_leaves++;
 }
 
-void BranchAndBound::increaseUpdatesInLowerBound(){
+void BranchAndBound::increaseUpdatesInLowerBound() {
     number_of_updates_in_lower_bound++;
 }
 
-void BranchAndBound::increaseSharedWorks(){
+void BranchAndBound::increaseSharedWorks() {
     number_of_shared_works++;
 }
 
@@ -842,19 +842,19 @@ const FJSSPdata& BranchAndBound::getFJSSPdata() const {
     return fjssp_data;
 }
 
-int BranchAndBound::getLimitLevelToShare() const{
+int BranchAndBound::getLimitLevelToShare() const {
     return limit_level_to_share;
 }
 
-float BranchAndBound::getDeepLimitToShare() const{
+float BranchAndBound::getDeepLimitToShare() const {
     return deep_limit_share;
 }
 
-float BranchAndBound::getSizeToShare() const{
+float BranchAndBound::getSizeToShare() const {
     return size_to_share;
 }
 
-std::vector<Solution>& BranchAndBound::getParetoFront(){
+std::vector<Solution>& BranchAndBound::getParetoFront() {
     pareto_front = paretoContainer.getParetoFront();
     return pareto_front;
 }
@@ -867,15 +867,15 @@ void BranchAndBound::setSummarizeFile(const char outputFile[255]) {
     std::strcpy(summarize_file, outputFile);
 }
 
-void BranchAndBound::setPoolFile(const char *outputFile){
+void BranchAndBound::setPoolFile(const char *outputFile) {
     std::strcpy(pool_file, outputFile);
 }
 
-void BranchAndBound::setParetoFront(const std::vector<Solution> &front){
+void BranchAndBound::setParetoFront(const std::vector<Solution> &front) {
     pareto_front = front;
 }
 
-void BranchAndBound::buildOutputFiles(){
+void BranchAndBound::buildOutputFiles() {
     
     std::vector<std::string> paths;
     std::vector<std::string> name_file;
@@ -906,11 +906,11 @@ void BranchAndBound::saveCurrentState() const {
      */
 }
 
-void BranchAndBound::saveIVM() const{
+void BranchAndBound::saveIVM() const {
     ivm_tree.saveToFile(ivm_file);
 }
 
-void BranchAndBound::saveGlobalPool() const{
+void BranchAndBound::saveGlobalPool() const {
     /** TODO: globalPoolFile is saved by the container B&B (bb_rank = 0).**/
     std::ofstream myfile(pool_file);
     if (myfile.is_open()) {
@@ -919,7 +919,7 @@ void BranchAndBound::saveGlobalPool() const{
         /** TODO: this needs a mutex. **/
         myfile << "pool_size: " << globalPool.unsafe_size() << endl;
         for (unsigned long element = 0; element < globalPool.unsafe_size(); ++element)
-            if(globalPool.try_pop(interval)){
+            if(globalPool.try_pop(interval)) {
                 
                 myfile << interval.getBuildUpTo() << " ";
                 for (int index_var = 0; index_var <= interval.getBuildUpTo(); ++index_var)
@@ -1075,7 +1075,7 @@ void BranchAndBound::printParetoFront(int withExtraInfo) {
     }
 }
 
-void BranchAndBound::printDebug(){
+void BranchAndBound::printDebug() {
     printf("\nSTART-DEBUG-INFO\n");
     printf("GlobalPool:\n");
     globalPool.print();

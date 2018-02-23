@@ -14,6 +14,7 @@
 #include "tbb/atomic.h"
 
 class HandlerContainer {
+    
 private:
     double * rangeinx;
     double * rangeiny;
@@ -37,9 +38,9 @@ public:
     
     HandlerContainer& operator()(unsigned int width, unsigned int height, double maxValX, double maxValY, int minValX, int minValY);
     
-    int add(const Solution & solution);
-    int set(const Solution & solution, int x, int y);
-    int improvesTheGrid(const Solution & solution);
+    bool add(const Solution & solution);
+    bool set(const Solution & solution, int x, int y);
+    bool improvesTheGrid(const Solution & solution);
     
     unsigned long getNumberOfActiveBuckets() const;
     unsigned long getNumberOfUnexploredBuckets() const;
@@ -60,7 +61,7 @@ public:
     
 private:
     std::vector<Solution>& get(int x, int y);
-    int improvesTheBucket(const Solution & solution, int x, int y);
+    bool improvesTheBucket(const Solution & solution, int x, int y);
     void clearContainer(int x, int y);
     void setNonDominatedState(int x, int y);
     void setDominatedState(int x, int y);

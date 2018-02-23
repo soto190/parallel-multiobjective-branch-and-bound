@@ -9,7 +9,7 @@
 #include "ProblemHCSP.hpp"
 
 
-ProblemHCSP::ProblemHCSP(const ProblemHCSP& toCopy):Problem(toCopy){
+ProblemHCSP::ProblemHCSP(const ProblemHCSP& toCopy):Problem(toCopy) {
     
     this->totalTasks = toCopy.totalTasks;
     this->totalMachines = toCopy.totalMachines;
@@ -36,7 +36,7 @@ ProblemHCSP::ProblemHCSP(const ProblemHCSP& toCopy):Problem(toCopy){
             this->processingTime[task][machine] = toCopy.processingTime[task][machine];
     }
     
-    for (config = 0; config < this->totalConfig; config++){
+    for (config = 0; config < this->totalConfig; config++) {
         
         this->maxConfigIn[config] = toCopy.maxConfigIn[config];
         
@@ -56,7 +56,7 @@ ProblemHCSP::ProblemHCSP(const ProblemHCSP& toCopy):Problem(toCopy){
     
 }
 
-ProblemHCSP::~ProblemHCSP(){
+ProblemHCSP::~ProblemHCSP() {
     int task = 0;
     int config = 0;
     int mappings = 0;
@@ -66,7 +66,7 @@ ProblemHCSP::~ProblemHCSP(){
     
     delete [] processingTime;
     
-    for(config = 0; config < this->totalConfig; config++){
+    for(config = 0; config < this->totalConfig; config++) {
         delete[] voltage[config];
         delete[] speed[config];
     }
@@ -82,7 +82,7 @@ ProblemHCSP::~ProblemHCSP(){
     delete[] maxConfigIn;
 }
 
-ProblemHCSP& ProblemHCSP::operator=(const ProblemHCSP &toCopy){
+ProblemHCSP& ProblemHCSP::operator=(const ProblemHCSP &toCopy) {
     this->totalTasks = toCopy.totalTasks;
     this->totalMachines = toCopy.totalMachines;
     this->totalConfig = toCopy.totalConfig;
@@ -109,7 +109,7 @@ ProblemHCSP& ProblemHCSP::operator=(const ProblemHCSP &toCopy){
         
     }
     
-    for (config = 0; config < this->totalConfig; config++){
+    for (config = 0; config < this->totalConfig; config++) {
         
         this->maxConfigIn[config] = toCopy.maxConfigIn[config];
         
@@ -130,27 +130,27 @@ ProblemHCSP& ProblemHCSP::operator=(const ProblemHCSP &toCopy){
     return *this;
 }
 
-ProblemType ProblemHCSP::getType() const{ return ProblemType::combination;}
-int ProblemHCSP::getStartingRow(){ return 0; }
-int ProblemHCSP::getFinalLevel(){ return this->n_variables - 1;}
-int ProblemHCSP::getLowerBound(int indexVar) const{ return 0;}
-int ProblemHCSP::getUpperBound(int indexVar) const{ return this->totalMappings - 1; }
-int ProblemHCSP::getLowerBoundInObj(int nObj) const{ return INT_MAX; }
-int ProblemHCSP::getTotalElements(){return 0;}
-int * ProblemHCSP::getElemensToRepeat(){ return nullptr;}
+ProblemType ProblemHCSP::getType() const { return ProblemType::combination;}
+int ProblemHCSP::getStartingRow() { return 0; }
+int ProblemHCSP::getFinalLevel() { return this->n_variables - 1;}
+int ProblemHCSP::getLowerBound(int indexVar) const { return 0;}
+int ProblemHCSP::getUpperBound(int indexVar) const { return this->totalMappings - 1; }
+int ProblemHCSP::getLowerBoundInObj(int nObj) const { return INT_MAX; }
+int ProblemHCSP::getTotalElements() {return 0;}
+int * ProblemHCSP::getElemensToRepeat() { return nullptr;}
 int ProblemHCSP::getDecodeMap(int code, int parameter) const {return 0;}
 int ProblemHCSP::getEncodeMap(int code, int parameter) const {return 0;}
-int ProblemHCSP::getTimesThatValueCanBeRepeated(int value){return 0;}
+int ProblemHCSP::getTimesThatValueCanBeRepeated(int value) {return 0;}
 
-double ProblemHCSP::computeProcessingTime(int task, int machine, int config){
+double ProblemHCSP::computeProcessingTime(int task, int machine, int config) {
     return this->processingTime[task][machine] / this->speed[config][machine];
 }
 
-double ProblemHCSP::computeEnergy(int task, int machine, int config, double proc_time){
+double ProblemHCSP::computeEnergy(int task, int machine, int config, double proc_time) {
     return proc_time * std::pow(voltage[config][machine], 2);
 }
 
-double ProblemHCSP::evaluate(Solution & solution){
+double ProblemHCSP::evaluate(Solution & solution) {
     
     int mapping = 0;
     int machine = 0;
@@ -174,7 +174,7 @@ double ProblemHCSP::evaluate(Solution & solution){
         solution.execTime[machine] += proc_prime;
         energy += proc_prime * this->voltage[config][machine] * this->voltage[config][machine];
         
-        if(solution.execTime[machine] >= solution.execTime[solution.getIndex()]){
+        if(solution.execTime[machine] >= solution.execTime[solution.getIndex()]) {
             solution.setIndex(machine);
             makespan = solution.execTime[machine];
         }
@@ -190,7 +190,7 @@ double ProblemHCSP::evaluate(Solution & solution){
  * This functio uses the value of the last evaluation.
  */
 /*
- double ProblemHCSP::evaluatePartial(Solution * solution, int levelEvaluation){
+ double ProblemHCSP::evaluatePartial(Solution * solution, int levelEvaluation) {
  
  int mapping = solution->getVariable(levelEvaluation);
  int machine = this->mappingConfig[mapping][0];
@@ -202,7 +202,7 @@ double ProblemHCSP::evaluate(Solution & solution){
  double energy = solution->getObjective(1) + this->computeEnergy(levelEvaluation, machine, config, proc_prime);
  
  for (machine = 0; machine < this->totalMachines; machine++)
- if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){
+ if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]) {
  solution->machineWithMakespan = machine;
  solution->setObjective(0, solution->execTime[machine]);
  }
@@ -213,7 +213,7 @@ double ProblemHCSP::evaluate(Solution & solution){
  */
 
 
-double ProblemHCSP::evaluatePartial(Solution & solution, int levelEvaluation){
+double ProblemHCSP::evaluatePartial(Solution & solution, int levelEvaluation) {
     
     int mapping = 0;
     int machine = 0;
@@ -236,7 +236,7 @@ double ProblemHCSP::evaluatePartial(Solution & solution, int levelEvaluation){
         proc_prime = this->computeProcessingTime(i_task, machine, config);// this->processingTime[i_task][machine] / this->speed[config][machine];
         solution.execTime[machine] += proc_prime;
         energy += this->computeEnergy(i_task, machine, config, proc_prime);
-        if(solution.execTime[machine] >= solution.execTime[solution.getIndex()]){
+        if(solution.execTime[machine] >= solution.execTime[solution.getIndex()]) {
             solution.setIndex(machine);
             makespan = solution.execTime[machine];
         }
@@ -247,7 +247,7 @@ double ProblemHCSP::evaluatePartial(Solution & solution, int levelEvaluation){
     return 0;
 }
 
-double ProblemHCSP::evaluateLastLevel(Solution * solution){
+double ProblemHCSP::evaluateLastLevel(Solution * solution) {
     
     /**
      * For this problem there is no special evaluation on the last level.
@@ -255,7 +255,7 @@ double ProblemHCSP::evaluateLastLevel(Solution * solution){
     /*
      int machine = 0;
      for (machine = 0; machine < this->totalMachines; machine++)
-     if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]){
+     if(solution->execTime[machine] >= solution->execTime[solution->machineWithMakespan]) {
      solution->machineWithMakespan = machine;
      solution->objective[0] = solution->execTime[machine];
      }
@@ -267,7 +267,7 @@ double ProblemHCSP::evaluateLastLevel(Solution * solution){
 /**
  * Removes the $n$ level. Decreases the objective values removing the values from lastLevel to nextLevel.
  **/
-double ProblemHCSP::removeLastEvaluation(Solution * solution, int lastLevel, int nextLevel){
+double ProblemHCSP::removeLastEvaluation(Solution * solution, int lastLevel, int nextLevel) {
     
     int mapping = 0;
     int machine = 0;
@@ -289,7 +289,7 @@ double ProblemHCSP::removeLastEvaluation(Solution * solution, int lastLevel, int
     }
     
     for (machine = 0; machine < this->totalMachines; machine++)
-        if(solution->execTime[machine] >= solution->execTime[solution->getIndex()]){
+        if(solution->execTime[machine] >= solution->execTime[solution->getIndex()]) {
             solution->setIndex(machine);
             solution->setObjective(0, solution->execTime[machine]);
         }
@@ -297,9 +297,9 @@ double ProblemHCSP::removeLastEvaluation(Solution * solution, int lastLevel, int
     return 0.0;
 }
 
-double ProblemHCSP::removeLastLevelEvaluation(Solution * solution, int newLevel){
+double ProblemHCSP::removeLastLevelEvaluation(Solution * solution, int newLevel) {
     
-    if(newLevel > 0){
+    if(newLevel > 0) {
         int mapping = 0;
         int machine = 0;
         int config = 0;
@@ -319,7 +319,7 @@ double ProblemHCSP::removeLastLevelEvaluation(Solution * solution, int newLevel)
         }
         
         for (machine = 0; machine < this->totalMachines; machine++)
-            if(solution->execTime[machine] >= solution->execTime[solution->getIndex()]){
+            if(solution->execTime[machine] >= solution->execTime[solution->getIndex()]) {
                 solution->setIndex(machine);
                 solution->setObjective(0, solution->execTime[machine]);
             }
@@ -328,15 +328,15 @@ double ProblemHCSP::removeLastLevelEvaluation(Solution * solution, int newLevel)
     return 0.0;
 }
 
-void ProblemHCSP::createDefaultSolution(Solution & solution){}
-void ProblemHCSP::getSolutionWithLowerBoundInObj(int nObj, Solution & solution){}
+void ProblemHCSP::createDefaultSolution(Solution & solution) {}
+void ProblemHCSP::getSolutionWithLowerBoundInObj(int nObj, Solution & solution) {}
 
-void ProblemHCSP::printInstance(){
+void ProblemHCSP::printInstance() {
     
     printf("Hello from Problem Scheduling!\n");
 }
 
-void ProblemHCSP::printProblemInfo() const{
+void ProblemHCSP::printProblemInfo() const {
     printf("Total tasks: %d\n", this->totalTasks);
     printf("Total machines: %d\n", this->totalMachines);
     printf("Total mappings: %d\n", this->totalMappings);
@@ -368,7 +368,7 @@ void ProblemHCSP::printProblemInfo() const{
     
 }
 
-void ProblemHCSP::loadInstance(char filePath[2][255], char file_extension[4]){
+void ProblemHCSP::loadInstance(char filePath[2][255], char file_extension[4]) {
     
     std::ifstream infile(filePath[0]);
     std::string line;
@@ -409,7 +409,7 @@ void ProblemHCSP::loadInstance(char filePath[2][255], char file_extension[4]){
     this->readMachinesConfigurations(filePath[1]);
 }
 
-void ProblemHCSP::readMachinesConfigurations(char filePath[255]){
+void ProblemHCSP::readMachinesConfigurations(char filePath[255]) {
     
     std::ifstream infile(filePath);
     std::string line;
@@ -453,14 +453,14 @@ void ProblemHCSP::readMachinesConfigurations(char filePath[255]){
         std::getline(infile, line);
         elemens = split(line, ' ');
         pos = 0;
-        for(machine = 0; machine < totalMachinesInConfig; machine++){
+        for(machine = 0; machine < totalMachinesInConfig; machine++) {
             voltageS = elemens.at(++pos);
             speedS = elemens.at(++pos);
             
             this->voltage[config][machine] = 0;
             this->speed[config][machine] = 0;
             
-            if(voltageS.compare("----") != 0){
+            if(voltageS.compare("----") != 0) {
                 this->maxConfigIn[machine]++;
                 this->totalMappings++;
                 
@@ -489,7 +489,7 @@ void ProblemHCSP::readMachinesConfigurations(char filePath[255]){
     
     k_config = 0;
     for(m_machine = 0; m_machine < this->totalMachines; m_machine++)
-        for(m_config = 0; m_config < this->maxConfigIn[m_machine]; m_config++){
+        for(m_config = 0; m_config < this->maxConfigIn[m_machine]; m_config++) {
             this->mappingConfig[k_config][0] = m_machine;
             this->mappingConfig[k_config][1] = m_config;
             k_config++;
@@ -499,14 +499,14 @@ void ProblemHCSP::readMachinesConfigurations(char filePath[255]){
     infile.close();
 }
 
-void ProblemHCSP::printSolution(const Solution & solution) const{
+void ProblemHCSP::printSolution(const Solution & solution) const {
     printPartialSolution(solution, this->n_variables);
 }
 
-void ProblemHCSP::printSolutionInfo(const Solution & solution) const{
+void ProblemHCSP::printSolutionInfo(const Solution & solution) const {
     printf("TODO: Implement this function.\n");
 }
 
-void ProblemHCSP::printPartialSolution(const Solution & solution, int level) const{
+void ProblemHCSP::printPartialSolution(const Solution & solution, int level) const {
     
 }

@@ -92,7 +92,7 @@ int updateFront(Solution & solution, std::vector<Solution>& paretoFront) {
     /**
      * status[3] is to avoid to add solutions with the same objective values in the front, remove it if repeated objective values are requiered.
      */
-    //if(status[0] > 0 || status[1] == this->paretoFront.size() || status[2] == 0){
+    //if(status[0] > 0 || status[1] == this->paretoFront.size() || status[2] == 0) {
     if ((status[3] == 0)
         && (paretoFront.size() == 0 || status[0] > 0
             || status[1] == paretoFront.size() || status[2] == 0)) {

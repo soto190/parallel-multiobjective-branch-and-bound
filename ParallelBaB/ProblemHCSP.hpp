@@ -25,7 +25,7 @@ public:
     
     
     ProblemHCSP(const ProblemHCSP& toCopy);
-    ProblemHCSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables){
+    ProblemHCSP(int totalObjectives, int totalVariables):Problem(totalObjectives, totalVariables) {
         this->totalTasks = 0;
         this->totalMachines = 0;
         this->totalConfig = 0;

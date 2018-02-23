@@ -8,15 +8,15 @@
 
 #include "FJSSPdataException.hpp"
 
-FJSSPdataException::FJSSPdataException(FJSSPdataErrorCode error_code, std::string error_msg):error_code(error_code), error_message(error_msg){
+FJSSPdataException::FJSSPdataException(FJSSPdataErrorCode error_code, std::string error_msg):error_code(error_code), error_message(error_msg) {
     
 }
 
-FJSSPdataException::~FJSSPdataException() throw(){
+FJSSPdataException::~FJSSPdataException() throw() {
     
 }
 
-const char* FJSSPdataException::what() const throw(){
+const char* FJSSPdataException::what() const throw() {
     std::string error_text = "FJSSPdataException: ";
     
     switch (error_code) {

@@ -85,7 +85,7 @@ void NSGA_II::mutation() {
 
 void NSGA_II::evaluatePopulation() {
     std::vector<Solution>::iterator it_solution;
-    for (it_solution = population.begin(); it_solution != population.end(); ++it_solution){
+    for (it_solution = population.begin(); it_solution != population.end(); ++it_solution) {
         problem.evaluate(*it_solution);
         increaseNumberOfEvaluations();
     }
@@ -263,7 +263,7 @@ vector<Solution> NSGA_II::fastNonDominatedSort(vector<Solution>& population_to_s
             DominanceRelation dom = (*sol_p).dominanceTest(*sol_q);
             if (dom == DominanceRelation::Dominates)
                 dominates_to.at(solution_counter_p).push_back(&(*sol_q));
-            else if (dom == DominanceRelation::Dominated){
+            else if (dom == DominanceRelation::Dominated) {
                 (*sol_p).incrementDominatedBy();
             }
         }
@@ -381,7 +381,7 @@ void NSGA_II::updateProgress() {
 }
 
 void NSGA_II::printPopulation() const {
-    for (int nSol = 0; nSol < population.size(); ++nSol){
+    for (int nSol = 0; nSol < population.size(); ++nSol) {
         printf("[%3d] ", nSol);
         population.at(nSol).print();
     }

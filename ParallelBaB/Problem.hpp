@@ -17,10 +17,9 @@
 
 enum ProblemType{combination = 0, permutation = 1, permutation_with_repetition_and_combination = 2, XD=190};
 
-class Problem{
+class Problem {
     
 public:
-    
     Problem();
     Problem(const Problem& toCopy);
     Problem (int n_objectives, int n_variables);

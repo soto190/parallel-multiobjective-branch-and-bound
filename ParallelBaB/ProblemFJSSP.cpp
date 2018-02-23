@@ -1635,7 +1635,7 @@ int ProblemFJSSP::getDecodeMap(int code, int parameter) const {
 }
 
 /** Returns the map corresponding to the configuration of job and machine. (Codes the job and machine in a map). **/
-int ProblemFJSSP::getEncodeMap(int job, int machine) const{
+int ProblemFJSSP::getEncodeMap(int job, int machine) const {
     return encode_job_machine_to_map[job][machine];
 }
 
@@ -1751,7 +1751,7 @@ int ProblemFJSSP::getSumOf_M_smallestEST() const {
     return sum_M_smallest_est;
 }
 
-unsigned long ProblemFJSSP::getNumberOfMachinesAvaibleForOperation(unsigned long operation) const{
+unsigned long ProblemFJSSP::getNumberOfMachinesAvaibleForOperation(unsigned long operation) const {
     return machines_aviability.at(operation).size();
 }
 
@@ -1800,7 +1800,7 @@ void ProblemFJSSP::setSumOf_M_smallestEST(int nValue) {
 void ProblemFJSSP::printInstance() {
 }
 
-void ProblemFJSSP::printProblemInfo() const{
+void ProblemFJSSP::printProblemInfo() const {
     char sep = '-';
     printf("Total jobs: %d\n", n_jobs);
     printf("Total machines: %d\n", n_machines);
@@ -2010,7 +2010,7 @@ bool ProblemFJSSP::validateVariablesOf(const Solution& solution) const {
     for (int job = 0; job < getNumberOfJobs(); job++)
         number_of_operations_allocated_from_job[job] = 0;
 
-    for (int variable = 0; variable < n_variables && is_valid; ++variable){
+    for (int variable = 0; variable < n_variables && is_valid; ++variable) {
         int code = solution.getVariable(variable);
         int job = getDecodeMap(code, 0);
         int machine = getDecodeMap(code, 1);

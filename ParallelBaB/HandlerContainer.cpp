@@ -14,7 +14,8 @@ rangeiny(nullptr),
 maxinx(0),
 maxiny(0),
 numberOfElements(0),
-grid(0,0){
+grid(0,0) {
+
 };
 
 HandlerContainer::HandlerContainer(const HandlerContainer& toCopy):
@@ -24,7 +25,7 @@ numberOfElements(toCopy.numberOfElements),
 activeBuckets(toCopy.getNumberOfActiveBuckets()),
 unexploredBuckets(toCopy.getNumberOfUnexploredBuckets()),
 disabledBuckets(toCopy.getNumberOfDisabledBuckets()),
-grid(toCopy.grid){
+grid(toCopy.grid) {
     
     rangeinx = new double[toCopy.getCols()];
     rangeiny = new double[toCopy.getRows()];
@@ -40,7 +41,7 @@ grid(toCopy.grid){
 }
 
 HandlerContainer::HandlerContainer(unsigned int rows, unsigned int cols, double maxValX, double maxValY):
-grid(cols, rows){
+grid(cols, rows) {
     //    grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows) {
     /*
      if (maxValX < cols)
@@ -81,7 +82,7 @@ HandlerContainer::~HandlerContainer() {
     paretoFront.clear();
 }
 
-HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int cols, double maxValX, double maxValY, int minValX, int minValY ){
+HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int cols, double maxValX, double maxValY, int minValX, int minValY) {
     /*
      if (maxValX < cols)
      cols = maxValX;
@@ -140,8 +141,8 @@ void HandlerContainer::getCoordinateForSolution(const Solution &solution, int * 
  * Returns 1 if the solution was added 0 in other case.
  *
  */
-int HandlerContainer::set(const Solution & solution, int x, int y) {
-    int updated = 0;
+bool HandlerContainer::set(const Solution & solution, int x, int y) {
+    bool updated = false;
     BucketState state = grid.getStateOf(x, y);
     switch (state) {
         case BucketState::Unexplored:
@@ -150,7 +151,7 @@ int HandlerContainer::set(const Solution & solution, int x, int y) {
             grid.setNonDominatedState(x, y);
             activeBuckets.fetch_and_increment();
             unexploredBuckets.fetch_and_decrement();
-            updated = 1;
+            updated = true;
             break;
             
         case BucketState::NonDominated:
@@ -158,7 +159,7 @@ int HandlerContainer::set(const Solution & solution, int x, int y) {
             break;
             
         case BucketState::dominated:
-            updated = 0;
+            updated = false;
             /** If the bucket is dominated (State = 2) the element is not added. Then do nothing**/
             break;
     }
@@ -169,7 +170,7 @@ int HandlerContainer::set(const Solution & solution, int x, int y) {
     return updated;
 }
 
-void HandlerContainer::clearContainersDominatedBy(const int x, const int y){
+void HandlerContainer::clearContainersDominatedBy(const int x, const int y) {
     for (int nRow = y + 1; nRow < grid.getNumberOfRows(); nRow++)
         for (int nCol = x + 1; nCol < grid.getNumberOfCols(); nCol++)
             if (grid.getStateOf(nCol, nRow) == BucketState::dominated)
@@ -178,20 +179,20 @@ void HandlerContainer::clearContainersDominatedBy(const int x, const int y){
                 clearContainer(nCol, nRow);
 }
 
-void HandlerContainer::updateMinValueFound(const Solution &solution){
+void HandlerContainer::updateMinValueFound(const Solution &solution) {
     for (int objective = 0; objective < 2; ++objective)
         if (solution.getObjective(objective) < min_value_found_in_obj[objective])
             min_value_found_in_obj[objective].fetch_and_store(solution.getObjective(objective));
 }
 
-int HandlerContainer::getBestValueFoundIn(int obj) const{
+int HandlerContainer::getBestValueFoundIn(int obj) const {
     return min_value_found_in_obj[obj];
 }
 
 /**
  * It uses a binary search tree to locate the bucket which will contain the new solution.
  **/
-int HandlerContainer::add(const Solution & solution) {
+bool HandlerContainer::add(const Solution & solution) {
     int coordinate[2];
     getCoordinateForSolution(solution, coordinate);
     return set(solution, coordinate[0], coordinate[1]);
@@ -235,35 +236,35 @@ unsigned long HandlerContainer::getSizeOf(int x, int y) const {
     return grid.getSizeOf(x, y);
 }
 
-unsigned long HandlerContainer::getNumberOfActiveBuckets() const{
+unsigned long HandlerContainer::getNumberOfActiveBuckets() const {
     return activeBuckets;
 }
 
-unsigned long HandlerContainer::getNumberOfUnexploredBuckets() const{
+unsigned long HandlerContainer::getNumberOfUnexploredBuckets() const {
     return unexploredBuckets;
 }
 
-unsigned long HandlerContainer::getNumberOfDisabledBuckets() const{
+unsigned long HandlerContainer::getNumberOfDisabledBuckets() const {
     return disabledBuckets;
 }
 
-void HandlerContainer::setNonDominatedState(int x, int y){
+void HandlerContainer::setNonDominatedState(int x, int y) {
     grid.setNonDominatedState(x, y);
 }
 
-void HandlerContainer::setDominatedState(int x, int y){
+void HandlerContainer::setDominatedState(int x, int y) {
     grid.setDominatedState(x, y);
 }
 
-void HandlerContainer::setUnexploredState(int x, int y){
+void HandlerContainer::setUnexploredState(int x, int y) {
     grid.setUnexploredState(x, y);
 }
 
-void HandlerContainer::print() const{
+void HandlerContainer::print() const {
     grid.print();
 }
 
-void HandlerContainer::printGridSize() const{
+void HandlerContainer::printGridSize() const {
     for (int nRow = grid.getNumberOfRows() - 1; nRow >= 0; --nRow) {
         printf("[%3d] ", nRow);
         for (int nCol = 0; nCol < grid.getNumberOfCols(); ++nCol)
@@ -275,11 +276,11 @@ void HandlerContainer::printGridSize() const{
     }
 }
 
-void HandlerContainer::printStates() const{
+void HandlerContainer::printStates() const {
     BucketState state;
     for (int nRow = grid.getNumberOfRows() - 1; nRow >= 0; --nRow) {
         printf("[%3d] ", nRow);
-        for (int nCol = 0; nCol < grid.getNumberOfCols(); ++nCol){
+        for (int nCol = 0; nCol < grid.getNumberOfCols(); ++nCol) {
             state = grid.getStateOf(nCol, nRow);
             if(state == BucketState::Unexplored)
                 printf(" - ");
@@ -293,18 +294,18 @@ void HandlerContainer::printStates() const{
 /**
  * Stores a copy of the received solution.
  */
-int HandlerContainer::improvesTheGrid(const Solution &solution) {
+bool HandlerContainer::improvesTheGrid(const Solution &solution) {
     int bucketCoordinate[2];
-    int improves = 0;
+    bool improves = false;
     getCoordinateForSolution(solution, bucketCoordinate);
     BucketState stateOfBucket = grid.getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
     switch (stateOfBucket) {
         case BucketState::dominated:
-            improves = 0;
+            improves = false;
             break;
             
         case BucketState::Unexplored:
-            improves = 1;
+            improves = true;
             break;
             
         case BucketState::NonDominated:
@@ -314,7 +315,7 @@ int HandlerContainer::improvesTheGrid(const Solution &solution) {
     return improves;
 }
 
-int HandlerContainer::improvesTheBucket(const Solution &solution, int x, int y) {
+bool HandlerContainer::improvesTheBucket(const Solution &solution, int x, int y) {
     return grid.produceImprovementInBucket(solution, x, y);
 }
 

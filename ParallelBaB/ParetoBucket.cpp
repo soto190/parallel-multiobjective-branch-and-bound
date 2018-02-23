@@ -94,25 +94,25 @@ const std::vector<Solution>& ParetoBucket::getVectorToCopy() const {
     return m_vec;
 }
 
-int ParetoBucket::produceImprovement(const Solution& obj){
+bool ParetoBucket::produceImprovement(const Solution& obj) {
     tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, false);
     unsigned long index = 0, size_vec = m_vec.size();
-    int improves = 1;
+    bool improves = true;
     for (index = 0; index < size_vec; ++index)
         switch (obj.dominanceTest(m_vec[index])) {
                 
             case DominanceRelation::Dominated:
-                improves = 0;
+                improves = false;
                 index = size_vec;
                 break;
                 
             case DominanceRelation::Equals:
-                improves = 0;
+                improves = false;
                 index = size_vec;
                 break;
                 
             case DominanceRelation::Dominates:
-                improves = 1;
+                improves = true;
                 index = size_vec;
                 break;
                 
@@ -131,7 +131,7 @@ int ParetoBucket::produceImprovement(const Solution& obj){
  * The solution is added if the ParetoBucket is improved, and deletes all dominated solutions.
  *
  ***/
-int ParetoBucket::push_back(const Solution& obj) {
+bool ParetoBucket::push_back(const Solution& obj) {
     tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, true);
     unsigned int dominates = 0;
     unsigned int nondominated = 0;
@@ -139,7 +139,7 @@ int ParetoBucket::push_back(const Solution& obj) {
     unsigned int equals = 0;
     
     std::vector<Solution>::iterator begin = m_vec.begin();
-    int wasAdded = 0;
+    bool wasAdded = false;
     for (unsigned long nSol = 0; nSol < m_vec.size(); ++nSol)
         switch (obj.dominanceTest(m_vec.at(nSol))) {
                 
@@ -173,7 +173,7 @@ int ParetoBucket::push_back(const Solution& obj) {
             || dominated == 0)) {
                 m_vec.push_back(obj); /** Creates a new copy. **/
                 size.fetch_and_increment();
-                wasAdded = 1;
+                wasAdded = true;
         }
     
     return wasAdded;
@@ -194,7 +194,7 @@ void ParetoBucket::print() const {
 
 /*
  //Join two buckets;
- Bucket<T> operator+(const Bucket<T>& bucket){
+ Bucket<T> operator+(const Bucket<T>& bucket) {
  Bucket<T> new_bucket;
  new_bucket.m_vec = bucket.m_vec.clone();
  new_bucket._vec.push_back(m_vec);

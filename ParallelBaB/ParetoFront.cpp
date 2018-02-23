@@ -71,25 +71,25 @@ const std::vector<Solution>& ParetoFront::getVectorToCopy() const {
     return m_vec;
 }
 
-int ParetoFront::produceImprovement(const Solution& obj) {
+bool ParetoFront::produceImprovement(const Solution& obj) {
     unsigned long index = 0;
     unsigned long size_vec = m_vec.size();
-    int improves_the_front = 1;
+    bool improves_the_front = true;
     for (index = 0; index < size_vec; ++index)
         switch (obj.dominanceTest(m_vec[index])) {
                 
             case DominanceRelation::Dominated:
-                improves_the_front = 0;
+                improves_the_front = false;
                 index = size_vec;
                 break;
                 
             case DominanceRelation::Equals:
-                improves_the_front = 0;
+                improves_the_front = false;
                 index = size_vec;
                 break;
                 
             case DominanceRelation::Dominates:
-                improves_the_front = 1;
+                improves_the_front = true;
                 index = size_vec;
                 break;
                 

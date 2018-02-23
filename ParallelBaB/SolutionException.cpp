@@ -8,15 +8,15 @@
 
 #include "SolutionException.hpp"
 
-SolutionException::SolutionException(SolutionErrorCode error_code, std::string error_msg):error_code(error_code), error_message(error_msg){
+SolutionException::SolutionException(SolutionErrorCode error_code, std::string error_msg):error_code(error_code), error_message(error_msg) {
     
 }
 
-SolutionException::~SolutionException() throw(){
+SolutionException::~SolutionException() throw() {
 
 }
 
-const char* SolutionException::what() const throw(){
+const char* SolutionException::what() const throw() {
     std::string error_text = "SolutionException: ";
 
     switch (error_code) {

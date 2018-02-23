@@ -12,11 +12,11 @@ ParallelBranchAndBound::ParallelBranchAndBound(int rank, int n_threads, const Pr
 rank(rank),
 number_of_bbs(n_threads),
 problem(problem),
-branch_init(problem.getNumberOfVariables()){
+branch_init(problem.getNumberOfVariables()) {
     
 }
 
-ParallelBranchAndBound::~ParallelBranchAndBound(){
+ParallelBranchAndBound::~ParallelBranchAndBound() {
     
 }
 
@@ -79,15 +79,15 @@ tbb::task * ParallelBranchAndBound::execute() {
     return NULL;
 }
 
-std::vector<Solution>& ParallelBranchAndBound::getParetoFront(){
+std::vector<Solution>& ParallelBranchAndBound::getParetoFront() {
     return paretoContainer.getParetoFront();
 }
 
-void ParallelBranchAndBound::setBranchInitPayload(const Payload_interval& payload){
+void ParallelBranchAndBound::setBranchInitPayload(const Payload_interval& payload) {
     branch_init(payload);
 }
 
-void ParallelBranchAndBound::setBranchInit(const Interval &interval){
+void ParallelBranchAndBound::setBranchInit(const Interval &interval) {
     branch_init = interval;
 }
 
@@ -103,6 +103,6 @@ void ParallelBranchAndBound::setSummarizeFile(const char outputFile[255]) {
     std::strcpy(summarizeFile, outputFile);
 }
 
-int ParallelBranchAndBound::getRank() const{
+int ParallelBranchAndBound::getRank() const {
     return rank;
 }

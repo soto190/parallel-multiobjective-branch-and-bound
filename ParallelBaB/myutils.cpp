@@ -73,7 +73,7 @@ int binarySearch(double value, const double * array, int size) {
  * To avoid to compute the factorial for each number.
  * http://www.tsm-resources.com/alists/fact.html
  **/
-unsigned long getFactorial(int n){
+unsigned long getFactorial(int n) {
     unsigned long factorial[21];
     if (n > 0 && n < 20) {
         factorial[0] = 1;
@@ -97,8 +97,7 @@ unsigned long getFactorial(int n){
         factorial[18] = 6402373705728000;
         factorial[19] = 121645100408832000;
         factorial[20] = 2432902008176640000;
-    }
-    else{
+    } else {
         printf("Not factorial for: %d\n", n);
         return -1;
     }

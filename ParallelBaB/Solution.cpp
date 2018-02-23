@@ -20,7 +20,7 @@ rank(0),
 distance(0),
 sort_by(0),
 index(0),
-dominated_by(0){
+dominated_by(0) {
     build_up_to = -1;
     objective = nullptr;
     variable = nullptr;
@@ -38,7 +38,7 @@ build_up_to(-1),
 objective(new double[numberOfObjectives]),
 variable(new int[numberOfVariables]),
 index(0),
-execTime(new double[16]){
+execTime(new double[16]) {
     
     int var = 0, obj = 0;
     for (obj = 0; obj < numberOfObjectives; ++obj)
@@ -59,7 +59,7 @@ distance(solution.getDistance()),
 sort_by(solution.getSortByObjective()),
 dominated_by(solution.getDominatedBy()),
 build_up_to(solution.getBuildUpTo()),
-index(solution.getIndex()){
+index(solution.getIndex()) {
     
     objective = new double[n_objectives];
     variable = new int[n_variables];

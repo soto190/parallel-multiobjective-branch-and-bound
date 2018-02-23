@@ -9,54 +9,55 @@
 #include "ObjectiveValues.hpp"
 
 
-ObjectiveValues::ObjectiveValues(){
+ObjectiveValues::ObjectiveValues() {
+    
 }
 
-ObjectiveValues::ObjectiveValues(int var_value, int obj1, int obj2): variable_value(var_value){
+ObjectiveValues::ObjectiveValues(int var_value, int obj1, int obj2): variable_value(var_value) {
     objective[0] = obj1;
     objective[1] = obj2;
 }
 
-ObjectiveValues::ObjectiveValues(const ObjectiveValues & toCopy){
+ObjectiveValues::ObjectiveValues(const ObjectiveValues & toCopy) {
     variable_value = toCopy.getValue();
-    for (int n_obj = 0; n_obj < 2; ++n_obj){
+    for (int n_obj = 0; n_obj < 2; ++n_obj) {
         objective[n_obj] = toCopy.getObjective(n_obj);
         distance[n_obj] = toCopy.getDistance(n_obj);
     }
 }
 
-ObjectiveValues::~ObjectiveValues(){
+ObjectiveValues::~ObjectiveValues() {
 }
 
-void ObjectiveValues::setValue(int n_value){
+void ObjectiveValues::setValue(int n_value) {
     variable_value = n_value;
 }
 
-void ObjectiveValues::setObjective(int n_objective, int value){
+void ObjectiveValues::setObjective(int n_objective, int value) {
     objective[n_objective] = value;
 }
 
-void ObjectiveValues::setDistance(int n_obj, float n_dist){
+void ObjectiveValues::setDistance(int n_obj, float n_dist) {
     distance[n_obj] = n_dist;
 }
 
-int ObjectiveValues::getValue() const{
+int ObjectiveValues::getValue() const {
     return variable_value;
 }
 
-int ObjectiveValues::getObjective(int n_obj) const{
+int ObjectiveValues::getObjective(int n_obj) const {
     return objective[n_obj];
 }
 
-float ObjectiveValues::getDistance(int n_obj) const{
+float ObjectiveValues::getDistance(int n_obj) const {
     return distance[n_obj];
 }
 
-float ObjectiveValues::getCombination() const{
+float ObjectiveValues::getCombination() const {
     return distance[0] + distance[1];
 }
 
-float ObjectiveValues::getSomethingToSort(const SORTING_TYPES sort) const{
+float ObjectiveValues::getSomethingToSort(const SORTING_TYPES sort) const {
     
     switch (sort) {
         case SORTING_TYPES::DOMINANCE:
@@ -81,42 +82,42 @@ float ObjectiveValues::getSomethingToSort(const SORTING_TYPES sort) const{
     }
 }
 
-bool ObjectiveValues::operator==(const ObjectiveValues& rhs) const{
+bool ObjectiveValues::operator==(const ObjectiveValues& rhs) const {
     for (int n_obj = 0; n_obj < 2; ++n_obj)
         if (objective[n_obj] != rhs.getObjective(n_obj))
             return false;
     return true;
 }
 
-bool ObjectiveValues::operator<(const ObjectiveValues& rhs) const{
+bool ObjectiveValues::operator<(const ObjectiveValues& rhs) const {
     for (int n_obj = 0; n_obj < 2; ++n_obj)
         if (objective[n_obj] > rhs.getObjective(n_obj))
             return false;
     return true;
 }
 
-bool ObjectiveValues::operator<=(const ObjectiveValues& rhs) const{
+bool ObjectiveValues::operator<=(const ObjectiveValues& rhs) const {
     for (int n_obj = 0; n_obj < 2; ++n_obj)
         if (objective[n_obj] > rhs.getObjective(n_obj))
             return false;
     return true;
 }
 
-bool ObjectiveValues::operator>(const ObjectiveValues& rhs) const{
+bool ObjectiveValues::operator>(const ObjectiveValues& rhs) const {
     for (int n_obj = 0; n_obj < 2; ++n_obj)
         if (objective[n_obj] < rhs.getObjective(n_obj))
             return false;
     return true;
 }
 
-bool ObjectiveValues::operator>=(const ObjectiveValues& rhs) const{
+bool ObjectiveValues::operator>=(const ObjectiveValues& rhs) const {
     for (int n_obj = 0; n_obj < 2; ++n_obj)
         if (objective[n_obj] <= rhs.getObjective(n_obj))
             return false;
     return true;
 }
 
-Dom ObjectiveValues::dominance(const ObjectiveValues& rhs) const{
+Dom ObjectiveValues::dominance(const ObjectiveValues& rhs) const {
     int n_obj = 0, obj_A = 0, obj_B = 0, local_is_better = 0, extern_is_better = 0, bot_are_equals = 1;
     
     for (n_obj = 0; n_obj < 2; ++n_obj) {
@@ -142,6 +143,6 @@ Dom ObjectiveValues::dominance(const ObjectiveValues& rhs) const{
         return Dom::Nondom;
 }
 
-void ObjectiveValues::print(){
+void ObjectiveValues::print() {
     printf("%3d | %3d %3d | %3.3f %3.3f |\n", variable_value, objective[0], objective[1], distance[0], distance[1]);
 }

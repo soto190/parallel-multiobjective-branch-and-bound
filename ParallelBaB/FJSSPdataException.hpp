@@ -15,7 +15,7 @@
 
 enum FJSSPdataErrorCode{OK_FJSSPdata, JOB_OUT_OF_RANGE, OPERATION_OUT_OF_RANGE, MACHINE_OUT_OF_RANGE};
 
-class FJSSPdataException : public std::exception{
+class FJSSPdataException : public std::exception {
     
 public:
     FJSSPdataException(FJSSPdataErrorCode error_code, std::string error_msg);

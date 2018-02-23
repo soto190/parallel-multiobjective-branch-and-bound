@@ -51,7 +51,6 @@ Problem::~Problem() {
      delete [] lowerBound;
      delete [] upperBound;
      */
-    
 }
 
 Problem& Problem::operator=(const Problem &toCopy) {

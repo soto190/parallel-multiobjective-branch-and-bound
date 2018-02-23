@@ -15,7 +15,8 @@
 enum Dom {Domtes = 1, Domted = -1, Nondom = 0, Eq = 11};
 enum SORTING_TYPES{DIST_1 = 0, DIST_2 = 1, DIST_COMB = 3, DOMINANCE = 4};
 
-class ObjectiveValues{
+class ObjectiveValues {
+    
     int variable_value;
     int objective[2];
     float distance[2];

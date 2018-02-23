@@ -19,7 +19,7 @@
 
 using namespace std;
 /*
- long split(const std::string &txt, std::vector<std::string> &vector, char ch){
+ long split(const std::string &txt, std::vector<std::string> &vector, char ch) {
  unsigned long pos = txt.find(ch);
  unsigned long initialPos = 0;
  vector.clear();

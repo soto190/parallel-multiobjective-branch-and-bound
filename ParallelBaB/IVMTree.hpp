@@ -26,7 +26,7 @@ private:
     int * n_nodes_at_row;
     int integer_pointing_to_row;
     int starting_row;
-    int there_are_more_ranches = 1;
+    bool there_are_more_ranches = true;
     int root_row = 0;
     unsigned long pending_nodes = 0;
     
@@ -69,7 +69,7 @@ public:
     int getEndExploration(int row) const;
     unsigned long getNumberOfPendingNodes() const;
     int removeLastNodeAtRow(int row);
-    int thereAreMoreBranches() const;
+    bool thereAreMoreBranches() const;
     void addNodeToRow(int level, int value);
     int getActiveNode() const;
     int getFatherNode() const;
