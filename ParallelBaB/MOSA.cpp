@@ -181,9 +181,9 @@ const Solution MOSA::perturbate(const Solution& solution_input) {
     int code_is_from_job = 0;
     int new_code = 0;
 
-    std::uniform_real_distribution<double> unif_dis(0.0, 1.0);
-    std::uniform_int_distribution<unsigned int> unif_int_dis(0, problem.getNumberOfVariables() - 1);
-    std::uniform_int_distribution<unsigned int> unif_int_mach_dis(0, problem.getNumberOfMachines() - 1);
+//    std::uniform_real_distribution<double> unif_dis(0.0, 1.0);
+//    std::uniform_int_distribution<unsigned int> unif_int_dis(0, problem.getNumberOfVariables() - 1);
+//    std::uniform_int_distribution<unsigned int> unif_int_mach_dis(0, problem.getNumberOfMachines() - 1);
 
     for (int position = 0; position < solution_input.getNumberOfVariables(); ++position) {
         //        perturbation_probability = unif_dis(generator);
