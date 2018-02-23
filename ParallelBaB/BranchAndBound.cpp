@@ -392,13 +392,11 @@ int BranchAndBound::explore(Solution & solution) {
  */
 int BranchAndBound::branch(Solution& solution, int currentLevel) {
     number_of_calls_to_branch++;
-    int element = 0;
     int isInPermut = 0;
     int row = 0;
     int levelStarting= 0;
     int toAdd = 0;
-    int machine = 0;
-    int branches_created = 0;
+    int nodes_created = 0;
     
     float distance_error_to_best[2];
     
@@ -414,7 +412,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
         case ProblemType::permutation:
             levelStarting = problem.getStartingRow();
             
-            for (element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
+            for (int element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
                 isInPermut = 0;
                 for (row = levelStarting; row <= currentLevel; ++row)
                     if (solution.getVariable(row) == element) {
@@ -425,7 +423,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                 if (isInPermut == 0) {
                     ivm_tree.addNodeToRow(currentLevel + 1, element);
                     number_of_nodes_created++;
-                    branches_created++;
+                    nodes_created++;
                 }
             }
             
@@ -433,10 +431,13 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             
         case ProblemType::permutation_with_repetition_and_combination:
             /** TODO: test to add only nodes with feasible solutions. **/
-            for (element = 0; element < problem.getTotalElements(); ++element)
-                if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element))
-                    for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
-                        toAdd = problem.getEncodeMap(element, machine);
+            for (int element = 0; element < problem.getTotalElements(); ++element)
+                if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element)) {
+                    int op = problem.getOperationInJobIsNumber(element, fjssp_data.getNumberOfOperationsAllocatedFromJob(element));
+                    unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(op);
+                    for (int machine = 0; machine < machines_aviable; ++machine) {
+                        int new_machine = problem.getMachinesAvaibleForOperation(op, machine);
+                        toAdd = problem.getEncodeMap(element, new_machine);
                         
                         solution.setVariable(currentLevel + 1, toAdd);
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
@@ -458,14 +459,15 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             sorted_elements.push(obj_values, SORTING_TYPES::DIST_1);/** sorting the nodes to give priority to promising nodes. **/
                             
                             //ivm_tree.setNode(currentLevel + 1, toAdd);
-                            branches_created++;
+                            nodes_created++;
                         } else
                             increasePrunedNodes();
                         problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
                     }
-            
-            increaseNumberOfNodesCreated(branches_created);
-            if (branches_created > 0) { /** If a branch was created. **/
+                }
+
+            increaseNumberOfNodesCreated(nodes_created);
+            if (nodes_created > 0) { /** If a branch was created. **/
                 for (std::deque<ObjectiveValues>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
                     ivm_tree.addNodeToRow(currentLevel + 1, (*it).getValue());
                 
@@ -477,11 +479,11 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             break;
             
         case ProblemType::combination:
-            for (element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
+            for (int element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
                 ivm_tree.addNodeToRow(currentLevel + 1, element);
-                branches_created++;
+                nodes_created++;
             }
-            number_of_nodes_created += branches_created;
+            number_of_nodes_created += nodes_created;
             
             break;
             
@@ -489,7 +491,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             break;
     }
     
-    return branches_created;
+    return nodes_created;
 }
 
 void BranchAndBound::prune(Solution & solution, int currentLevel) {
