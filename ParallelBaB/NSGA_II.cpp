@@ -13,6 +13,8 @@ NSGA_II::NSGA_II(const ProblemFJSSP& problem):problem(problem) {
     evaluations_is_stop_criteria = false;
     max_population = 10;
     population.reserve(max_population * 2);
+    std::random_device seed;
+    generator.seed(seed());
 }
 
 NSGA_II::~NSGA_II() {
@@ -139,7 +141,7 @@ vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solut
                 if (jobs_op_allocated_off1[job] < problem.getNumberOfOperationsInJob(job)) {
                     int operation = problem.getOperationInJobIsNumber(job, jobs_op_allocated_off1[job]);
                     unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(operation);
-                    std::uniform_int_distribution<> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
+                    std::uniform_int_distribution<unsigned int> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
                     
                     int new_machine = problem.getMachinesAvaibleForOperation(operation, unif_int_mach_dis(generator));
                     allel_p2 = problem.getEncodeMap(job, new_machine);
@@ -154,7 +156,7 @@ vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solut
                 if (jobs_op_allocated_off2[job] < problem.getNumberOfOperationsInJob(job)) {
                     int operation = problem.getOperationInJobIsNumber(job, jobs_op_allocated_off2[job]);
                     unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(operation);
-                    std::uniform_int_distribution<> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
+                    std::uniform_int_distribution<unsigned int> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
                     
                     int new_machine = problem.getMachinesAvaibleForOperation(operation, unif_int_mach_dis(generator));
                     allel_p1 = problem.getEncodeMap(job, new_machine);
@@ -183,7 +185,7 @@ void NSGA_II::mutationOperator(Solution &solution) {
     int chromosome_size = solution.getNumberOfVariables();
 
     std::uniform_real_distribution<double> unif_dis(0.0, 1.0);
-    std::uniform_int_distribution<int> unif_position(0, chromosome_size - 1);
+    std::uniform_int_distribution<unsigned int> unif_position(0, chromosome_size - 1);
 
     int jobs_op_allocated[problem.getNumberOfJobs()];
     

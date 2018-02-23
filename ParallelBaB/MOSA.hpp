@@ -14,6 +14,8 @@
 #include "ParetoFront.hpp"
 #include "ProblemFJSSP.hpp"
 
+#define INF_ENERGY 9999999
+
 class MOSA {
     
 public:
@@ -54,7 +56,7 @@ private:
     ProblemFJSSP problem;
     Solution sampleSolution;
     vector<Solution> population;
-    std::default_random_engine generator;
+    std::mt19937_64 generator;
 
     void initProgress();
     int isStoppingCriteriaReached() const;

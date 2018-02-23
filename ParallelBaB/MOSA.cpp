@@ -19,7 +19,10 @@ problem(problem) {
     metropolis_iterations = 0;
     max_metropolis_iterations = 0;
     max_energy_found = 0;
-    min_energy_found = MAXFLOAT;
+    min_energy_found = INF_ENERGY;
+
+    std::random_device seed;
+    generator.seed(seed());
 }
 
 MOSA::~MOSA() {
@@ -50,7 +53,7 @@ ParetoFront MOSA::solve() {
         }
         coolingScheme();
         update();
-        std::uniform_int_distribution<> unif_int_dis(0, static_cast<int>(p_front.size() - 1));
+        std::uniform_int_distribution<unsigned int> unif_int_dis(0, static_cast<int>(p_front.size() - 1));
         current = p_front.at(unif_int_dis(generator));
     }
 
@@ -175,8 +178,8 @@ const Solution MOSA::perturbate(const Solution& solution_input) {
     int new_code = 0;
 
     std::uniform_real_distribution<double> unif_dis(0.0, 1.0);
-    std::uniform_int_distribution<> unif_int_dis(0, problem.getNumberOfVariables() - 1);
-    std::uniform_int_distribution<> unif_int_mach_dis(0, problem.getNumberOfMachines() - 1);
+    std::uniform_int_distribution<unsigned int> unif_int_dis(0, problem.getNumberOfVariables() - 1);
+    std::uniform_int_distribution<unsigned int> unif_int_mach_dis(0, problem.getNumberOfMachines() - 1);
 
     for (int position = 0; position < solution_input.getNumberOfVariables(); ++position) {
         perturbation_probability = unif_dis(generator);

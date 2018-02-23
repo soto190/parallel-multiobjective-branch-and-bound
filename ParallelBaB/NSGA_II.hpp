@@ -47,9 +47,8 @@ private:
     bool generations_is_stop_criteria;
     bool evaluations_is_stop_criteria;
     unsigned long max_population;
-    
-    std::default_random_engine generator;
-    
+    std::mt19937_64 generator;
+
     ProblemFJSSP problem;
     Solution sample_solution;
     vector<Solution> population;
