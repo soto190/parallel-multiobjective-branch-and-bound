@@ -214,7 +214,7 @@ void NSGA_II::mutationOperator(Solution &solution) {
 
         if (unif_dis(generator) < getMutationRate() || !problem.operationCanBeAllocatedInMachine(operation, machine)) {
             unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(operation);
-            std::uniform_int_distribution<> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
+            std::uniform_int_distribution<unsigned long> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
 
             int new_machine = problem.getMachinesAvaibleForOperation(operation, unif_int_mach_dis(generator));
             int new_allel = problem.getEncodeMap(allel_is_from_job, new_machine);
