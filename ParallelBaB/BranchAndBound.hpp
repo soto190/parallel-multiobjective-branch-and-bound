@@ -58,7 +58,7 @@ private:
     int bb_rank;
     
     tbb::atomic<unsigned long> number_of_nodes;
-    tbb::atomic<unsigned long> number_of_branches;
+    tbb::atomic<unsigned long> number_of_nodes_created;
     tbb::atomic<unsigned long> number_of_explored_nodes;
     tbb::atomic<unsigned long> number_of_calls_to_branch;
     tbb::atomic<unsigned long> number_of_reached_leaves;
@@ -182,9 +182,9 @@ private:
     void saveIVM() const;
     void buildOutputFiles();
     void increaseExploredNodes();
-    void increasePrunedBranches();
+    void increasePrunedNodes();
     void increaseEvaluatedNodes();
-    void increaseBranchesCreated();
+    void increaseNodesCreated();
     void increaseReachedLeaves();
     void increaseUpdatesInLowerBound();
     void increaseSharedWorks();

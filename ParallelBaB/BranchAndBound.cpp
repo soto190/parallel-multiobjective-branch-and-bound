@@ -27,7 +27,7 @@ ivm_tree(toCopy.getIVMTree()){
     number_of_shared_works.store(toCopy.getSharedWork());
     number_of_tree_levels.store(toCopy.getNumberOfLevels());
     number_of_nodes.store(toCopy.getNumberOfNodes());
-    number_of_branches.store(toCopy.getNumberOfBranches());
+    number_of_nodes_created.store(toCopy.getNumberOfBranches());
     number_of_explored_nodes.store(toCopy.getNumberOfExploredNodes());
     number_of_reached_leaves.store(toCopy.getNumberOfReachedLeaves());
     number_of_unexplored_nodes.store(toCopy.getNumberOfUnexploredNodes());
@@ -60,7 +60,7 @@ elapsed_time(0){
     number_of_shared_works.store(0);
     number_of_tree_levels.store(problemToCopy.getNumberOfVariables());
     number_of_nodes.store(0);
-    number_of_branches.store(0);
+    number_of_nodes_created.store(0);
     number_of_explored_nodes.store(0);
     number_of_reached_leaves.store(0);
     number_of_unexplored_nodes.store(0);
@@ -94,7 +94,7 @@ BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, cons
     currentLevel = 0;
     number_of_tree_levels = 0;
     number_of_nodes = 0;
-    number_of_branches = 0;
+    number_of_nodes_created = 0;
     number_of_explored_nodes = 0;
     number_of_reached_leaves = 0;
     number_of_unexplored_nodes = 0;
@@ -134,7 +134,7 @@ void BranchAndBound::initialize(int starts_tree) {
     else
         currentLevel = starts_tree;
     number_of_tree_levels = problem.getFinalLevel();
-    number_of_branches = 0;
+    number_of_nodes_created = 0;
     number_of_explored_nodes = 0;
     number_of_unexplored_nodes = 0;
     number_of_pruned_nodes = 0;
@@ -242,7 +242,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
                     branch_to_split.removeLastValue();
                     branches_created++;
                 } else
-                    increasePrunedBranches();
+                    increasePrunedNodes();
                 problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, split_level);
             }
     increaseNumberOfBranches(branches_created);
@@ -424,7 +424,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                 
                 if (isInPermut == 0) {
                     ivm_tree.addNodeToRow(currentLevel + 1, element);
-                    number_of_branches++;
+                    number_of_nodes_created++;
                     branches_created++;
                 }
             }
@@ -460,7 +460,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             //ivm_tree.setNode(currentLevel + 1, toAdd);
                             branches_created++;
                         } else
-                            increasePrunedBranches();
+                            increasePrunedNodes();
                         problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
                     }
             
@@ -481,7 +481,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                 ivm_tree.addNodeToRow(currentLevel + 1, element);
                 branches_created++;
             }
-            number_of_branches += branches_created;
+            number_of_nodes_created += branches_created;
             
             break;
             
@@ -494,7 +494,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
 void BranchAndBound::prune(Solution & solution, int currentLevel) {
     number_of_calls_to_prune++;
-    increasePrunedBranches();
+    increasePrunedNodes();
     ivm_tree.pruneActiveNode();
 }
 
@@ -779,7 +779,7 @@ unsigned long BranchAndBound::getNumberOfNodes( ) const{
 }
 
 unsigned long BranchAndBound::getNumberOfBranches( ) const{
-    return number_of_branches;
+    return number_of_nodes_created;
 }
 
 unsigned long BranchAndBound::getNumberOfExploredNodes( ) const{
@@ -823,7 +823,7 @@ void BranchAndBound::increaseNumberOfCallsToBranch(unsigned long value){
 }
 
 void BranchAndBound::increaseNumberOfBranches(unsigned long value){
-    number_of_branches.fetch_and_add(value);
+    number_of_nodes_created.fetch_and_add(value);
 }
 
 void BranchAndBound::increaseNumberOfCallsToPrune(unsigned long value){
@@ -850,12 +850,12 @@ void BranchAndBound::increaseExploredNodes(){
     number_of_explored_nodes++;
 }
 
-void BranchAndBound::increasePrunedBranches(){
+void BranchAndBound::increasePrunedNodes(){
     number_of_pruned_nodes++;
 }
 
-void BranchAndBound::increaseBranchesCreated(){
-    number_of_branches++;
+void BranchAndBound::increaseNodesCreated(){
+    number_of_nodes_created++;
 }
 
 void BranchAndBound::increaseReachedLeaves(){
@@ -991,9 +991,9 @@ int BranchAndBound::saveSummarize() {
     printf("Explored nodes:      %ld\n", getNumberOfExploredNodes());
     printf("Eliminated nodes:    %ld\n", getNumberOfNodes() - getNumberOfExploredNodes());
     printf("Calls to branching:  %ld\n", getNumberOfCallsToBranch());
-    printf("Created branches:    %ld\n", getNumberOfBranches());
+    printf("Created nodes:       %ld\n", getNumberOfBranches());
     printf("Calls to prune:      %ld\n", getNumberOfCallsToPrune());
-    printf("Pruned branches:        %ld\n", getNumberOfPrunedNodes());
+    printf("Pruned nodes:        %ld\n", getNumberOfPrunedNodes());
     printf("Leaves reached:      %ld\n", getNumberOfReachedLeaves());
     printf("Updates in PF:       %ld\n", getNumberOfUpdatesInLowerBound());
     printf("Total time:          %f\n", getElapsedTime());
@@ -1018,9 +1018,9 @@ int BranchAndBound::saveSummarize() {
         myfile << "Explored nodes:      " << number_of_explored_nodes << endl;
         myfile << "Eliminated nodes:    " << number_of_nodes - number_of_explored_nodes << endl;
         myfile << "Calls to branching:  " << number_of_calls_to_branch << endl;
-        myfile << "Created branches:    " << number_of_branches << endl;
+        myfile << "Created nodes:       " << number_of_nodes_created << endl;
         myfile << "Calls to prune:      " << number_of_calls_to_prune << endl;
-        myfile << "Pruned branches:        " << number_of_pruned_nodes << endl;
+        myfile << "Pruned nodes:        " << number_of_pruned_nodes << endl;
         myfile << "Leaves reached:      " << number_of_reached_leaves << endl;
         myfile << "Updates in PF:       " << number_of_updates_in_lower_bound << endl;
         myfile << "Shared work:         " << number_of_shared_works << endl;
