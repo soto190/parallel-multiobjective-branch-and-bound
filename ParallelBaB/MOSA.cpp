@@ -21,8 +21,8 @@ problem(problem) {
     max_energy_found = 0;
     min_energy_found = INFINITY;
 
-    std::random_device seed;
-    generator.seed(seed());
+//    std::random_device seed;
+//    generator.seed(seed());
 }
 
 MOSA::~MOSA() {
@@ -53,8 +53,11 @@ ParetoFront MOSA::solve() {
         }
         coolingScheme();
         update();
-        std::uniform_int_distribution<unsigned int> unif_int_dis(0, static_cast<int>(p_front.size() - 1));
-        current = p_front.at(unif_int_dis(generator));
+
+//        std::uniform_int_distribution<unsigned int> unif_int_dis(0, static_cast<int>(p_front.size() - 1));
+//        int r = unif_int_dis(generator);
+        int r = rand() / (RAND_MAX / static_cast<int>(p_front.size()));
+        current = p_front.at(r);
     }
 
     return p_front;
@@ -141,10 +144,11 @@ unsigned long MOSA::getNumberOfEvaluations() const {
 }
 
 int MOSA::acceptanceCriterion(float energy, float temperature) {
-    std::uniform_real_distribution<double> unif_dis(0.0, 1.0);
-
+//    std::uniform_real_distribution<double> unif_dis(0.0, 1.0);
+//    double r = unif_dis(generator);
+    double r = ((double) rand() / (RAND_MAX));
     /** Boltzmann acceptance criterion. **/
-    if (exp( (-energy) / temperature) < unif_dis(generator))
+    if (exp( (-energy) / temperature) < r)
         return 1;
     return 0;
 }
@@ -182,10 +186,16 @@ const Solution MOSA::perturbate(const Solution& solution_input) {
     std::uniform_int_distribution<unsigned int> unif_int_mach_dis(0, problem.getNumberOfMachines() - 1);
 
     for (int position = 0; position < solution_input.getNumberOfVariables(); ++position) {
-        perturbation_probability = unif_dis(generator);
+        //        perturbation_probability = unif_dis(generator);
+        perturbation_probability = ((double) rand() / (RAND_MAX));
+
         if (perturbation_probability < getPerturbationRate()) {
-            new_position = unif_int_dis(generator);
-            new_machine = unif_int_mach_dis(generator);
+//            new_position = unif_int_dis(generator);
+//            new_machine = unif_int_mach_dis(generator);
+
+            new_position = rand() / (RAND_MAX / static_cast<int>(problem.getNumberOfVariables()));
+            new_machine = rand() / (RAND_MAX / static_cast<int>(problem.getNumberOfMachines() ));
+
             code_to_move = perturbated_output.getVariable(position);
             code_is_from_job = floor(code_to_move / n_code_values);
             new_code = problem.getEncodeMap(code_is_from_job, new_machine);

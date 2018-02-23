@@ -47,7 +47,7 @@ private:
     bool generations_is_stop_criteria;
     bool evaluations_is_stop_criteria;
     unsigned long max_population;
-    std::mt19937_64 generator;
+    //std::mt19937_64 generator; /** Disable until the cluster updates their gcc version to a 4.5 or later. Current version 4.4.7**/
 
     ProblemFJSSP problem;
     Solution sample_solution;

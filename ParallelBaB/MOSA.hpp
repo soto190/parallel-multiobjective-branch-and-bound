@@ -54,7 +54,7 @@ private:
     ProblemFJSSP problem;
     Solution sampleSolution;
     vector<Solution> population;
-    std::mt19937_64 generator;
+//    std::mt19937_64 generator; /** Disable until the cluster updates their gcc version to a 4.5 or later. Current version 4.4.7**/
 
     void initProgress();
     int isStoppingCriteriaReached() const;
