@@ -154,7 +154,7 @@ void BranchAndBound::initialize(int starts_tree) {
     nsgaii_algorithm.setMutationRate(0.90);
     nsgaii_algorithm.setMaxPopulationSize(50);
     nsgaii_algorithm.setMaxNumberOfGenerations(50);
-    ParetoFront nsgaii_pf = nsgaii_algorithm.solve();
+    ParetoFront algorithms_pf = nsgaii_algorithm.solve();
 
     MOSA mosa_algorithm(problem);
     mosa_algorithm.setSampleSolution(sample_solution);
@@ -163,12 +163,13 @@ void BranchAndBound::initialize(int starts_tree) {
     mosa_algorithm.setInitialTemperature(1000);
     mosa_algorithm.setFinalTemperature(0.001);
     mosa_algorithm.setPerturbationRate(0.950);
-    ParetoFront mosa_pf = mosa_algorithm.solve();
+    algorithms_pf += mosa_algorithm.solve();
 
-    nsgaii_pf.join(mosa_pf);
+    printf("Bounds PF:\n");
+    algorithms_pf.print();
 
-    for (unsigned long solution_pf = 0; solution_pf < nsgaii_pf.size(); ++solution_pf)
-        updateBoundsWithSolution(nsgaii_pf.at(solution_pf));
+    for (unsigned long solution_pf = 0; solution_pf < algorithms_pf.size(); ++solution_pf)
+        updateBoundsWithSolution(algorithms_pf.at(solution_pf));
 
     problem.createDefaultSolution(incumbent_s);
     updateBoundsWithSolution(incumbent_s);

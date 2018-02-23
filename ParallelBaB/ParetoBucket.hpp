@@ -24,7 +24,7 @@ typedef tbb::queuing_rw_mutex Lock;
 
 /** Wrapping a vector in a concurrent structure **/
 //template<class T>
-class ParetoBucket{
+class ParetoBucket {
     
 private:
     unsigned long posx;

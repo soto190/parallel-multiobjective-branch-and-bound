@@ -77,6 +77,12 @@ index(solution.getIndex()){
       //  execTime[var] = solution.execTime[var];
 }
 
+Solution::~Solution() {
+    delete[] objective;
+    delete[] variable;
+    delete[] execTime;
+}
+
 Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
     
     index = 0;
@@ -150,12 +156,6 @@ Solution& Solution::operator=(const Solution &solution) {
       //  execTime[var] = solution.execTime[var];
     
     return *this;
-}
-
-Solution::~Solution() {
-    delete[] objective;
-    delete[] variable;
-    delete[] execTime;
 }
 
 bool Solution::operator==(const Solution &solution) const {

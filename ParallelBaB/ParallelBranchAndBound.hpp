@@ -17,7 +17,7 @@
 #include "tbb/task.h"
 //#include <memory.h> /** For the Ehecatl wich uses GCC 4.4.7, this activates the shared_ptr. **/
 
-class ParallelBranchAndBound: public tbb::task{
+class ParallelBranchAndBound: public tbb::task {
     
 public:
     int rank;

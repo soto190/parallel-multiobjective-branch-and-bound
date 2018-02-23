@@ -10,7 +10,7 @@
 
 ParetoBucket::ParetoBucket():
 posx(0),
-posy(0){
+posy(0) {
     size.store(0);
     state.store(BucketState::Unexplored);
     m_vec.reserve(50);
@@ -18,7 +18,7 @@ posy(0){
 
 ParetoBucket::ParetoBucket(unsigned long posx, unsigned long posy):
 posx(posx),
-posy(posy){
+posy(posy) {
     size.store(0);
     state.store(BucketState::Unexplored);
     m_vec.reserve(50);
@@ -29,59 +29,60 @@ posx(toCopy.getPosx()),
 posy(toCopy.getPosy()),
 size((unsigned long) toCopy.getSizeAtomic()),
 state(toCopy.getStateAtomic()),
-m_vec(toCopy.getVectorToCopy()){
+m_vec(toCopy.getVectorToCopy()) {
+
 };
 
-ParetoBucket::~ParetoBucket(){
+ParetoBucket::~ParetoBucket() {
     m_vec.clear();
 }
 
-void ParetoBucket::setPosX(unsigned long new_posx){
+void ParetoBucket::setPosX(unsigned long new_posx) {
     posx = new_posx;
 }
 
-void ParetoBucket::setPosY(unsigned long new_posy){
+void ParetoBucket::setPosY(unsigned long new_posy) {
     posy = new_posy;
 }
 
-void ParetoBucket::setPositionXY(unsigned long new_posx, unsigned long new_posy){
+void ParetoBucket::setPositionXY(unsigned long new_posx, unsigned long new_posy) {
     posx = new_posx;
     posy = new_posy;
 }
 
-void ParetoBucket::setUnexplored(){
+void ParetoBucket::setUnexplored() {
     state.fetch_and_store(BucketState::Unexplored);
 }
 
-void ParetoBucket::setNonDominated(){
+void ParetoBucket::setNonDominated() {
     state.fetch_and_store(BucketState::NonDominated);
 }
 
-void ParetoBucket::setDominated(){
+void ParetoBucket::setDominated() {
     state.fetch_and_store(BucketState::dominated);
 }
 
-unsigned long ParetoBucket::getPosx() const{
+unsigned long ParetoBucket::getPosx() const {
     return posx;
 }
 
-unsigned long ParetoBucket::getPosy() const{
+unsigned long ParetoBucket::getPosy() const {
     return posy;
 }
 
-unsigned long ParetoBucket::getSize() const{
+unsigned long ParetoBucket::getSize() const {
     return size;
 }
 
-BucketState ParetoBucket::getState() const{
+BucketState ParetoBucket::getState() const {
     return state;
 }
 
-tbb::atomic<unsigned long> ParetoBucket::getSizeAtomic() const{
+tbb::atomic<unsigned long> ParetoBucket::getSizeAtomic() const {
     return size;
 }
 
-tbb::atomic<BucketState> ParetoBucket::getStateAtomic() const{
+tbb::atomic<BucketState> ParetoBucket::getStateAtomic() const {
     return state;
 }
 
@@ -130,7 +131,7 @@ int ParetoBucket::produceImprovement(const Solution& obj){
  * The solution is added if the ParetoBucket is improved, and deletes all dominated solutions.
  *
  ***/
-int ParetoBucket::push_back(const Solution& obj){
+int ParetoBucket::push_back(const Solution& obj) {
     tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, true);
     unsigned int dominates = 0;
     unsigned int nondominated = 0;
@@ -178,14 +179,14 @@ int ParetoBucket::push_back(const Solution& obj){
     return wasAdded;
 }
 
-void ParetoBucket::clear(){
+void ParetoBucket::clear() {
     size.fetch_and_store(0);
     tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, true);
     m_vec.clear();
     m_vec.resize(0);
 }
 
-void ParetoBucket::print() const{
+void ParetoBucket::print() const {
     printf("[%3lu %3lu] [%luu %d]:\n", posx, posy, (unsigned long) size, (BucketState) state);
     for (int nSol = 0; nSol < m_vec.size(); ++nSol)
         m_vec[nSol].print();

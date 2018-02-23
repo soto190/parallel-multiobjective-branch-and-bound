@@ -14,7 +14,8 @@
 #include "Dominance.hpp"
 #include "myutils.hpp"
 
-class ParetoFront{
+class ParetoFront {
+    
 private:
     std::vector<Solution> m_vec;
     
@@ -23,8 +24,11 @@ public:
     ParetoFront(const ParetoFront& toCopy);
     ParetoFront(const std::vector<Solution>& set_of_solutions);
     ~ParetoFront();
-    
-    std::vector<Solution>& getVector() ;
+    ParetoFront& operator=(const ParetoFront& rhs);
+    ParetoFront& operator+=(const ParetoFront& rhs);
+    ParetoFront& operator+(const ParetoFront& rhs);
+
+    std::vector<Solution>& getVector();
     const std::vector<Solution>& getVectorToCopy() const;
     int produceImprovement(const Solution& obj);
     bool push_back(const Solution& obj);
@@ -37,5 +41,4 @@ public:
     void clear();
     void print() const;
 };
-
 #endif /* ParetoFront_hpp */

@@ -8,12 +8,14 @@
 
 #include "ParetoFront.hpp"
 
-ParetoFront::ParetoFront(){
+ParetoFront::ParetoFront() {
     
 }
 
-ParetoFront::ParetoFront(const ParetoFront& toCopy){
-    
+ParetoFront::ParetoFront(const ParetoFront& toCopy) {
+    m_vec.reserve(toCopy.size());
+    for (unsigned long solution = 0; solution < toCopy.size(); ++solution)
+        m_vec.push_back(toCopy.at(solution));
 }
 
 ParetoFront::ParetoFront(const std::vector<Solution>& set_of_solutions) {
@@ -21,23 +23,47 @@ ParetoFront::ParetoFront(const std::vector<Solution>& set_of_solutions) {
         push_back(set_of_solutions.at(n_sol));
 }
 
-ParetoFront::~ParetoFront(){
-    
+ParetoFront::~ParetoFront() {
+    m_vec.clear();
 }
 
-const Solution ParetoFront::at(unsigned long position) const{
+ParetoFront& ParetoFront::operator=(const ParetoFront &rhs) {
+
+    if (this == &rhs)
+        return *this;
+
+    m_vec.clear();
+    for (unsigned long n_sol = 0; n_sol < rhs.size(); ++n_sol)
+        push_back(rhs.at(n_sol));
+
+    return *this;
+}
+
+ParetoFront& ParetoFront::operator+=(const ParetoFront &rhs) {
+    for (unsigned long n_sol = 0; n_sol < rhs.size(); ++n_sol)
+        push_back(rhs.at(n_sol));
+    
+    return *this;
+}
+
+ParetoFront& ParetoFront::operator+(const ParetoFront& rhs) {
+    *this += rhs;
+    return *this;
+}
+
+const Solution ParetoFront::at(unsigned long position) const {
    return m_vec.at(position);
 }
 
-const Solution ParetoFront::back() const{
+const Solution ParetoFront::back() const {
     return m_vec.back();
 }
 
-const Solution ParetoFront::front() const{
+const Solution ParetoFront::front() const {
     return m_vec.front();
 }
 
-std::vector<Solution>& ParetoFront::getVector(){
+std::vector<Solution>& ParetoFront::getVector() {
     return m_vec;
 }
 
@@ -45,7 +71,7 @@ const std::vector<Solution>& ParetoFront::getVectorToCopy() const {
     return m_vec;
 }
 
-int ParetoFront::produceImprovement(const Solution& obj){
+int ParetoFront::produceImprovement(const Solution& obj) {
     unsigned long index = 0;
     unsigned long size_vec = m_vec.size();
     int improves_the_front = 1;
@@ -82,7 +108,7 @@ void ParetoFront::join(const ParetoFront &to_join) {
         push_back(to_join.at(nSol));
 }
 
-bool ParetoFront::push_back(const Solution& obj){
+bool ParetoFront::push_back(const Solution& obj) {
     unsigned int dominates = 0;
     unsigned int nondominated = 0;
     unsigned int dominated = 0;
@@ -135,7 +161,7 @@ bool ParetoFront::empty() const {
     return m_vec.empty();
 }
 
-void ParetoFront::clear(){
+void ParetoFront::clear() {
     m_vec.clear();
 }
 
