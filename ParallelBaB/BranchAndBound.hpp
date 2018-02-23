@@ -59,11 +59,11 @@ private:
     
     tbb::atomic<unsigned long> number_of_nodes;
     tbb::atomic<unsigned long> number_of_nodes_created;
-    tbb::atomic<unsigned long> number_of_explored_nodes;
+    tbb::atomic<unsigned long> number_of_nodes_pruned;
+    tbb::atomic<unsigned long> number_of_nodes_explored;
+    tbb::atomic<unsigned long> number_of_nodes_unexplored;
     tbb::atomic<unsigned long> number_of_calls_to_branch;
     tbb::atomic<unsigned long> number_of_reached_leaves;
-    tbb::atomic<unsigned long> number_of_unexplored_nodes;
-    tbb::atomic<unsigned long> number_of_pruned_nodes;
     tbb::atomic<unsigned long> number_of_calls_to_prune;
     tbb::atomic<unsigned long> number_of_updates_in_lower_bound;
     tbb::atomic<unsigned long> number_of_tree_levels;
@@ -73,7 +73,6 @@ private:
     
     ProblemFJSSP problem;
     FJSSPdata fjssp_data;
-    
     Solution incumbent_s;
     IVMTree ivm_tree;
     Interval interval_to_solve;
@@ -94,7 +93,7 @@ private:
     
 public:
     BranchAndBound(const BranchAndBound& branchAndBound);
-    BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch /*,GlobalPool& globa_pool, HandlerContainer& pareto_container*/);
+    BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
     BranchAndBound& operator()(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
     ~BranchAndBound();
     
@@ -114,21 +113,21 @@ public:
     
     unsigned long getNumberOfNodes() const;
     unsigned long getNumberOfLevels() const;
-    unsigned long getNumberOfBranches() const;
-    unsigned long getNumberOfExploredNodes() const;
+    unsigned long getNumberOfNodesCreated() const;
+    unsigned long getNumberOfNodesExplored() const;
     unsigned long getNumberOfCallsToBranch() const;
     unsigned long getNumberOfReachedLeaves() const;
-    unsigned long getNumberOfUnexploredNodes() const;
-    unsigned long getNumberOfPrunedNodes() const;
+    unsigned long getNumberOfNodesUnexplored() const;
+    unsigned long getNumberOfNodesPruned() const;
     unsigned long getNumberOfCallsToPrune() const;
     unsigned long getNumberOfUpdatesInLowerBound() const;
     unsigned long getSharedWork() const;
     
-    void increaseNumberOfExploredNodes(unsigned long value);
+    void increaseNumberOfNodesExplored(unsigned long value);
     void increaseNumberOfCallsToBranch(unsigned long value);
-    void increaseNumberOfBranches(unsigned long value);
+    void increaseNumberOfNodesCreated(unsigned long value);
     void increaseNumberOfCallsToPrune(unsigned long value);
-    void increaseNumberOfPrunedNodes(unsigned long value);
+    void increaseNumberOfNodesPruned(unsigned long value);
     void increaseNumberOfReachedLeaves(unsigned long value);
     void increaseNumberOfUpdatesInLowerBound(unsigned long value);
     void increaseSharedWork(unsigned long value);
@@ -159,8 +158,8 @@ public:
     
 private:
     void printCurrentSolution(int withVariables = 0);
-    int aLeafHasBeenReached() const;
-    int theTreeHasMoreBranches() const;
+    bool aLeafHasBeenReached() const;
+    int theTreeHasMoreNodes() const;
     int thereIsMoreWork() const;
     unsigned long computeTotalNodes(unsigned long totalVariables) const;
     unsigned long permut(unsigned long n, unsigned long i) const;
@@ -171,8 +170,7 @@ private:
     void updateBounds(const Solution & solution, FJSSPdata& data);
     void updateBoundsWithSolution(const Solution & solution);
     void setPriorityTo(Interval & interval) const;
-    
-    
+
     int getLimitLevelToShare() const;
     void computeLastBranch(Interval & branch);
     

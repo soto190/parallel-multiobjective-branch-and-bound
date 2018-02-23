@@ -56,11 +56,11 @@ tbb::task * ParallelBranchAndBound::execute() {
         bb_in = bb_threads.back();
         bb_threads.pop_back();
         
-        BB_container.increaseNumberOfExploredNodes(bb_in->getNumberOfExploredNodes());
+        BB_container.increaseNumberOfNodesExplored(bb_in->getNumberOfNodesExplored());
         BB_container.increaseNumberOfCallsToBranch(bb_in->getNumberOfCallsToBranch());
-        BB_container.increaseNumberOfBranches(bb_in->getNumberOfBranches());
+        BB_container.increaseNumberOfNodesCreated(bb_in->getNumberOfNodesCreated());
         BB_container.increaseNumberOfCallsToPrune(bb_in->getNumberOfCallsToPrune());
-        BB_container.increaseNumberOfPrunedNodes(bb_in->getNumberOfPrunedNodes());
+        BB_container.increaseNumberOfNodesPruned(bb_in->getNumberOfNodesPruned());
         BB_container.increaseNumberOfReachedLeaves(bb_in->getNumberOfReachedLeaves());
         BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());
         BB_container.increaseSharedWork(bb_in->getSharedWork());
