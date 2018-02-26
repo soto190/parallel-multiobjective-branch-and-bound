@@ -74,7 +74,7 @@ public:
     void addNodeToRow(int level, int value);
     int getActiveNode() const;
     int getFatherNode() const;
-    int pruneActiveNode();
+    unsigned long pruneActiveNode();
     int moveToNextRow();
     void resetRow(int row);
     void print() const;

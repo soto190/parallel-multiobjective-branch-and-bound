@@ -371,8 +371,8 @@ unsigned long IVMTree::getNumberOfPendingNodes() const {
 }
 
 /** Prune the active node and set the active_level pointing to new active node. **/
-int IVMTree::pruneActiveNode() {
-    int pruned_nodes = 0;
+unsigned long IVMTree::pruneActiveNode() {
+    unsigned long pruned_nodes = 0;
     /** TODO if the active node is the root node we cannot remove it.**/
     if (isRootRow())
         setNoMoreBranches();

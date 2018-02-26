@@ -204,7 +204,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     
     int row = 0;
     int split_level = branch_to_split.getBuildUpTo() + 1;
-    int branches_created = 0;
+    int nodes_created = 0;
     int num_elements = problem.getTotalElements();
     int map = 0;
     int toAdd = 0;
@@ -241,14 +241,14 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
                     globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
                     increaseSharedWorks();
                     branch_to_split.removeLastValue();
-                    branches_created++;
+                    nodes_created++;
                 } else
                     increasePrunedNodes();
                 problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, split_level);
             }
         }
-    increaseNumberOfNodesCreated(branches_created);
-    return branches_created;
+    increaseNumberOfNodesCreated(nodes_created);
+    return nodes_created;
 }
 
 int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
@@ -444,10 +444,10 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         solution.setVariable(currentLevel + 1, toAdd);
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
                         increaseExploredNodes();
-                        
+
                         distance_error_to_best[0] = distanceToObjective(fjssp_data.getMakespan(), best_values_found[0]);
                         distance_error_to_best[1] = distanceToObjective(fjssp_data.getMaxWorkload(), best_values_found[1]);
-                        /** If distance in obj1 is better  or distance in ob2 is better then it can produce an improvement. **/
+                        /** If distance in obj1 is better  or distance in obj2 is better then it can produce an improvement. **/
                         if ((distance_error_to_best[0] <= 0 || distance_error_to_best[1] <= 0) && improvesTheGrid(solution)) {
                             
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
@@ -500,8 +500,8 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
 void BranchAndBound::prune(Solution & solution, int currentLevel) {
     number_of_calls_to_prune++;
-    increasePrunedNodes();
     ivm_tree.pruneActiveNode();
+    increasePrunedNodes();
 }
 
 bool BranchAndBound::aLeafHasBeenReached() const {
