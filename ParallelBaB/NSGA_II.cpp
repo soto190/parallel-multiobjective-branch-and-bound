@@ -153,7 +153,7 @@ vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solut
         if (jobs_op_allocated_off2[allel_p1_is_job] < problem.getNumberOfOperationsInJob(allel_p1_is_job))
             offspring2.setVariable(gene, allel_p1);
         else
-            for (int job = 0; job < problem.getNumberOfJobs(); ++job)
+            for (unsigned int job = 0; job < problem.getNumberOfJobs(); ++job)
                 if (jobs_op_allocated_off2[job] < problem.getNumberOfOperationsInJob(job)) {
                     int operation = problem.getOperationInJobIsNumber(job, jobs_op_allocated_off2[job]);
                     unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(operation);

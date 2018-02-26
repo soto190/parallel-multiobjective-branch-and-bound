@@ -15,6 +15,7 @@
 #include "IVMTreeException.hpp"
 
 class IVMTree {
+
 private:
     int n_rows;
     int n_cols;
@@ -74,11 +75,8 @@ public:
     int getActiveNode() const;
     int getFatherNode() const;
     int pruneActiveNode();
-    
     int moveToNextRow();
-    
     void resetRow(int row);
-    
     void print() const;
     void saveToFile(const char outputFile[255]) const;
     
@@ -94,8 +92,8 @@ private:
     unsigned long decreaseNumberOfPendingNodes();
     unsigned long increaseNumberOfPendingNodes();
     int decreaseEndExplorationAtRow(int row);
-    int isRootRow() const;
-    int isUnderRootRow() const;
+    bool isRootRow() const;
+    bool isUnderRootRow() const;
     void markActiveNodeAsRemoved();
     void setNoMoreBranches();
 };

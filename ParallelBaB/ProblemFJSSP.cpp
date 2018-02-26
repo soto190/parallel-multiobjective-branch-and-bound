@@ -46,8 +46,8 @@ Problem() {
     machines_aviability.reserve(0);
 }
 
-ProblemFJSSP::ProblemFJSSP(int totalObjectives, int totalVariables) :
-Problem(totalObjectives, totalVariables) {
+ProblemFJSSP::ProblemFJSSP(int number_of_objectives, int number_of_variables) :
+Problem(number_of_objectives, number_of_variables) {
     n_jobs = 0;
     n_operations = 0;
     n_machines = 0;
@@ -81,7 +81,7 @@ Problem(totalObjectives, totalVariables) {
     eet_of_job = nullptr; /** Length equals to number of jobs. **/
     sum_shortest_proc_times = nullptr; /** D^{k}_{Ñ}. Length equals to number of machines.**/
 
-    machines_aviability.reserve(totalVariables);
+    machines_aviability.reserve(number_of_variables);
 }
 
 ProblemFJSSP::ProblemFJSSP(const ProblemFJSSP& toCopy) :
@@ -1643,15 +1643,15 @@ int ProblemFJSSP::getTimesThatValueCanBeRepeated(int value) {
     return n_operations_in_job[value];
 }
 
-int ProblemFJSSP::getNumberOfJobs() const {
+unsigned int ProblemFJSSP::getNumberOfJobs() const {
     return n_jobs;
 }
 
-int ProblemFJSSP::getNumberOfOperations() const {
+unsigned int ProblemFJSSP::getNumberOfOperations() const {
     return n_operations;
 }
 
-int ProblemFJSSP::getNumberOfMachines() const {
+unsigned int ProblemFJSSP::getNumberOfMachines() const {
     return n_machines;
 }
 

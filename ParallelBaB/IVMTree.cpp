@@ -403,12 +403,12 @@ int IVMTree::pruneActiveNode() {
     return pruned_nodes;
 }
 
-int IVMTree::isRootRow() const {
+bool IVMTree::isRootRow() const {
     return integer_pointing_to_row == root_row;
 }
 
-int IVMTree::isUnderRootRow() const {
-    return getActiveRow() > root_row ? 1 : 0;
+bool IVMTree::isUnderRootRow() const {
+    return getActiveRow() > root_row;
 }
 
 void IVMTree::removeActiveNode() {
@@ -418,7 +418,7 @@ void IVMTree::removeActiveNode() {
 }
 
 int IVMTree::thereAreMoreNodes() {
-    return getNumberOfNodesAt(getActiveRow()) > 0? getNumberOfNodesAt(getActiveRow()) : 0;
+    return getNumberOfNodesAt(getActiveRow()) > 0 ? getNumberOfNodesAt(getActiveRow()) : 0;
 }
 
 void IVMTree::moveToNodeAtRight() {

@@ -67,14 +67,14 @@ typedef struct {
     int * processing_times; /** length is n_operations x n_machines **/
 } Payload_problem_fjssp;
 
-enum FJSSPobjectives {MAKESPAN = 0, MAX_WORKLOAD = 1, TOTAL_WORKLOAD =2};
+enum FJSSPobjectives {MAKESPAN = 0, MAX_WORKLOAD = 1, TOTAL_WORKLOAD = 2};
 
 class ProblemFJSSP: public Problem {
+
 private:
-    //    const unsigned int MAX_GANTT_LIMIT = 4096;
-    int n_jobs;
-    int n_operations;
-    int n_machines;
+    unsigned int n_jobs;
+    unsigned int n_operations;
+    unsigned int n_machines;
     int sum_of_min_Pij;
     int best_workload_found;
     int best_makespan_found;
@@ -108,7 +108,7 @@ public:
 
     ProblemFJSSP();
     ProblemFJSSP(const ProblemFJSSP& toCopy);
-    ProblemFJSSP(int totalObjectives, int totalVariables);
+    ProblemFJSSP(int number_of_objectives, int number_of_variables);
     ProblemFJSSP(const Payload_problem_fjssp& payload_problem);
     ~ProblemFJSSP();
 
@@ -139,9 +139,9 @@ public:
     void updateBestMakespanSolutionWith(const Solution& solution);
     void updateBestMaxWorkloadSolutionWith(const Solution& solution);
     
-    int getNumberOfJobs() const;
-    int getNumberOfOperations() const;
-    int getNumberOfMachines() const;
+    unsigned int getNumberOfJobs() const;
+    unsigned int getNumberOfOperations() const;
+    unsigned int getNumberOfMachines() const;
     int getSumOfMinPij() const;
     int getBestWorkloadFound() const;
     int getBestMakespanFound() const;

@@ -122,7 +122,7 @@ void MasterWorkerPBB::runMasterProcess() {
     int n_intervals = 0;
     int sleeping_workers = 0;
     int requesting_worker = 0;
-    int number_of_workers_with_work = n_workers;
+    int number_of_workers_with_work;
     int number_of_works_received = 0;
     
     vector<Interval> pending_work;
@@ -338,7 +338,6 @@ void MasterWorkerPBB::runWorkerProcess() {
     printf("[WorkerPBB-%03d] Spawning the swarm...\n", getRank());
     tbb::task::spawn(tl);
     /**TODO: Spawn the thread with the metaheuristic. **/
-    int branches_in_loop = 0;
     int send_sol = 1;
     vector<Solution> paretoFront;
     vector<Solution> subFront;
@@ -362,7 +361,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                 case TAG_INTERVAL:
                     branch_init(payload_interval);
                     
-                    branches_in_loop = splitInterval(branch_init); /** Splits and push to GlobalPool. **/
+                    splitInterval(branch_init); /** Splits and push to GlobalPool. **/
                     
                     /** This avoid to send repeated solutions. **/
                     subFront = BB_container.getParetoFront();
