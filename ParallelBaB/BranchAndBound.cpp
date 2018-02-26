@@ -148,6 +148,7 @@ void BranchAndBound::initialize(int starts_tree) {
     problem.createDefaultSolution(sample_solution);
     problem.evaluate(sample_solution);
 
+    /*
     NSGA_II nsgaii_algorithm(problem);
     nsgaii_algorithm.setSampleSolution(sample_solution);
     nsgaii_algorithm.setCrossoverRate(0.90);
@@ -170,7 +171,7 @@ void BranchAndBound::initialize(int starts_tree) {
 
     for (unsigned long solution_pf = 0; solution_pf < algorithms_pf.size(); ++solution_pf)
         updateBoundsWithSolution(algorithms_pf.at(solution_pf));
-
+*/
     problem.createDefaultSolution(incumbent_s);
     updateBoundsWithSolution(incumbent_s);
 }
@@ -206,8 +207,6 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     int branches_created = 0;
     int num_elements = problem.getTotalElements();
     int map = 0;
-    int element = 0;
-    int machine = 0;
     int toAdd = 0;
     
     fjssp_data.reset(); /** This function call is not necesary because the structurs are empty.**/
@@ -223,11 +222,13 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
         problem.evaluateDynamic(incumbent_s, fjssp_data, row);
     }
     
-    for (element = 0; element < num_elements; ++element)
-        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element))
-            for (machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
-                
-                toAdd = problem.getEncodeMap(element, machine);
+    for (int element = 0; element < num_elements; ++element)
+        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element)) {
+            int op = problem.getOperationInJobIsNumber(element, fjssp_data.getNumberOfOperationsAllocatedFromJob(element));
+            unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(op);
+            for (int machine = 0; machine < machines_aviable; ++machine) {
+                int new_machine = problem.getMachinesAvaibleForOperation(op, machine);
+                toAdd = problem.getEncodeMap(element, new_machine);
                 incumbent_s.setVariable(split_level, toAdd);
                 problem.evaluateDynamic(incumbent_s, fjssp_data, split_level);
                 increaseExploredNodes();
@@ -245,6 +246,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
                     increasePrunedNodes();
                 problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, split_level);
             }
+        }
     increaseNumberOfNodesCreated(branches_created);
     return branches_created;
 }
@@ -296,12 +298,12 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
     
     /** Send intervals to global_pool. **/
     int branches_to_move_to_global_pool = branches_created * getSizeToShare();
+
     if (branches_created > branches_to_move_to_global_pool && branch_init.getBuildUpTo() <= getLimitLevelToShare())
-        
         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
             int val = tree.removeLastNodeAtRow(build_up_to + 1);
             branch_init.setValueAt(build_up_to + 1, val);
-            
+
             incumbent_s.setVariable(build_up_to + 1, val);
             problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel + 1);
             
@@ -330,7 +332,7 @@ tbb::task* BranchAndBound::execute() {
     return NULL;
 }
 
-int BranchAndBound::thereIsMoreWork() const {
+bool BranchAndBound::thereIsMoreWork() const {
     return there_is_more_work;
 }
 
@@ -578,11 +580,11 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
 /**
  * Check if the ivm has pending branches to be explored.
  */
-int BranchAndBound::theTreeHasMoreNodes() const {
+bool BranchAndBound::theTreeHasMoreNodes() const {
     return ivm_tree.thereAreMoreBranches();
 }
 
-int BranchAndBound::updateParetoGrid(const Solution & solution) {
+bool BranchAndBound::updateParetoGrid(const Solution & solution) {
     return paretoContainer.add(solution);
 }
 
@@ -596,7 +598,7 @@ int BranchAndBound::updateParetoGrid(const Solution & solution) {
  *  6- It is non-dominated.
  *
  */
-int BranchAndBound::improvesTheGrid(const Solution & solution) const {
+bool BranchAndBound::improvesTheGrid(const Solution & solution) const {
     return paretoContainer.improvesTheGrid(solution);
 }
 

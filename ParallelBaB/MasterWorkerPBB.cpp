@@ -298,7 +298,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     printf("[WorkerPBB-%03d] Worker ready...\n", getRank());
     int source = MASTER_RANK;
     sleeping_bb = 0;
-    there_is_more_work = 1;
+    there_is_more_work = true;
     
     int worker_at_right = rank + 1; /** Worker at the right. **/
     if (worker_at_right > n_workers) /** Ring formation: The last worker has at it rigth the first worker. **/
@@ -422,7 +422,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                     break;
                     
                 case TAG_NOT_ENOUGH_WORK:  /** There is no more work.**/
-                    there_is_more_work = 0;
+                    there_is_more_work = false;
                     printf("[WorkerPBB-%03d] Not engouh work received at %f.\n", getRank(), BB_container.getElapsedTime() );
                     while (sleeping_bb < branchsandbound_per_worker) { /** TODO: this can be moved outside this switch-case. **/
                     }
@@ -479,7 +479,7 @@ void MasterWorkerPBB::runWorkerProcess() {
 
 }
 
-int MasterWorkerPBB::thereIsMoreWork() const {
+bool MasterWorkerPBB::thereIsMoreWork() const {
     return there_is_more_work;
 }
 
@@ -699,16 +699,12 @@ int MasterWorkerPBB::getRank() const {
     return rank;
 }
 
-int MasterWorkerPBB::isMaster() const {
-    if (rank == MASTER_RANK)
-        return 1;
-    return 0;
+bool MasterWorkerPBB::isMaster() const {
+    return rank == MASTER_RANK;
 }
 
-int MasterWorkerPBB::isWorker() const {
-    if (rank > MASTER_RANK)
-        return 1;
-    return 0;
+bool MasterWorkerPBB::isWorker() const {
+    return rank > MASTER_RANK;
 }
 
 int MasterWorkerPBB::splitInterval(Interval& branch_to_split) {
@@ -735,12 +731,16 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split) {
     }
     
     for (int job = 0; job < num_elements; ++job)
-        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(job) < problem.getTimesThatValueCanBeRepeated(job))
-            for (int machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
-                value_to_add = problem.getEncodeMap(job, machine);
+        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(job) < problem.getTimesThatValueCanBeRepeated(job)) {
+            int op = problem.getOperationInJobIsNumber(job, fjssp_data.getNumberOfOperationsAllocatedFromJob(job));
+            unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(op);
+            for (int machine = 0; machine < machines_aviable; ++machine) {
+                int new_machine = problem.getMachinesAvaibleForOperation(op, machine);
+                value_to_add = problem.getEncodeMap(job, new_machine);
                 solution.setVariable(split_level, value_to_add);
                 problem.evaluateDynamic(solution, fjssp_data, split_level);
                 branches_explored++;
+
                 if (paretoContainer.improvesTheGrid(solution)) {
                     branch_to_split.setValueAt(split_level, value_to_add);
                     branch_to_split.setDistance(0, BranchAndBound::distanceToObjective(fjssp_data.getMakespan(), problem.getLowerBoundInObj(0)));
@@ -752,10 +752,11 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split) {
                     branch_to_split.removeLastValue();
                     branches_created_in++;
                     branches_created++;
-                }else
+                } else
                     branches_pruned++;
                 problem.evaluateRemoveDynamic(solution, fjssp_data, split_level);
             }
+        }
     return branches_created_in;
 }
 

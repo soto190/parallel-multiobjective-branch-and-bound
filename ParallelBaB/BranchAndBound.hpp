@@ -159,14 +159,14 @@ public:
 private:
     void printCurrentSolution(int withVariables = 0);
     bool aLeafHasBeenReached() const;
-    int theTreeHasMoreNodes() const;
-    int thereIsMoreWork() const;
+    bool theTreeHasMoreNodes() const;
+    bool thereIsMoreWork() const;
     unsigned long computeTotalNodes(unsigned long totalVariables) const;
     unsigned long permut(unsigned long n, unsigned long i) const;
     
     void shareWorkAndSendToGlobalPool(const Interval& interval);
-    int improvesTheGrid(const Solution & solution) const;
-    int updateParetoGrid(const Solution & solution);
+    bool improvesTheGrid(const Solution & solution) const;
+    bool updateParetoGrid(const Solution & solution);
     void updateBounds(const Solution & solution, FJSSPdata& data);
     void updateBoundsWithSolution(const Solution & solution);
     void setPriorityTo(Interval & interval) const;

@@ -19,6 +19,7 @@
 #include "myutils.hpp"
 
 class MasterWorkerPBB : public tbb::task {
+
 public:
     MasterWorkerPBB();
     MasterWorkerPBB(int num_nodes, int num_bb, const char file[], const char output_path[]);
@@ -26,8 +27,8 @@ public:
     
     void run();
     int getRank() const;
-    int isMaster() const;
-    int isWorker() const;
+    bool isMaster() const;
+    bool isWorker() const;
     tbb::task* execute();
     
     void setParetoFrontFile(const char outputFile[255]);
@@ -93,7 +94,7 @@ private:
     int splitInterval(Interval& branch_to_split);
     void printMessageStatus(int source, int tag);
     const char* getTagText(int tag) const;
-    int thereIsMoreWork() const;
+    bool thereIsMoreWork() const;
     void buildOutputFiles();
 };
 #endif /* MASTERWORKER_HPP_ */
