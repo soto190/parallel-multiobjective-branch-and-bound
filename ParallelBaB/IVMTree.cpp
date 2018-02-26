@@ -267,11 +267,11 @@ int IVMTree::getEndExploration(int row) const {
     return end_exploration[row];
 }
 
-int IVMTree::getNumberOfRows() const {
+unsigned int IVMTree::getNumberOfRows() const {
     return n_rows;
 }
 
-int IVMTree::getNumberOfCols() const {
+unsigned int IVMTree::getNumberOfCols() const {
     return n_cols;
 }
 

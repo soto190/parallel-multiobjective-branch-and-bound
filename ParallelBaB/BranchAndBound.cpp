@@ -149,29 +149,29 @@ void BranchAndBound::initialize(int starts_tree) {
     problem.evaluate(sample_solution);
 
     /*
-    NSGA_II nsgaii_algorithm(problem);
-    nsgaii_algorithm.setSampleSolution(sample_solution);
-    nsgaii_algorithm.setCrossoverRate(0.90);
-    nsgaii_algorithm.setMutationRate(0.90);
-    nsgaii_algorithm.setMaxPopulationSize(50);
-    nsgaii_algorithm.setMaxNumberOfGenerations(50);
-    ParetoFront algorithms_pf = nsgaii_algorithm.solve();
+     NSGA_II nsgaii_algorithm(problem);
+     nsgaii_algorithm.setSampleSolution(sample_solution);
+     nsgaii_algorithm.setCrossoverRate(0.90);
+     nsgaii_algorithm.setMutationRate(0.90);
+     nsgaii_algorithm.setMaxPopulationSize(50);
+     nsgaii_algorithm.setMaxNumberOfGenerations(50);
+     ParetoFront algorithms_pf = nsgaii_algorithm.solve();
 
-    MOSA mosa_algorithm(problem);
-    mosa_algorithm.setSampleSolution(sample_solution);
-    mosa_algorithm.setCoolingRate(0.96);
-    mosa_algorithm.setMaxMetropolisIterations(16);
-    mosa_algorithm.setInitialTemperature(1000);
-    mosa_algorithm.setFinalTemperature(0.001);
-    mosa_algorithm.setPerturbationRate(0.950);
-    algorithms_pf += mosa_algorithm.solve();
+     MOSA mosa_algorithm(problem);
+     mosa_algorithm.setSampleSolution(sample_solution);
+     mosa_algorithm.setCoolingRate(0.96);
+     mosa_algorithm.setMaxMetropolisIterations(16);
+     mosa_algorithm.setInitialTemperature(1000);
+     mosa_algorithm.setFinalTemperature(0.001);
+     mosa_algorithm.setPerturbationRate(0.950);
+     algorithms_pf += mosa_algorithm.solve();
 
-    printf("Bounds PF:\n");
-    algorithms_pf.print();
+     printf("Bounds PF:\n");
+     algorithms_pf.print();
 
-    for (unsigned long solution_pf = 0; solution_pf < algorithms_pf.size(); ++solution_pf)
-        updateBoundsWithSolution(algorithms_pf.at(solution_pf));
-*/
+     for (unsigned long solution_pf = 0; solution_pf < algorithms_pf.size(); ++solution_pf)
+     updateBoundsWithSolution(algorithms_pf.at(solution_pf));
+     */
     problem.createDefaultSolution(incumbent_s);
     updateBoundsWithSolution(incumbent_s);
 }
@@ -457,10 +457,10 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             
                             obj_values.setDistance(0, distanceToObjective(obj_values.getObjective(0), problem.getLowerBoundInObj(0)));
                             obj_values.setDistance(1, distanceToObjective(obj_values.getObjective(1), problem.getLowerBoundInObj(1)));
-                            
+
                             sorted_elements.push(obj_values, SORTING_TYPES::DIST_1);/** sorting the nodes to give priority to promising nodes. **/
                             
-                            //ivm_tree.setNode(currentLevel + 1, toAdd);
+                            //                            ivm_tree.addNodeToRow(currentLevel + 1, toAdd);
                             nodes_created++;
                         } else
                             increasePrunedNodes();
@@ -469,10 +469,11 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                 }
 
             increaseNumberOfNodesCreated(nodes_created);
-            if (nodes_created > 0) { /** If a branch was created. **/
+            if (nodes_created > 0) {
+
                 for (std::deque<ObjectiveValues>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
                     ivm_tree.addNodeToRow(currentLevel + 1, (*it).getValue());
-                
+
                 ivm_tree.moveToNextRow();
                 ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), 0);
                 ivm_tree.setThereAreMoreBranches();

@@ -14,7 +14,7 @@
  *
  **/
 Interval::Interval():
-priority(Priority::P_Low),
+priority(Priority::P_High),
 deep(Deep::TOP),
 build_up_to(-1),
 max_size(0),
@@ -23,7 +23,7 @@ interval(nullptr) {
 }
 
 Interval::Interval(int max_size):
-priority(Priority::P_Low),
+priority(Priority::P_High),
 deep(Deep::TOP),
 build_up_to(-1),
 max_size(max_size),

@@ -19,7 +19,7 @@ SortedVector::~SortedVector() {
  * The elements are sorted by dominance. It also stores the dominated solutions at the end.
  * returns 1.
  **/
-int SortedVector::push(const ObjectiveValues & objValues, const SORTING_TYPES sort_type) {
+bool SortedVector::push(const ObjectiveValues & objValues, const SORTING_TYPES sort_type) {
     
     switch (sort_type) {
         case SORTING_TYPES::DOMINANCE:
@@ -42,7 +42,7 @@ int SortedVector::push(const ObjectiveValues & objValues, const SORTING_TYPES so
             m_data.push_back(objValues);
             break;
     }
-    return 1;
+    return true;
 }
 
 int SortedVector::push_dist1(const ObjectiveValues& objValues) {
@@ -120,9 +120,9 @@ int SortedVector::push_dist_comb(const ObjectiveValues& objValues) {
     return 1;
 }
 
-int SortedVector::push_dominance(const ObjectiveValues& objValues) {
+bool SortedVector::push_dominance(const ObjectiveValues& objValues) {
     Dom domF, domB;
-    bool inserted = 0;
+    bool inserted = false;
     
     switch (m_data.size()) {
         case 0:
@@ -172,29 +172,29 @@ int SortedVector::push_dominance(const ObjectiveValues& objValues) {
                         case Dom::Eq:
                             m_data.insert(m_data.begin() + count, objValues);
                             count = m_data.size();
-                            inserted = 1;
+                            inserted = true;
                             break;
                         case Dom::Nondom:
                             m_data.insert(m_data.begin() + count, objValues);
                             count = m_data.size();
-                            inserted = 1;
+                            inserted = true;
                             break;
                         case Dom::Domtes:
                             m_data.insert(m_data.begin() + count, objValues);
                             count = m_data.size();
-                            inserted = 1;
+                            inserted = true;
                             break;
                         case Dom::Domted:
                             break;
                         default:
                             break;
                     }
-                if(inserted == 0)
+                if(inserted == false)
                     m_data.push_back(objValues);
             }
             break;
     }
-    return 1;
+    return inserted;
 }
 
 std::deque<ObjectiveValues>::iterator SortedVector::begin() {

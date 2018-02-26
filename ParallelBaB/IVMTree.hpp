@@ -17,8 +17,8 @@
 class IVMTree {
 
 private:
-    int n_rows;
-    int n_cols;
+    unsigned int n_rows;
+    unsigned int n_cols;
     int i_am = -1;
     int ** matrix_nodes;
     int * vector_pointing_to_col_at_row;
@@ -62,8 +62,8 @@ public:
     int getActiveColAt(int row) const throw(IVMTreeException);
     int getActiveRow() const;
     int getStartingRow() const;
-    int getNumberOfRows() const;
-    int getNumberOfCols() const;
+    unsigned int getNumberOfRows() const;
+    unsigned int getNumberOfCols() const;
     int getDeepOfTree() const;
     int getId() const;
     int getStartExploration(int row) const;

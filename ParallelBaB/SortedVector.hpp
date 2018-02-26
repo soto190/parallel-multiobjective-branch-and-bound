@@ -23,11 +23,11 @@ public:
     SortedVector();
     ~SortedVector();
     
-    int push(const ObjectiveValues & objValues, const SORTING_TYPES sort_type);
+    bool push(const ObjectiveValues & objValues, const SORTING_TYPES sort_type);
     int push_dist1(const ObjectiveValues& objValues);
     int push_dist2(const ObjectiveValues& objValues);
     int push_dist_comb(const ObjectiveValues& objValues);
-    int push_dominance(const ObjectiveValues& objValues);
+    bool push_dominance(const ObjectiveValues& objValues);
     
     std::deque<ObjectiveValues>::iterator begin();
     std::deque<ObjectiveValues>::iterator end();
