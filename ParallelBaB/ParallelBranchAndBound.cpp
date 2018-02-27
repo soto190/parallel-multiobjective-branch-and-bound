@@ -27,7 +27,7 @@ tbb::task * ParallelBranchAndBound::execute() {
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
 
-    paretoContainer(1, 1, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
+    paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
     BranchAndBound BB_container(rank, 0, problem, branch_init);
     BB_container.initGlobalPoolWithInterval(branch_init);
