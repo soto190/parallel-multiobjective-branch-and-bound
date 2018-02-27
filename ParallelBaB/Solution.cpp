@@ -377,7 +377,7 @@ void Solution::print() const {
         else
             printf("%6d", variable[n_var]);
     printf(" | ");
-    printf("%6.3f", (distance == INFINITY? 999999.999:distance));
+    printf("%6.3f", (distance == INFINITY ? 999999.999 : distance));
     printf(" |\n");
 }
 
