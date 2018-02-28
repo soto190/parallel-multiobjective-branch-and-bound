@@ -49,7 +49,7 @@ public:
     unsigned int getCols() const;
     unsigned long getSize() const;
     unsigned long getSizeOf(int x, int y) const;
-    BucketState getStateOf(int x, int y) const;
+    FrontState getStateOf(int x, int y) const;
     
     void printGridSize() const;
     void printStates() const;
@@ -70,4 +70,4 @@ private:
     void updateMinValueFound(const Solution& solution);
     void clearContainersDominatedBy(const int x, const int y);
 };
-#endif /* HandlerContainer_hpp */
+#endif /* ConcurrentHandlerContainer_hpp */

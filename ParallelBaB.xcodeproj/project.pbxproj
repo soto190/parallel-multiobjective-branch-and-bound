@@ -34,6 +34,7 @@
 		214D55952022AB0A00C9B4F4 /* libmpi_cxx.40.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 214D55942022AB0A00C9B4F4 /* libmpi_cxx.40.dylib */; };
 		214D55972022AB3800C9B4F4 /* libmpi.40.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 214D55962022AB3800C9B4F4 /* libmpi.40.dylib */; };
 		214D55992022AB5900C9B4F4 /* libmpi_cxx.40.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 214D55982022AB5900C9B4F4 /* libmpi_cxx.40.dylib */; };
+		2152C1C9204630F700152843 /* GridContainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2152C1C7204630F700152843 /* GridContainer.cpp */; };
 		21774E401FD85A11007FF333 /* IVMTreeException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21774E3E1FD85A11007FF333 /* IVMTreeException.cpp */; };
 		21774E431FD8883B007FF333 /* SubproblemsPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21774E411FD8883B007FF333 /* SubproblemsPool.cpp */; };
 		21780F1E1DD9B7D90032EECA /* ProblemFJSSP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21780F1C1DD9B7D80032EECA /* ProblemFJSSP.cpp */; };
@@ -104,6 +105,8 @@
 		214D55942022AB0A00C9B4F4 /* libmpi_cxx.40.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmpi_cxx.40.dylib; path = "../../../../../opt/local/lib/openmpi-mp/libmpi_cxx.40.dylib"; sourceTree = "<group>"; };
 		214D55962022AB3800C9B4F4 /* libmpi.40.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmpi.40.dylib; sourceTree = "<group>"; };
 		214D55982022AB5900C9B4F4 /* libmpi_cxx.40.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libmpi_cxx.40.dylib; sourceTree = "<group>"; };
+		2152C1C7204630F700152843 /* GridContainer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GridContainer.cpp; sourceTree = "<group>"; };
+		2152C1C8204630F700152843 /* GridContainer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GridContainer.hpp; sourceTree = "<group>"; };
 		216F69B01E5AE5FD00589E5D /* submit-multiple.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = "submit-multiple.sh"; sourceTree = "<group>"; };
 		216F69B11E5AE66600589E5D /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		21774E3E1FD85A11007FF333 /* IVMTreeException.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IVMTreeException.cpp; sourceTree = "<group>"; };
@@ -188,6 +191,8 @@
 				214467611FD8C3B000364E2A /* ParetoBucket.hpp */,
 				217A2E8E1D944DBB00A4E9EA /* ConcurrentGridContainer.cpp */,
 				217A2E8F1D944DBB00A4E9EA /* ConcurrentGridContainer.hpp */,
+				2152C1C7204630F700152843 /* GridContainer.cpp */,
+				2152C1C8204630F700152843 /* GridContainer.hpp */,
 				214467631FD8D74A00364E2A /* ConcurrentHandlerContainer.cpp */,
 				214467641FD8D74A00364E2A /* ConcurrentHandlerContainer.hpp */,
 				2119FB461E41E14C00197CE4 /* Interval.cpp */,
@@ -329,6 +334,7 @@
 				21774E431FD8883B007FF333 /* SubproblemsPool.cpp in Sources */,
 				2112825A1D639AB30038DBEE /* BranchAndBound.cpp in Sources */,
 				218B0DB91E2D769F000B52F4 /* IVMTree.cpp in Sources */,
+				2152C1C9204630F700152843 /* GridContainer.cpp in Sources */,
 				21E8EF8C1E48BD0800A716C6 /* ParallelBranchAndBound.cpp in Sources */,
 				2112825D1D639AB30038DBEE /* myutils.cpp in Sources */,
 				2112825F1D639AB30038DBEE /* ProblemHCSP.cpp in Sources */,

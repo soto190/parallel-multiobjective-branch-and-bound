@@ -9,16 +9,18 @@
 #include "ParetoFront.hpp"
 
 ParetoFront::ParetoFront() {
-    
+    state = FrontState::Unexplored;
 }
 
 ParetoFront::ParetoFront(const ParetoFront& toCopy) {
     m_vec.reserve(toCopy.size());
+    state = toCopy.getState();
     for (unsigned long solution = 0; solution < toCopy.size(); ++solution)
         m_vec.push_back(toCopy.at(solution));
 }
 
 ParetoFront::ParetoFront(const std::vector<Solution>& set_of_solutions) {
+    state = FrontState::Unexplored;
     for (unsigned long n_sol = 0; n_sol < set_of_solutions.size(); ++n_sol)
         push_back(set_of_solutions.at(n_sol));
 }
@@ -32,6 +34,7 @@ ParetoFront& ParetoFront::operator=(const ParetoFront &rhs) {
     if (this == &rhs)
         return *this;
 
+    state = rhs.getState();
     m_vec.clear();
     for (unsigned long n_sol = 0; n_sol < rhs.size(); ++n_sol)
         push_back(rhs.at(n_sol));
@@ -40,6 +43,7 @@ ParetoFront& ParetoFront::operator=(const ParetoFront &rhs) {
 }
 
 ParetoFront& ParetoFront::operator+=(const ParetoFront &rhs) {
+    state = rhs.getState();
     for (unsigned long n_sol = 0; n_sol < rhs.size(); ++n_sol)
         push_back(rhs.at(n_sol));
     
@@ -49,6 +53,22 @@ ParetoFront& ParetoFront::operator+=(const ParetoFront &rhs) {
 ParetoFront& ParetoFront::operator+(const ParetoFront& rhs) {
     *this += rhs;
     return *this;
+}
+
+FrontState ParetoFront::getState() const {
+    return state;
+}
+
+void ParetoFront::setUnexplored() {
+    state = FrontState::Unexplored;
+}
+
+void ParetoFront::setNonDominated() {
+    state = FrontState::NonDominated;
+}
+
+void ParetoFront::setDominated() {
+    state = FrontState::dominated;
 }
 
 const Solution ParetoFront::at(unsigned long position) const {

@@ -13,12 +13,9 @@
 #include "Solution.hpp"
 #include "Dominance.hpp"
 #include "myutils.hpp"
+#include "ParetoFront.hpp"
 #include "tbb/atomic.h"
 #include "tbb/queuing_rw_mutex.h"
-
-enum BucketState {
-    Unexplored = 0, NonDominated = 1, dominated = 2
-};
 
 typedef tbb::queuing_rw_mutex Lock;
 
@@ -31,7 +28,7 @@ private:
     unsigned long posy;
     Lock improving_lock;
     tbb::atomic<unsigned long> size;
-    tbb::atomic<BucketState> state;
+    tbb::atomic<FrontState> state;
     std::vector<Solution> m_vec;
     
 public:
@@ -49,24 +46,14 @@ public:
     unsigned long getPosx() const;
     unsigned long getPosy() const;
     unsigned long getSize() const;
-    BucketState getState() const;
+    FrontState getState() const;
     tbb::atomic<unsigned long> getSizeAtomic() const;
-    tbb::atomic<BucketState> getStateAtomic() const;
+    tbb::atomic<FrontState> getStateAtomic() const;
     std::vector<Solution>& getVector() ;
     const std::vector<Solution>& getVectorToCopy() const ;
     bool produceImprovement(const Solution& obj);
     bool push_back(const Solution& obj);
     void clear();
     void print() const;
-    
-    /*
-     //Join two buckets;
-     Bucket<T> operator+(const Bucket<T>& bucket) {
-     Bucket<T> new_bucket;
-     new_bucket.m_vec = bucket.m_vec.clone();
-     new_bucket._vec.push_back(m_vec);
-     return new_bucket;
-     };
-     */
 };
 #endif /* ParetoBucket_hpp */

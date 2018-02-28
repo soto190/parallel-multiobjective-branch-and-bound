@@ -14,9 +14,14 @@
 #include "Dominance.hpp"
 #include "myutils.hpp"
 
+enum FrontState {
+    Unexplored = 0, NonDominated = 1, dominated = 2
+};
+
 class ParetoFront {
     
 private:
+    FrontState state;
     std::vector<Solution> m_vec;
     
 public:
@@ -28,6 +33,11 @@ public:
     ParetoFront& operator=(const ParetoFront& rhs);
     ParetoFront& operator+=(const ParetoFront& rhs);
     ParetoFront& operator+(const ParetoFront& rhs);
+
+    FrontState getState() const;
+    void setUnexplored();
+    void setNonDominated();
+    void setDominated();
 
     std::vector<Solution>& getVector();
     const std::vector<Solution>& getVectorToCopy() const;

@@ -75,7 +75,7 @@ tbb::atomic<unsigned long> ConcurrentGridContainer::getSizeAtomic() const {
     return numberOfElements;
 }
 
-BucketState ConcurrentGridContainer::getStateOf(size_t x, size_t y) const {
+FrontState ConcurrentGridContainer::getStateOf(size_t x, size_t y) const {
     return pareto_buckets[getIndexPosition(x, y)].getState();
 }
 
@@ -110,6 +110,6 @@ unsigned long ConcurrentGridContainer::clear(size_t x, size_t y) {
 
 void ConcurrentGridContainer::print() const {
     for (int index = 0; index < rows * cols; ++index)
-        if (pareto_buckets[index].getState() == BucketState::NonDominated)
+        if (pareto_buckets[index].getState() == FrontState::NonDominated)
             pareto_buckets[index].print();
 }

@@ -143,9 +143,9 @@ void ConcurrentHandlerContainer::getCoordinateForSolution(const Solution &soluti
  */
 bool ConcurrentHandlerContainer::set(const Solution & solution, int x, int y) {
     bool updated = false;
-    BucketState state = grid.getStateOf(x, y);
+    FrontState state = grid.getStateOf(x, y);
     switch (state) {
-        case BucketState::Unexplored:
+        case FrontState::Unexplored:
             clearContainersDominatedBy(x, y);
             grid.addTo(solution, x, y);
             grid.setNonDominatedState(x, y);
@@ -154,11 +154,11 @@ bool ConcurrentHandlerContainer::set(const Solution & solution, int x, int y) {
             updated = true;
             break;
             
-        case BucketState::NonDominated:
+        case FrontState::NonDominated:
             updated = grid.addTo(solution, x, y);
             break;
             
-        case BucketState::dominated:
+        case FrontState::dominated:
             updated = false;
             /** If the bucket is dominated (State = 2) the element is not added. Then do nothing**/
             break;
@@ -173,7 +173,7 @@ bool ConcurrentHandlerContainer::set(const Solution & solution, int x, int y) {
 void ConcurrentHandlerContainer::clearContainersDominatedBy(const int x, const int y) {
     for (int nRow = y + 1; nRow < grid.getNumberOfRows(); nRow++)
         for (int nCol = x + 1; nCol < grid.getNumberOfCols(); nCol++)
-            if (grid.getStateOf(nCol, nRow) == BucketState::dominated)
+            if (grid.getStateOf(nCol, nRow) == FrontState::dominated)
                 nCol = grid.getNumberOfCols(); /** If the bucket in (nCol, nRow) is dominated then the exploration continues in next row. **/
             else
                 clearContainer(nCol, nRow);
@@ -212,7 +212,7 @@ void ConcurrentHandlerContainer::clearContainer(int x, int y) {
  * 1: non-Dominated (Pareto front).
  * 2: Dominated.
  */
-BucketState ConcurrentHandlerContainer::getStateOf(int x, int y) const {
+FrontState ConcurrentHandlerContainer::getStateOf(int x, int y) const {
     return grid.getStateOf(x, y);
 }
 
@@ -268,7 +268,7 @@ void ConcurrentHandlerContainer::printGridSize() const {
     for (int nRow = grid.getNumberOfRows() - 1; nRow >= 0; --nRow) {
         printf("[%3d] ", nRow);
         for (int nCol = 0; nCol < grid.getNumberOfCols(); ++nCol)
-            if(grid.getStateOf(nCol, nRow) == BucketState::Unexplored)
+            if(grid.getStateOf(nCol, nRow) == FrontState::Unexplored)
                 printf(" - ");
             else
                 printf("%3ld", grid.getSizeOf(nCol, nRow));
@@ -277,12 +277,12 @@ void ConcurrentHandlerContainer::printGridSize() const {
 }
 
 void ConcurrentHandlerContainer::printStates() const {
-    BucketState state;
+    FrontState state;
     for (int nRow = grid.getNumberOfRows() - 1; nRow >= 0; --nRow) {
         printf("[%3d] ", nRow);
         for (int nCol = 0; nCol < grid.getNumberOfCols(); ++nCol) {
             state = grid.getStateOf(nCol, nRow);
-            if(state == BucketState::Unexplored)
+            if(state == FrontState::Unexplored)
                 printf(" - ");
             else
                 printf("%3d", state);
@@ -298,17 +298,17 @@ bool ConcurrentHandlerContainer::improvesTheGrid(const Solution &solution) {
     int bucketCoordinate[2];
     bool improves = false;
     getCoordinateForSolution(solution, bucketCoordinate);
-    BucketState stateOfBucket = grid.getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
+    FrontState stateOfBucket = grid.getStateOf(bucketCoordinate[0], bucketCoordinate[1]);
     switch (stateOfBucket) {
-        case BucketState::dominated:
+        case FrontState::dominated:
             improves = false;
             break;
             
-        case BucketState::Unexplored:
+        case FrontState::Unexplored:
             improves = true;
             break;
             
-        case BucketState::NonDominated:
+        case FrontState::NonDominated:
             improves = grid.produceImprovementInBucket(solution, bucketCoordinate[0], bucketCoordinate[1]);
             break;
     }
@@ -323,15 +323,15 @@ std::vector<Solution>& ConcurrentHandlerContainer::getParetoFront() {
     paretoFront.reserve(getSize());
     for (int bucketY = 0; bucketY < getRows(); ++bucketY)
         for (int bucketX = 0; bucketX < getCols(); ++bucketX) {
-            BucketState state = grid.getStateOf(bucketX, bucketY);
-            if (state == BucketState::NonDominated) {
+            FrontState state = grid.getStateOf(bucketX, bucketY);
+            if (state == FrontState::NonDominated) {
                 std::vector<Solution> vec = grid.get(bucketX, bucketY);
                 std::vector<Solution>::iterator it = vec.begin();
                 
                 for (it = vec.begin(); it != vec.end(); ++it)
                     paretoFront.push_back(*it);
                 
-            } else if (state == BucketState::dominated)
+            } else if (state == FrontState::dominated)
                 bucketX = grid.getNumberOfCols();
         }
     
