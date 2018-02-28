@@ -1,5 +1,5 @@
 //
-//  HandlerContainer.cpp
+//  ConcurrentHandlerContainer.cpp
 //  ParallelBaB
 //
 //  Created by Carlos Soto on 12/6/17.

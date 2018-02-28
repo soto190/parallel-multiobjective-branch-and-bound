@@ -41,7 +41,7 @@ public:
 
     std::vector<Solution>& getVector();
     const std::vector<Solution>& getVectorToCopy() const;
-    bool produceImprovement(const Solution& obj);
+    bool produceImprovement(const Solution& obj) const;
     bool push_back(const Solution& obj);
     void join(const ParetoFront& to_join);
     const Solution at(unsigned long position) const;

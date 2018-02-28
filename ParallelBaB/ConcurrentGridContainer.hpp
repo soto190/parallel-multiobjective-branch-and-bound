@@ -39,6 +39,7 @@ public:
     ~ConcurrentGridContainer();
     
     ConcurrentGridContainer& operator()(unsigned int width, unsigned int height);
+
     bool addTo(const Solution& obj, size_t x, size_t y);
     void setNonDominatedState(size_t x, size_t y);
     void setDominatedState(size_t x, size_t y);

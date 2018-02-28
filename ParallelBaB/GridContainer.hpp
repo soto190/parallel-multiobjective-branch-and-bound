@@ -46,8 +46,8 @@ public:
     unsigned int getNumberOfCols() const;
     unsigned int getNumberOfRows() const;
     unsigned long getSize() const;
-    FrontState getStateOf(size_t x, size_t y) const;
     unsigned long getSizeOf(size_t x, size_t y) const;
+    FrontState getStateOf(size_t x, size_t y) const;
     bool produceImprovementInBucket(const Solution& obj, size_t x, size_t y);
     unsigned long clear(size_t x, size_t y) ;
     void print() const;

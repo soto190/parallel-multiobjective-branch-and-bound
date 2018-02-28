@@ -24,11 +24,12 @@ tbb::task * ParallelBranchAndBound::execute() {
     
     globalPool.setSizeEmptying((unsigned long) (number_of_bbs * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
    
+    /*
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
 
     paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
-    
+     */
     BranchAndBound BB_container(rank, 0, problem, branch_init);
     BB_container.initGlobalPoolWithInterval(branch_init);
     
@@ -64,6 +65,11 @@ tbb::task * ParallelBranchAndBound::execute() {
         BB_container.increaseNumberOfReachedLeaves(bb_in->getNumberOfReachedLeaves());
         BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());
         BB_container.increaseSharedWork(bb_in->getSharedWork());
+
+        vector<Solution> bb_pf = bb_in->getParetoFront();
+        for (unsigned long element = 0; element < bb_pf.size(); ++element)
+            paretoContainer.push_back(bb_pf.at(element));
+
     }
     
     BB_container.setParetoFrontFile(outputParetoFile);
@@ -80,7 +86,7 @@ tbb::task * ParallelBranchAndBound::execute() {
 }
 
 std::vector<Solution>& ParallelBranchAndBound::getParetoFront() {
-    return paretoContainer.getParetoFront();
+    return paretoContainer.getVector();
 }
 
 void ParallelBranchAndBound::setBranchInitPayload(const Payload_interval& payload) {

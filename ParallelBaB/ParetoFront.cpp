@@ -91,7 +91,7 @@ const std::vector<Solution>& ParetoFront::getVectorToCopy() const {
     return m_vec;
 }
 
-bool ParetoFront::produceImprovement(const Solution& obj) {
+bool ParetoFront::produceImprovement(const Solution& obj) const {
     unsigned long index = 0;
     unsigned long size_vec = m_vec.size();
     bool improves_the_front = true;

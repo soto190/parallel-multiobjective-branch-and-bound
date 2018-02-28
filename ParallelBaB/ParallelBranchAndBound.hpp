@@ -27,6 +27,7 @@ public:
     
     ProblemFJSSP problem;
     Interval branch_init;
+    ParetoFront paretoContainer;
     
     ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem);
     ~ParallelBranchAndBound();

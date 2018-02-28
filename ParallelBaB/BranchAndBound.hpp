@@ -24,6 +24,7 @@
 #include "ProblemFJSSP.hpp"
 #include "Solution.hpp"
 #include "ConcurrentHandlerContainer.hpp"
+#include "HandlerContainer.hpp"
 #include "Dominance.hpp"
 #include "SortedVector.hpp"
 #include "IVMTree.hpp"
@@ -47,7 +48,7 @@ const float size_to_share = 0.2f; /** We share the half of the row. **/
 const float deep_limit_share = 0.80f;
 
 extern SubproblemsPool globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
-extern ConcurrentHandlerContainer paretoContainer;
+//extern ConcurrentHandlerContainer paretoContainer;
 extern tbb::atomic<int> sleeping_bb;
 extern tbb::atomic<int> there_is_more_work;
 
@@ -56,7 +57,7 @@ class BranchAndBound: public tbb::task {
 private:
     int node_rank;
     int bb_rank;
-    
+
     tbb::atomic<unsigned long> number_of_nodes;
     tbb::atomic<unsigned long> number_of_nodes_created;
     tbb::atomic<unsigned long> number_of_nodes_pruned;
@@ -70,7 +71,8 @@ private:
     tbb::atomic<unsigned long> number_of_shared_works;
     
     int currentLevel; /** Active level **/
-    
+
+    HandlerContainer paretoContainer;
     ProblemFJSSP problem;
     FJSSPdata fjssp_data;
     Solution incumbent_s;
@@ -107,7 +109,7 @@ public:
     int explore(Solution & solution);
     int branch(Solution & solution, int currentLevel);
     void prune(Solution & solution, int currentLevel);
-    
+
     std::vector<Solution>& getParetoFront();
     void printParetoFront(int withVariables = 0);
     
@@ -137,8 +139,9 @@ public:
     const ProblemFJSSP& getProblem() const;
     const Solution& getIncumbentSolution() const;
     const FJSSPdata& getFJSSPdata() const;
-    
-    float getDeepLimitToShare() const;
+    const HandlerContainer& getParetoContainer() const;
+
+    const float getDeepLimitToShare() const;
     float getSizeToShare() const;
     
     void saveEvery(double timeInSeconds);
@@ -165,7 +168,7 @@ private:
     unsigned long permut(unsigned long n, unsigned long i) const;
     
     void shareWorkAndSendToGlobalPool(const Interval& interval);
-    bool improvesTheGrid(const Solution & solution) const;
+    bool improvesTheGrid(const Solution & solution);
     bool updateParetoGrid(const Solution & solution);
     void updateBounds(const Solution & solution, FJSSPdata& data);
     void updateBoundsWithSolution(const Solution & solution);

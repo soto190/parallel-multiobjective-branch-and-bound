@@ -11,8 +11,9 @@
  *
  **/
 #include "BranchAndBound.hpp"
+
 SubproblemsPool globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
-ConcurrentHandlerContainer paretoContainer;
+//ConcurrentHandlerContainer paretoContainer;
 tbb::atomic<int> sleeping_bb;
 tbb::atomic<int> there_is_more_work;
 
@@ -23,7 +24,8 @@ currentLevel(toCopy.getCurrentLevel()),
 problem(toCopy.getProblem()),
 fjssp_data(toCopy.getFJSSPdata()),
 incumbent_s(toCopy.getIncumbentSolution()),
-ivm_tree(toCopy.getIVMTree()) {
+ivm_tree(toCopy.getIVMTree()),
+paretoContainer(toCopy.getParetoContainer()) {
     number_of_shared_works.store(toCopy.getSharedWork());
     number_of_tree_levels.store(toCopy.getNumberOfLevels());
     number_of_nodes.store(toCopy.getNumberOfNodes());
@@ -79,6 +81,11 @@ elapsed_time(0) {
     number_of_nodes.fetch_and_store(computeTotalNodes(problemToCopy.getNumberOfVariables()));
     
     ivm_tree.setOwnerId(rank);
+
+    Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.createDefaultSolution(solution);
+
+    paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
 }
 
 BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch) {
@@ -90,7 +97,7 @@ BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, cons
     bb_rank = rank_new;
     problem = problem_to_copy;
     fjssp_data(problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
-    
+
     currentLevel = 0;
     number_of_tree_levels = 0;
     number_of_nodes = 0;
@@ -349,7 +356,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                 branch(incumbent_s, currentLevel);
             else
                 prune(incumbent_s, currentLevel);
-        }else {
+        } else {
             increaseReachedLeaves();
             if (updateParetoGrid(incumbent_s)) {
                 increaseUpdatesInLowerBound();
@@ -367,6 +374,11 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         
         if(theTreeHasMoreNodes())
             shareWorkAndSendToGlobalPool(branch_to_solve);
+    }
+
+    vector<Solution> pf = paretoContainer.getParetoFront();
+    for (unsigned long element = 0; element < pf.size(); ++element) {
+        pf.at(element).print();
     }
 }
 
@@ -601,7 +613,7 @@ bool BranchAndBound::updateParetoGrid(const Solution & solution) {
  *  6- It is non-dominated.
  *
  */
-bool BranchAndBound::improvesTheGrid(const Solution & solution) const {
+bool BranchAndBound::improvesTheGrid(const Solution & solution) {
     return paretoContainer.improvesTheGrid(solution);
 }
 
@@ -850,11 +862,15 @@ const FJSSPdata& BranchAndBound::getFJSSPdata() const {
     return fjssp_data;
 }
 
+const HandlerContainer& BranchAndBound::getParetoContainer() const{
+    return paretoContainer;
+}
+
 int BranchAndBound::getLimitLevelToShare() const {
     return limit_level_to_share;
 }
 
-float BranchAndBound::getDeepLimitToShare() const {
+const float BranchAndBound::getDeepLimitToShare() const {
     return deep_limit_share;
 }
 
@@ -863,8 +879,7 @@ float BranchAndBound::getSizeToShare() const {
 }
 
 std::vector<Solution>& BranchAndBound::getParetoFront() {
-    pareto_front = paretoContainer.getParetoFront();
-    return pareto_front;
+    return paretoContainer.getParetoFront();;
 }
 
 void BranchAndBound::setParetoFrontFile(const char setOutputFile[255]) {
