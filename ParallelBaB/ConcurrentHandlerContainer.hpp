@@ -10,10 +10,10 @@
 #define HandlerContainer_hpp
 
 #include <stdio.h>
-#include "GridContainer.hpp"
+#include "ConcurrentGridContainer.hpp"
 #include "tbb/atomic.h"
 
-class HandlerContainer {
+class ConcurrentHandlerContainer {
     
 private:
     double * rangeinx;
@@ -27,16 +27,16 @@ private:
     tbb::atomic<unsigned long> disabledBuckets;
     tbb::atomic<int> min_value_found_in_obj [2]; /** TODO: Change to more objectives. Also this doesnt goes here. Fixed to two objectives **/
     
-    GridContainer grid;
+    ConcurrentGridContainer grid;
     std::vector<Solution> paretoFront;
     
 public:
-    HandlerContainer();
-    HandlerContainer(unsigned int width, unsigned int height, double maxValX, double maxValY);
-    HandlerContainer(const HandlerContainer& toCopy);
-    ~HandlerContainer();
+    ConcurrentHandlerContainer();
+    ConcurrentHandlerContainer(unsigned int width, unsigned int height, double maxValX, double maxValY);
+    ConcurrentHandlerContainer(const ConcurrentHandlerContainer& toCopy);
+    ~ConcurrentHandlerContainer();
     
-    HandlerContainer& operator()(unsigned int width, unsigned int height, double maxValX, double maxValY, int minValX, int minValY);
+    ConcurrentHandlerContainer& operator()(unsigned int width, unsigned int height, double maxValX, double maxValY, int minValX, int minValY);
     
     bool add(const Solution & solution);
     bool set(const Solution & solution, int x, int y);

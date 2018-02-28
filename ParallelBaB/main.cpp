@@ -27,7 +27,7 @@
 #include "BranchAndBound.hpp"
 #include "ParallelBranchAndBound.hpp"
 #include "myutils.hpp"
-#include "GridContainer.hpp"
+#include "ConcurrentGridContainer.hpp"
 #include "MasterWorkerPBB.hpp"
 #include "NSGA_II.hpp"
 #include "MOSA.hpp"

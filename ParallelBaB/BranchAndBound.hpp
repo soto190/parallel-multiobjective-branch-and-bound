@@ -23,7 +23,7 @@
 #include "Problem.hpp"
 #include "ProblemFJSSP.hpp"
 #include "Solution.hpp"
-#include "HandlerContainer.hpp"
+#include "ConcurrentHandlerContainer.hpp"
 #include "Dominance.hpp"
 #include "SortedVector.hpp"
 #include "IVMTree.hpp"
@@ -47,7 +47,7 @@ const float size_to_share = 0.2f; /** We share the half of the row. **/
 const float deep_limit_share = 0.80f;
 
 extern SubproblemsPool globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
-extern HandlerContainer paretoContainer;
+extern ConcurrentHandlerContainer paretoContainer;
 extern tbb::atomic<int> sleeping_bb;
 extern tbb::atomic<int> there_is_more_work;
 

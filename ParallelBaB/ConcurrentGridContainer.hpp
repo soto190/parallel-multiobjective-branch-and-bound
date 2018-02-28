@@ -22,9 +22,8 @@
  * An example of the Grid vectorization:
  *  https://stackoverflow.com/questions/14015556/how-to-map-the-indexes-of-a-matrix-to-a-1-dimensional-array-c
  **/
-#define BIG_VALUE 999999999
 
-class GridContainer {
+class ConcurrentGridContainer {
 
 private:
     unsigned int cols;
@@ -35,11 +34,11 @@ private:
     size_t getIndexPosition(size_t x, size_t y) const;
     
 public:
-    GridContainer(unsigned int width, unsigned int height);
-    GridContainer(const GridContainer& toCopy);
-    ~GridContainer();
+    ConcurrentGridContainer(unsigned int width, unsigned int height);
+    ConcurrentGridContainer(const ConcurrentGridContainer& toCopy);
+    ~ConcurrentGridContainer();
     
-    GridContainer& operator()(unsigned int width, unsigned int height);
+    ConcurrentGridContainer& operator()(unsigned int width, unsigned int height);
     bool addTo(const Solution& obj, size_t x, size_t y);
     void setNonDominatedState(size_t x, size_t y);
     void setDominatedState(size_t x, size_t y);
