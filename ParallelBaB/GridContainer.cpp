@@ -22,7 +22,7 @@ GridContainer::GridContainer(const GridContainer& toCopy):
 cols(toCopy.getNumberOfCols()),
 rows(toCopy.getNumberOfRows()),
 numberOfElements(toCopy.getSize()),
-pareto_buckets(toCopy.pareto_buckets) {
+pareto_buckets(toCopy.getParetoBuckets()) {
 
 }
 
@@ -55,8 +55,12 @@ size_t GridContainer::getIndexPosition(size_t x, size_t y) const {
     return y * cols + x;
 }
 
-std::vector<Solution>& GridContainer::get(size_t x, size_t y) {
-    return pareto_buckets[getIndexPosition(x, y)].getVector();
+const ParetoFront& GridContainer::getParetoFrontAt(size_t x, size_t y) const {
+    return pareto_buckets.at(getIndexPosition(x, y));
+}
+
+const std::vector<ParetoFront> GridContainer::getParetoBuckets() const {
+    return pareto_buckets;
 }
 
 unsigned int GridContainer::getNumberOfCols() const {

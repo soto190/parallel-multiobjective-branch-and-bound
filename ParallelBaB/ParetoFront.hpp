@@ -29,7 +29,8 @@ public:
     ParetoFront(const ParetoFront& toCopy);
     ParetoFront(const std::vector<Solution>& set_of_solutions);
     ~ParetoFront();
-    
+
+    ParetoFront& operator()(const ParetoFront& rhs);
     ParetoFront& operator=(const ParetoFront& rhs);
     ParetoFront& operator+=(const ParetoFront& rhs);
     ParetoFront& operator+(const ParetoFront& rhs);

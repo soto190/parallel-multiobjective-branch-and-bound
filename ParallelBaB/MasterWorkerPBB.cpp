@@ -364,11 +364,11 @@ void MasterWorkerPBB::runWorkerProcess() {
                     splitInterval(branch_init); /** Splits and push to GlobalPool. **/
                     
                     /** This avoid to send repeated solutions. **/
-                    subFront = BB_container.getParetoFront();
+                    //subFront = BB_container.getParetoFront();
                     solutionsToSend.clear();
                     if (paretoFront.empty()) { /** If the pareto front is empty then send all the front. **/
-                        paretoFront = BB_container.getParetoFront();
-                        solutionsToSend = BB_container.getParetoFront();
+                      //  paretoFront = BB_container.getParetoFront();
+                       // solutionsToSend = BB_container.getParetoFront();
                     }
                     else {
                         for (int sub_sol = 0; sub_sol < subFront.size(); ++sub_sol) {  /** Choosing the new non-dominated solutions to send. **/
@@ -385,7 +385,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                                 solutionsToSend.push_back(sSub);
                         }
                     }
-                    paretoFront = BB_container.getParetoFront(); /** Updates the Pareto front. **/
+                    //paretoFront = BB_container.getParetoFront(); /** Updates the Pareto front. **/
                     payload_interval.build_up_to = (int) solutionsToSend.size();
                     if (solutionsToSend.size() > 0) {
                         /** TODO: Improve this function. Send all the pareto set in one message instead of multiple messages. **/

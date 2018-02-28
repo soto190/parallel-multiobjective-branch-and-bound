@@ -25,7 +25,7 @@ numberOfElements(toCopy.numberOfElements),
 activeBuckets(toCopy.getNumberOfActiveBuckets()),
 unexploredBuckets(toCopy.getNumberOfUnexploredBuckets()),
 disabledBuckets(toCopy.getNumberOfDisabledBuckets()),
-grid(toCopy.grid) {
+grid(toCopy.getGrid()) {
 
     rangeinx = new double[toCopy.getCols()];
     rangeiny = new double[toCopy.getRows()];
@@ -79,7 +79,7 @@ grid(cols, rows) {
 HandlerContainer::~HandlerContainer() {
     delete[] rangeinx;
     delete[] rangeiny;
-    paretoFront.clear();
+    pareto_front.clear();
 }
 
 HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int cols, double maxValX, double maxValY, int minValX, int minValY) {
@@ -103,7 +103,7 @@ HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int c
     if(rangeiny != nullptr)
         delete rangeiny;
 
-    paretoFront.clear();
+    pareto_front.clear();
 
     rangeinx = new double[cols];
     rangeiny = new double[rows];
@@ -216,8 +216,8 @@ FrontState HandlerContainer::getStateOf(int x, int y) const {
     return grid.getStateOf(x, y);
 }
 
-std::vector<Solution>& HandlerContainer::get(int x, int y) {
-    return grid.get(x, y);
+const ParetoFront& HandlerContainer::get(int x, int y) const {
+    return grid.getParetoFrontAt(x, y);
 }
 
 unsigned int HandlerContainer::getRows() const {
@@ -319,24 +319,28 @@ bool HandlerContainer::improvesTheBucket(const Solution &solution, int x, int y)
     return grid.produceImprovementInBucket(solution, x, y);
 }
 
-std::vector<Solution>& HandlerContainer::getParetoFront() {
-    paretoFront.reserve(getSize());
-    for (int bucketY = 0; bucketY < getRows(); ++bucketY)
-        for (int bucketX = 0; bucketX < getCols(); ++bucketX) {
-            FrontState state = grid.getStateOf(bucketX, bucketY);
-            if (state == FrontState::NonDominated) {
-                std::vector<Solution> vec = grid.get(bucketX, bucketY);
-                std::vector<Solution>::iterator it = vec.begin();
+const ParetoFront& HandlerContainer::generateParetoFront() {
 
-                for (it = vec.begin(); it != vec.end(); ++it)
-                    paretoFront.push_back(*it);
+    for (int bucket_y = 0; bucket_y < getRows(); ++bucket_y)
+        for (int bucket_x = 0; bucket_x < getCols(); ++bucket_x) {
+            FrontState state = grid.getStateOf(bucket_x, bucket_y);
 
-            } else if (state == FrontState::dominated)
-                bucketX = grid.getNumberOfCols();
+            if (state == FrontState::NonDominated)
+                pareto_front += grid.getParetoFrontAt(bucket_x, bucket_y);
+
+            else if (state == FrontState::dominated)
+                bucket_x = grid.getNumberOfCols();
         }
+    
+    return pareto_front;
+}
 
-    extractParetoFront(paretoFront);
-    return paretoFront;
+const ParetoFront& HandlerContainer::getParetoFront() const {
+    return pareto_front;
+}
+
+const GridContainer& HandlerContainer::getGrid() const {
+    return grid;
 }
 
 double HandlerContainer::getMaxIn(int dimension) {

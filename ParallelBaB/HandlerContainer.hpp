@@ -27,7 +27,7 @@ private:
     int min_value_found_in_obj [2]; /** TODO: Change to more objectives. Also this doesnt goes here. Fixed to two objectives **/
 
     GridContainer grid;
-    std::vector<Solution> paretoFront;
+    ParetoFront pareto_front;
 
 public:
     HandlerContainer();
@@ -56,10 +56,12 @@ public:
 
     double getMaxIn(int dimension);
     int getBestValueFoundIn(int n_obj) const;
-    std::vector<Solution>& getParetoFront();
+    const ParetoFront& generateParetoFront();
+    const ParetoFront& getParetoFront() const;
+    const GridContainer& getGrid() const;
 
 private:
-    std::vector<Solution>& get(int x, int y);
+    const ParetoFront& get(int x, int y) const;
     bool improvesTheBucket(const Solution & solution, int x, int y);
     void clearContainer(int x, int y);
     void setNonDominatedState(int x, int y);

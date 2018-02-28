@@ -49,6 +49,7 @@ const float deep_limit_share = 0.80f;
 
 extern SubproblemsPool globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 //extern ConcurrentHandlerContainer paretoContainer;
+extern ParetoBucket globalParetoFront;
 extern tbb::atomic<int> sleeping_bb;
 extern tbb::atomic<int> there_is_more_work;
 
@@ -78,7 +79,7 @@ private:
     Solution incumbent_s;
     IVMTree ivm_tree;
     Interval interval_to_solve;
-    std::vector<Solution> pareto_front; /** paretoFront. **/
+    ParetoFront pareto_front; /** paretoFront. **/
     
     char pareto_file[255];
     char summarize_file[255];
@@ -110,7 +111,6 @@ public:
     int branch(Solution & solution, int currentLevel);
     void prune(Solution & solution, int currentLevel);
 
-    std::vector<Solution>& getParetoFront();
     void printParetoFront(int withVariables = 0);
     
     unsigned long getNumberOfNodes() const;
@@ -140,6 +140,7 @@ public:
     const Solution& getIncumbentSolution() const;
     const FJSSPdata& getFJSSPdata() const;
     const HandlerContainer& getParetoContainer() const;
+    const ParetoFront& getParetoFront() const;
 
     const float getDeepLimitToShare() const;
     float getSizeToShare() const;
@@ -153,7 +154,8 @@ public:
     int saveSummarize();
     void saveGlobalPool() const;
     void saveCurrentState() const;
-    
+
+    void print() const;
     void printDebug();
     int initGlobalPoolWithInterval(const Interval & branch);
     static float distanceToObjective(int value, int objective);

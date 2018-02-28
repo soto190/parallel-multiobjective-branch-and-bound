@@ -14,6 +14,7 @@
 
 SubproblemsPool globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 //ConcurrentHandlerContainer paretoContainer;
+ParetoBucket globalParetoFront;
 tbb::atomic<int> sleeping_bb;
 tbb::atomic<int> there_is_more_work;
 
@@ -25,7 +26,8 @@ problem(toCopy.getProblem()),
 fjssp_data(toCopy.getFJSSPdata()),
 incumbent_s(toCopy.getIncumbentSolution()),
 ivm_tree(toCopy.getIVMTree()),
-paretoContainer(toCopy.getParetoContainer()) {
+paretoContainer(toCopy.getParetoContainer()),
+pareto_front(toCopy.getParetoFront()) {
     number_of_shared_works.store(toCopy.getSharedWork());
     number_of_tree_levels.store(toCopy.getNumberOfLevels());
     number_of_nodes.store(toCopy.getNumberOfNodes());
@@ -336,6 +338,12 @@ tbb::task* BranchAndBound::execute() {
     
     sleeping_bb++;
     printf("[Worker-%03d:B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, bb_rank, getElapsedTime());
+
+    pareto_front = paretoContainer.generateParetoFront();
+
+//    for (unsigned long sol = 0; sol  < pareto_front.size(); ++sol)
+//        globalParetoFront.push_back(pareto_front.at(sol));
+
     return NULL;
 }
 
@@ -374,11 +382,6 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         
         if(theTreeHasMoreNodes())
             shareWorkAndSendToGlobalPool(branch_to_solve);
-    }
-
-    vector<Solution> pf = paretoContainer.getParetoFront();
-    for (unsigned long element = 0; element < pf.size(); ++element) {
-        pf.at(element).print();
     }
 }
 
@@ -862,8 +865,12 @@ const FJSSPdata& BranchAndBound::getFJSSPdata() const {
     return fjssp_data;
 }
 
-const HandlerContainer& BranchAndBound::getParetoContainer() const{
+const HandlerContainer& BranchAndBound::getParetoContainer() const {
     return paretoContainer;
+}
+
+const ParetoFront& BranchAndBound::getParetoFront() const {
+    return pareto_front;
 }
 
 int BranchAndBound::getLimitLevelToShare() const {
@@ -876,10 +883,6 @@ const float BranchAndBound::getDeepLimitToShare() const {
 
 float BranchAndBound::getSizeToShare() const {
     return size_to_share;
-}
-
-std::vector<Solution>& BranchAndBound::getParetoFront() {
-    return paretoContainer.getParetoFront();;
 }
 
 void BranchAndBound::setParetoFrontFile(const char setOutputFile[255]) {
@@ -1016,17 +1019,15 @@ int BranchAndBound::saveSummarize() {
         int nVar = 0;
         
         int counterSolutions = 0;
-        
-        std::vector<Solution>::iterator it;
-        for (it = pareto_front.begin(); it != pareto_front.end(); ++it) {
-            
+        for (unsigned long it = 0; it < pareto_front.size(); ++it) {
+
             myfile << std::fixed << std::setw(6) << std::setfill(' ') << ++counterSolutions << " ";
             for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << (*it).getObjective(nObj) << " ";
+                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << pareto_front.at(it).getObjective(nObj) << " ";
             myfile << " | ";
             
             for (nVar = 0; nVar < numberOfVariables; ++nVar)
-                myfile << std::fixed << std::setw(4) << std::setfill(' ') << (*it).getVariable(nVar) << " ";
+                myfile << std::fixed << std::setw(4) << std::setfill(' ') << pareto_front.at(it).getVariable(nVar) << " ";
             myfile << " |\n";
         }
         
@@ -1038,21 +1039,19 @@ int BranchAndBound::saveSummarize() {
 }
 
 int BranchAndBound::saveParetoFront() {
-    
-    pareto_front = paretoContainer.getParetoFront();
-    
+
     std::ofstream myfile(pareto_file);
     if (myfile.is_open()) {
         printf("[Worker-%03d:B&B-%03d] Saving in file...\n", node_rank, bb_rank);
         int numberOfObjectives = problem.getNumberOfObjectives();
         
-        std::vector<Solution>::iterator it;
-        
-        for (it = pareto_front.begin(); it != pareto_front.end(); ++it) {
+
+        for (unsigned long it = 0; it < pareto_front.size(); ++it) {
             for (int nObj = 0; nObj < numberOfObjectives - 1; ++nObj)
-                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << (*it).getObjective(nObj) << " ";
-            myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << (*it).getObjective(numberOfObjectives - 1) << "\n";
+                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << pareto_front.at(it).getObjective(nObj) << " ";
+            myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << pareto_front.at(it).getObjective(numberOfObjectives - 1) << "\n";
         }
+
         myfile.close();
     } else
         printf("[Worker-%03d:B&B-%03d] Unable to write on pareto front file: %s\n", node_rank, bb_rank, pareto_file);
@@ -1085,17 +1084,20 @@ void BranchAndBound::printCurrentSolution(int withVariables) {
 void BranchAndBound::printParetoFront(int withExtraInfo) {
     
     int counterSolutions = 0;
-    std::vector<Solution>::iterator it;
-    
-    for (it = pareto_front.begin(); it != pareto_front.end(); ++it) {
+
+    for (unsigned long it = 0; it < pareto_front.size(); ++it) {
         printf("[%6d] ", ++counterSolutions);
-        problem.printSolution(*it);
+        problem.printSolution(pareto_front.at(it));
         printf("\n");
         if (withExtraInfo == 1) {
-            problem.printSolutionInfo(*it);
+            problem.printSolutionInfo(pareto_front.at(it));
             printf("\n");
         }
     }
+}
+
+void BranchAndBound::print() const {
+    printf("[B&B %d %d %lu %f]\n", getNodeRank(), getBBRank(), pareto_front.size(), elapsed_time);
 }
 
 void BranchAndBound::printDebug() {

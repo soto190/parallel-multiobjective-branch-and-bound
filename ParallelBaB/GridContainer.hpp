@@ -28,8 +28,10 @@ private:
     unsigned int cols;
     unsigned int rows;
     unsigned long numberOfElements;
-    std::vector<ParetoFront> pareto_buckets;
 
+    std::vector<ParetoFront> pareto_buckets;
+    ParetoFront pareto_front;
+    
     size_t getIndexPosition(size_t x, size_t y) const;
 
 public:
@@ -38,11 +40,14 @@ public:
     ~GridContainer();
 
     GridContainer& operator()(unsigned int width, unsigned int height);
+
     bool addTo(const Solution& obj, size_t x, size_t y);
     void setNonDominatedState(size_t x, size_t y);
     void setDominatedState(size_t x, size_t y);
     void setUnexploredState(size_t x, size_t y);
-    std::vector<Solution>& get(size_t x, size_t y);
+
+    const ParetoFront& getParetoFrontAt(size_t x, size_t y) const;
+    const std::vector<ParetoFront> getParetoBuckets() const;
     unsigned int getNumberOfCols() const;
     unsigned int getNumberOfRows() const;
     unsigned long getSize() const;

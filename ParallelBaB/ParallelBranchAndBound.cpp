@@ -51,6 +51,7 @@ tbb::task * ParallelBranchAndBound::execute() {
     
     /** Recollects the data. **/
     BB_container.getElapsedTime();
+    ParetoFront pf;
     BranchAndBound* bb_in;
     while (!bb_threads.empty()) {
         
@@ -66,19 +67,19 @@ tbb::task * ParallelBranchAndBound::execute() {
         BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());
         BB_container.increaseSharedWork(bb_in->getSharedWork());
 
-        vector<Solution> bb_pf = bb_in->getParetoFront();
-        for (unsigned long element = 0; element < bb_pf.size(); ++element)
-            paretoContainer.push_back(bb_pf.at(element));
+        bb_in->print();
 
     }
-    
-    BB_container.setParetoFrontFile(outputParetoFile);
-    BB_container.setSummarizeFile(summarizeFile);
+
+    printf("[Worker-%03d] Parallel Branch And Bound front.\n", rank);
+    pf.print();
+    //BB_container.setParetoFrontFile(outputParetoFile);
+    //BB_container.setSummarizeFile(summarizeFile);
     
     BB_container.getParetoFront();
     BB_container.printParetoFront();
-    BB_container.saveParetoFront();
-    BB_container.saveSummarize();
+    //BB_container.saveParetoFront();
+    //BB_container.saveSummarize();
     bb_threads.clear();
     //printf("[Worker-%03d] Data swarm recollected and saved.\n", rank);
     printf("[Worker-%03d] Parallel Branch And Bound ended.\n", rank);

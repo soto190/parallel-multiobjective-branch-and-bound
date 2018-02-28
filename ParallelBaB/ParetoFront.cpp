@@ -29,6 +29,17 @@ ParetoFront::~ParetoFront() {
     m_vec.clear();
 }
 
+ParetoFront& ParetoFront::operator()(const ParetoFront &rhs) {
+
+    if (this == &rhs)
+        return *this;
+
+    for (unsigned long n_sol = 0; n_sol < rhs.size(); ++n_sol)
+        push_back(rhs.at(n_sol));
+
+    return *this;
+}
+
 ParetoFront& ParetoFront::operator=(const ParetoFront &rhs) {
 
     if (this == &rhs)
