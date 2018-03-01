@@ -186,7 +186,7 @@ void HandlerContainer::updateMinValueFound(const Solution &solution) {
             min_value_found_in_obj[objective] = solution.getObjective(objective);
 }
 
-int HandlerContainer::getBestValueFoundIn(int obj) const {
+double HandlerContainer::getBestValueFoundIn(int obj) const {
     return min_value_found_in_obj[obj];
 }
 

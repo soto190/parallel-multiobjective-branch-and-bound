@@ -24,7 +24,7 @@ private:
     unsigned long activeBuckets;
     unsigned long unexploredBuckets;
     unsigned long disabledBuckets;
-    int min_value_found_in_obj [2]; /** TODO: Change to more objectives. Also this doesnt goes here. Fixed to two objectives **/
+    double min_value_found_in_obj [2]; /** TODO: Change to more objectives. Also this doesnt goes here. Fixed to two objectives **/
 
     GridContainer grid;
     ParetoFront pareto_front;
@@ -55,7 +55,7 @@ public:
     void print() const;
 
     double getMaxIn(int dimension);
-    int getBestValueFoundIn(int n_obj) const;
+    double getBestValueFoundIn(int n_obj) const;
     void clear();
     const ParetoFront& generateParetoFront();
     const ParetoFront& getParetoFront() const;

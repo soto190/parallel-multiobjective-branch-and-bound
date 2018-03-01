@@ -876,7 +876,7 @@ int BranchAndBound::getLimitLevelToShare() const {
     return limit_level_to_share;
 }
 
-const float BranchAndBound::getDeepLimitToShare() const {
+float BranchAndBound::getDeepLimitToShare() const {
     return deep_limit_share;
 }
 

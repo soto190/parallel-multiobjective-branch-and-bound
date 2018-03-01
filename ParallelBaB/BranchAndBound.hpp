@@ -142,7 +142,7 @@ public:
     const HandlerContainer& getParetoContainer() const;
     const ParetoFront& getParetoFront() const;
 
-    const float getDeepLimitToShare() const;
+    float getDeepLimitToShare() const;
     float getSizeToShare() const;
     
     void saveEvery(double timeInSeconds);
