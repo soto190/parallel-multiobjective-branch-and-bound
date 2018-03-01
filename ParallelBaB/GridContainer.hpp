@@ -54,6 +54,7 @@ public:
     unsigned long getSizeOf(size_t x, size_t y) const;
     FrontState getStateOf(size_t x, size_t y) const;
     bool produceImprovementInBucket(const Solution& obj, size_t x, size_t y);
+    void clearAll();
     unsigned long clear(size_t x, size_t y) ;
     void print() const;
 };

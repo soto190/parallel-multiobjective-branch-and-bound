@@ -80,6 +80,7 @@ HandlerContainer::~HandlerContainer() {
     delete[] rangeinx;
     delete[] rangeiny;
     pareto_front.clear();
+    grid.clearAll();
 }
 
 HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int cols, double maxValX, double maxValY, int minValX, int minValY) {
@@ -350,4 +351,8 @@ double HandlerContainer::getMaxIn(int dimension) {
         return maxiny;
     else
         return -1;
+}
+
+void HandlerContainer::clear() {
+    grid.clearAll();
 }

@@ -56,6 +56,7 @@ public:
 
     double getMaxIn(int dimension);
     int getBestValueFoundIn(int n_obj) const;
+    void clear();
     const ParetoFront& generateParetoFront();
     const ParetoFront& getParetoFront() const;
     const GridContainer& getGrid() const;

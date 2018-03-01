@@ -99,6 +99,10 @@ void GridContainer::setUnexploredState(size_t x, size_t y) {
     pareto_buckets[getIndexPosition(x, y)].setUnexplored();
 }
 
+void GridContainer::clearAll(){
+    pareto_buckets.clear();
+}
+
 unsigned long GridContainer::clear(size_t x, size_t y) {
     size_t index = getIndexPosition(x, y);
     unsigned long size_before = pareto_buckets[index].size();

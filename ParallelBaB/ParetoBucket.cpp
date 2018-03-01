@@ -187,7 +187,7 @@ void ParetoBucket::clear() {
 }
 
 void ParetoBucket::print() const {
-    printf("[%3lu %3lu] [%luu %d]:\n", posx, posy, (unsigned long) size, (FrontState) state);
+    printf("[%3lu %3lu] [%lu %d]:\n", posx, posy, (unsigned long) size, (FrontState) state);
     for (int nSol = 0; nSol < m_vec.size(); ++nSol)
         m_vec[nSol].print();
 }

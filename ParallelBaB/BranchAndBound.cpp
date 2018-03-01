@@ -132,6 +132,7 @@ BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, cons
 }
 
 BranchAndBound::~BranchAndBound() {
+    paretoContainer.clear();
     pareto_front.clear();
 }
 
@@ -337,13 +338,11 @@ tbb::task* BranchAndBound::execute() {
             solve(interval_to_solve);
     
     sleeping_bb++;
-    printf("[Worker-%03d:B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, bb_rank, getElapsedTime());
-
     pareto_front = paretoContainer.generateParetoFront();
+    for (unsigned long sol = 0; sol  < pareto_front.size(); ++sol)
+        globalParetoFront.push_back(pareto_front.at(sol));
 
-//    for (unsigned long sol = 0; sol  < pareto_front.size(); ++sol)
-//        globalParetoFront.push_back(pareto_front.at(sol));
-
+    printf("[Worker-%03d:B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, bb_rank, getElapsedTime());
     return NULL;
 }
 
