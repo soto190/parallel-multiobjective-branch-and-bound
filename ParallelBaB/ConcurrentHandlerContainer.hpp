@@ -25,7 +25,7 @@ private:
     tbb::atomic<unsigned long> activeBuckets;
     tbb::atomic<unsigned long> unexploredBuckets;
     tbb::atomic<unsigned long> disabledBuckets;
-    tbb::atomic<int> min_value_found_in_obj [2]; /** TODO: Change to more objectives. Also this doesnt goes here. Fixed to two objectives **/
+    tbb::atomic<double> min_value_found_in_obj [2]; /** TODO: Change to more objectives. Also this doesnt goes here. Fixed to two objectives **/
     
     ConcurrentGridContainer grid;
     std::vector<Solution> paretoFront;
@@ -56,7 +56,7 @@ public:
     void print() const;
     
     double getMaxIn(int dimension);
-    int getBestValueFoundIn(int n_obj) const;
+    double getBestValueFoundIn(int n_obj) const;
     std::vector<Solution>& getParetoFront();
     
 private:

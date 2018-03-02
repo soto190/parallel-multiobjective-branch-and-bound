@@ -185,7 +185,7 @@ void ConcurrentHandlerContainer::updateMinValueFound(const Solution &solution) {
             min_value_found_in_obj[objective].fetch_and_store(solution.getObjective(objective));
 }
 
-int ConcurrentHandlerContainer::getBestValueFoundIn(int obj) const {
+double ConcurrentHandlerContainer::getBestValueFoundIn(int obj) const {
     return min_value_found_in_obj[obj];
 }
 
