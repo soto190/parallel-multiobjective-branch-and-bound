@@ -13,8 +13,8 @@ NSGA_II::NSGA_II(const ProblemFJSSP& problem):problem(problem) {
     evaluations_is_stop_criteria = false;
     max_population = 10;
     population.reserve(max_population * 2);
-    //std::random_device seed;
-    //generator.seed(seed());
+    std::random_device seed;
+    generator.seed(seed());
 }
 
 NSGA_II::~NSGA_II() {
@@ -141,9 +141,9 @@ vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solut
                 if (jobs_op_allocated_off1[job] < problem.getNumberOfOperationsInJob(job)) {
                     int operation = problem.getOperationInJobIsNumber(job, jobs_op_allocated_off1[job]);
                     unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(operation);
-                    //std::uniform_int_distribution<unsigned int> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
-                    // int r = unif_int_mach_dis(generator);
-                    int r = rand() / (RAND_MAX / static_cast<int>(machines_aviable));
+                    std::uniform_int_distribution<unsigned int> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
+                    int r = unif_int_mach_dis(generator);
+//                    int r = rand() / (RAND_MAX / static_cast<int>(machines_aviable));
                     int new_machine = problem.getMachinesAvaibleForOperation(operation, r);
                     allel_p2 = problem.getEncodeMap(job, new_machine);
                     offspring1.setVariable(gene, allel_p2);
@@ -158,9 +158,9 @@ vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solut
                     int operation = problem.getOperationInJobIsNumber(job, jobs_op_allocated_off2[job]);
                     unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(operation);
 
-                    //std::uniform_int_distribution<unsigned int> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
-                    //int r = unif_int_mach_dis(generator);
-                    int r = rand() / (RAND_MAX / static_cast<int>(machines_aviable));
+                    std::uniform_int_distribution<unsigned int> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
+                    int r = unif_int_mach_dis(generator);
+//                    int r = s() / (RAND_MAX / static_cast<int>(machines_aviable));
                     int new_machine = problem.getMachinesAvaibleForOperation(operation, r);
 
                     allel_p1 = problem.getEncodeMap(job, new_machine);
@@ -188,8 +188,8 @@ void NSGA_II::mutationOperator(Solution &solution) {
 
     int chromosome_size = solution.getNumberOfVariables();
 
-    //std::uniform_real_distribution<double> unif_dis(0.0, 1.0);
-    //std::uniform_int_distribution<unsigned int> unif_position(0, chromosome_size - 1);
+    std::uniform_real_distribution<double> unif_dis(0.0, 1.0);
+    std::uniform_int_distribution<unsigned int> unif_position(0, chromosome_size - 1);
 
     int jobs_op_allocated[problem.getNumberOfJobs()];
     
@@ -200,12 +200,12 @@ void NSGA_II::mutationOperator(Solution &solution) {
      * The genes are shaked to move them to other position.
      **/
     for (int gene = 0; gene < chromosome_size; ++gene) {
-//        double r = unif_dis(generator);
-        double r = ((double) rand() / (RAND_MAX));
+        double r = unif_dis(generator);
+//        double r = ((double) rand() / (RAND_MAX));
         if (r < getMutationRate()) {
             int allel_value = solution.getVariable(gene);
-//            int new_position = unif_position(generator);
-            int new_position = rand() / (RAND_MAX / static_cast<int>(chromosome_size));
+            int new_position = unif_position(generator);
+//            int new_position = rand() / (RAND_MAX / static_cast<int>(chromosome_size));
             solution.setVariable(gene, solution.getVariable(new_position));
             solution.setVariable(new_position, allel_value);
         }
@@ -218,14 +218,14 @@ void NSGA_II::mutationOperator(Solution &solution) {
         int allel_is_from_job = problem.getDecodeMap(allel_value, 0);
         int machine = problem.getDecodeMap(allel_value, 1);
         int operation = problem.getOperationInJobIsNumber(allel_is_from_job, jobs_op_allocated[allel_is_from_job]);
-        //double r = unif_dis(generator);
-        double r = ((double) rand() / (RAND_MAX));
+        double r = unif_dis(generator);
+//        double r = ((double) rand() / (RAND_MAX));
         if (r < getMutationRate() || !problem.operationCanBeAllocatedInMachine(operation, machine)) {
             unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(operation);
 
-            //std::uniform_int_distribution<unsigned long> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
-            //int n_machine = unif_int_mach_dis(generator);
-            int n_machine = rand() / (RAND_MAX / static_cast<int>(machines_aviable));
+            std::uniform_int_distribution<unsigned long> unif_int_mach_dis(0, static_cast<int>(machines_aviable) - 1);
+            unsigned long n_machine = unif_int_mach_dis(generator);
+//            int n_machine = rand() / (RAND_MAX / static_cast<int>(machines_aviable));
 
             int new_machine = problem.getMachinesAvaibleForOperation(operation, n_machine);
             int new_allel = problem.getEncodeMap(allel_is_from_job, new_machine);
