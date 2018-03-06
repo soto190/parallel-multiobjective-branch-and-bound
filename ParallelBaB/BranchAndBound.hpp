@@ -161,7 +161,7 @@ public:
     task* execute();
     
 private:
-    void printCurrentSolution(int withVariables = 0);
+
     bool aLeafHasBeenReached() const;
     bool theTreeHasMoreNodes() const;
     bool thereIsMoreWork() const;
@@ -180,7 +180,8 @@ private:
     
     int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);
     int intializeIVM_data(Interval& branch, IVMTree & tree);
-    
+
+    void updateLocalAndGlobalPFBounds();
     void saveIVM() const;
     void buildOutputFiles();
     void increaseExploredNodes();
@@ -190,5 +191,6 @@ private:
     void increaseReachedLeaves();
     void increaseUpdatesInLowerBound();
     void increaseSharedWorks();
+    void printCurrentSolution(int withVariables = 0);
 };
 #endif /* BranchAndBound_hpp */
