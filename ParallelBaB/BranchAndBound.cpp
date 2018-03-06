@@ -333,10 +333,11 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
 tbb::task* BranchAndBound::execute() {
     t1 = std::chrono::high_resolution_clock::now();
     initialize(interval_to_solve.getBuildUpTo());
-    while (!globalPool.empty() || thereIsMoreWork()) /** While the pool has intervals or there are more work on other nodes. **/
+    while (!globalPool.empty() || thereIsMoreWork()) { /** While the pool has intervals or there are more work on other nodes. **/
         if(globalPool.try_pop(interval_to_solve))
             solve(interval_to_solve);
-    
+        updateLocalAndGlobalPFBounds();
+    }
     sleeping_bb++;
     pareto_front = paretoContainer.generateParetoFront();
     for (unsigned long sol = 0; sol  < pareto_front.size(); ++sol)
@@ -348,6 +349,18 @@ tbb::task* BranchAndBound::execute() {
 
 bool BranchAndBound::thereIsMoreWork() const {
     return there_is_more_work;
+}
+
+void BranchAndBound::updateLocalAndGlobalPFBounds() {
+    ParetoFront local_pf = paretoContainer.generateParetoFront();
+    std::vector<Solution> global_pf = globalParetoFront.getVector();
+
+    for (unsigned long position = 0; position < global_pf.size(); ++position)
+        paretoContainer.add(global_pf.at(position));
+
+    for (unsigned long position = 0; position < local_pf.size(); ++position)
+        globalParetoFront.push_back(local_pf.at(position));
+
 }
 
 void BranchAndBound::solve(Interval& branch_to_solve) {
@@ -365,12 +378,10 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                 prune(incumbent_s, currentLevel);
         } else {
             increaseReachedLeaves();
-            if (updateParetoGrid(incumbent_s)) {
+
+            if (updateParetoGrid(incumbent_s))
                 increaseUpdatesInLowerBound();
-                /*printf("[B&B-%03d] ", bb_rank);
-                 printCurrentSolution();
-                 printf(" + [%6lu] \n", paretoContainer.getSize());*/
-            }
+
             updateBounds(incumbent_s, fjssp_data);
             ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
         }
