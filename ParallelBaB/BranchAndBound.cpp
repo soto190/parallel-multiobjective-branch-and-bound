@@ -465,7 +465,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         if ((distance_error_to_best[0] <= 0 || distance_error_to_best[1] <= 0) && improvesTheGrid(solution)) {
                             
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
-/* Part of sorting nodes.*/
+/* Part of sorting nodes.
                             obj_values.setValue(toAdd);
                             obj_values.setObjective(0, fjssp_data.getMakespan());
                             obj_values.setObjective(1, fjssp_data.getMaxWorkload());
@@ -473,9 +473,9 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             obj_values.setDistance(0, distanceToObjective(obj_values.getObjective(0), problem.getLowerBoundInObj(0)));
                             obj_values.setDistance(1, distanceToObjective(obj_values.getObjective(1), problem.getLowerBoundInObj(1)));
 
-                            sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); /** sorting the nodes to give priority to promising nodes. **/
+                            sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); *//** sorting the nodes to give priority to promising nodes. **/
 
-//                            ivm_tree.addNodeToRow(currentLevel + 1, toAdd); /** Without sorting. **/
+                            ivm_tree.addNodeToRow(currentLevel + 1, toAdd); /** Without sorting. **/
                             nodes_created++;
                         } else
                             increasePrunedNodes();
@@ -485,10 +485,10 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
             increaseNumberOfNodesCreated(nodes_created);
             if (nodes_created > 0) {
-/* Part of sorting nodes. */
+/* Part of sorting nodes.
                 for (std::deque<ObjectiveValues>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
                     ivm_tree.addNodeToRow(currentLevel + 1, (*it).getValue());
-
+*/
                 ivm_tree.moveToNextRow();
                 ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), 0);
                 ivm_tree.setThereAreMoreBranches();
@@ -692,37 +692,37 @@ void BranchAndBound::updateBoundsWithSolution(const Solution & solution) {
 void BranchAndBound::setPriorityTo(Interval& interval) const {
     /** TODO: This can be replaced by a Fuzzy Logic Controller. **/
 
-    const float close = 0.25f; /** If it is less than 0.333f then it is close. **/
-    const float half = 0.50f;  /** If it is more than 0.25f and less than 0.5f then it is at half distance. **/
-    const float far = 0.75f;   /** If it is bigger than 0.75f then it is far. **/
-
-    switch (interval.getDeep()) {
-        case Deep::TOP:
-            interval.setHighPriority();
-            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
-                interval.setHighPriority();
-            else if(interval.getDistance(0) <= half || interval.getDistance(1) <= half) /** Moderate distance. **/
-                interval.setMediumPriority();
-            break;
-
-        case Deep::MID:
-            interval.setMediumPriority();
-
-            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
-                interval.setHighPriority();
-            else if(interval.getDistance(0) >= far || interval.getDistance(1) >= far) /** Bad distance. **/
-                interval.setLowPriority();
-            break;
-
-        case Deep::BOTTOM:
-            interval.setLowPriority();
-            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
-                interval.setHighPriority();
-            break;
-
-        default:
-            break;
-    }
+//    const float close = 0.25f; /** If it is less than 0.333f then it is close. **/
+//    const float half = 0.50f;  /** If it is more than 0.25f and less than 0.5f then it is at half distance. **/
+//    const float far = 0.75f;   /** If it is bigger than 0.75f then it is far. **/
+//
+//    switch (interval.getDeep()) {
+//        case Deep::TOP:
+//            interval.setHighPriority();
+//            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
+//                interval.setHighPriority();
+//            else if(interval.getDistance(0) <= half || interval.getDistance(1) <= half) /** Moderate distance. **/
+//                interval.setMediumPriority();
+//            break;
+//
+//        case Deep::MID:
+//            interval.setMediumPriority();
+//
+//            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
+//                interval.setHighPriority();
+//            else if(interval.getDistance(0) >= far || interval.getDistance(1) >= far) /** Bad distance. **/
+//                interval.setLowPriority();
+//            break;
+//
+//        case Deep::BOTTOM:
+//            interval.setLowPriority();
+//            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
+//                interval.setHighPriority();
+//            break;
+//
+//        default:
+//            break;
+//    }
 }
 
 /** Returns the proximity to the given objective. When minimizing objectives, if it is less than 0 then it produces an improvement.

@@ -9,7 +9,6 @@
 #ifndef BranchAndBound_hpp
 #define BranchAndBound_hpp
 
-#include <mpi.h>
 #include <stdio.h>
 #include <vector>
 #include <queue>
