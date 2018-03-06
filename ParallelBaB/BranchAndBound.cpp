@@ -975,16 +975,16 @@ int BranchAndBound::saveSummarize() {
     
     printf("[Worker-%03d:B&B-%03d] ---Summarize---\n", getNodeRank(), getBBRank());
     printf("Pareto front size:   %ld\n", pareto_front.size());
+    printf("Total time:          %f\n", getElapsedTime());
     printf("Total nodes:         %ld\n", getNumberOfNodes());
-    printf("Explored nodes:      %ld\n", getNumberOfNodesExplored());
     printf("Eliminated nodes:    %ld\n", getNumberOfNodes() - getNumberOfNodesExplored());
-    printf("Calls to branching:  %ld\n", getNumberOfCallsToBranch());
+    printf("Explored nodes:      %ld\n", getNumberOfNodesExplored());
     printf("Created nodes:       %ld\n", getNumberOfNodesCreated());
-    printf("Calls to prune:      %ld\n", getNumberOfCallsToPrune());
     printf("Pruned nodes:        %ld\n", getNumberOfNodesPruned());
     printf("Leaves reached:      %ld\n", getNumberOfReachedLeaves());
+    printf("Calls to branching:  %ld\n", getNumberOfCallsToBranch());
+    printf("Calls to prune:      %ld\n", getNumberOfCallsToPrune());
     printf("Updates in PF:       %ld\n", getNumberOfUpdatesInLowerBound());
-    printf("Total time:          %f\n", getElapsedTime());
     printf("Shared work: %ld\n", getSharedWork());
     printf("Grid data:\n");
     printf("\tGrid dimension:    %d x %d\n", paretoContainer.getCols(), paretoContainer.getRows());
@@ -1003,13 +1003,13 @@ int BranchAndBound::saveSummarize() {
         myfile << "Deep limit to share: " << getDeepLimitToShare() << endl;
         myfile << "Pareto front size:   " << pareto_front.size() << endl;
         myfile << "Total nodes:         " << number_of_nodes << endl;
-        myfile << "Explored nodes:      " << number_of_nodes_explored << endl;
         myfile << "Eliminated nodes:    " << number_of_nodes - number_of_nodes_explored << endl;
-        myfile << "Calls to branching:  " << number_of_calls_to_branch << endl;
+        myfile << "Explored nodes:      " << number_of_nodes_explored << endl;
         myfile << "Created nodes:       " << number_of_nodes_created << endl;
-        myfile << "Calls to prune:      " << number_of_calls_to_prune << endl;
         myfile << "Pruned nodes:        " << number_of_nodes_pruned << endl;
         myfile << "Leaves reached:      " << number_of_reached_leaves << endl;
+        myfile << "Calls to branching:  " << number_of_calls_to_branch << endl;
+        myfile << "Calls to prune:      " << number_of_calls_to_prune << endl;
         myfile << "Updates in PF:       " << number_of_updates_in_lower_bound << endl;
         myfile << "Shared work:         " << number_of_shared_works << endl;
         myfile << "Total time:          " << elapsed_time << endl;
