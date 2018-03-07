@@ -261,7 +261,7 @@ double Solution::getObjective(int index_obj) const throw(SolutionException) {
     try{
         if (index_obj >= n_objectives)
             throw SolutionException(SolutionErrorCode::OBJECTIVES_OUT_OF_RANGE, "when calling getObjective(obj:" + std::to_string(static_cast<long long>(index_obj)) + ")");
-        
+
         return objective[index_obj];
         
     } catch (SolutionException& solutionEx) {

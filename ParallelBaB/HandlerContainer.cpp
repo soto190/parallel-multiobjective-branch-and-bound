@@ -194,6 +194,12 @@ double HandlerContainer::getBestValueFoundIn(int obj) const {
  * It uses a binary search tree to locate the bucket which will contain the new solution.
  **/
 bool HandlerContainer::add(const Solution & solution) {
+
+    /**TODO: This is a patch for the next issue. Sometimes the globalParetoBucket returns a solution with objetives {0, 0}. **/
+    for (unsigned int obj = 0; obj < solution.getNumberOfObjectives(); ++obj)
+        if (solution.getObjective(obj) == 0)
+            return false;
+
     int coordinate[2];
     getCoordinateForSolution(solution, coordinate);
     return set(solution, coordinate[0], coordinate[1]);

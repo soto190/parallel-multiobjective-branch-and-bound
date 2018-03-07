@@ -49,7 +49,7 @@ public:
     FrontState getState() const;
     tbb::atomic<unsigned long> getSizeAtomic() const;
     tbb::atomic<FrontState> getStateAtomic() const;
-    std::vector<Solution>& getVector() ;
+    std::vector<Solution>& getVector();
     const std::vector<Solution>& getVectorToCopy() const ;
     bool produceImprovement(const Solution& obj);
     bool push_back(const Solution& obj);

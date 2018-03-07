@@ -142,6 +142,9 @@ public:
     unsigned int getNumberOfJobs() const;
     unsigned int getNumberOfOperations() const;
     unsigned int getNumberOfMachines() const;
+
+    const Solution& getSolutionWithGoodMaxWorkload() const;
+
     int getSumOfMinPij() const;
     int getBestWorkloadFound() const;
     int getBestMakespanFound() const;

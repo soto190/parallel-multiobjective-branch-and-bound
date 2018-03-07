@@ -92,7 +92,7 @@ n_machines(toCopy.getNumberOfMachines()),
 sum_of_min_Pij(toCopy.getSumOfMinPij()),
 best_workload_found(toCopy.getBestWorkloadFound()),
 best_makespan_found(toCopy.getBestMakespanFound()),
-goodSolutionWithMaxWorkload(toCopy.goodSolutionWithMaxWorkload) {
+goodSolutionWithMaxWorkload(toCopy.getSolutionWithGoodMaxWorkload()) {
 
     if (lower_bound != nullptr)
         delete [] lower_bound;
@@ -534,7 +534,7 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy) {
     
     std::strcpy(name, toCopy.name);
     
-    goodSolutionWithMaxWorkload = toCopy.goodSolutionWithMaxWorkload;
+    goodSolutionWithMaxWorkload = toCopy.getSolutionWithGoodMaxWorkload();
     
     sum_of_min_Pij = toCopy.getSumOfMinPij();
     best_workload_found = toCopy.getBestWorkloadFound();
@@ -1013,6 +1013,7 @@ void ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution) 
  **/
 void ProblemFJSSP::buildSolutionWithGoodMaxWorkload(Solution & solution) {
     buildSolutionWithGoodMaxWorkloadv2(solution);
+    evaluate(solution);
 }
 
 void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution) {
@@ -1028,7 +1029,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution) {
     int operationOfJob[n_jobs];
     int workload[n_machines];
     int maxWorkloadedMachine = 0;
-    
+
     for (int nMachine = 0; nMachine < n_machines; ++nMachine)
         workload[nMachine] = 0;
     
@@ -1162,6 +1163,10 @@ int ProblemFJSSP::getLowerBoundInObj(int nObj) const {
             break;
     }
     return -1;
+}
+
+const Solution& ProblemFJSSP::getSolutionWithGoodMaxWorkload() const {
+    return goodSolutionWithMaxWorkload;
 }
 
 void ProblemFJSSP::loadInstance(char filePath[2][255], char file_extension[10]) {
