@@ -182,6 +182,8 @@ private:
     int intializeIVM_data(Interval& branch, IVMTree & tree);
 
     void updateLocalAndGlobalPFBounds();
+    void updateGlobalPF(const Solution& new_solution);
+    void updateLocalPF();
     void saveIVM() const;
     void buildOutputFiles();
     void increaseExploredNodes();
