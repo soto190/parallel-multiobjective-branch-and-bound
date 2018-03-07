@@ -195,7 +195,7 @@ double HandlerContainer::getBestValueFoundIn(int obj) const {
  **/
 bool HandlerContainer::add(const Solution & solution) {
 
-    /**TODO: This is a patch for the next issue. Sometimes the globalParetoBucket returns a solution with objetives {0, 0}. **/
+    /**TODO: This is a patch for the next issue. Sometimes the globalParetoBucket returns a solution with objetives {0, 0}. Consider to add a mutex when getting the vector<Solution> from the globalParetoBucker. **/
     for (unsigned int obj = 0; obj < solution.getNumberOfObjectives(); ++obj)
         if (solution.getObjective(obj) == 0)
             return false;
