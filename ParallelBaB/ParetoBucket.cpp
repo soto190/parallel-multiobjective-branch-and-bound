@@ -131,7 +131,12 @@ bool ParetoBucket::produceImprovement(const Solution& obj) {
  * The solution is added if the ParetoBucket is improved, and deletes all dominated solutions.
  *
  ***/
-bool ParetoBucket::push_back(const Solution& obj) {
+bool ParetoBucket::push_back(const Solution& new_sol) {
+
+    for (unsigned int n_obj = 0; n_obj < new_sol.getNumberOfObjectives(); ++n_obj)
+        if (new_sol.getObjective(n_obj) == 0)
+            return false;
+
     tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, true);
     unsigned int dominates = 0;
     unsigned int nondominated = 0;
@@ -141,7 +146,7 @@ bool ParetoBucket::push_back(const Solution& obj) {
     std::vector<Solution>::iterator begin = m_vec.begin();
     bool was_added = false;
     for (unsigned long nSol = 0; nSol < m_vec.size(); ++nSol)
-        switch (obj.dominanceTest(m_vec.at(nSol))) {
+        switch (new_sol.dominanceTest(m_vec.at(nSol))) {
                 
             case DominanceRelation::Dominates:
                 m_vec.erase(begin + nSol);
@@ -171,7 +176,7 @@ bool ParetoBucket::push_back(const Solution& obj) {
             || dominates > 0
             || nondominated == size
             || dominated == 0)) {
-                m_vec.push_back(obj); /** Creates a new copy. **/
+                m_vec.push_back(new_sol); /** Creates a new copy. **/
                 size.fetch_and_increment();
                 was_added = true;
         }
