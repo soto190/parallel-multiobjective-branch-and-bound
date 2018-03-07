@@ -387,7 +387,7 @@ bool BranchAndBound::thereIsMoreWork() const {
 }
 
 void BranchAndBound::updateLocalPF() {
-    std::vector<Solution> global_pf = globalParetoFront.getVectorToCopy();
+    std::vector<Solution> global_pf = globalParetoFront.getVector();
 
     for (unsigned long position = 0; position < global_pf.size(); ++position)
         paretoContainer.add(global_pf.at(position));

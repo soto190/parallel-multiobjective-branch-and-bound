@@ -18,14 +18,8 @@
 enum ProblemType{combination = 0, permutation = 1, permutation_with_repetition_and_combination = 2, XD=190};
 
 class Problem {
-    
+
 public:
-    Problem();
-    Problem(const Problem& toCopy);
-    Problem (int n_objectives, int n_variables);
-    virtual ~Problem();
-    virtual Problem& operator=(const Problem& toCopy);
-    
     char name[255];
     ProblemType type;
     int starting_level;
@@ -34,7 +28,14 @@ public:
     int n_constraints;
     int * lower_bound;
     int * upper_bound;
-    
+
+    Problem();
+    Problem(const Problem& toCopy);
+    Problem (int n_objectives, int n_variables);
+    virtual ~Problem();
+
+    virtual Problem& operator=(const Problem& toCopy);
+
     virtual double evaluate(Solution & solution) = 0;
     virtual double evaluatePartial(Solution & solution, int levelEvaluation) = 0;
     virtual double evaluateLastLevel(Solution * solution) = 0;

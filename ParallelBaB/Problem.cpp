@@ -41,15 +41,14 @@ starting_level(0),
 n_objectives(numberOfObjectives),
 n_variables(numberOfVariables),
 n_constraints(0) {
-    
     lower_bound = new int[numberOfVariables];
     upper_bound = new int[numberOfVariables];
 }
 
 Problem::~Problem() {
     /*
-     delete [] lowerBound;
-     delete [] upperBound;
+     delete [] lower_bound;
+     delete [] upper_bound;
      */
 }
 
