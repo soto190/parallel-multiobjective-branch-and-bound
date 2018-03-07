@@ -94,6 +94,12 @@ best_workload_found(toCopy.getBestWorkloadFound()),
 best_makespan_found(toCopy.getBestMakespanFound()),
 goodSolutionWithMaxWorkload(toCopy.goodSolutionWithMaxWorkload) {
 
+    if (lower_bound != nullptr)
+        delete [] lower_bound;
+
+    if (upper_bound != nullptr)
+        delete [] upper_bound;
+
     lower_bound = new int[n_variables];
     upper_bound = new int[n_variables];
     

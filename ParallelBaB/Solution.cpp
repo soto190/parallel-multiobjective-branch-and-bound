@@ -40,14 +40,13 @@ variable(new int[numberOfVariables]),
 index(0),
 execTime(new double[16]) {
     
-    int var = 0, obj = 0;
-    for (obj = 0; obj < numberOfObjectives; ++obj)
+    for (int obj = 0; obj < numberOfObjectives; ++obj)
         objective[obj] = 0;
     
-    for (var = 0; var < numberOfVariables; ++var)
+    for (int var = 0; var < numberOfVariables; ++var)
         variable[var] = -1;
     
-    for (var = 0; var < 16; ++var)
+    for (int var = 0; var < 16; ++var)
         execTime[var] = 0;
 }
 
@@ -64,13 +63,11 @@ index(solution.getIndex()) {
     objective = new double[n_objectives];
     variable = new int[n_variables];
     execTime = new double[16];
-    
-    int var = 0, obj = 0;
-    
-    for (obj = 0; obj < n_objectives; ++obj)
+
+    for (int obj = 0; obj < n_objectives; ++obj)
         objective[obj] = solution.getObjective(obj);
     
-    for (var = 0; var < n_variables; ++var)
+    for (int var = 0; var < n_variables; ++var)
         variable[var] = solution.getVariable(var);
     
     //for (var = 0; var < 16; ++var)
@@ -106,14 +103,13 @@ Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
     variable = new int[numberOfVariables];
     execTime = new double[16];
     
-    int var = 0, obj = 0;
-    for (obj = 0; obj < numberOfObjectives; ++obj)
+    for (int obj = 0; obj < numberOfObjectives; ++obj)
         objective[obj] = 0;
     
-    for (var = 0; var < numberOfVariables; ++var)
+    for (int var = 0; var < numberOfVariables; ++var)
         variable[var] = -1;
     
-    for (var = 0; var < 16; ++var)
+    for (int var = 0; var < 16; ++var)
         execTime[var] = 0;
     
     return *this;
@@ -133,22 +129,21 @@ Solution& Solution::operator=(const Solution &solution) {
     sort_by = solution.getSortByObjective();
     dominated_by = solution.getDominatedBy();
     /** Freeing previously used memory. **/
-    if (objective != nullptr) {
+    if(objective != nullptr)
         delete[] objective;
-        delete[] variable;
-        delete[] execTime;
-    }
+    if (variable != nullptr)
+        delete [] variable;
+    if (execTime != nullptr)
+        delete [] execTime;
     
     objective = new double[n_objectives];
     variable = new int[n_variables];
     execTime = new double[16];
-    
-    int var = 0, obj = 0;
-    
-    for (obj = 0; obj < n_objectives; ++obj)
+
+    for (int obj = 0; obj < n_objectives; ++obj)
         objective[obj] = solution.getObjective(obj);
     
-    for (var = 0; var < n_variables; ++var)
+    for (int var = 0; var < n_variables; ++var)
         variable[var] = solution.getVariable(var);
     
     /**Section for the HCSP problem**/
