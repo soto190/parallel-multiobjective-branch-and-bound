@@ -26,7 +26,7 @@ class ParetoBucket {
 private:
     unsigned long posx;
     unsigned long posy;
-    Lock improving_lock;
+    Lock updating_lock;
     tbb::atomic<unsigned long> size;
     tbb::atomic<FrontState> state;
     std::vector<Solution> m_vec;

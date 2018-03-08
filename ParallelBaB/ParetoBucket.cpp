@@ -14,7 +14,7 @@ posy(0) {
     size.store(0);
     state.store(FrontState::Unexplored);
     m_vec.reserve(50);
-};
+}
 
 ParetoBucket::ParetoBucket(unsigned long posx, unsigned long posy):
 posx(posx),
@@ -22,7 +22,7 @@ posy(posy) {
     size.store(0);
     state.store(FrontState::Unexplored);
     m_vec.reserve(50);
-};
+}
 
 ParetoBucket::ParetoBucket(const ParetoBucket& toCopy):
 posx(toCopy.getPosx()),
@@ -31,7 +31,7 @@ size((unsigned long) toCopy.getSizeAtomic()),
 state(toCopy.getStateAtomic()),
 m_vec(toCopy.getVectorToCopy()) {
 
-};
+}
 
 ParetoBucket::~ParetoBucket() {
     m_vec.clear();
@@ -87,6 +87,7 @@ tbb::atomic<FrontState> ParetoBucket::getStateAtomic() const {
 }
 
 std::vector<Solution>& ParetoBucket::getVector() {
+    tbb::queuing_rw_mutex::scoped_lock m_lock(updating_lock, false);
     return m_vec;
 }
 
@@ -95,7 +96,7 @@ const std::vector<Solution>& ParetoBucket::getVectorToCopy() const {
 }
 
 bool ParetoBucket::produceImprovement(const Solution& obj) {
-    tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, false);
+    tbb::queuing_rw_mutex::scoped_lock m_lock(updating_lock, false);
     unsigned long index = 0, size_vec = m_vec.size();
     bool improves = true;
     for (index = 0; index < size_vec; ++index)
@@ -134,10 +135,10 @@ bool ParetoBucket::produceImprovement(const Solution& obj) {
 bool ParetoBucket::push_back(const Solution& new_sol) {
 
     for (unsigned int n_obj = 0; n_obj < new_sol.getNumberOfObjectives(); ++n_obj)
-        if (new_sol.getObjective(n_obj) == 0)
+        if (new_sol.getObjective(n_obj) <= 1)
             return false;
 
-    tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, true);
+    tbb::queuing_rw_mutex::scoped_lock m_lock(updating_lock, true);
     unsigned int dominates = 0;
     unsigned int nondominated = 0;
     unsigned int dominated = 0;
@@ -186,7 +187,7 @@ bool ParetoBucket::push_back(const Solution& new_sol) {
 
 void ParetoBucket::clear() {
     size.fetch_and_store(0);
-    tbb::queuing_rw_mutex::scoped_lock m_lock(improving_lock, true);
+    tbb::queuing_rw_mutex::scoped_lock m_lock(updating_lock, true);
     m_vec.clear();
     m_vec.resize(0);
 }
