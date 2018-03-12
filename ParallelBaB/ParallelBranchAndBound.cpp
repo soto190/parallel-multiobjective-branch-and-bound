@@ -22,7 +22,7 @@ ParallelBranchAndBound::~ParallelBranchAndBound() {
 
 tbb::task * ParallelBranchAndBound::execute() {
     
-    globalPool.setSizeEmptying((unsigned long) (number_of_bbs * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
+    sharedPool.setSizeEmptying((unsigned long) (number_of_bbs * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
    
     /*
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
@@ -68,7 +68,7 @@ tbb::task * ParallelBranchAndBound::execute() {
 
     }
     printf("[Worker-%03d] Parallel Branch And Bound front.\n", rank);
-    globalParetoFront.print();
+    sharedParetoFront.print();
 
     BB_container.setParetoFrontFile(outputParetoFile);
     BB_container.setSummarizeFile(summarizeFile);
