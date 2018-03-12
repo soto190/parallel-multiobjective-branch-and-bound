@@ -46,9 +46,9 @@
 const float size_to_share = 0.2f; /** We share the half of the row. **/
 const float deep_limit_share = 0.80f;
 
-extern SubproblemsPool globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
+extern SubproblemsPool sharedPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 //extern ConcurrentHandlerContainer paretoContainer;
-extern ParetoBucket globalParetoFront;
+extern ParetoBucket sharedParetoFront;
 extern tbb::atomic<int> sleeping_bb;
 extern tbb::atomic<int> there_is_more_work;
 

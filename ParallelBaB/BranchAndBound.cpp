@@ -12,9 +12,9 @@
  **/
 #include "BranchAndBound.hpp"
 
-SubproblemsPool globalPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
+SubproblemsPool sharedPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 //ConcurrentHandlerContainer paretoContainer;
-ParetoBucket globalParetoFront;
+ParetoBucket sharedParetoFront;
 tbb::atomic<int> sleeping_bb;
 tbb::atomic<int> there_is_more_work;
 
@@ -87,7 +87,7 @@ elapsed_time(0) {
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
 
-    paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
+    paretoContainer(1, 1, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
 }
 
 BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch) {
@@ -248,7 +248,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
                     branch_to_split.setDistance(1, distanceToObjective(fjssp_data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
                     setPriorityTo(branch_to_split);
                     
-                    globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
+                    sharedPool.push(branch_to_split); /** The vector adds a copy of interval. **/
                     increaseSharedWorks();
                     branch_to_split.removeLastValue();
                     nodes_created++;
@@ -320,7 +320,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
             branch_init.setDistance(0, distanceToObjective(fjssp_data.getMakespan(), problem.getLowerBoundInObj(0)));
             branch_init.setDistance(1, distanceToObjective(fjssp_data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
             setPriorityTo(branch_init);
-            globalPool.push(branch_init);
+            sharedPool.push(branch_init);
             number_of_shared_works++;
             
             branch_init.removeLastValue();
@@ -333,8 +333,8 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
 tbb::task* BranchAndBound::execute() {
     t1 = std::chrono::high_resolution_clock::now();
     initialize(interval_to_solve.getBuildUpTo());
-    while (!globalPool.empty() || thereIsMoreWork()) {/** While the pool has intervals or there are more work on other nodes. **/
-        if(globalPool.try_pop(interval_to_solve))
+    while (!sharedPool.empty() || thereIsMoreWork()) {/** While the pool has intervals or there are more work on other nodes. **/
+        if(sharedPool.try_pop(interval_to_solve))
             solve(interval_to_solve);
 
         updateLocalPF();
@@ -342,7 +342,7 @@ tbb::task* BranchAndBound::execute() {
     sleeping_bb++;
     pareto_front = paretoContainer.generateParetoFront();
     for (unsigned long sol = 0; sol  < pareto_front.size(); ++sol)
-        globalParetoFront.push_back(pareto_front.at(sol));
+        sharedParetoFront.push_back(pareto_front.at(sol));
 
     printf("[Worker-%03d:B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, bb_rank, getElapsedTime());
     return NULL;
@@ -387,24 +387,24 @@ bool BranchAndBound::thereIsMoreWork() const {
 }
 
 void BranchAndBound::updateLocalPF() {
-    std::vector<Solution> global_pf = globalParetoFront.getVector();
+    std::vector<Solution> global_pf = sharedParetoFront.getVector();
     for (unsigned long position = 0; position < global_pf.size(); ++position)
         paretoContainer.add(global_pf.at(position));
 }
 
 void BranchAndBound::updateGlobalPF(const Solution& local_solution) {
-    globalParetoFront.push_back(local_solution);
+    sharedParetoFront.push_back(local_solution);
 }
 
 void BranchAndBound::updateLocalAndGlobalPFBounds() {
     ParetoFront local_pf = paretoContainer.generateParetoFront();
-    std::vector<Solution> global_pf = globalParetoFront.getVector();
+    std::vector<Solution> global_pf = sharedParetoFront.getVector();
 
     for (unsigned long position = 0; position < global_pf.size(); ++position)
         paretoContainer.add(global_pf.at(position));
 
     for (unsigned long position = 0; position < local_pf.size(); ++position)
-        globalParetoFront.push_back(local_pf.at(position));
+        sharedParetoFront.push_back(local_pf.at(position));
 
 }
 
@@ -489,7 +489,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         if ((distance_error_to_best[0] <= 0 || distance_error_to_best[1] <= 0) && improvesTheGrid(solution)) {
                             
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
-/* Part of sorting nodes.*/
+/* Part of sorting nodes.
                             obj_values.setValue(toAdd);
                             obj_values.setObjective(0, fjssp_data.getMakespan());
                             obj_values.setObjective(1, fjssp_data.getMaxWorkload());
@@ -497,9 +497,9 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             obj_values.setDistance(0, distanceToObjective(obj_values.getObjective(0), problem.getLowerBoundInObj(0)));
                             obj_values.setDistance(1, distanceToObjective(obj_values.getObjective(1), problem.getLowerBoundInObj(1)));
 
-                            sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
+                            sorted_elements.push(obj_values, SORTING_TYPES::DIST_1);*/ //** sorting the nodes to give priority to promising nodes.
 
-//                            ivm_tree.addNodeToRow(currentLevel + 1, toAdd); /** Without sorting. **/
+                            ivm_tree.addNodeToRow(currentLevel + 1, toAdd); /** Without sorting. **/
                             nodes_created++;
                         } else
                             increasePrunedNodes();
@@ -509,10 +509,10 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
             increaseNumberOfNodesCreated(nodes_created);
             if (nodes_created > 0) {
-/* Part of sorting nodes.*/
+/* Part of sorting nodes.
                 for (std::deque<ObjectiveValues>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
                     ivm_tree.addNodeToRow(currentLevel + 1, (*it).getValue());
-
+*/
                 ivm_tree.moveToNextRow();
                 ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), 0);
                 ivm_tree.setThereAreMoreBranches();
@@ -567,7 +567,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
      * - If the level at which we are going to share is not too deep.
      * - If we have branches to share.
      */
-    if (globalPool.isEmptying() && next_row < getLimitLevelToShare() && branches_to_move_to_global_pool > 1) {
+    if (sharedPool.isEmptying() && next_row < getLimitLevelToShare() && branches_to_move_to_global_pool > 1) {
         
         Solution temp(incumbent_s.getNumberOfObjectives(), incumbent_s.getNumberOfVariables());
         FJSSPdata data(fjssp_data);
@@ -583,7 +583,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
          * std::vector<Interval> intervals_to_send;
          */
         int total_moved = 0;
-        while(globalPool.isEmptying()
+        while(sharedPool.isEmptying()
               && next_row < getLimitLevelToShare()
               && next_row <= ivm_tree.getActiveRow()
               && total_moved < ivm_tree.getActiveRow() - ivm_tree.getNumberOfPendingNodes() - 1) {
@@ -600,7 +600,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
                 branch_to_send.setDistance(1, distanceToObjective(data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
                 
                 setPriorityTo(branch_to_send);
-                globalPool.push(branch_to_send); /** This stores a copy.**/
+                sharedPool.push(branch_to_send); /** This stores a copy.**/
                 number_of_shared_works++;
                 
                 branch_to_send.removeLastValue();
@@ -716,37 +716,37 @@ void BranchAndBound::updateBoundsWithSolution(const Solution & solution) {
 void BranchAndBound::setPriorityTo(Interval& interval) const {
     /** TODO: This can be replaced by a Fuzzy Logic Controller. **/
 
-    const float close = 0.25f; /** If it is less than 0.333f then it is close. **/
-    const float half = 0.50f;  /** If it is more than 0.25f and less than 0.5f then it is at half distance. **/
-    const float far = 0.75f;   /** If it is bigger than 0.75f then it is far. **/
-
-    switch (interval.getDeep()) {
-        case Deep::TOP:
-            interval.setHighPriority();
-            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
-                interval.setHighPriority();
-            else if(interval.getDistance(0) <= half || interval.getDistance(1) <= half) /** Moderate distance. **/
-                interval.setMediumPriority();
-            break;
-
-        case Deep::MID:
-            interval.setMediumPriority();
-
-            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
-                interval.setHighPriority();
-            else if(interval.getDistance(0) >= far || interval.getDistance(1) >= far) /** Bad distance. **/
-                interval.setLowPriority();
-            break;
-
-        case Deep::BOTTOM:
-            interval.setLowPriority();
-            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
-                interval.setHighPriority();
-            break;
-
-        default:
-            break;
-    }
+//    const float close = 0.25f; /** If it is less than 0.333f then it is close. **/
+//    const float half = 0.50f;  /** If it is more than 0.25f and less than 0.5f then it is at half distance. **/
+//    const float far = 0.75f;   /** If it is bigger than 0.75f then it is far. **/
+//
+//    switch (interval.getDeep()) {
+//        case Deep::TOP:
+//            interval.setHighPriority();
+//            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
+//                interval.setHighPriority();
+//            else if(interval.getDistance(0) <= half || interval.getDistance(1) <= half) /** Moderate distance. **/
+//                interval.setMediumPriority();
+//            break;
+//
+//        case Deep::MID:
+//            interval.setMediumPriority();
+//
+//            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
+//                interval.setHighPriority();
+//            else if(interval.getDistance(0) >= far || interval.getDistance(1) >= far) /** Bad distance. **/
+//                interval.setLowPriority();
+//            break;
+//
+//        case Deep::BOTTOM:
+//            interval.setLowPriority();
+//            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
+//                interval.setHighPriority();
+//            break;
+//
+//        default:
+//            break;
+//    }
 }
 
 /** Returns the proximity to the given objective. When minimizing objectives, if it is less than 0 then it produces an improvement.
@@ -966,9 +966,9 @@ void BranchAndBound::saveGlobalPool() const {
         Interval interval(problem.getNumberOfVariables());
         
         /** TODO: this needs a mutex. **/
-        myfile << "pool_size: " << globalPool.unsafe_size() << endl;
-        for (unsigned long element = 0; element < globalPool.unsafe_size(); ++element)
-            if(globalPool.try_pop(interval)) {
+        myfile << "pool_size: " << sharedPool.unsafe_size() << endl;
+        for (unsigned long element = 0; element < sharedPool.unsafe_size(); ++element)
+            if(sharedPool.try_pop(interval)) {
                 
                 myfile << interval.getBuildUpTo() << " ";
                 for (int index_var = 0; index_var <= interval.getBuildUpTo(); ++index_var)
@@ -1126,7 +1126,7 @@ void BranchAndBound::print() const {
 void BranchAndBound::printDebug() {
     printf("\nSTART-DEBUG-INFO\n");
     printf("GlobalPool:\n");
-    globalPool.print();
+    sharedPool.print();
     printf("Subproblem/interval:\n");
     interval_to_solve.print();
     printf("Incumbent solution at level: %3d\n", currentLevel);

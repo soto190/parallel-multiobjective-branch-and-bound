@@ -308,7 +308,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     MPI_Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
     branch_init(payload_interval);
     
-    globalPool.setSizeEmptying((unsigned long) (branchsandbound_per_worker * 2)); /** If the global pool reach this size then the B&B tasks starts sending part of their work to the global pool. **/
+    sharedPool.setSizeEmptying((unsigned long) (branchsandbound_per_worker * 2)); /** If the global pool reach this size then the B&B tasks starts sending part of their work to the global pool. **/
     
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
@@ -322,7 +322,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     BB_container.setPoolFile(pool_file);
     
 
-    printf("[WorkerPBB-%03d] Pool size: %3lu %3lu [%3d %3d]\n", getRank(), globalPool.unsafe_size(), branches_created, problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
+    printf("[WorkerPBB-%03d] Pool size: %3lu %3lu [%3d %3d]\n", getRank(), sharedPool.unsafe_size(), branches_created, problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
     set_ref_count(branchsandbound_per_worker + 1);
     
@@ -350,7 +350,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     
     paretoFront.clear();
     while (sleeping_bb < branchsandbound_per_worker) { /** Waits for all B&Bs to end. **/
-        if (thereIsMoreWork() && globalPool.isEmptying()) {
+        if (thereIsMoreWork() && sharedPool.isEmptying()) {
             MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_REQUEST_MORE_WORK);
             
             MPI_Recv(&payload_interval, 1, datatype_interval, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
@@ -401,7 +401,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                     
                 case TAG_SHARE_WORK:
                     
-                    if (globalPool.try_pop(interval_to_share)) {
+                    if (sharedPool.try_pop(interval_to_share)) {
                         storesPayloadInterval(payload_interval, interval_to_share);
                         MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, MASTER_RANK, TAG_SHARE_WORK);
                     } else {
@@ -747,7 +747,7 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split) {
                     
                     branch_to_split.setHighPriority();
 
-                    globalPool.push(branch_to_split); /** The vector adds a copy of interval. **/
+                    sharedPool.push(branch_to_split); /** The vector adds a copy of interval. **/
                     branch_to_split.removeLastValue();
                     branches_created_in++;
                     branches_created++;
