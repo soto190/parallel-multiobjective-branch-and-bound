@@ -87,7 +87,7 @@ elapsed_time(0) {
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
 
-    paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
+    paretoContainer(1, 1, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
 }
 
 BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch) {
@@ -716,37 +716,37 @@ void BranchAndBound::updateBoundsWithSolution(const Solution & solution) {
 void BranchAndBound::setPriorityTo(Interval& interval) const {
     /** TODO: This can be replaced by a Fuzzy Logic Controller. **/
 
-//    const float close = 0.25f; /** If it is less than 0.333f then it is close. **/
-//    const float half = 0.50f;  /** If it is more than 0.25f and less than 0.5f then it is at half distance. **/
-//    const float far = 0.75f;   /** If it is bigger than 0.75f then it is far. **/
-//
-//    switch (interval.getDeep()) {
-//        case Deep::TOP:
-//            interval.setHighPriority();
-//            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
-//                interval.setHighPriority();
-//            else if(interval.getDistance(0) <= half || interval.getDistance(1) <= half) /** Moderate distance. **/
-//                interval.setMediumPriority();
-//            break;
-//
-//        case Deep::MID:
-//            interval.setMediumPriority();
-//
-//            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
-//                interval.setHighPriority();
-//            else if(interval.getDistance(0) >= far || interval.getDistance(1) >= far) /** Bad distance. **/
-//                interval.setLowPriority();
-//            break;
-//
-//        case Deep::BOTTOM:
-//            interval.setLowPriority();
-//            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
-//                interval.setHighPriority();
-//            break;
-//
-//        default:
-//            break;
-//    }
+    const float close = 0.25f; /** If it is less than 0.333f then it is close. **/
+    const float half = 0.50f;  /** If it is more than 0.25f and less than 0.5f then it is at half distance. **/
+    const float far = 0.75f;   /** If it is bigger than 0.75f then it is far. **/
+
+    switch (interval.getDeep()) {
+        case Deep::TOP:
+            interval.setHighPriority();
+            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
+                interval.setHighPriority();
+            else if(interval.getDistance(0) <= half || interval.getDistance(1) <= half) /** Moderate distance. **/
+                interval.setMediumPriority();
+            break;
+
+        case Deep::MID:
+            interval.setMediumPriority();
+
+            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
+                interval.setHighPriority();
+            else if(interval.getDistance(0) >= far || interval.getDistance(1) >= far) /** Bad distance. **/
+                interval.setLowPriority();
+            break;
+
+        case Deep::BOTTOM:
+            interval.setLowPriority();
+            if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
+                interval.setHighPriority();
+            break;
+
+        default:
+            break;
+    }
 }
 
 /** Returns the proximity to the given objective. When minimizing objectives, if it is less than 0 then it produces an improvement.
