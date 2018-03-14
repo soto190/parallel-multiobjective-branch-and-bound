@@ -22,7 +22,9 @@ Problem() {
     best_workload_found = 0;
     best_makespan_found = INT_MAX;
     max_eet_of_jobs = 0;
-    
+
+    f_min = nullptr;
+    f_max = nullptr;
     encode_job_machine_to_map = nullptr;
     decode_map_to_job_machine = nullptr;
     n_operations_in_job = nullptr;
@@ -60,6 +62,9 @@ Problem(number_of_objectives, number_of_variables) {
     best_workload_found = 0;
     best_makespan_found = INT_MAX;
     max_eet_of_jobs = 0;
+
+    f_min = nullptr;
+    f_max = nullptr;
     encode_job_machine_to_map = nullptr;
     decode_map_to_job_machine = nullptr;
     n_operations_in_job = nullptr;
@@ -111,6 +116,13 @@ goodSolutionWithMaxWorkload(toCopy.getSolutionWithGoodMaxWorkload()) {
     best_bound_max_workload = toCopy.getBestBoundMaxWorkload();
     
     std::strcpy(name, toCopy.name);
+
+    f_min = new int[n_objectives];
+    f_max = new int[n_objectives];
+    for (unsigned int obj = 0; obj < n_objectives; ++obj) {
+        f_min[obj] = toCopy.getFmin(obj);
+        f_max[obj] = toCopy.getFmax(obj);
+    }
     
     encode_job_machine_to_map = new int *[n_jobs];
     decode_map_to_job_machine = new int *[n_jobs * n_machines];
@@ -203,6 +215,9 @@ Problem(problem.n_objectives, problem.n_operations) {
     
     n_operations_in_job = new int[n_jobs];
     release_time = new int[n_jobs];
+
+    f_min = new int[n_objectives];
+    f_max = new int[n_objectives];
     
     operation_belongs_to_job = new int[n_operations];
     assignation_min_Pij = new int[n_operations];
@@ -343,7 +358,10 @@ void ProblemFJSSP::loadInstancePayload(const Payload_problem_fjssp& problem) {
     
     upper_bound = new int[n_operations];
     lower_bound = new int[n_operations];
-    
+
+    f_min = new int[n_objectives];
+    f_max = new int[n_objectives];
+
     n_operations_in_job = new int[n_jobs];
     release_time = new int[n_jobs];
     
@@ -522,6 +540,9 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy) {
         
         delete[] upper_bound;
         delete[] lower_bound;
+
+        delete[] f_min;
+        delete[] f_max;
         
         delete[] earliest_starting_time;
         delete[] earliest_ending_time;
@@ -531,6 +552,14 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy) {
     
     lower_bound = new int[n_variables];
     upper_bound = new int[n_variables];
+
+    f_min = new int[n_objectives];
+    f_max = new int[n_objectives];
+
+    for (unsigned int obj = 0; obj < n_objectives; ++obj) {
+        f_min[obj] = toCopy.getFmin(obj);
+        f_max[obj] = toCopy.getFmax(obj);
+    }
     
     std::strcpy(name, toCopy.name);
     
@@ -648,7 +677,9 @@ ProblemFJSSP::~ProblemFJSSP() {
     
     delete[] upper_bound;
     delete[] lower_bound;
-    
+
+    delete[] f_min;
+    delete[] f_max;
     delete[] earliest_starting_time;
     delete[] earliest_ending_time;
     delete[] eet_of_job;
@@ -1145,6 +1176,37 @@ int ProblemFJSSP::getBestBoundMaxWorkload() const {
     return best_bound_max_workload;
 }
 
+void ProblemFJSSP::computeNadirPoints() {
+    Solution s_nadir(n_objectives, n_variables);
+
+    for (unsigned int var = 0; var < n_variables; ++var) {
+        int max_mach = 0;
+        int max_proc = 0;
+        unsigned long n_machines_for_op = getNumberOfMachinesAvaibleForOperation(var);
+        for (unsigned long n_mach = 0; n_mach < n_machines_for_op; ++n_mach) {
+            int machine = getMachinesAvaibleForOperation(var, n_mach);
+            if(getProccessingTime(var, machine) > max_proc) {
+                max_proc = getProccessingTime(var, machine);
+                max_mach = machine;
+            }
+            int encode = getEncodeMap(getOperationIsFromJob(var), max_mach);
+            s_nadir.setVariable(var, encode);
+        }
+    }
+    evaluate(s_nadir);
+
+    for (unsigned int n_obj = 0; n_obj < n_objectives; ++n_obj)
+        f_max[n_obj] = s_nadir.getObjective(n_obj);
+}
+
+int ProblemFJSSP::getFmin(unsigned int n_obj) const {
+    return f_min[n_obj];
+}
+
+int ProblemFJSSP::getFmax(unsigned int n_obj) const {
+    return f_max[n_obj];
+}
+
 int ProblemFJSSP::getBestBoundMakespan() const {
     return best_bound_makespan;
 }
@@ -1226,7 +1288,14 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
             delete[] eet_of_job;
         if (sum_shortest_proc_times != nullptr)
             delete[] sum_shortest_proc_times;
-        
+        if (f_min != nullptr)
+            delete [] f_min;
+        if (f_max != nullptr)
+            delete [] f_max;
+
+        f_min = new int[n_objectives];
+        f_max = new int[n_objectives];
+
         sum_of_min_Pij = 0;
         best_workload_found = INT_MAX;
         n_operations = 0;
@@ -1412,6 +1481,10 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
             
             goodSolutionWithMaxWorkload(getNumberOfObjectives(), getNumberOfVariables());
             buildSolutionWithGoodMaxWorkload(goodSolutionWithMaxWorkload);
+
+            computeNadirPoints();
+            for (unsigned int n_obj = 0; n_obj < n_objectives; ++n_obj)
+                f_min[n_obj] = getLowerBoundInObj(n_obj);
             
             delete[] job_line;
         }
@@ -1866,6 +1939,11 @@ void ProblemFJSSP::printProblemInfo() const {
     printf("f^'_1 (bound): max(%4d, %4d, ) = %4d\n", max_eet_of_jobs, e_function((sum_M_smallest_est + sum_of_min_Pij) / n_machines), best_bound_makespan);
     printf("f^'_2 (bound): max(%4d, %4d) =  %4d\n", e_function(sum_of_min_Pij / n_machines), min_sum_shortest_proc_times, best_bound_max_workload);
     printf("f^*_3: %4d\n", sum_of_min_Pij);
+
+    for (unsigned int n_obj = 0; n_obj < n_objectives; ++n_obj)
+        printf("f_min_%d: %d\n", n_obj, f_min[n_obj]);
+    for (unsigned int n_obj = 0; n_obj < n_objectives; ++n_obj)
+        printf("f_max_%d: %d\n", n_obj, f_max[n_obj]);
 }
 
 void ProblemFJSSP::printSolutionInfo(const Solution &solution) const {

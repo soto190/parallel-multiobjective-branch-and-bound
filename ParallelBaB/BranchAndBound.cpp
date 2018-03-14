@@ -87,7 +87,7 @@ elapsed_time(0) {
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
 
-    paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
+    paretoContainer(25, 25, problem.getFmin(0), problem.getFmin(1), problem.getFmax(0), problem.getFmax(1));
 }
 
 BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch) {
