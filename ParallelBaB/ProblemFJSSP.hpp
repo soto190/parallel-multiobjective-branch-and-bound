@@ -78,6 +78,8 @@ private:
     int sum_of_min_Pij;
     int best_workload_found;
     int best_makespan_found;
+    int * f_min; /** the min values. The same as the bounds**/
+    int * f_max; /** The worst values. Nadir point.**/
     int * assignation_min_Pij;       /** Length equals to numberOfOperations. **/
     int * assignation_best_max_workload; /** Length equals to numberOfOperations. **/
     int * assignation_best_makespan; /** Lenght equals to numberOfOperations. **/
@@ -102,7 +104,8 @@ private:
     int best_bound_makespan;
     
     vector<vector<int>> machines_aviability;
-    
+
+    void computeNadirPoints();
 public:
     Solution goodSolutionWithMaxWorkload;
 
@@ -113,7 +116,7 @@ public:
     ~ProblemFJSSP();
 
     ProblemFJSSP& operator=(const ProblemFJSSP& toCopy);
-    
+
     double evaluate(Solution & solution);
     double evaluatePartial(Solution & solution, int levelEvaluation);
     double evaluateLastLevel(Solution * solution);
@@ -125,6 +128,9 @@ public:
     void getSolutionWithLowerBoundInObj(int nObj, Solution& solution);
     int getLowerBound(int indexVar) const;
     int getUpperBound(int indexVar) const;
+    int getFmax(unsigned int n_obj) const;
+    int getFmin(unsigned int n_obj) const;
+
     ProblemType getType() const;
     int getStartingRow();
     int getFinalLevel();
