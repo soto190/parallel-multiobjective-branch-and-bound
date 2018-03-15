@@ -3,7 +3,7 @@
 CXX = mpiicpc
 DEBUGGER = gdb-ia
 
-LIBS = -tbb -ltbbmalloc -ltbbmalloc_proxy
+LIBS = /usr/local/lib64/libstdc++.a -tbb -ltbbmalloc -ltbbmalloc_proxy
 LIBS_DEBUG = -tbb -ltbbmalloc_debug -ltbbmalloc_proxy_debug
 
 #TODO: Some day investigate why the -debug parallel gets and segmentation fault when debugging.
@@ -21,7 +21,7 @@ debug: LDFLAGS = $(LDFLAGS_DEBUG)
 debug: branchAndBound
 
 branchAndBound: $(obj)
-	$(CXX) $(LIBS) $(LDFLAGS) -o $@ $^
+	$(CXX) -o $@ $^ $(LIBS) $(LDFLAGS)
 
 .BOOM: clean
 
