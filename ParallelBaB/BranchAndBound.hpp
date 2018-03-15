@@ -161,6 +161,7 @@ public:
     task* execute();
     
 private:
+    double minMaxNormalization(int value, int min, int max);
 
     bool aLeafHasBeenReached() const;
     bool theTreeHasMoreNodes() const;

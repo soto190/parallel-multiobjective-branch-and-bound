@@ -971,9 +971,11 @@ void ProblemFJSSP::updateBestMaxWorkloadSolution(FJSSPdata& data) {
     if (data.getObjective(MAX_WORKLOAD) < best_workload_found) {
         
         best_workload_found = data.getMaxWorkload();
-        if (best_workload_found < best_bound_max_workload)
+        if (best_workload_found < best_bound_max_workload) {
             best_bound_max_workload = best_workload_found;
-        
+            f_min[1] = best_bound_max_workload;
+        }
+
         for (int n_op = 0; n_op < n_operations; ++n_op) {
             assignation_best_max_workload[n_op] = data.getOperationAllocation(n_op);
             goodSolutionWithMaxWorkload.setVariable(n_op, assignation_best_max_workload[n_op]);
@@ -988,9 +990,11 @@ void ProblemFJSSP::updateBestMakespanSolution(FJSSPdata& data) {
     if (data.getObjective(MAKESPAN) < best_makespan_found) {
         
         best_makespan_found = data.getMakespan();
-        if (best_makespan_found < best_bound_makespan)
+        if (best_makespan_found < best_bound_makespan) {
             best_bound_makespan = best_makespan_found;
-        
+            f_min[0] = best_bound_makespan;
+        }
+
         for (int n_op = 0; n_op < n_operations; ++n_op)
             assignation_best_makespan[n_op] = data.getOperationAllocation(n_op);
     }
@@ -1000,9 +1004,11 @@ void ProblemFJSSP::updateBestMakespanSolutionWith(const Solution& solution) {
     if (solution.getObjective(MAKESPAN) < best_makespan_found) {
         
         best_makespan_found = solution.getObjective(MAKESPAN);
-        if (best_makespan_found < best_bound_makespan)
+        if (best_makespan_found < best_bound_makespan) {
             best_bound_makespan = best_makespan_found;
-        
+            f_min[0] = best_bound_makespan;
+        }
+
         for (int n_op = 0; n_op < n_operations; ++n_op)
             assignation_best_makespan[n_op] = getDecodeMap(solution.getVariable(n_op), 1);
     }
@@ -1012,9 +1018,11 @@ void ProblemFJSSP::updateBestMaxWorkloadSolutionWith(const Solution& solution) {
     if (solution.getObjective(MAX_WORKLOAD) < best_workload_found) {
         
         best_workload_found = solution.getObjective(MAX_WORKLOAD);
-        if (best_workload_found < best_bound_max_workload)
+        if (best_workload_found < best_bound_max_workload) {
             best_bound_max_workload = best_workload_found;
-        
+            f_min[1] = best_bound_max_workload;
+        }
+
         for (int n_op = 0; n_op < n_operations; ++n_op) {
             assignation_best_max_workload[n_op] = getDecodeMap(solution.getVariable(n_op), 1);
             goodSolutionWithMaxWorkload.setVariable(n_op, assignation_best_max_workload[n_op]);

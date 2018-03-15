@@ -244,8 +244,8 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
                 increaseExploredNodes();
                 if (improvesTheGrid(incumbent_s)) {
                     branch_to_split.setValueAt(split_level, toAdd);
-                    branch_to_split.setDistance(0, distanceToObjective(fjssp_data.getMakespan(), problem.getLowerBoundInObj(0)));
-                    branch_to_split.setDistance(1, distanceToObjective(fjssp_data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
+                    branch_to_split.setDistance(0, minMaxNormalization(fjssp_data.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
+                    branch_to_split.setDistance(1, minMaxNormalization(fjssp_data.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
                     setPriorityTo(branch_to_split);
                     
                     sharedPool.push(branch_to_split); /** The vector adds a copy of interval. **/
@@ -317,8 +317,8 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
             incumbent_s.setVariable(build_up_to + 1, val);
             problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel + 1);
             
-            branch_init.setDistance(0, distanceToObjective(fjssp_data.getMakespan(), problem.getLowerBoundInObj(0)));
-            branch_init.setDistance(1, distanceToObjective(fjssp_data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
+            branch_init.setDistance(0, minMaxNormalization(fjssp_data.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
+            branch_init.setDistance(1, minMaxNormalization(fjssp_data.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
             setPriorityTo(branch_init);
             sharedPool.push(branch_init);
             number_of_shared_works++;
@@ -483,8 +483,8 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
                         increaseExploredNodes();
 
-                        distance_error_to_best[0] = distanceToObjective(fjssp_data.getMakespan(), best_values_found[0]);
-                        distance_error_to_best[1] = distanceToObjective(fjssp_data.getMaxWorkload(), best_values_found[1]);
+                        distance_error_to_best[0] = minMaxNormalization(fjssp_data.getObjective(0), problem.getFmin(0), problem.getFmax(0));
+                        distance_error_to_best[1] = minMaxNormalization(fjssp_data.getObjective(1), problem.getFmin(1), problem.getFmax(1));
                         /** If distance in obj1 is better  or distance in obj2 is better then it can produce an improvement. **/
                         if ((distance_error_to_best[0] <= 0 || distance_error_to_best[1] <= 0) && improvesTheGrid(solution)) {
                             
@@ -494,8 +494,8 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                             obj_values.setObjective(0, fjssp_data.getMakespan());
                             obj_values.setObjective(1, fjssp_data.getMaxWorkload());
                             
-                            obj_values.setDistance(0, distanceToObjective(obj_values.getObjective(0), problem.getLowerBoundInObj(0)));
-                            obj_values.setDistance(1, distanceToObjective(obj_values.getObjective(1), problem.getLowerBoundInObj(1)));
+                            obj_values.setDistance(0, minMaxNormalization(obj_values.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
+                            obj_values.setDistance(1, minMaxNormalization(obj_values.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
 
                             sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
 
@@ -595,9 +595,10 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
                 branch_to_send.setValueAt(next_row, value);
                 temp.setVariable(next_row, value);
                 problem.evaluateDynamic(temp, data, next_row);
-                
-                branch_to_send.setDistance(0, distanceToObjective(data.getMakespan(), problem.getLowerBoundInObj(0)));
-                branch_to_send.setDistance(1, distanceToObjective(data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
+
+
+                branch_to_send.setDistance(0, minMaxNormalization(data.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
+                branch_to_send.setDistance(1, minMaxNormalization(data.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
                 
                 setPriorityTo(branch_to_send);
                 sharedPool.push(branch_to_send); /** This stores a copy.**/
@@ -754,6 +755,10 @@ void BranchAndBound::setPriorityTo(Interval& interval) const {
  ***/
 float BranchAndBound::distanceToObjective(int value, int objective) {
     return (value - objective) / value;
+}
+
+double BranchAndBound::minMaxNormalization(int value, int min, int max) {
+    return (value - min) / (max - min);
 }
 
 int BranchAndBound::getNodeRank() const {
