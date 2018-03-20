@@ -2021,9 +2021,9 @@ void ProblemFJSSP::printProblemInfo() const {
     printf("f^*_3: %4d\n", sum_of_min_Pij);
 
     for (unsigned int n_obj = 0; n_obj < n_objectives; ++n_obj)
-        printf("f_min_%d: %d\n", n_obj, f_min[n_obj]);
+        printf("f_min_%d: %d\n", n_obj + 1, f_min[n_obj]);
     for (unsigned int n_obj = 0; n_obj < n_objectives; ++n_obj)
-        printf("f_max_%d: %d\n", n_obj, f_max[n_obj]);
+        printf("f_max_%d: %d\n", n_obj + 1, f_max[n_obj]);
 }
 
 void ProblemFJSSP::printSolutionInfo(const Solution &solution) const {

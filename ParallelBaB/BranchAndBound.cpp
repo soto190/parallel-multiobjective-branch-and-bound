@@ -184,12 +184,6 @@ void BranchAndBound::initialize(int starts_tree) {
      */
     problem.createDefaultSolution(incumbent_s);
     updateBoundsWithSolution(incumbent_s);
-
-    ParetoFront optimalPF = problem.getOptimalParetoFrontForKacem1();
-    for (unsigned long sol = 0; sol < optimalPF.size(); ++sol) {
-        paretoContainer.add(optimalPF.at(sol));
-        updateBoundsWithSolution(optimalPF.at(sol));
-    }
 }
 
 /** Generates an interval for each possible value in the given level of the branch_to_split
@@ -218,7 +212,6 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     updateParetoGrid(temp);
     updateBoundsWithSolution(temp);
     
-    int row = 0;
     int split_level = branch_to_split.getBuildUpTo() + 1;
     int nodes_created = 0;
     int num_elements = problem.getTotalElements();
@@ -232,7 +225,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
         fjssp_data.setTempBestWorkloadInMachine(m, problem.getBestWorkload(m));
     }
     
-    for (row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
+    for (int row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
         map = branch_to_split.getValueAt(row);
         incumbent_s.setVariable(row, map);
         problem.evaluateDynamic(incumbent_s, fjssp_data, row);
@@ -254,7 +247,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
                     branch_to_split.setDistance(1, minMaxNormalization(fjssp_data.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
                     setPriorityTo(branch_to_split);
                     
-                    sharedPool.push(branch_to_split); /** The vector adds a copy of interval. **/
+                    sharedPool.push(branch_to_split);
                     increaseSharedWorks();
                     branch_to_split.removeLastValue();
                     nodes_created++;
@@ -411,7 +404,6 @@ void BranchAndBound::updateLocalAndGlobalPFBounds() {
 
     for (unsigned long position = 0; position < local_pf.size(); ++position)
         sharedParetoFront.push_back(local_pf.at(position));
-
 }
 
 double BranchAndBound::getElapsedTime() {
@@ -444,7 +436,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     int toAdd = 0;
     int nodes_created = 0;
     
-    float distance_error_to_best[2];
+    double ub_normalized[2];
     
     SortedVector sorted_elements;
     ObjectiveValues obj_values;
@@ -489,10 +481,10 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
                         increaseExploredNodes();
 
-                        distance_error_to_best[0] = minMaxNormalization(fjssp_data.getObjective(0), problem.getFmin(0), problem.getFmax(0));
-                        distance_error_to_best[1] = minMaxNormalization(fjssp_data.getObjective(1), problem.getFmin(1), problem.getFmax(1));
+                        ub_normalized[0] = minMaxNormalization(fjssp_data.getObjective(0), problem.getBestMakespanFound(), problem.getFmax(0));
+                        ub_normalized[1] = minMaxNormalization(fjssp_data.getObjective(1), problem.getBestWorkloadFound(), problem.getFmax(1));
                         /** If distance in obj1 is better  or distance in obj2 is better then it can produce an improvement. **/
-                        if ((distance_error_to_best[0] <= 0 || distance_error_to_best[1] <= 0) && improvesTheGrid(solution)) {
+                        if ((ub_normalized[0] <= 0 || ub_normalized[1] <= 0) && improvesTheGrid(solution)) {
                             
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
 /* Part of sorting nodes.*/
@@ -603,8 +595,8 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
                 problem.evaluateDynamic(temp, data, next_row);
 
 
-                branch_to_send.setDistance(0, minMaxNormalization(data.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
-                branch_to_send.setDistance(1, minMaxNormalization(data.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
+                branch_to_send.setDistance(0, minMaxNormalization(data.getObjective(0), problem.getBestMakespanFound(), problem.getFmax(0)));
+                branch_to_send.setDistance(1, minMaxNormalization(data.getObjective(1), problem.getBestWorkloadFound(), problem.getFmax(1)));
                 
                 setPriorityTo(branch_to_send);
                 sharedPool.push(branch_to_send); /** This stores a copy.**/
@@ -764,7 +756,7 @@ float BranchAndBound::distanceToObjective(int value, int objective) {
 }
 
 double BranchAndBound::minMaxNormalization(int value, int min, int max) {
-    return (value - min) / (max - min);
+    return ((value - min) * 1.0 )/ (max - min);
 }
 
 int BranchAndBound::getNodeRank() const {
