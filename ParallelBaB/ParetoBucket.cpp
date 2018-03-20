@@ -97,10 +97,10 @@ const std::vector<Solution>& ParetoBucket::getVectorToCopy() const {
 
 bool ParetoBucket::produceImprovement(const Solution& obj) {
     tbb::queuing_rw_mutex::scoped_lock m_lock(updating_lock, false);
-    unsigned long index = 0, size_vec = m_vec.size();
+    unsigned long size_vec = m_vec.size();
     bool improves = true;
-    for (index = 0; index < size_vec; ++index)
-        switch (obj.dominanceTest(m_vec[index])) {
+    for (unsigned long index = 0; index < size_vec; ++index)
+        switch (obj.dominanceTest(m_vec.at(index))) {
                 
             case DominanceRelation::Dominated:
                 improves = false;
@@ -139,48 +139,43 @@ bool ParetoBucket::push_back(const Solution& new_sol) {
             return false;
 
     tbb::queuing_rw_mutex::scoped_lock m_lock(updating_lock, true);
-    unsigned int dominates = 0;
-    unsigned int nondominated = 0;
-    unsigned int dominated = 0;
-    unsigned int equals = 0;
-    
-    std::vector<Solution>::iterator begin = m_vec.begin();
+    unsigned int it_dominates = 0;
+    unsigned int is_nondominated_by = 0;
+    unsigned int is_dominated_by = 0;
+    bool is_equals = false;
     bool was_added = false;
+
+    std::vector<Solution>::iterator begin = m_vec.begin();
     for (unsigned long nSol = 0; nSol < m_vec.size(); ++nSol)
         switch (new_sol.dominanceTest(m_vec.at(nSol))) {
                 
             case DominanceRelation::Dominates:
                 m_vec.erase(begin + nSol);
-                
                 size.fetch_and_decrement();
-                dominates++;
+                it_dominates++;
                 nSol--;
                 break;
                 
             case DominanceRelation::Nondominated:
-                nondominated++;
+                is_nondominated_by++;
                 break;
                 
             case DominanceRelation::Dominated:
-                dominated++;
+                is_dominated_by++;
                 nSol = m_vec.size();
                 break;
                 
             case DominanceRelation::Equals:
-                equals = 1;
+                is_equals = true;
                 nSol = m_vec.size();
                 break;
         }
     
-    if (equals == 0
-        && (m_vec.size() == 0
-            || dominates > 0
-            || nondominated == size
-            || dominated == 0)) {
-                m_vec.push_back(new_sol); /** Creates a new copy. **/
-                size.fetch_and_increment();
-                was_added = true;
-        }
+    if (!is_equals && (m_vec.empty() || it_dominates > 0 || is_dominated_by == 0 || is_nondominated_by == m_vec.size())) {
+        m_vec.push_back(new_sol);
+        size.fetch_and_increment();
+        was_added = true;
+    }
     
     return was_added;
 }
