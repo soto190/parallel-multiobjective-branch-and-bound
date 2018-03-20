@@ -24,7 +24,6 @@ dominated_by(0) {
     build_up_to = -1;
     objective = nullptr;
     variable = nullptr;
-    execTime = nullptr;
 }
 
 Solution::Solution(int numberOfObjectives, int numberOfVariables):
@@ -37,17 +36,13 @@ dominated_by(0),
 build_up_to(-1),
 objective(new double[numberOfObjectives]),
 variable(new int[numberOfVariables]),
-index(0),
-execTime(new double[16]) {
+index(0) {
     
     for (int obj = 0; obj < numberOfObjectives; ++obj)
         objective[obj] = 0;
     
     for (int var = 0; var < numberOfVariables; ++var)
         variable[var] = -1;
-    
-    for (int var = 0; var < 16; ++var)
-        execTime[var] = 0;
 }
 
 Solution::Solution(const Solution &solution):
@@ -62,22 +57,17 @@ index(solution.getIndex()) {
     
     objective = new double[n_objectives];
     variable = new int[n_variables];
-    execTime = new double[16];
 
     for (int obj = 0; obj < n_objectives; ++obj)
         objective[obj] = solution.getObjective(obj);
     
     for (int var = 0; var < n_variables; ++var)
         variable[var] = solution.getVariable(var);
-    
-    //for (var = 0; var < 16; ++var)
-      //  execTime[var] = solution.execTime[var];
 }
 
 Solution::~Solution() {
     delete[] objective;
     delete[] variable;
-    delete[] execTime;
 }
 
 Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
@@ -96,21 +86,15 @@ Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
         delete[] objective;
     if (variable != nullptr)
         delete [] variable;
-    if (execTime != nullptr)
-        delete [] execTime;
     
     objective = new double[numberOfObjectives];
     variable = new int[numberOfVariables];
-    execTime = new double[16];
-    
+
     for (int obj = 0; obj < numberOfObjectives; ++obj)
         objective[obj] = 0;
     
     for (int var = 0; var < numberOfVariables; ++var)
         variable[var] = -1;
-    
-    for (int var = 0; var < 16; ++var)
-        execTime[var] = 0;
     
     return *this;
 }
@@ -133,22 +117,15 @@ Solution& Solution::operator=(const Solution &solution) {
         delete[] objective;
     if (variable != nullptr)
         delete [] variable;
-    if (execTime != nullptr)
-        delete [] execTime;
     
     objective = new double[n_objectives];
     variable = new int[n_variables];
-    execTime = new double[16];
 
     for (int obj = 0; obj < n_objectives; ++obj)
         objective[obj] = solution.getObjective(obj);
     
     for (int var = 0; var < n_variables; ++var)
         variable[var] = solution.getVariable(var);
-    
-    /**Section for the HCSP problem**/
-    //for (var = 0; var < 16; ++var)
-      //  execTime[var] = solution.execTime[var];
     
     return *this;
 }

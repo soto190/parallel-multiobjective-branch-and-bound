@@ -159,11 +159,10 @@ double ProblemHCSP::evaluate(Solution & solution) {
     double proc_prime = 0;
     double makespan = 0;
     
-    int i_machine = 0;
     int i_task = 0;
     
-    for (i_machine = 0; i_machine < this->totalMachines; i_machine++)
-        solution.execTime[i_machine] = 0;
+    /*for (i_machine = 0; i_machine < this->totalMachines; i_machine++)
+        solution.execTime[i_machine] = 0;*/
     
     for (i_task = 0; i_task < this->totalTasks; i_task++) {
         mapping = solution.getVariable(0);
@@ -171,13 +170,13 @@ double ProblemHCSP::evaluate(Solution & solution) {
         config = this->mappingConfig[mapping][1];
         
         proc_prime = this->processingTime[i_task][machine] / this->speed[config][machine];
-        solution.execTime[machine] += proc_prime;
+        /*solution.execTime[machine] += proc_prime;*/
         energy += proc_prime * this->voltage[config][machine] * this->voltage[config][machine];
         
-        if(solution.execTime[machine] >= solution.execTime[solution.getIndex()]) {
+        /*if(solution.execTime[machine] >= solution.execTime[solution.getIndex()]) {
             solution.setIndex(machine);
             makespan = solution.execTime[machine];
-        }
+        }*/
     }
     
     solution.setObjective(0, makespan);
@@ -222,11 +221,10 @@ double ProblemHCSP::evaluatePartial(Solution & solution, int levelEvaluation) {
     double proc_prime = 0;
     double makespan = 0;
     
-    int i_machine = 0;
     int i_task = 0;
     
-    for (i_machine = 0; i_machine < this->totalMachines; i_machine++)
-        solution.execTime[i_machine] = 0;
+    /*for (i_machine = 0; i_machine < this->totalMachines; i_machine++)
+        solution.execTime[i_machine] = 0;*/
     
     for (i_task = 0; i_task <= levelEvaluation; i_task++) {
         mapping = solution.getVariable(i_task);
@@ -234,12 +232,12 @@ double ProblemHCSP::evaluatePartial(Solution & solution, int levelEvaluation) {
         config = this->mappingConfig[mapping][1];
         
         proc_prime = this->computeProcessingTime(i_task, machine, config);// this->processingTime[i_task][machine] / this->speed[config][machine];
-        solution.execTime[machine] += proc_prime;
+        /*solution.execTime[machine] += proc_prime;*/
         energy += this->computeEnergy(i_task, machine, config, proc_prime);
-        if(solution.execTime[machine] >= solution.execTime[solution.getIndex()]) {
+        /*if(solution.execTime[machine] >= solution.execTime[solution.getIndex()]) {
             solution.setIndex(machine);
             makespan = solution.execTime[machine];
-        }
+        }*/
     }
     
     solution.setObjective(0, makespan);
@@ -282,17 +280,17 @@ double ProblemHCSP::removeLastEvaluation(Solution * solution, int lastLevel, int
         config = this->mappingConfig[mapping][1];
         
         proc_prime = this->computeProcessingTime(level, machine, config);
-        solution->execTime[machine] -= proc_prime;
+        /*solution->execTime[machine] -= proc_prime;*/
         solution->setObjective(1, solution-> getObjective(1) - this->computeEnergy(level, machine, config, proc_prime));
         
         solution->setVariable(level, -1);
     }
     
-    for (machine = 0; machine < this->totalMachines; machine++)
+    /*for (machine = 0; machine < this->totalMachines; machine++)
         if(solution->execTime[machine] >= solution->execTime[solution->getIndex()]) {
             solution->setIndex(machine);
             solution->setObjective(0, solution->execTime[machine]);
-        }
+        }*/
     
     return 0.0;
 }
@@ -313,16 +311,16 @@ double ProblemHCSP::removeLastLevelEvaluation(Solution * solution, int newLevel)
             config = this->mappingConfig[mapping][1];
             
             proc_prime = this->computeProcessingTime(level, machine, config);
-            solution->execTime[machine] -= proc_prime;
+            //solution->execTime[machine] -= proc_prime;
             solution->setObjective(1, solution->getObjective(1) - this->computeEnergy(level, machine, config, proc_prime));
             solution->setVariable(level, -1);
         }
         
-        for (machine = 0; machine < this->totalMachines; machine++)
+        /*for (machine = 0; machine < this->totalMachines; machine++)
             if(solution->execTime[machine] >= solution->execTime[solution->getIndex()]) {
                 solution->setIndex(machine);
                 solution->setObjective(0, solution->execTime[machine]);
-            }
+            }*/
     }
     
     return 0.0;

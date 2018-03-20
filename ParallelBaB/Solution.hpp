@@ -42,9 +42,7 @@ private:
 
     unsigned int sort_by;
 public:
-    
-    double * execTime; /** TODO: this can be removed and all the related functions. **/
-    
+
     Solution();
     Solution(int number_of_objectives, int number_of_variables);
     Solution(const Solution &solution);
