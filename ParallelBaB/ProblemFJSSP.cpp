@@ -1239,6 +1239,78 @@ const Solution& ProblemFJSSP::getSolutionWithGoodMaxWorkload() const {
     return goodSolutionWithMaxWorkload;
 }
 
+const ParetoFront ProblemFJSSP::getOptimalParetoFront(unsigned int instance) {
+    ParetoFront optimalParetoFront;
+    switch (instance) {
+        case 1: /**Kacem1**/
+            return getOptimalParetoFrontForKacem1();
+            break;
+
+        case 2: /**Kacem2**/
+            break;
+
+        case 3: /**Fattahi9**/
+            return getOptimalParetoFrontForFattahi9();
+            break;
+
+        default:
+            break;
+    }
+    return optimalParetoFront;
+}
+
+const ParetoFront ProblemFJSSP::getOptimalParetoFrontForKacem1() {
+    ParetoFront optimalParetoFront;
+    Solution sol(getNumberOfObjectives(), getNumberOfVariables());
+    int opt_objectives[2] = {16, 8};
+    int opt_variables[12] = {0, 1, 3, 5, 9, 5, 12, 11, 13, 13, 17, 16};
+
+    for (unsigned int obj = 0; obj < getNumberOfObjectives(); ++obj)
+        sol.setObjective(obj, opt_objectives[obj]);
+    for (unsigned int var = 0; var < getNumberOfVariables(); ++var)
+        sol.setVariable(var, opt_variables[var]);
+
+    optimalParetoFront.push_back(sol);
+    return optimalParetoFront;
+}
+
+const ParetoFront ProblemFJSSP::getOptimalParetoFrontForFattahi9() {
+    ParetoFront optimalParetoFront;
+    Solution sol_1(getNumberOfObjectives(), getNumberOfVariables());
+    Solution sol_2(getNumberOfObjectives(), getNumberOfVariables());
+    Solution sol_3(getNumberOfObjectives(), getNumberOfVariables());
+
+    int opt_objectives_1[2] = {210,  185};
+    int opt_variables_1[9] = {1, 6, 7, 7, 5, 0, 2, 3, 5};
+
+    int opt_objectives_2[2] = {220,  170};
+    int opt_variables_2[9] = {5, 6, 7, 7, 3, 0, 0, 5, 2};
+
+    int opt_objectives_3[2] = {280,  160};
+    int opt_variables_3[9] = {6, 7, 8, 3, 3, 5, 0, 1, 1};
+
+
+    for (unsigned int obj = 0; obj < getNumberOfObjectives(); ++obj){
+        sol_1.setObjective(obj, opt_objectives_1[obj]);
+        sol_2.setObjective(obj, opt_objectives_2[obj]);
+        sol_3.setObjective(obj, opt_objectives_3[obj]);
+    }
+
+    for (unsigned int var = 0; var < getNumberOfVariables(); ++var){
+        sol_1.setVariable(var, opt_variables_1[var]);
+        sol_2.setVariable(var, opt_variables_2[var]);
+        sol_3.setVariable(var, opt_variables_3[var]);
+    }
+
+    optimalParetoFront.push_back(sol_1);
+    optimalParetoFront.push_back(sol_2);
+    optimalParetoFront.push_back(sol_3);
+
+    return optimalParetoFront;
+}
+
+
+
 void ProblemFJSSP::loadInstance(char filePath[2][255], char file_extension[10]) {
     if (strcmp(file_extension, "txt") == 0) {
         loadInstanceTXT(filePath, file_extension);

@@ -18,6 +18,7 @@
 #include <regex>
 #include "FJSSPdata.hpp"
 #include "Problem.hpp"
+#include "ParetoFront.hpp"
 #include "myutils.hpp"
 
 #define INF_PROC_TIME 9999999
@@ -150,6 +151,9 @@ public:
     unsigned int getNumberOfMachines() const;
 
     const Solution& getSolutionWithGoodMaxWorkload() const;
+    const ParetoFront getOptimalParetoFront(unsigned int instance);
+    const ParetoFront getOptimalParetoFrontForKacem1();
+    const ParetoFront getOptimalParetoFrontForFattahi9();
 
     int getSumOfMinPij() const;
     int getBestWorkloadFound() const;
