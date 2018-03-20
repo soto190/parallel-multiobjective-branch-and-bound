@@ -184,6 +184,12 @@ void BranchAndBound::initialize(int starts_tree) {
      */
     problem.createDefaultSolution(incumbent_s);
     updateBoundsWithSolution(incumbent_s);
+
+    ParetoFront optimalPF = problem.getOptimalParetoFrontForKacem1();
+    for (unsigned long sol = 0; sol < optimalPF.size(); ++sol) {
+        paretoContainer.add(optimalPF.at(sol));
+        updateBoundsWithSolution(optimalPF.at(sol));
+    }
 }
 
 /** Generates an interval for each possible value in the given level of the branch_to_split
