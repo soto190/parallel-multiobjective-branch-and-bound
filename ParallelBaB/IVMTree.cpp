@@ -19,7 +19,7 @@ IVMTree::IVMTree() {
     integer_pointing_to_row = 0;
     starting_row = 0;
     there_are_more_ranches = false;
-    root_row = 0; /** Root row. **/
+    root_row = 0;
     n_nodes_at_row = nullptr;
     pending_nodes = 0;
 }

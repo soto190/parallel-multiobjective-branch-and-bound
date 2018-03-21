@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <vector>
 #include <array>
-#include "Dominance.hpp"
 #include "myutils.hpp"
 #include "ParetoFront.hpp"
 #include "ParetoBucket.hpp"

@@ -28,7 +28,7 @@ private:
     tbb::atomic<double> min_value_found_in_obj [2]; /** TODO: Change to more objectives. Also this doesnt goes here. Fixed to two objectives **/
     
     ConcurrentGridContainer grid;
-    std::vector<Solution> paretoFront;
+    ParetoFront paretoFront;
     
 public:
     ConcurrentHandlerContainer();
@@ -57,7 +57,7 @@ public:
     
     double getMaxIn(int dimension);
     double getBestValueFoundIn(int n_obj) const;
-    std::vector<Solution>& getParetoFront();
+    ParetoFront& getParetoFront();
     
 private:
     std::vector<Solution>& get(int x, int y);

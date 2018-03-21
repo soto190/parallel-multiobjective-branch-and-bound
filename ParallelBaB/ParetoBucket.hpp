@@ -11,7 +11,6 @@
 
 #include <stdio.h>
 #include "Solution.hpp"
-#include "Dominance.hpp"
 #include "myutils.hpp"
 #include "ParetoFront.hpp"
 #include "tbb/atomic.h"
