@@ -183,7 +183,18 @@ void BranchAndBound::initialize(int starts_tree) {
      updateBoundsWithSolution(algorithms_pf.at(solution_pf));
      */
     problem.createDefaultSolution(incumbent_s);
+    updateParetoGrid(incumbent_s);
     updateBoundsWithSolution(incumbent_s);
+
+    Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.getSolutionWithLowerBoundInObj(1, temp);
+    updateParetoGrid(temp);
+    updateBoundsWithSolution(temp);
+
+    Solution temp_2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.getSolutionWithLowerBoundInObj(2, temp_2);
+    updateParetoGrid(temp_2);
+    updateBoundsWithSolution(temp_2);
 }
 
 /** Generates an interval for each possible value in the given level of the branch_to_split
@@ -261,9 +272,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
 }
 
 int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
-    
-    int col = 0;
-    int row = 0; /** Counter level.**/
+
     int build_value = 0;
     int build_up_to = branch_init.getBuildUpTo();
     currentLevel = build_up_to;
@@ -280,8 +289,8 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
     
     fjssp_data.reset();
     
-    for (row = 0; row <= build_up_to; ++row) {
-        for (col = 0; col < tree.getNumberOfCols(); ++col)
+    for (int row = 0; row <= build_up_to; ++row) {
+        for (int col = 0; col < tree.getNumberOfCols(); ++col)
             tree.setNodeValueAt(row, col, -1);
         build_value = branch_init.getValueAt(row);
         tree.setStartExploration(row, build_value);
@@ -295,7 +304,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
         problem.evaluateDynamic(incumbent_s, fjssp_data, row);
     }
     
-    for (row = build_up_to + 1; row <= number_of_tree_levels; ++row) {
+    for (int row = build_up_to + 1; row <= number_of_tree_levels; ++row) {
         tree.setStartExploration(row, -1);
         tree.setActiveColAtRow(row, -1);
         tree.resetNumberOfNodesAt(row);

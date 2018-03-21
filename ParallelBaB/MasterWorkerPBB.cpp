@@ -43,6 +43,7 @@ branchsandbound_per_worker(num_threads) {
 }
 
 MasterWorkerPBB::~MasterWorkerPBB() {
+    
 }
 
 tbb::task * MasterWorkerPBB::execute() {
