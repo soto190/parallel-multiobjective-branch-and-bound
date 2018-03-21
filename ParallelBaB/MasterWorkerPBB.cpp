@@ -339,9 +339,9 @@ void MasterWorkerPBB::runWorkerProcess() {
     tbb::task::spawn(tl);
     /**TODO: Spawn the thread with the metaheuristic. **/
     int send_sol = 1;
-    vector<Solution> paretoFront;
-    vector<Solution> subFront;
-    vector<Solution> solutionsToSend;
+    ParetoFront paretoFront;
+    ParetoFront subFront;
+    ParetoFront solutionsToSend;
     
     Solution received_solution(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     Solution sSub(problem.getNumberOfObjectives(), problem.getNumberOfVariables());

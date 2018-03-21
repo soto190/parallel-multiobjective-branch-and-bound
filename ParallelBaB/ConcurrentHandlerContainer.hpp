@@ -1,13 +1,13 @@
 //
-//  HandlerContainer.hpp
+//  ConcurrentHandlerContainer.hpp
 //  ParallelBaB
 //
 //  Created by Carlos Soto on 12/6/17.
 //  Copyright © 2017 Carlos Soto. All rights reserved.
 //
 
-#ifndef HandlerContainer_hpp
-#define HandlerContainer_hpp
+#ifndef ConcurrentHandlerContainer_hpp
+#define ConcurrentHandlerContainer_hpp
 
 #include <stdio.h>
 #include "ConcurrentGridContainer.hpp"

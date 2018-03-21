@@ -24,11 +24,11 @@ tbb::task * ParallelBranchAndBound::execute() {
     
     globalPool.setSizeEmptying((unsigned long) (number_of_bbs * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
    
+    /*
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
-
     paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
-    
+     */
     BranchAndBound BB_container(rank, 0, problem, branch_init);
     BB_container.initGlobalPoolWithInterval(branch_init);
     
@@ -50,6 +50,7 @@ tbb::task * ParallelBranchAndBound::execute() {
     
     /** Recollects the data. **/
     BB_container.getElapsedTime();
+
     BranchAndBound* bb_in;
     while (!bb_threads.empty()) {
         
@@ -64,23 +65,20 @@ tbb::task * ParallelBranchAndBound::execute() {
         BB_container.increaseNumberOfReachedLeaves(bb_in->getNumberOfReachedLeaves());
         BB_container.increaseNumberOfUpdatesInLowerBound(bb_in->getNumberOfUpdatesInLowerBound());
         BB_container.increaseSharedWork(bb_in->getSharedWork());
+
     }
-    
-    BB_container.setParetoFrontFile(outputParetoFile);
-    BB_container.setSummarizeFile(summarizeFile);
-    
-    BB_container.getParetoFront();
-    BB_container.printParetoFront();
-    BB_container.saveParetoFront();
-    BB_container.saveSummarize();
+    printf("[Worker-%03d] Parallel Branch And Bound front.\n", rank);
+    globalParetoFront.print();
+
+    //BB_container.setParetoFrontFile(outputParetoFile);
+    //BB_container.setSummarizeFile(summarizeFile);
+    //BB_container.getParetoFront();
+    //BB_container.printParetoFront();
+    //BB_container.saveParetoFront();
+    //BB_container.saveSummarize();
     bb_threads.clear();
-    //printf("[Worker-%03d] Data swarm recollected and saved.\n", rank);
     printf("[Worker-%03d] Parallel Branch And Bound ended.\n", rank);
     return NULL;
-}
-
-std::vector<Solution>& ParallelBranchAndBound::getParetoFront() {
-    return paretoContainer.getParetoFront();
 }
 
 void ParallelBranchAndBound::setBranchInitPayload(const Payload_interval& payload) {

@@ -29,6 +29,17 @@ ParetoFront::~ParetoFront() {
     m_vec.clear();
 }
 
+ParetoFront& ParetoFront::operator()(const ParetoFront &rhs) {
+
+    if (this == &rhs)
+        return *this;
+
+    for (unsigned long n_sol = 0; n_sol < rhs.size(); ++n_sol)
+        push_back(rhs.at(n_sol));
+
+    return *this;
+}
+
 ParetoFront& ParetoFront::operator=(const ParetoFront &rhs) {
 
     if (this == &rhs)
@@ -91,7 +102,7 @@ const std::vector<Solution>& ParetoFront::getVectorToCopy() const {
     return m_vec;
 }
 
-bool ParetoFront::produceImprovement(const Solution& obj) {
+bool ParetoFront::produceImprovement(const Solution& obj) const {
     unsigned long index = 0;
     unsigned long size_vec = m_vec.size();
     bool improves_the_front = true;

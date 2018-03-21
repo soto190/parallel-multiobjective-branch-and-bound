@@ -58,6 +58,7 @@ private:
     MPI_Status status;
     ProblemFJSSP problem;
     Interval branch_init;
+    HandlerContainer paretoContainer;/** This is for testing the non-parallel container. **/
     
     char instance_file[255];
     char pareto_front_file[255];

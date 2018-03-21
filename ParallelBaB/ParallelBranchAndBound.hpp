@@ -27,12 +27,11 @@ public:
     
     ProblemFJSSP problem;
     Interval branch_init;
-    
+
     ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem);
     ~ParallelBranchAndBound();
     tbb::task* execute();
     
-    vector<Solution>& getParetoFront();
     void setNumberOfThreads(int number_of_threads);
     void setParetoFrontFile(const char outputFile[255]);
     void setSummarizeFile(const char outputFile[255]);
