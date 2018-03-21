@@ -319,8 +319,8 @@ bool ConcurrentHandlerContainer::improvesTheBucket(const Solution &solution, int
     return grid.produceImprovementInBucket(solution, x, y);
 }
 
-std::vector<Solution>& ConcurrentHandlerContainer::getParetoFront() {
-    paretoFront.reserve(getSize());
+ParetoFront& ConcurrentHandlerContainer::getParetoFront() {
+    //paretoFront.reserve(getSize());
     for (int bucketY = 0; bucketY < getRows(); ++bucketY)
         for (int bucketX = 0; bucketX < getCols(); ++bucketX) {
             FrontState state = grid.getStateOf(bucketX, bucketY);
@@ -335,7 +335,7 @@ std::vector<Solution>& ConcurrentHandlerContainer::getParetoFront() {
                 bucketX = grid.getNumberOfCols();
         }
     
-    extractParetoFront(paretoFront);
+    //extractParetoFront(paretoFront);
     return paretoFront;
 }
 

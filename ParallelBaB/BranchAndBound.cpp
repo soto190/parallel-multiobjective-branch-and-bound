@@ -13,7 +13,7 @@
 #include "BranchAndBound.hpp"
 
 SubproblemsPool sharedPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
-//ConcurrentHandlerContainer paretoContainer;
+//ConcurrentHandlerContainer sharedParetoContainer;
 ParetoBucket sharedParetoFront;
 tbb::atomic<int> sleeping_bb;
 tbb::atomic<int> there_is_more_work;
