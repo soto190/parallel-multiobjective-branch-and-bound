@@ -15,7 +15,7 @@
 #include "Solution.hpp"
 #include <climits> /*For the Ehecatl wich uses GCC 4.4.7 and Xeon Phi, this activates INT_MAX.*/
 
-enum ProblemType{combination = 0, permutation = 1, permutation_with_repetition_and_combination = 2, XD=190};
+enum ProblemType {combination = 0, permutation = 1, permutation_with_repetition_and_combination = 2, XD=190};
 
 class Problem {
 
