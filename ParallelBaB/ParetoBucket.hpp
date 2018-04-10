@@ -23,6 +23,7 @@ typedef tbb::queuing_rw_mutex Lock;
 class ParetoBucket {
     
 private:
+    unsigned long version_update;
     unsigned long posx;
     unsigned long posy;
     Lock updating_lock;
@@ -52,6 +53,7 @@ public:
     const std::vector<Solution>& getVectorToCopy() const ;
     bool produceImprovement(const Solution& obj);
     bool push_back(const Solution& obj);
+    unsigned long getVersionUpdate() const;
     void clear();
     void print() const;
 };

@@ -9,6 +9,7 @@
 #include "ParetoBucket.hpp"
 
 ParetoBucket::ParetoBucket():
+version_update(0),
 posx(0),
 posy(0) {
     size.store(0);
@@ -17,6 +18,7 @@ posy(0) {
 }
 
 ParetoBucket::ParetoBucket(unsigned long posx, unsigned long posy):
+version_update(0),
 posx(posx),
 posy(posy) {
     size.store(0);
@@ -25,6 +27,7 @@ posy(posy) {
 }
 
 ParetoBucket::ParetoBucket(const ParetoBucket& toCopy):
+version_update(toCopy.getVersionUpdate()),
 posx(toCopy.getPosx()),
 posy(toCopy.getPosy()),
 size((unsigned long) toCopy.getSizeAtomic()),
@@ -93,6 +96,10 @@ std::vector<Solution>& ParetoBucket::getVector() {
 
 const std::vector<Solution>& ParetoBucket::getVectorToCopy() const {
     return m_vec;
+}
+
+unsigned long ParetoBucket::getVersionUpdate() const {
+    return version_update;
 }
 
 bool ParetoBucket::produceImprovement(const Solution& obj) {
@@ -175,6 +182,7 @@ bool ParetoBucket::push_back(const Solution& new_sol) {
         m_vec.push_back(new_sol);
         size.fetch_and_increment();
         was_added = true;
+        version_update++;
     }
     
     return was_added;

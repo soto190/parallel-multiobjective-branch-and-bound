@@ -395,9 +395,15 @@ bool BranchAndBound::thereIsMoreWork() const {
 }
 
 void BranchAndBound::updateLocalPF() {
-    std::vector<Solution> global_pf = sharedParetoFront.getVector();
-    for (unsigned long position = 0; position < global_pf.size(); ++position)
-        paretoContainer.add(global_pf.at(position));
+    unsigned long local_version = 0;
+
+    if (local_version < sharedParetoFront.getVersionUpdate()) {
+        std::vector<Solution> global_pf = sharedParetoFront.getVector();
+        for (auto element = global_pf.begin(); element != global_pf.end(); ++element)
+            paretoContainer.add(*element);
+        
+        local_version = sharedParetoFront.getVersionUpdate();
+    }
 }
 
 void BranchAndBound::updateGlobalPF(const Solution& local_solution) {
@@ -426,7 +432,7 @@ double BranchAndBound::getElapsedTime() {
  *  Gets the next node to explore.
  * Modifies the solution.
  **/
-int BranchAndBound::explore(Solution & solution) {
+int BranchAndBound::explore(Solution& solution) {
     currentLevel = ivm_tree.getActiveRow();
     solution.setVariable(currentLevel, ivm_tree.getActiveNode());
     return 0;
