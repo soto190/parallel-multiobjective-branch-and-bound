@@ -47,6 +47,9 @@ public:
     const Solution at(unsigned long position) const;
     const Solution back() const;
     const Solution front() const;
+    std::vector<Solution>::iterator begin();
+    std::vector<Solution>::iterator end();
+
     unsigned long size() const;
     bool empty() const;
     void clear();

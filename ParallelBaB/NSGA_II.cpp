@@ -57,7 +57,7 @@ void NSGA_II::createInitialPopulation() {
 
     double stored_mutation = getMutationRate();
     setMutationRate(0.99);
-    for (unsigned long p = population.size(); p < getMaxPopulationSize(); ++p) {
+    for (size_t p = population.size(); p < getMaxPopulationSize(); ++p) {
         mutationOperator(sample_solution);
         population.push_back(sample_solution);
     }
@@ -71,7 +71,7 @@ void NSGA_II::selection() {
 void NSGA_II::crossover() {
     vector<Solution> offsprings;
     offsprings.reserve(population.size());
-    for (unsigned long pop = 0; pop < population.size() - 1; pop += 2) {
+    for (size_t pop = 0; pop < population.size() - 1; pop += 2) {
         vector<Solution> offs = crossoverOperator(population.at(pop), population.at(pop + 1));
         offsprings.insert(offsprings.end(), offs.begin(), offs.end());
     }
@@ -303,7 +303,7 @@ vector<Solution> NSGA_II::fastNonDominatedSort(vector<Solution>& population_to_s
 
     /** Crowding distance assignment. **/
     while (new_population.size() < getMaxPopulationSize())
-        for (unsigned long front = 0; front < pareto_fronts.size(); ++front)
+        for (size_t front = 0; front < pareto_fronts.size(); ++front)
             if (getMaxPopulationSize() - new_population.size() > pareto_fronts.at(front).size())
                 for (std::vector<Solution*>::iterator solution_p = pareto_fronts.at(front).begin(); solution_p != pareto_fronts.at(front).end(); ++solution_p)
                     new_population.push_back(Solution(*(*solution_p)));
@@ -328,7 +328,7 @@ vector<Solution> NSGA_II::crowdingDistanceAssignment(vector<Solution>& front) {
     unsigned long length = front.size() - 1;
     unsigned int n_objectives = front.at(0).getNumberOfObjectives();
 
-    for (std::vector<Solution>::iterator solution_p = front.begin(); solution_p != front.end(); ++solution_p) {
+    for (auto solution_p = front.begin(); solution_p != front.end(); ++solution_p) {
         (*solution_p).setDistance(0);
         (*solution_p).setSortByObjective(0);
     }

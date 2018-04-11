@@ -30,10 +30,10 @@ grid(toCopy.getGrid()) {
     rangeinx = new double[toCopy.getCols()];
     rangeiny = new double[toCopy.getRows()];
 
-    for (int indexy = 0; indexy < toCopy.getRows(); indexy++)
+    for (int indexy = 0; indexy < toCopy.getRows(); ++indexy)
         rangeiny[indexy] = toCopy.rangeiny[indexy];
 
-    for (int indexx = 0; indexx < toCopy.getCols(); indexx++)
+    for (int indexx = 0; indexx < toCopy.getCols(); ++indexx)
         rangeinx[indexx] = toCopy.rangeinx[indexx];
 
     for (int obj = 0; obj < 2; ++obj)
@@ -58,18 +58,17 @@ grid(cols, rows) {
     rangeiny = new double[rows];
     maxinx = maxValX;
     maxiny = maxValY;
-    int divs = 0;
 
     double rx = maxValX / cols;
     double ry = maxValY / rows;
 
-    rangeinx[divs] = 0;
-    rangeiny[divs] = 0;
+    rangeinx[0] = 0;
+    rangeiny[0] = 0;
 
-    for (divs = 1; divs < cols; divs++)
+    for (int divs = 1; divs < cols; ++divs)
         rangeinx[divs] = rangeinx[divs - 1] + rx;
 
-    for (divs = 1; divs < rows; divs++)
+    for (int divs = 1; divs < rows; ++divs)
         rangeiny[divs] = rangeiny[divs - 1] + ry;
 
     for (int obj = 0; obj < 2; ++obj)
@@ -110,18 +109,17 @@ HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int c
     rangeiny = new double[rows];
     maxinx = maxValX;
     maxiny = maxValY;
-    int divs = 0;
 
     double rx = maxValX / cols;
     double ry = maxValY / rows;
 
-    rangeinx[divs] = minValX;
-    rangeiny[divs] = minValY;
+    rangeinx[0] = minValX;
+    rangeiny[0] = minValY;
 
-    for (divs = 1; divs < cols; ++divs)
+    for (int divs = 1; divs < cols; ++divs)
         rangeinx[divs] = rangeinx[divs - 1] + rx;
 
-    for (divs = 1; divs < rows; ++divs)
+    for (int divs = 1; divs < rows; ++divs)
         rangeiny[divs] = rangeiny[divs - 1] + ry;
 
     for (int obj = 0; obj < 2; ++obj)

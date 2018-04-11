@@ -56,7 +56,8 @@ class BranchAndBound: public tbb::task {
 private:
     int node_rank;
     int bb_rank;
-
+    unsigned long local_update_version;
+    
     tbb::atomic<unsigned long> number_of_nodes;
     tbb::atomic<unsigned long> number_of_nodes_created;
     tbb::atomic<unsigned long> number_of_nodes_pruned;
@@ -160,6 +161,7 @@ public:
     task* execute();
     
 private:
+    bool localPFversionIsOutdated() const;
     double minMaxNormalization(int value, int min, int max);
 
     bool aLeafHasBeenReached() const;

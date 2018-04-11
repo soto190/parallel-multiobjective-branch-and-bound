@@ -19,6 +19,7 @@ tbb::atomic<int> sleeping_bb;
 tbb::atomic<int> there_is_more_work;
 
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
+local_update_version(0),
 node_rank(toCopy.getNodeRank()),
 bb_rank(toCopy.getBBRank()),
 currentLevel(toCopy.getCurrentLevel()),
@@ -52,6 +53,7 @@ pareto_front(toCopy.getParetoFront()) {
 BranchAndBound::BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problemToCopy, const Interval & branch):
 node_rank(node_rank),
 bb_rank(rank),
+local_update_version(0),
 currentLevel(branch.getBuildUpTo()),
 problem(problemToCopy),
 fjssp_data(problemToCopy.getNumberOfJobs(),
@@ -91,6 +93,7 @@ elapsed_time(0) {
 }
 
 BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch) {
+    local_update_version = 0;
     t1 = std::chrono::high_resolution_clock::now();
     t2 = std::chrono::high_resolution_clock::now();
     
@@ -179,7 +182,7 @@ void BranchAndBound::initialize(int starts_tree) {
      printf("Bounds PF:\n");
      algorithms_pf.print();
 
-     for (unsigned long solution_pf = 0; solution_pf < algorithms_pf.size(); ++solution_pf)
+     for (size_t solution_pf = 0; solution_pf < algorithms_pf.size(); ++solution_pf)
      updateBoundsWithSolution(algorithms_pf.at(solution_pf));
      */
     problem.createDefaultSolution(incumbent_s);
@@ -349,8 +352,8 @@ tbb::task* BranchAndBound::execute() {
     }
     sleeping_bb++;
     pareto_front = paretoContainer.generateParetoFront();
-    for (unsigned long sol = 0; sol  < pareto_front.size(); ++sol)
-        sharedParetoFront.push_back(pareto_front.at(sol));
+    for (auto sol = pareto_front.begin(); sol != pareto_front.end(); ++sol)
+        sharedParetoFront.push_back(*sol);
 
     printf("[Worker-%03d:B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, bb_rank, getElapsedTime());
     return NULL;
@@ -361,7 +364,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
     double timeUp = 0;
     intializeIVM_data(branch_to_solve, ivm_tree);
     while (theTreeHasMoreNodes() && !timeUp) {
-        
+        updateLocalPF();
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
         if (!aLeafHasBeenReached() && theTreeHasMoreNodes()) {
@@ -371,12 +374,10 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                 prune(incumbent_s, currentLevel);
         } else {
             increaseReachedLeaves();
-            updateLocalPF();
             if (updateParetoGrid(incumbent_s)) {
                 increaseUpdatesInLowerBound();
                 updateGlobalPF(incumbent_s);
             }
-
             updateBounds(incumbent_s, fjssp_data);
             ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
         }
@@ -394,15 +395,18 @@ bool BranchAndBound::thereIsMoreWork() const {
     return there_is_more_work;
 }
 
-void BranchAndBound::updateLocalPF() {
-    unsigned long local_version = 0;
+bool BranchAndBound::localPFversionIsOutdated() const {
+    return local_update_version < sharedParetoFront.getVersionUpdate();
+}
 
-    if (local_version < sharedParetoFront.getVersionUpdate()) {
+void BranchAndBound::updateLocalPF() {
+    if (localPFversionIsOutdated()) {
+        unsigned long global_version = sharedParetoFront.getVersionUpdate();
         std::vector<Solution> global_pf = sharedParetoFront.getVector();
         for (auto element = global_pf.begin(); element != global_pf.end(); ++element)
             paretoContainer.add(*element);
         
-        local_version = sharedParetoFront.getVersionUpdate();
+        local_update_version = global_version;
     }
 }
 
@@ -412,13 +416,17 @@ void BranchAndBound::updateGlobalPF(const Solution& local_solution) {
 
 void BranchAndBound::updateLocalAndGlobalPFBounds() {
     ParetoFront local_pf = paretoContainer.generateParetoFront();
-    std::vector<Solution> global_pf = sharedParetoFront.getVector();
 
-    for (unsigned long position = 0; position < global_pf.size(); ++position)
-        paretoContainer.add(global_pf.at(position));
+    if (localPFversionIsOutdated()) {
+        std::vector<Solution> global_pf = sharedParetoFront.getVector();
+        for (auto element = global_pf.begin(); element != global_pf.end(); ++element)
+            paretoContainer.add(*element);
 
-    for (unsigned long position = 0; position < local_pf.size(); ++position)
-        sharedParetoFront.push_back(local_pf.at(position));
+        local_update_version = sharedParetoFront.getVersionUpdate();
+    }
+
+    for (auto element = local_pf.begin(); element != local_pf.end(); ++element)
+        sharedParetoFront.push_back(*element);
 }
 
 double BranchAndBound::getElapsedTime() {
@@ -985,7 +993,7 @@ void BranchAndBound::saveGlobalPool() const {
         
         /** TODO: this needs a mutex. **/
         myfile << "pool_size: " << sharedPool.unsafe_size() << endl;
-        for (unsigned long element = 0; element < sharedPool.unsafe_size(); ++element)
+        for (size_t element = 0; element < sharedPool.unsafe_size(); ++element)
             if(sharedPool.try_pop(interval)) {
                 
                 myfile << interval.getBuildUpTo() << " ";
@@ -1060,15 +1068,15 @@ int BranchAndBound::saveSummarize() {
         int nVar = 0;
         
         int counterSolutions = 0;
-        for (unsigned long it = 0; it < pareto_front.size(); ++it) {
+        for (auto it = pareto_front.begin(); it != pareto_front.end(); ++it) {
 
             myfile << std::fixed << std::setw(6) << std::setfill(' ') << ++counterSolutions << " ";
             for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << pareto_front.at(it).getObjective(nObj) << " ";
+                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << (*it).getObjective(nObj) << " ";
             myfile << " | ";
             
             for (nVar = 0; nVar < numberOfVariables; ++nVar)
-                myfile << std::fixed << std::setw(4) << std::setfill(' ') << pareto_front.at(it).getVariable(nVar) << " ";
+                myfile << std::fixed << std::setw(4) << std::setfill(' ') << (*it).getVariable(nVar) << " ";
             myfile << " |\n";
         }
         
@@ -1087,10 +1095,10 @@ int BranchAndBound::saveParetoFront() {
         int numberOfObjectives = problem.getNumberOfObjectives();
         
 
-        for (unsigned long it = 0; it < pareto_front.size(); ++it) {
+        for (auto it = pareto_front.begin(); it != pareto_front.end(); ++it) {
             for (int nObj = 0; nObj < numberOfObjectives - 1; ++nObj)
-                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << pareto_front.at(it).getObjective(nObj) << " ";
-            myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << pareto_front.at(it).getObjective(numberOfObjectives - 1) << "\n";
+                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << (*it).getObjective(nObj) << " ";
+            myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << (*it).getObjective(numberOfObjectives - 1) << "\n";
         }
 
         myfile.close();
@@ -1126,12 +1134,12 @@ void BranchAndBound::printParetoFront(int withExtraInfo) {
     
     int counterSolutions = 0;
 
-    for (unsigned long it = 0; it < pareto_front.size(); ++it) {
+    for (auto it = pareto_front.begin(); it != pareto_front.end(); ++it) {
         printf("[%6d] ", ++counterSolutions);
-        problem.printSolution(pareto_front.at(it));
+        problem.printSolution(*it);
         printf("\n");
         if (withExtraInfo == 1) {
-            problem.printSolutionInfo(pareto_front.at(it));
+            problem.printSolutionInfo(*it);
             printf("\n");
         }
     }

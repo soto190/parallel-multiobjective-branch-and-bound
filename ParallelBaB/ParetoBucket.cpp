@@ -104,9 +104,9 @@ unsigned long ParetoBucket::getVersionUpdate() const {
 
 bool ParetoBucket::produceImprovement(const Solution& obj) {
     tbb::queuing_rw_mutex::scoped_lock m_lock(updating_lock, false);
-    unsigned long size_vec = m_vec.size();
+    size_t size_vec = m_vec.size();
     bool improves = true;
-    for (unsigned long index = 0; index < size_vec; ++index)
+    for (size_t index = 0; index < size_vec; ++index)
         switch (obj.dominanceTest(m_vec.at(index))) {
                 
             case DominanceRelation::Dominated:
@@ -153,7 +153,7 @@ bool ParetoBucket::push_back(const Solution& new_sol) {
     bool was_added = false;
 
     std::vector<Solution>::iterator begin = m_vec.begin();
-    for (unsigned long nSol = 0; nSol < m_vec.size(); ++nSol)
+    for (size_t nSol = 0; nSol < m_vec.size(); ++nSol)
         switch (new_sol.dominanceTest(m_vec.at(nSol))) {
                 
             case DominanceRelation::Dominates:
