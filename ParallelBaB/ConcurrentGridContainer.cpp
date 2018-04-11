@@ -9,6 +9,7 @@
 #include "ConcurrentGridContainer.hpp"
 
 ConcurrentGridContainer::ConcurrentGridContainer(unsigned int width, unsigned int height):
+version_update(0),
 cols(width),
 rows(height) {
     numberOfElements.store(0);
@@ -19,6 +20,7 @@ rows(height) {
 }
 
 ConcurrentGridContainer::ConcurrentGridContainer(const ConcurrentGridContainer& toCopy):
+version_update(toCopy.getVersionUpdate()),
 cols(toCopy.getNumberOfCols()),
 rows(toCopy.getNumberOfRows()),
 numberOfElements((unsigned long) toCopy.getSizeAtomic()),
@@ -31,6 +33,7 @@ ConcurrentGridContainer::~ConcurrentGridContainer() {
 }
 
 ConcurrentGridContainer& ConcurrentGridContainer::operator()(unsigned int width, unsigned int height) {
+    version_update = 0;
     cols = width;
     rows = height;
     numberOfElements.store(0);
@@ -42,12 +45,20 @@ ConcurrentGridContainer& ConcurrentGridContainer::operator()(unsigned int width,
     return *this;
 }
 
+unsigned long ConcurrentGridContainer::getVersionUpdate() const {
+    return version_update;
+}
+
 bool ConcurrentGridContainer::addTo(const Solution& obj, size_t x, size_t y) {
     size_t index = getIndexPosition(x, y);
     unsigned long size_before = pareto_buckets[index].getSize();
     bool updated = pareto_buckets[index].push_back(obj);
     unsigned long size_after = pareto_buckets[index].getSize();
     numberOfElements.fetch_and_add(size_after - size_before);
+
+    if(updated)
+        version_update++;
+    
     return updated;
 }
 

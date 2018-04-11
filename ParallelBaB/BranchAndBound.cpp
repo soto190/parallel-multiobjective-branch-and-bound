@@ -229,7 +229,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     int split_level = branch_to_split.getBuildUpTo() + 1;
     int nodes_created = 0;
     int num_elements = problem.getTotalElements();
-    int map = 0;
+    int code = 0;
     int toAdd = 0;
     
     fjssp_data.reset(); /** This function call is not necesary because the structurs are empty.**/
@@ -240,8 +240,8 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     }
     
     for (int row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
-        map = branch_to_split.getValueAt(row);
-        incumbent_s.setVariable(row, map);
+        code = branch_to_split.getValueAt(row);
+        incumbent_s.setVariable(row, code);
         problem.evaluateDynamic(incumbent_s, fjssp_data, row);
     }
     
@@ -350,10 +350,9 @@ tbb::task* BranchAndBound::execute() {
 
         updateLocalPF();
     }
+
     sleeping_bb++;
     pareto_front = paretoContainer.generateParetoFront();
-    for (auto sol = pareto_front.begin(); sol != pareto_front.end(); ++sol)
-        sharedParetoFront.push_back(*sol);
 
     printf("[Worker-%03d:B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, bb_rank, getElapsedTime());
     return NULL;
@@ -395,12 +394,12 @@ bool BranchAndBound::thereIsMoreWork() const {
     return there_is_more_work;
 }
 
-bool BranchAndBound::localPFversionIsOutdated() const {
+bool BranchAndBound::isLocalPFversionOutdated() const {
     return local_update_version < sharedParetoFront.getVersionUpdate();
 }
 
 void BranchAndBound::updateLocalPF() {
-    if (localPFversionIsOutdated()) {
+    if (isLocalPFversionOutdated()) {
         unsigned long global_version = sharedParetoFront.getVersionUpdate();
         std::vector<Solution> global_pf = sharedParetoFront.getVector();
         for (auto element = global_pf.begin(); element != global_pf.end(); ++element)
@@ -412,21 +411,6 @@ void BranchAndBound::updateLocalPF() {
 
 void BranchAndBound::updateGlobalPF(const Solution& local_solution) {
     sharedParetoFront.push_back(local_solution);
-}
-
-void BranchAndBound::updateLocalAndGlobalPFBounds() {
-    ParetoFront local_pf = paretoContainer.generateParetoFront();
-
-    if (localPFversionIsOutdated()) {
-        std::vector<Solution> global_pf = sharedParetoFront.getVector();
-        for (auto element = global_pf.begin(); element != global_pf.end(); ++element)
-            paretoContainer.add(*element);
-
-        local_update_version = sharedParetoFront.getVersionUpdate();
-    }
-
-    for (auto element = local_pf.begin(); element != local_pf.end(); ++element)
-        sharedParetoFront.push_back(*element);
 }
 
 double BranchAndBound::getElapsedTime() {

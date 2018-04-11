@@ -189,6 +189,10 @@ double ConcurrentHandlerContainer::getBestValueFoundIn(int obj) const {
     return min_value_found_in_obj[obj];
 }
 
+unsigned long ConcurrentHandlerContainer::getVersionUpdate() const {
+    return grid.getVersionUpdate();
+}
+
 /**
  * It uses a binary search tree to locate the bucket which will contain the new solution.
  **/

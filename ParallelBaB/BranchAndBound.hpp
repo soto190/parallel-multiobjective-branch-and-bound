@@ -161,7 +161,7 @@ public:
     task* execute();
     
 private:
-    bool localPFversionIsOutdated() const;
+    bool isLocalPFversionOutdated() const;
     double minMaxNormalization(int value, int min, int max);
 
     bool aLeafHasBeenReached() const;
@@ -183,7 +183,6 @@ private:
     int initializeExplorationIntervalSolution(const Solution & branch, IVMTree & tree);
     int intializeIVM_data(Interval& branch, IVMTree & tree);
 
-    void updateLocalAndGlobalPFBounds();
     void updateGlobalPF(const Solution& new_solution);
     void updateLocalPF();
     void saveIVM() const;

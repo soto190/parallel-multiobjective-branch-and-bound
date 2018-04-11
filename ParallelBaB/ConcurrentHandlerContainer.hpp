@@ -37,7 +37,8 @@ public:
     ~ConcurrentHandlerContainer();
     
     ConcurrentHandlerContainer& operator()(unsigned int width, unsigned int height, double maxValX, double maxValY, int minValX, int minValY);
-    
+
+    unsigned long getVersionUpdate() const;
     bool add(const Solution & solution);
     bool set(const Solution & solution, int x, int y);
     bool improvesTheGrid(const Solution & solution);

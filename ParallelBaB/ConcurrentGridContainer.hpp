@@ -25,6 +25,7 @@
 class ConcurrentGridContainer {
 
 private:
+    unsigned long version_update;
     unsigned int cols;
     unsigned int rows;
     tbb::atomic<unsigned long> numberOfElements;
@@ -39,6 +40,7 @@ public:
     
     ConcurrentGridContainer& operator()(unsigned int width, unsigned int height);
 
+    unsigned long getVersionUpdate() const;
     bool addTo(const Solution& obj, size_t x, size_t y);
     void setNonDominatedState(size_t x, size_t y);
     void setDominatedState(size_t x, size_t y);
