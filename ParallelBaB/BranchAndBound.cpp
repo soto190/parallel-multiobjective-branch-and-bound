@@ -89,7 +89,10 @@ elapsed_time(0) {
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
 
-    paretoContainer(25, 25, problem.getFmin(0), problem.getFmin(1), problem.getFmax(0), problem.getFmax(1));
+    if (is_grid_enable)
+        paretoContainer(25, 25, problem.getFmin(0), problem.getFmin(1), problem.getFmax(0), problem.getFmax(1));
+    else
+        paretoContainer(1, 1, problem.getFmin(0), problem.getFmin(1), problem.getFmax(0), problem.getFmax(1));
 }
 
 BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch) {
@@ -436,7 +439,6 @@ int BranchAndBound::explore(Solution& solution) {
  * return the number of branches created.
  */
 int BranchAndBound::branch(Solution& solution, int currentLevel) {
-    bool is_sorting_active = true;
     number_of_calls_to_branch++;
     int isInPermut = 0;
     int row = 0;
@@ -723,7 +725,6 @@ void BranchAndBound::updateBoundsWithSolution(const Solution & solution) {
  **/
 void BranchAndBound::setPriorityTo(Interval& interval) const {
     /** TODO: This can be replaced by a Fuzzy Logic Controller. **/
-    bool is_priority_active = true;
     if (is_priority_active) {
 
         const float close = 0.25f; /** If it is less than 0.333f then it is close. **/

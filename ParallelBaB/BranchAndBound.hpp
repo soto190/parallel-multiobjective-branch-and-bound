@@ -54,6 +54,10 @@ extern tbb::atomic<int> there_is_more_work;
 class BranchAndBound: public tbb::task {
     
 private:
+    bool is_grid_enable = false;
+    bool is_sorting_active = false;
+    bool is_priority_active = false;
+
     int node_rank;
     int bb_rank;
     unsigned long local_update_version;
