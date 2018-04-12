@@ -9,6 +9,9 @@
 #include "ParallelBranchAndBound.hpp"
 
 ParallelBranchAndBound::ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem):
+is_grid_enable(false),
+is_sorting_enable(false),
+is_priority_enable(false),
 rank(rank),
 number_of_bbs(n_threads),
 problem(problem),
@@ -29,8 +32,19 @@ tbb::task * ParallelBranchAndBound::execute() {
     problem.createDefaultSolution(solution);
     paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
      */
-    BranchAndBound BB_container(rank, 0, problem, branch_init);
+    BranchAndBound BB_container(rank, 0, isGridEnable(), isSortingEnable(), isPriorityEnable(), problem, branch_init);
     BB_container.initGlobalPoolWithInterval(branch_init);
+
+    if (is_grid_enable)
+        BB_container.enableGrid();
+
+    if (is_sorting_enable)
+        BB_container.enableSortingNodes();
+
+    if (is_priority_enable)
+        BB_container.enablePriorityQueue();
+
+
     
     set_ref_count(number_of_bbs + 1);
     
@@ -38,8 +52,9 @@ tbb::task * ParallelBranchAndBound::execute() {
     vector<BranchAndBound *> bb_threads;
     int n_bb = 0;
     while (n_bb++ < number_of_bbs) {
-        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb, problem, branch_init);
+        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb, isGridEnable(), isSortingEnable(), isPriorityEnable(),  problem, branch_init);
         BaB_task->setSummarizeFile(summarizeFile);
+
         bb_threads.push_back(BaB_task);
         tl.push_back(*BaB_task);
     }
@@ -77,6 +92,30 @@ tbb::task * ParallelBranchAndBound::execute() {
     bb_threads.clear();
     printf("[Worker-%03d] Parallel Branch And Bound ended.\n", rank);
     return NULL;
+}
+
+void ParallelBranchAndBound::enableGrid() {
+    is_grid_enable = true;
+}
+
+void ParallelBranchAndBound::enableSortingNodes() {
+    is_sorting_enable = true;
+}
+
+void ParallelBranchAndBound::enablePriorityQueue() {
+    is_priority_enable = true;
+}
+
+bool ParallelBranchAndBound::isGridEnable() const {
+    return is_grid_enable;
+}
+
+bool ParallelBranchAndBound::isSortingEnable() const {
+    return is_grid_enable;
+}
+
+bool ParallelBranchAndBound::isPriorityEnable() const {
+    return is_priority_enable;
 }
 
 void ParallelBranchAndBound::setBranchInitPayload(const Payload_interval& payload) {

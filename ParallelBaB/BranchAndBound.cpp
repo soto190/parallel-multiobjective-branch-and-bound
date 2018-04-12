@@ -20,6 +20,9 @@ tbb::atomic<int> there_is_more_work;
 
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
 local_update_version(0),
+is_grid_enable(toCopy.isGridEnable()),
+is_sorting_active(toCopy.isSortingEnable()),
+is_priority_active(toCopy.isPriorityEnable()),
 node_rank(toCopy.getNodeRank()),
 bb_rank(toCopy.getBBRank()),
 currentLevel(toCopy.getCurrentLevel()),
@@ -50,7 +53,10 @@ pareto_front(toCopy.getParetoFront()) {
     std::strcpy(summarize_file, toCopy.summarize_file);
 }
 
-BranchAndBound::BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problemToCopy, const Interval & branch):
+BranchAndBound::BranchAndBound(int node_rank, int rank, bool isGrid, bool isSorting, bool isPriority, const ProblemFJSSP& problemToCopy, const Interval & branch):
+is_grid_enable(isGrid),
+is_sorting_active(isSorting),
+is_priority_active(isPriority),
 node_rank(node_rank),
 bb_rank(rank),
 local_update_version(0),
@@ -89,7 +95,7 @@ elapsed_time(0) {
     Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(solution);
 
-    if (is_grid_enable)
+    if (isGridEnable())
         paretoContainer(25, 25, problem.getFmin(0), problem.getFmin(1), problem.getFmax(0), problem.getFmax(1));
     else
         paretoContainer(1, 1, problem.getFmin(0), problem.getFmin(1), problem.getFmax(0), problem.getFmax(1));
@@ -497,7 +503,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         if ((ub_normalized[0] <= 0 || ub_normalized[1] <= 0) && improvesTheGrid(solution)) {
                             
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
-                            if(is_sorting_active) {
+                            if(isSortingEnable()) {
                                 obj_values.setValue(toAdd);
                                 obj_values.setObjective(0, fjssp_data.getMakespan());
                                 obj_values.setObjective(1, fjssp_data.getMaxWorkload());
@@ -518,7 +524,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
             increaseNumberOfNodesCreated(nodes_created);
             if (nodes_created > 0) {
-                if (is_sorting_active)
+                if (isSortingEnable())
                     for (std::deque<ObjectiveValues>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
                         ivm_tree.addNodeToRow(currentLevel + 1, (*it).getValue());
 
@@ -725,7 +731,7 @@ void BranchAndBound::updateBoundsWithSolution(const Solution & solution) {
  **/
 void BranchAndBound::setPriorityTo(Interval& interval) const {
     /** TODO: This can be replaced by a Fuzzy Logic Controller. **/
-    if (is_priority_active) {
+    if (isPriorityEnable()) {
 
         const float close = 0.25f; /** If it is less than 0.333f then it is close. **/
         const float half = 0.50f;  /** If it is more than 0.25f and less than 0.5f then it is at half distance. **/
@@ -771,6 +777,30 @@ float BranchAndBound::distanceToObjective(int value, int objective) {
 
 double BranchAndBound::minMaxNormalization(int value, int min, int max) {
     return ((value - min) * 1.0 )/ (max - min);
+}
+
+void BranchAndBound::enableGrid() {
+    is_grid_enable = true;
+}
+
+void BranchAndBound::enableSortingNodes() {
+    is_sorting_active = true;
+}
+
+void BranchAndBound::enablePriorityQueue() {
+    is_priority_active = true;
+}
+
+bool BranchAndBound::isGridEnable() const {
+    return is_grid_enable;
+}
+
+bool BranchAndBound::isSortingEnable() const {
+    return is_sorting_active;
+}
+
+bool BranchAndBound::isPriorityEnable() const {
+    return is_priority_active;
 }
 
 int BranchAndBound::getNodeRank() const {

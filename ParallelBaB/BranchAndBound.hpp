@@ -54,9 +54,9 @@ extern tbb::atomic<int> there_is_more_work;
 class BranchAndBound: public tbb::task {
     
 private:
-    bool is_grid_enable = false;
-    bool is_sorting_active = false;
-    bool is_priority_active = false;
+    bool is_grid_enable;
+    bool is_sorting_active;
+    bool is_priority_active;
 
     int node_rank;
     int bb_rank;
@@ -99,7 +99,7 @@ private:
     
 public:
     BranchAndBound(const BranchAndBound& branchAndBound);
-    BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
+    BranchAndBound(int node_rank, int rank, bool isGrid, bool isSorting, bool isPriority, const ProblemFJSSP& problem, const Interval & branch);
     BranchAndBound& operator()(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
     ~BranchAndBound();
     
@@ -115,6 +115,14 @@ public:
     void prune(Solution & solution, int currentLevel);
 
     void printParetoFront(int withVariables = 0);
+
+    void enableGrid();
+    void enableSortingNodes();
+    void enablePriorityQueue();
+
+    bool isGridEnable() const;
+    bool isSortingEnable() const;
+    bool isPriorityEnable() const;
     
     unsigned long getNumberOfNodes() const;
     unsigned long getNumberOfLevels() const;

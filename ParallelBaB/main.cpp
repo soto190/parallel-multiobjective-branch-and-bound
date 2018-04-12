@@ -14,6 +14,7 @@
 #include <iostream>
 #include <cstring>
 #include <exception>
+#include <getopt.h>
 #include <tbb/task_scheduler_init.h>
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
@@ -34,26 +35,115 @@
 
 using namespace std;
 
+void print_usage() {
+    printf("Usage:\n\tbranchandbound: -t num -g [enable|disable] -q [enable|disable] -s [enable|disable] -p problem_type [FJSSP|TSP|HCSP|VRP] -i instance_file -o output_file\n");
+}
+
 void one_node(int argc, char* argv[]) {
-    const int arg_num_threads = 1;
-    //const int arg_problem = 2;
-    const int arg_input_file1 = 3;
-    const int arg_input_file2 = 4;
-    const int arg_output = 5;
+    int index;
+    int iarg = 0;
+
+    int number_of_threads = 1;
+    string problem_type = "not especified";
+    string instance_path = "not especified";
+    string output_path = "not especified";
+    bool is_grid_enable = false;
+    bool is_priority_enable = false;
+    bool is_sorting_enable = false;
+
+    const struct option longopts[] = {
+        {"threads", required_argument,  0, 't'},
+        {"grid",    required_argument,  0, 'g'},
+        {"queue",   required_argument,  0, 'q'},
+        {"sorting", required_argument,  0, 's'},
+        {"problem", required_argument,  0, 'p'},
+        {"instance",required_argument,  0, 'i'},
+        {"output",  required_argument,  0, 'o'},
+        {"AppleLanguages", optional_argument, 0, 'A'},
+        {"AppleTextDirection", optional_argument, 0, 'A'},
+        {"AppleLocale", optional_argument, 0, 'A'},
+        {0,0,0,0},
+    };
+
+    while(iarg != -1) {
+        iarg = getopt_long(argc, argv, "t:g:q:s:p:i:o:A:", longopts, &index);
+        switch (iarg) {
+            case 't':
+                if(optarg)
+                    number_of_threads = stoi(optarg);
+
+                std::cout << "Number of threads: " << number_of_threads << std::endl;
+                break;
+
+            case 'g':
+                std::cout << "Grid: ";
+                if (optarg) {
+                    string tmp = optarg;
+                    if (tmp == "enable")
+                        is_grid_enable = true;
+                }
+                std::cout << (is_grid_enable ? "enable" : "disable") << std::endl;
+                break;
+
+            case 'q':
+                std::cout << "Priority queue: ";
+                if (optarg) {
+                    string tmp = optarg;
+                    if (tmp == "enable")
+                        is_priority_enable = true;
+                }
+                std::cout << (is_priority_enable ? "enable" : "disable") << std::endl;
+                break;
+
+            case 's':
+                std::cout << "Sorting nodes: ";
+                if (optarg) {
+                    string tmp = optarg;
+                    if (tmp == "enable")
+                        is_sorting_enable = true;
+                }
+                std::cout << (is_sorting_enable ? "enable" : "disable") << std::endl;
+
+                break;
+
+            case 'p':
+                if (optarg)
+                    problem_type = optarg;
+                std::cout << "Problem: " << problem_type << std::endl;
+                break;
+
+            case 'i':
+                if (optarg)
+                    instance_path = optarg;
+                std::cout << "Instance file: " << instance_path << std::endl;
+                break;
+
+            case 'o':
+                if (optarg)
+                    output_path = optarg;
+                std::cout << "Output file: " << output_path << std::endl;
+                break;
+
+            case 'A':
+                break;
+
+            default:
+                print_usage();
+                break;
+        }
+    }
+
     ProblemFJSSP problem (2, 1);
 
-    int number_of_threads = stoi(argv[arg_num_threads]);
-    printf("Number of threads:%3d\n", number_of_threads);
     printf("Deep sharing: %0.2f\n", deep_limit_share);
     
     char files [2][255], extension[10];
-    std::strcpy(files[0], argv[arg_input_file1]);
-    std::strcpy(files[1], argv[arg_input_file2]);
-    
+    std::strcpy(files[0], instance_path.c_str());
+
     /** Get name of the instance. **/
     std::vector<std::string> elemens;
     std::vector<std::string> splited;
-    elemens = split(argv[arg_input_file1], '/');
+    elemens = split(instance_path.c_str(), '/');
     
     unsigned long int sizeOfElems = elemens.size();
     splited = split(elemens[sizeOfElems - 1], '.');
@@ -61,7 +151,7 @@ void one_node(int argc, char* argv[]) {
     printf("File extension: %s\n", splited[1].c_str());
     std::strcpy(extension, splited[1].c_str());
     
-    printf("Files:\n\t%s\n\t%s\n", files[0], files[1]);
+    printf("Files:\n\t%s\n", files[0]);
     problem.setName(splited[0].c_str());
     problem.loadInstance(files, extension);
     problem.printProblemInfo();
@@ -72,14 +162,24 @@ void one_node(int argc, char* argv[]) {
      * - CSV: contains the Pareto front.
      * - TXT: contains a log file.
      **/
-    std::string outputFile = argv[arg_output] + splited[0] + ".csv";
-    std::string summarizeFile = argv[arg_output] + splited[0] + ".txt";
+    std::string outputFile = output_path + splited[0] + ".csv";
+    std::string summarizeFile = output_path + splited[0] + ".txt";
     
     try {
         
         tbb::task_scheduler_init init(number_of_threads);
 
         ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(0, number_of_threads, problem);
+
+        if (is_grid_enable)
+            pbb->enableGrid();
+
+        if (is_sorting_enable)
+            pbb->enableSortingNodes();
+        
+        if (is_priority_enable)
+            pbb->enablePriorityQueue();
+
         pbb->setParetoFrontFile(outputFile.c_str());
         pbb->setSummarizeFile(summarizeFile.c_str());
         

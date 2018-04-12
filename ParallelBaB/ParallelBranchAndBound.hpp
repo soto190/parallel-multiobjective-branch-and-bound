@@ -24,13 +24,24 @@ public:
     int number_of_bbs;
     char outputParetoFile[255];
     char summarizeFile[255];
-    
+    bool is_grid_enable = false;
+    bool is_sorting_enable = false;
+    bool is_priority_enable = false;
+
     ProblemFJSSP problem;
     Interval branch_init;
+
 
     ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem);
     ~ParallelBranchAndBound();
     tbb::task* execute();
+
+    void enableGrid();
+    void enableSortingNodes();
+    void enablePriorityQueue();
+    bool isGridEnable() const;
+    bool isSortingEnable() const;
+    bool isPriorityEnable() const;
     
     void setNumberOfThreads(int number_of_threads);
     void setParetoFrontFile(const char outputFile[255]);
