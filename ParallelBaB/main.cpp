@@ -147,7 +147,7 @@ void one_node(int argc, char* argv[]) {
         }
     }
 
-    ProblemFJSSP problem (2, 1);
+    ProblemFJSSP problem (3, 1);
 
     printf("Deep sharing: %0.2f\n", deep_limit_share);
     

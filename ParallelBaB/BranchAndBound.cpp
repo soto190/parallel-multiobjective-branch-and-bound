@@ -467,7 +467,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     int toAdd = 0;
     int nodes_created = 0;
     
-    double ub_normalized[2];
+    double ub_normalized[3];
     
     SortedVector sorted_elements;
     ObjectiveValues obj_values;
@@ -512,10 +512,16 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
                         increaseExploredNodes();
 
-                        ub_normalized[0] = minMaxNormalization(fjssp_data.getObjective(0), problem.getBestMakespanFound(), problem.getFmax(0));
-                        ub_normalized[1] = minMaxNormalization(fjssp_data.getObjective(1), problem.getBestWorkloadFound(), problem.getFmax(1));
+                        bool is_improving = false;
+                        for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
+                            ub_normalized[objc] = minMaxNormalization(fjssp_data.getObjective(objc), problem.getBestObjectiveFound(objc), problem.getFmax(objc));
+
+                            if (ub_normalized[objc] <= 0)
+                                is_improving = true;
+
+                        }
                         /** If distance in obj1 is better  or distance in obj2 is better then it can produce an improvement. **/
-                        if ((ub_normalized[0] <= 0 || ub_normalized[1] <= 0) && improvesTheGrid(solution)) {
+                        if (is_improving && improvesTheGrid(solution)) {
                             
                             /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
                             if(isSortingEnable()) {

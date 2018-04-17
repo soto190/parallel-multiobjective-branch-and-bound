@@ -155,6 +155,7 @@ public:
     const ParetoFront getOptimalParetoFrontForKacem1();
     const ParetoFront getOptimalParetoFrontForFattahi9();
 
+    int getBestObjectiveFound(unsigned int objective) const;
     int getSumOfMinPij() const;
     int getBestWorkloadFound() const;
     int getBestMakespanFound() const;

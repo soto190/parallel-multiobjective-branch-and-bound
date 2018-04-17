@@ -821,7 +821,10 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
      */
     solution.setObjective(0, makespan);
     solution.setObjective(1, maxWorkload);
-    //    solution.setObjective(1, totalWorkload + minPij);
+    
+    if (solution.getNumberOfObjectives() == 3)
+        solution.setObjective(2, totalWorkload + minPij);
+
     return 0.0;
 }
 
@@ -887,7 +890,8 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     //data.setTotalWorkload is computed internally when the operation is allocated.
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
-    //    solution.setObjective(1, data.getTotalWorkload());
+    if (solution.getNumberOfObjectives() == 3)
+        solution.setObjective(2, data.getTotalWorkload());
 }
 
 void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, int level) {
@@ -925,7 +929,8 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
     solution.setVariable(level, -1);
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
-    //    solution.setObjective(1, data.getTotalWorkload());
+    if (solution.getNumberOfObjectives() == 3)
+        solution.setObjective(2, data.getTotalWorkload());
 }
 
 double ProblemFJSSP::evaluateLastLevel(Solution * solution) {
@@ -1821,6 +1826,26 @@ unsigned int ProblemFJSSP::getNumberOfMachines() const {
 
 int ProblemFJSSP::getSumOfMinPij() const {
     return sum_of_min_Pij;
+}
+
+int ProblemFJSSP::getBestObjectiveFound(unsigned int objective) const {
+    switch (objective) {
+        case 0:
+            return getBestMakespanFound();
+            break;
+
+        case 1:
+            return getBestWorkloadFound();
+            break;
+
+        case 2:
+            return getSumOfMinPij();
+            break;
+
+        default:
+            return 0;
+            break;
+    }
 }
 
 int ProblemFJSSP::getBestWorkloadFound() const {
