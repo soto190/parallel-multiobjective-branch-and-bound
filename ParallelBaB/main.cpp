@@ -36,13 +36,14 @@
 using namespace std;
 
 void print_usage() {
-    printf("Usage:\n\tbranchandbound: -t num -g [enable|disable] -q [enable|disable] -s [enable|disable] -p problem_type [FJSSP|TSP|HCSP|VRP] -i instance_file -o output_file\n");
+    printf("Usage:\n\tbranchandbound: -t num -l time_sec -g [enable|disable] -q [enable|disable] -s [enable|disable] -p problem_type [FJSSP|TSP|HCSP|VRP] -i instance_file -o output_file\n");
 }
 
 void one_node(int argc, char* argv[]) {
     int index;
     int iarg = 0;
 
+    double time_limit = 0;
     int number_of_threads = 1;
     string problem_type = "not especified";
     string instance_path = "not especified";
@@ -53,6 +54,7 @@ void one_node(int argc, char* argv[]) {
 
     const struct option longopts[] = {
         {"threads", required_argument,  0, 't'},
+        {"time-limit", optional_argument,  0, 'l'},
         {"grid",    required_argument,  0, 'g'},
         {"queue",   required_argument,  0, 'q'},
         {"sorting", required_argument,  0, 's'},
@@ -66,13 +68,22 @@ void one_node(int argc, char* argv[]) {
     };
 
     while(iarg != -1) {
-        iarg = getopt_long(argc, argv, "t:g:q:s:p:i:o:A:", longopts, &index);
+        iarg = getopt_long(argc, argv, "t:l:g:q:s:p:i:o:A:", longopts, &index);
         switch (iarg) {
             case 't':
                 if(optarg)
                     number_of_threads = stoi(optarg);
 
                 std::cout << "Number of threads: " << number_of_threads << std::endl;
+                break;
+
+            case 'l':
+                if(optarg)
+                    time_limit = stod(optarg);
+                if (time_limit > 0)
+                    std::cout << "Time limit (sec): " << time_limit << std::endl;
+                else
+                    std::cout << "Time limit (sec): disable" << std::endl;
                 break;
 
             case 'g':
@@ -127,6 +138,9 @@ void one_node(int argc, char* argv[]) {
             case 'A':
                 break;
 
+            case -1:
+                break;
+                
             default:
                 print_usage();
                 break;
@@ -170,6 +184,8 @@ void one_node(int argc, char* argv[]) {
         tbb::task_scheduler_init init(number_of_threads);
 
         ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(0, number_of_threads, problem);
+
+        pbb->setTimeLimit(time_limit);
 
         if (is_grid_enable)
             pbb->enableGrid();

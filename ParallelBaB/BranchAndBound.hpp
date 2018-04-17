@@ -55,8 +55,9 @@ class BranchAndBound: public tbb::task {
     
 private:
     bool is_grid_enable;
-    bool is_sorting_active;
-    bool is_priority_active;
+    bool is_sorting_enable;
+    bool is_priority_enable;
+    double time_limit;
 
     int node_rank;
     int bb_rank;
@@ -107,7 +108,9 @@ public:
     int getBBRank() const;
     int getCurrentLevel() const;
     double getElapsedTime();
-    
+    double getTimeLimit() const;
+    void setTimeLimit(double limit_sec);
+
     void solve(Interval & interval);
     void initialize(int starting_level);
     int explore(Solution & solution);
@@ -120,6 +123,7 @@ public:
     void enableSortingNodes();
     void enablePriorityQueue();
 
+    bool isTimeLimitEnable() const;
     bool isGridEnable() const;
     bool isSortingEnable() const;
     bool isPriorityEnable() const;
@@ -173,6 +177,7 @@ public:
     task* execute();
     
 private:
+    bool thereIsMoreTime();
     bool isLocalPFversionOutdated() const;
     double minMaxNormalization(int value, int min, int max);
 

@@ -9,6 +9,7 @@
 #include "ParallelBranchAndBound.hpp"
 
 ParallelBranchAndBound::ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem):
+time_limit(0),
 is_grid_enable(false),
 is_sorting_enable(false),
 is_priority_enable(false),
@@ -35,6 +36,8 @@ tbb::task * ParallelBranchAndBound::execute() {
     BranchAndBound BB_container(rank, 0, isGridEnable(), isSortingEnable(), isPriorityEnable(), problem, branch_init);
     BB_container.initGlobalPoolWithInterval(branch_init);
 
+    BB_container.setTimeLimit(getTimeLimit());
+
     if (is_grid_enable)
         BB_container.enableGrid();
 
@@ -44,8 +47,6 @@ tbb::task * ParallelBranchAndBound::execute() {
     if (is_priority_enable)
         BB_container.enablePriorityQueue();
 
-
-    
     set_ref_count(number_of_bbs + 1);
     
     tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
@@ -53,6 +54,7 @@ tbb::task * ParallelBranchAndBound::execute() {
     int n_bb = 0;
     while (n_bb++ < number_of_bbs) {
         BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb, isGridEnable(), isSortingEnable(), isPriorityEnable(),  problem, branch_init);
+        BaB_task->setTimeLimit(getTimeLimit());
         BaB_task->setSummarizeFile(summarizeFile);
 
         bb_threads.push_back(BaB_task);
@@ -94,6 +96,14 @@ tbb::task * ParallelBranchAndBound::execute() {
     return NULL;
 }
 
+double ParallelBranchAndBound::getTimeLimit() const {
+    return time_limit;
+}
+
+void ParallelBranchAndBound::setTimeLimit(double time_sec) {
+    time_limit = time_sec;
+}
+
 void ParallelBranchAndBound::enableGrid() {
     is_grid_enable = true;
 }
@@ -111,7 +121,7 @@ bool ParallelBranchAndBound::isGridEnable() const {
 }
 
 bool ParallelBranchAndBound::isSortingEnable() const {
-    return is_grid_enable;
+    return is_sorting_enable;
 }
 
 bool ParallelBranchAndBound::isPriorityEnable() const {
