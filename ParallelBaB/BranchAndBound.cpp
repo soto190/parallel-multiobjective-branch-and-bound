@@ -471,11 +471,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     
     SortedVector sorted_elements;
     ObjectiveValues obj_values;
-    
-    int best_values_found[2];
-    for (int obj = 0; obj < 2; ++obj)
-        best_values_found[obj] = paretoContainer.getBestValueFoundIn(obj);
-    
+
     switch (problem.getType()) {
             
         case ProblemType::permutation:
@@ -499,7 +495,6 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             break;
             
         case ProblemType::permutation_with_repetition_and_combination:
-            /** TODO: test to add only nodes with feasible solutions. **/
             for (int element = 0; element < problem.getTotalElements(); ++element)
                 if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element)) {
                     int op = problem.getOperationInJobIsNumber(element, fjssp_data.getNumberOfOperationsAllocatedFromJob(element));
