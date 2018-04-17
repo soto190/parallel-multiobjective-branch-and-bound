@@ -27,6 +27,7 @@ public:
     bool is_grid_enable = false;
     bool is_sorting_enable = false;
     bool is_priority_enable = false;
+    double time_limit;
 
     ProblemFJSSP problem;
     Interval branch_init;
@@ -36,6 +37,9 @@ public:
     ~ParallelBranchAndBound();
     tbb::task* execute();
 
+    double getTimeLimit() const;
+    void setTimeLimit(double time_sec);
+    
     void enableGrid();
     void enableSortingNodes();
     void enablePriorityQueue();

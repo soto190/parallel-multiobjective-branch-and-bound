@@ -21,8 +21,8 @@ tbb::atomic<int> there_is_more_work;
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
 local_update_version(0),
 is_grid_enable(toCopy.isGridEnable()),
-is_sorting_active(toCopy.isSortingEnable()),
-is_priority_active(toCopy.isPriorityEnable()),
+is_sorting_enable(toCopy.isSortingEnable()),
+is_priority_enable(toCopy.isPriorityEnable()),
 node_rank(toCopy.getNodeRank()),
 bb_rank(toCopy.getBBRank()),
 currentLevel(toCopy.getCurrentLevel()),
@@ -55,8 +55,8 @@ pareto_front(toCopy.getParetoFront()) {
 
 BranchAndBound::BranchAndBound(int node_rank, int rank, bool isGrid, bool isSorting, bool isPriority, const ProblemFJSSP& problemToCopy, const Interval & branch):
 is_grid_enable(isGrid),
-is_sorting_active(isSorting),
-is_priority_active(isPriority),
+is_sorting_enable(isSorting),
+is_priority_enable(isPriority),
 node_rank(node_rank),
 bb_rank(rank),
 local_update_version(0),
@@ -369,9 +369,8 @@ tbb::task* BranchAndBound::execute() {
 
 void BranchAndBound::solve(Interval& branch_to_solve) {
     
-    double timeUp = 0;
     intializeIVM_data(branch_to_solve, ivm_tree);
-    while (theTreeHasMoreNodes() && !timeUp) {
+    while (theTreeHasMoreNodes() && thereIsMoreTime()) {
         updateLocalPF();
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
@@ -420,6 +419,22 @@ void BranchAndBound::updateLocalPF() {
 
 void BranchAndBound::updateGlobalPF(const Solution& local_solution) {
     sharedParetoFront.push_back(local_solution);
+}
+
+double BranchAndBound::getTimeLimit() const {
+    return time_limit;
+}
+
+void BranchAndBound::setTimeLimit(double limit_sec) {
+    time_limit = limit_sec;
+}
+
+bool BranchAndBound::isTimeLimitEnable() const {
+    return time_limit > 0;
+}
+
+bool BranchAndBound::thereIsMoreTime() {
+    return isTimeLimitEnable() ? getElapsedTime() <= time_limit : true;
 }
 
 double BranchAndBound::getElapsedTime() {
@@ -784,11 +799,11 @@ void BranchAndBound::enableGrid() {
 }
 
 void BranchAndBound::enableSortingNodes() {
-    is_sorting_active = true;
+    is_sorting_enable = true;
 }
 
 void BranchAndBound::enablePriorityQueue() {
-    is_priority_active = true;
+    is_priority_enable = true;
 }
 
 bool BranchAndBound::isGridEnable() const {
@@ -796,11 +811,11 @@ bool BranchAndBound::isGridEnable() const {
 }
 
 bool BranchAndBound::isSortingEnable() const {
-    return is_sorting_active;
+    return is_sorting_enable;
 }
 
 bool BranchAndBound::isPriorityEnable() const {
-    return is_priority_active;
+    return is_priority_enable;
 }
 
 int BranchAndBound::getNodeRank() const {
