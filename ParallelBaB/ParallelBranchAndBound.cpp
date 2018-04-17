@@ -111,7 +111,7 @@ bool ParallelBranchAndBound::isGridEnable() const {
 }
 
 bool ParallelBranchAndBound::isSortingEnable() const {
-    return is_grid_enable;
+    return is_sorting_enable;
 }
 
 bool ParallelBranchAndBound::isPriorityEnable() const {
