@@ -19,9 +19,9 @@ grid(0,0) {
 };
 
 HandlerContainer::HandlerContainer(const HandlerContainer& toCopy):
-maxinx(toCopy.maxinx),
-maxiny(toCopy.maxiny),
-numberOfElements(toCopy.numberOfElements),
+maxinx(toCopy.getMaxValueInX()),
+maxiny(toCopy.getMaxValueInY()),
+numberOfElements(toCopy.getNumberOfElements()),
 activeBuckets(toCopy.getNumberOfActiveBuckets()),
 unexploredBuckets(toCopy.getNumberOfUnexploredBuckets()),
 disabledBuckets(toCopy.getNumberOfDisabledBuckets()),
@@ -233,6 +233,15 @@ unsigned int HandlerContainer::getCols() const {
     return grid.getNumberOfCols();
 }
 
+
+double HandlerContainer::getMaxValueInX() const {
+    return maxinx;
+}
+
+double HandlerContainer::getMaxValueInY() const {
+    return maxiny;
+}
+
 unsigned long HandlerContainer::getSize() const {
     return grid.getSize();
 }
@@ -251,6 +260,10 @@ unsigned long HandlerContainer::getNumberOfUnexploredBuckets() const {
 
 unsigned long HandlerContainer::getNumberOfDisabledBuckets() const {
     return disabledBuckets;
+}
+
+unsigned long HandlerContainer::getNumberOfElements() const {
+    return numberOfElements;
 }
 
 void HandlerContainer::setNonDominatedState(int x, int y) {

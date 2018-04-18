@@ -44,8 +44,11 @@ public:
     unsigned long getNumberOfActiveBuckets() const;
     unsigned long getNumberOfUnexploredBuckets() const;
     unsigned long getNumberOfDisabledBuckets() const;
+    unsigned long getNumberOfElements() const;
     unsigned int getRows() const;
     unsigned int getCols() const;
+    double getMaxValueInX() const;
+    double getMaxValueInY() const;
     unsigned long getSize() const;
     unsigned long getSizeOf(int x, int y) const;
     FrontState getStateOf(int x, int y) const;
