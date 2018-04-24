@@ -461,9 +461,7 @@ int BranchAndBound::explore(Solution& solution) {
  */
 int BranchAndBound::branch(Solution& solution, int currentLevel) {
     number_of_calls_to_branch++;
-    int isInPermut = 0;
-    int row = 0;
-    int levelStarting= 0;
+
     int toAdd = 0;
     int nodes_created = 0;
     
@@ -472,99 +470,64 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     SortedVector sorted_elements;
     ObjectiveValues obj_values;
 
-    switch (problem.getType()) {
-            
-        case ProblemType::permutation:
-            levelStarting = problem.getStartingRow();
-            
-            for (int element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
-                isInPermut = 0;
-                for (row = levelStarting; row <= currentLevel; ++row)
-                    if (solution.getVariable(row) == element) {
-                        isInPermut = 1;
-                        row = currentLevel + 1;
-                    }
-                
-                if (isInPermut == 0) {
-                    ivm_tree.addNodeToRow(currentLevel + 1, element);
-                    number_of_nodes_created++;
-                    nodes_created++;
-                }
-            }
-            
-            break;
-            
-        case ProblemType::permutation_with_repetition_and_combination:
-            for (int element = 0; element < problem.getTotalElements(); ++element)
-                if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element)) {
-                    int op = problem.getOperationInJobIsNumber(element, fjssp_data.getNumberOfOperationsAllocatedFromJob(element));
-                    unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(op);
-                    for (int machine = 0; machine < machines_aviable; ++machine) {
-                        int new_machine = problem.getMachinesAvaibleForOperation(op, machine);
-                        toAdd = problem.getEncodeMap(element, new_machine);
-                        
-                        solution.setVariable(currentLevel + 1, toAdd);
-                        problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
-                        increaseExploredNodes();
+    for (int element = 0; element < problem.getTotalElements(); ++element)
+        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element)) {
 
-                        bool is_improving = false;
+            int op = problem.getOperationInJobIsNumber(element, fjssp_data.getNumberOfOperationsAllocatedFromJob(element));
+            unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(op);
+
+            for (int machine = 0; machine < machines_aviable; ++machine) {
+                int new_machine = problem.getMachinesAvaibleForOperation(op, machine);
+                toAdd = problem.getEncodeMap(element, new_machine);
+
+                solution.setVariable(currentLevel + 1, toAdd);
+                problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
+                increaseExploredNodes();
+
+                bool is_improving = false;
+                for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
+                    ub_normalized[objc] = minMaxNormalization(fjssp_data.getObjective(objc), problem.getBestObjectiveFound(objc), problem.getFmax(objc));
+
+                    if (ub_normalized[objc] <= 0)
+                        is_improving = true;
+
+                }
+                /** If distance in obj1 is better  or distance in obj2 is better then it can produce an improvement. **/
+                if (is_improving && improvesTheGrid(solution)) {
+
+                    /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
+                    if(isSortingEnable()) {
+                        obj_values.setValue(toAdd);
+
                         for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
-                            ub_normalized[objc] = minMaxNormalization(fjssp_data.getObjective(objc), problem.getBestObjectiveFound(objc), problem.getFmax(objc));
-
-                            if (ub_normalized[objc] <= 0)
-                                is_improving = true;
-
+                            obj_values.setObjective(objc, fjssp_data.getObjective(objc));
+                            obj_values.setDistance(objc, minMaxNormalization(obj_values.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc)));
                         }
-                        /** If distance in obj1 is better  or distance in obj2 is better then it can produce an improvement. **/
-                        if (is_improving && improvesTheGrid(solution)) {
-                            
-                            /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
-                            if(isSortingEnable()) {
-                                obj_values.setValue(toAdd);
-                                obj_values.setObjective(0, fjssp_data.getMakespan());
-                                obj_values.setObjective(1, fjssp_data.getMaxWorkload());
 
-                                obj_values.setDistance(0, minMaxNormalization(obj_values.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
-                                obj_values.setDistance(1, minMaxNormalization(obj_values.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
+                        sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
+                    } else
+                        ivm_tree.addNodeToRow(currentLevel + 1, toAdd);
 
-                                sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
-                            } else
-                                ivm_tree.addNodeToRow(currentLevel + 1, toAdd);
-                            
-                            nodes_created++;
-                        } else
-                            increasePrunedNodes();
-                        problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
-                    }
-                }
-
-            increaseNumberOfNodesCreated(nodes_created);
-            if (nodes_created > 0) {
-                if (isSortingEnable())
-                    for (std::deque<ObjectiveValues>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
-                        ivm_tree.addNodeToRow(currentLevel + 1, (*it).getValue());
-
-                ivm_tree.moveToNextRow();
-                ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), 0);
-                ivm_tree.setThereAreMoreBranches();
-
-            } else  /** If no branches were created then move to the next node. **/
-                ivm_tree.pruneActiveNode();
-            break;
-            
-        case ProblemType::combination:
-            for (int element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
-                ivm_tree.addNodeToRow(currentLevel + 1, element);
-                nodes_created++;
+                    nodes_created++;
+                } else
+                    increasePrunedNodes();
+                problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
             }
-            number_of_nodes_created += nodes_created;
-            
-            break;
-            
-        case ProblemType::XD:
-            break;
-    }
-    
+        }
+
+    increaseNumberOfNodesCreated(nodes_created);
+    if (nodes_created > 0) {
+        if (isSortingEnable())
+            for (auto it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
+                ivm_tree.addNodeToRow(currentLevel + 1, (*it).getValue());
+
+        ivm_tree.moveToNextRow();
+        ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), 0);
+        ivm_tree.setThereAreMoreBranches();
+
+    } else  /** If no branches were created then move to the next node. **/
+        ivm_tree.pruneActiveNode();
+
     return nodes_created;
 }
 
