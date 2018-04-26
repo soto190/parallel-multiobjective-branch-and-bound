@@ -42,7 +42,7 @@
  *
  **/
 
-const float size_to_share = 0.2f; /** We share the half of the row. **/
+const float size_to_share = 0.2f; /** We share two percent of the row. **/
 const float deep_limit_share = 0.80f;
 
 extern SubproblemsPool sharedPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
@@ -63,17 +63,17 @@ private:
     int bb_rank;
     unsigned long local_update_version;
     
-    tbb::atomic<unsigned long> number_of_nodes;
-    tbb::atomic<unsigned long> number_of_nodes_created;
-    tbb::atomic<unsigned long> number_of_nodes_pruned;
-    tbb::atomic<unsigned long> number_of_nodes_explored;
-    tbb::atomic<unsigned long> number_of_nodes_unexplored;
-    tbb::atomic<unsigned long> number_of_calls_to_branch;
-    tbb::atomic<unsigned long> number_of_reached_leaves;
-    tbb::atomic<unsigned long> number_of_calls_to_prune;
-    tbb::atomic<unsigned long> number_of_updates_in_lower_bound;
-    tbb::atomic<unsigned long> number_of_tree_levels;
-    tbb::atomic<unsigned long> number_of_shared_works;
+    unsigned long number_of_nodes;
+    unsigned long number_of_nodes_created;
+    unsigned long number_of_nodes_pruned;
+    unsigned long number_of_nodes_explored;
+    unsigned long number_of_nodes_unexplored;
+    unsigned long number_of_calls_to_branch;
+    unsigned long number_of_reached_leaves;
+    unsigned long number_of_calls_to_prune;
+    unsigned long number_of_updates_in_lower_bound;
+    unsigned long number_of_tree_levels;
+    unsigned long number_of_shared_works;
     
     int currentLevel; /** Active level **/
 
@@ -94,16 +94,19 @@ private:
     int limit_level_to_share;
     
     double elapsed_time;
-    std::clock_t start;
+    std::clock_t time_start;
     std::chrono::high_resolution_clock::time_point t1;
     std::chrono::high_resolution_clock::time_point t2;
     
 public:
+    BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
     BranchAndBound(const BranchAndBound& branchAndBound);
-    BranchAndBound(int node_rank, int rank, bool isGrid, bool isSorting, bool isPriority, const ProblemFJSSP& problem, const Interval & branch);
-    BranchAndBound& operator()(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
     ~BranchAndBound();
-    
+
+    BranchAndBound& operator()(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
+    BranchAndBound& operator=(const BranchAndBound& toCopy);
+
+    unsigned long getPFVersion() const;
     int getNodeRank() const;
     int getBBRank() const;
     int getCurrentLevel() const;
@@ -179,7 +182,7 @@ public:
 private:
     bool thereIsMoreTime();
     bool isLocalPFversionOutdated() const;
-    double minMaxNormalization(int value, int min, int max);
+    double minMaxNormalization(int value, int min, int max) const;
 
     bool aLeafHasBeenReached() const;
     bool theTreeHasMoreNodes() const;

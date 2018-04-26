@@ -17,7 +17,18 @@ rank(rank),
 number_of_bbs(n_threads),
 problem(problem),
 branch_init(problem.getNumberOfVariables()) {
-    
+    number_of_nodes = 0;
+    number_of_nodes_created = 0;
+    number_of_nodes_pruned = 0;
+     number_of_nodes_explored = 0;
+     number_of_nodes_unexplored = 0;
+     number_of_calls_to_branch = 0;
+     number_of_reached_leaves = 0;
+     number_of_calls_to_prune = 0;
+     number_of_updates_in_lower_bound = 0;
+     number_of_tree_levels = 0;
+     number_of_shared_works = 0;
+
 }
 
 ParallelBranchAndBound::~ParallelBranchAndBound() {
@@ -27,25 +38,22 @@ ParallelBranchAndBound::~ParallelBranchAndBound() {
 tbb::task * ParallelBranchAndBound::execute() {
     
     sharedPool.setSizeEmptying((unsigned long) (number_of_bbs * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
-   
-    /*
-    Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    problem.createDefaultSolution(solution);
-    paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
-     */
-    BranchAndBound BB_container(rank, 0, isGridEnable(), isSortingEnable(), isPriorityEnable(), problem, branch_init);
-    BB_container.initGlobalPoolWithInterval(branch_init);
 
-    BB_container.setTimeLimit(getTimeLimit());
+    BranchAndBound BB_container(rank, 0, problem, branch_init);
 
-    if (is_grid_enable)
+    if (isGridEnable())
         BB_container.enableGrid();
-
-    if (is_sorting_enable)
+    
+    if (isSortingEnable())
         BB_container.enableSortingNodes();
 
-    if (is_priority_enable)
+    if (isPriorityEnable())
         BB_container.enablePriorityQueue();
+
+    BB_container.initialize(0);
+    number_of_shared_works += BB_container.initGlobalPoolWithInterval(branch_init);
+
+    BB_container.setTimeLimit(getTimeLimit());
 
     set_ref_count(number_of_bbs + 1);
     
@@ -53,7 +61,16 @@ tbb::task * ParallelBranchAndBound::execute() {
     vector<BranchAndBound *> bb_threads;
     int n_bb = 0;
     while (n_bb++ < number_of_bbs) {
-        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb, isGridEnable(), isSortingEnable(), isPriorityEnable(),  problem, branch_init);
+        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb,  problem, branch_init);
+        if (isGridEnable())
+            BaB_task->enableGrid();
+
+        if (isSortingEnable())
+            BaB_task->enableSortingNodes();
+
+        if (isPriorityEnable())
+            BaB_task->enablePriorityQueue();
+
         BaB_task->setTimeLimit(getTimeLimit());
         BaB_task->setSummarizeFile(summarizeFile);
 
@@ -73,7 +90,16 @@ tbb::task * ParallelBranchAndBound::execute() {
         
         bb_in = bb_threads.back();
         bb_threads.pop_back();
-        
+
+//        number_of_nodes_created += bb_in->getNumberOfNodesCreated();
+//        number_of_nodes_pruned += bb_in->getNumberOfNodesPruned();
+//        number_of_nodes_explored += bb_in->getNumberOfNodesExplored();
+//        number_of_calls_to_branch += bb_in->getNumberOfCallsToBranch();
+//        number_of_reached_leaves += bb_in->getNumberOfNodesExplored();
+//        number_of_calls_to_prune += bb_in->getNumberOfCallsToPrune();
+//        number_of_updates_in_lower_bound += bb_in->getNumberOfUpdatesInLowerBound();
+//        number_of_shared_works += bb_in->getSharedWork();
+
         BB_container.increaseNumberOfNodesExplored(bb_in->getNumberOfNodesExplored());
         BB_container.increaseNumberOfCallsToBranch(bb_in->getNumberOfCallsToBranch());
         BB_container.increaseNumberOfNodesCreated(bb_in->getNumberOfNodesCreated());
@@ -84,6 +110,15 @@ tbb::task * ParallelBranchAndBound::execute() {
         BB_container.increaseSharedWork(bb_in->getSharedWork());
 
     }
+    cout << number_of_nodes_created << endl;
+    cout << number_of_nodes_pruned << endl;
+    cout << number_of_nodes_explored << endl;
+    cout << number_of_calls_to_branch << endl;
+    cout << number_of_reached_leaves << endl;
+    cout << number_of_calls_to_prune << endl;
+    cout << number_of_updates_in_lower_bound << endl;
+    cout << number_of_shared_works << endl;
+
     printf("[Worker-%03d] Parallel Branch And Bound front.\n", rank);
     sharedParetoFront.print();
 

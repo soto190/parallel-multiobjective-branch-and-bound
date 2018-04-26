@@ -18,6 +18,46 @@ ParetoBucket sharedParetoFront;
 tbb::atomic<int> sleeping_bb;
 tbb::atomic<int> there_is_more_work;
 
+BranchAndBound::BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problemToCopy, const Interval & branch):
+is_grid_enable(false),
+is_sorting_enable(false),
+is_priority_enable(false),
+node_rank(node_rank),
+bb_rank(rank),
+local_update_version(0),
+currentLevel(branch.getBuildUpTo()),
+problem(problemToCopy),
+fjssp_data(problemToCopy.getNumberOfJobs(),
+           problemToCopy.getNumberOfOperations(),
+           problemToCopy.getNumberOfMachines()),
+incumbent_s(problemToCopy.getNumberOfObjectives(), problemToCopy.getNumberOfVariables()),
+ivm_tree(problemToCopy.getNumberOfVariables(), problemToCopy.getUpperBound(0) + 1),
+interval_to_solve(branch),
+elapsed_time(0) {
+    number_of_shared_works = 0;
+    number_of_tree_levels = problemToCopy.getNumberOfVariables();
+    number_of_nodes = 0;
+    number_of_nodes_created = (0);
+    number_of_nodes_explored = (0);
+    number_of_reached_leaves = (0);
+    number_of_nodes_unexplored = (0);
+    number_of_nodes_pruned = (0);
+    number_of_calls_to_prune = (0);
+    number_of_calls_to_branch = (0);
+    number_of_updates_in_lower_bound = (0);
+    
+    time_start = std::clock();
+    t1 = std::chrono::high_resolution_clock::now();
+    t2 = std::chrono::high_resolution_clock::now();
+    
+    branches_to_move = problemToCopy.getUpperBound(0) * size_to_share;
+    limit_level_to_share = number_of_tree_levels * deep_limit_share;
+    
+    number_of_nodes = computeTotalNodes(problemToCopy.getNumberOfVariables());
+    
+    ivm_tree.setOwnerId(rank);
+}
+
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
 local_update_version(0),
 is_grid_enable(toCopy.isGridEnable()),
@@ -32,73 +72,63 @@ incumbent_s(toCopy.getIncumbentSolution()),
 ivm_tree(toCopy.getIVMTree()),
 paretoContainer(toCopy.getParetoContainer()),
 pareto_front(toCopy.getParetoFront()) {
-    number_of_shared_works.store(toCopy.getSharedWork());
-    number_of_tree_levels.store(toCopy.getNumberOfLevels());
-    number_of_nodes.store(toCopy.getNumberOfNodes());
-    number_of_nodes_created.store(toCopy.getNumberOfNodesCreated());
-    number_of_nodes_explored.store(toCopy.getNumberOfNodesExplored());
-    number_of_reached_leaves.store(toCopy.getNumberOfReachedLeaves());
-    number_of_nodes_unexplored.store(toCopy.getNumberOfNodesUnexplored());
-    number_of_nodes_pruned.store(toCopy.getNumberOfNodesPruned());
-    number_of_calls_to_prune.store(toCopy.getNumberOfCallsToPrune());
-    number_of_calls_to_branch.store(toCopy.getNumberOfCallsToBranch());
-    number_of_updates_in_lower_bound.store(toCopy.getNumberOfUpdatesInLowerBound());
-    start = toCopy.start;
+    number_of_shared_works = (toCopy.getSharedWork());
+    number_of_tree_levels = (toCopy.getNumberOfLevels());
+    number_of_nodes = (toCopy.getNumberOfNodes());
+    number_of_nodes_created = (toCopy.getNumberOfNodesCreated());
+    number_of_nodes_explored = (toCopy.getNumberOfNodesExplored());
+    number_of_reached_leaves = (toCopy.getNumberOfReachedLeaves());
+    number_of_nodes_unexplored = (toCopy.getNumberOfNodesUnexplored());
+    number_of_nodes_pruned = (toCopy.getNumberOfNodesPruned());
+    number_of_calls_to_prune = (toCopy.getNumberOfCallsToPrune());
+    number_of_calls_to_branch = (toCopy.getNumberOfCallsToBranch());
+    number_of_updates_in_lower_bound = (toCopy.getNumberOfUpdatesInLowerBound());
+    time_start = toCopy.time_start;
     elapsed_time = getElapsedTime();
-    
+
     branches_to_move = problem.getUpperBound(0) * size_to_share;
     limit_level_to_share = number_of_tree_levels * deep_limit_share;
-    
+
     std::strcpy(pareto_file, toCopy.pareto_file);
     std::strcpy(summarize_file, toCopy.summarize_file);
 }
 
-BranchAndBound::BranchAndBound(int node_rank, int rank, bool isGrid, bool isSorting, bool isPriority, const ProblemFJSSP& problemToCopy, const Interval & branch):
-is_grid_enable(isGrid),
-is_sorting_enable(isSorting),
-is_priority_enable(isPriority),
-node_rank(node_rank),
-bb_rank(rank),
-local_update_version(0),
-currentLevel(branch.getBuildUpTo()),
-problem(problemToCopy),
-fjssp_data(problemToCopy.getNumberOfJobs(),
-           problemToCopy.getNumberOfOperations(),
-           problemToCopy.getNumberOfMachines()),
-incumbent_s(problemToCopy.getNumberOfObjectives(), problemToCopy.getNumberOfVariables()),
-ivm_tree(problemToCopy.getNumberOfVariables(), problemToCopy.getUpperBound(0) + 1),
-interval_to_solve(branch),
-elapsed_time(0) {
-    number_of_shared_works.store(0);
-    number_of_tree_levels.store(problemToCopy.getNumberOfVariables());
-    number_of_nodes.store(0);
-    number_of_nodes_created.store(0);
-    number_of_nodes_explored.store(0);
-    number_of_reached_leaves.store(0);
-    number_of_nodes_unexplored.store(0);
-    number_of_nodes_pruned.store(0);
-    number_of_calls_to_prune.store(0);
-    number_of_calls_to_branch.store(0);
-    number_of_updates_in_lower_bound.store(0);
-    
-    start = std::clock();
-    t1 = std::chrono::high_resolution_clock::now();
-    t2 = std::chrono::high_resolution_clock::now();
-    
-    branches_to_move = problemToCopy.getUpperBound(0) * size_to_share;
+BranchAndBound& BranchAndBound::operator=(const BranchAndBound &toCopy) {
+    local_update_version = toCopy.getPFVersion();
+    is_grid_enable = toCopy.isGridEnable();
+    is_sorting_enable = toCopy.isSortingEnable();
+    is_priority_enable = toCopy.isPriorityEnable();
+    node_rank = toCopy.getNodeRank();
+    bb_rank = toCopy.getBBRank();
+    currentLevel = toCopy.getCurrentLevel();
+    problem = toCopy.getProblem();
+    fjssp_data = toCopy.getFJSSPdata();
+    incumbent_s = toCopy.getIncumbentSolution();
+    ivm_tree = toCopy.getIVMTree();
+    paretoContainer = toCopy.getParetoContainer();
+    pareto_front = toCopy.getParetoFront();
+
+    number_of_shared_works = (toCopy.getSharedWork());
+    number_of_tree_levels = (toCopy.getNumberOfLevels());
+    number_of_nodes = (toCopy.getNumberOfNodes());
+    number_of_nodes_created = (toCopy.getNumberOfNodesCreated());
+    number_of_nodes_explored = (toCopy.getNumberOfNodesExplored());
+    number_of_reached_leaves = (toCopy.getNumberOfReachedLeaves());
+    number_of_nodes_unexplored = (toCopy.getNumberOfNodesUnexplored());
+    number_of_nodes_pruned = (toCopy.getNumberOfNodesPruned());
+    number_of_calls_to_prune = (toCopy.getNumberOfCallsToPrune());
+    number_of_calls_to_branch = (toCopy.getNumberOfCallsToBranch());
+    number_of_updates_in_lower_bound = (toCopy.getNumberOfUpdatesInLowerBound());
+    time_start = toCopy.time_start;
+    elapsed_time = getElapsedTime();
+
+    branches_to_move = problem.getUpperBound(0) * size_to_share;
     limit_level_to_share = number_of_tree_levels * deep_limit_share;
-    
-    number_of_nodes.fetch_and_store(computeTotalNodes(problemToCopy.getNumberOfVariables()));
-    
-    ivm_tree.setOwnerId(rank);
 
-    Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    problem.createDefaultSolution(solution);
+    std::strcpy(pareto_file, toCopy.pareto_file);
+    std::strcpy(summarize_file, toCopy.summarize_file);
 
-    if (isGridEnable())
-        paretoContainer(25, 25, problem.getFmin(0), problem.getFmin(1), problem.getFmax(0), problem.getFmax(1));
-    else
-        paretoContainer(1, 1, problem.getFmin(0), problem.getFmin(1), problem.getFmax(0), problem.getFmax(1));
+    return *this;
 }
 
 BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch) {
@@ -106,7 +136,7 @@ BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, cons
     t1 = std::chrono::high_resolution_clock::now();
     t2 = std::chrono::high_resolution_clock::now();
     
-    start = std::clock();
+    time_start = std::clock();
     node_rank = node_rank_new;
     bb_rank = rank_new;
     problem = problem_to_copy;
@@ -149,7 +179,12 @@ BranchAndBound::~BranchAndBound() {
 }
 
 void BranchAndBound::initialize(int starts_tree) {
-    start = std::clock();
+    time_start = std::clock();
+
+    if (isGridEnable())
+        paretoContainer(25, 25, problem.getFmin(0), problem.getFmin(1), problem.getFmax(0), problem.getFmax(1));
+    else
+        paretoContainer(1, 1, problem.getFmin(0), problem.getFmin(1), problem.getFmax(0), problem.getFmax(1));
     
     if (starts_tree == -1)
         currentLevel = 0;
@@ -402,6 +437,10 @@ bool BranchAndBound::thereIsMoreWork() const {
     return there_is_more_work;
 }
 
+unsigned long BranchAndBound::getPFVersion() const {
+    return local_update_version;
+}
+
 bool BranchAndBound::isLocalPFversionOutdated() const {
     return local_update_version < sharedParetoFront.getVersionUpdate();
 }
@@ -490,7 +529,6 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
                     if (ub_normalized[objc] <= 0)
                         is_improving = true;
-
                 }
                 /** If distance in obj1 is better  or distance in obj2 is better then it can produce an improvement. **/
                 if (is_improving && improvesTheGrid(solution)) {
@@ -754,7 +792,7 @@ float BranchAndBound::distanceToObjective(int value, int objective) {
     return (value - objective) / value;
 }
 
-double BranchAndBound::minMaxNormalization(int value, int min, int max) {
+double BranchAndBound::minMaxNormalization(int value, int min, int max) const{
     return ((value - min) * 1.0 )/ (max - min);
 }
 
@@ -839,35 +877,35 @@ unsigned long BranchAndBound::getSharedWork() const {
 }
 
 void BranchAndBound::increaseNumberOfNodesExplored(unsigned long value) {
-    number_of_nodes_explored.fetch_and_add(value);
+    number_of_nodes_explored += value;
 }
 
 void BranchAndBound::increaseNumberOfCallsToBranch(unsigned long value) {
-    number_of_calls_to_branch.fetch_and_add(value);
+    number_of_calls_to_branch += value;
 }
 
 void BranchAndBound::increaseNumberOfNodesCreated(unsigned long value) {
-    number_of_nodes_created.fetch_and_add(value);
+    number_of_nodes_created += value;
 }
 
 void BranchAndBound::increaseNumberOfCallsToPrune(unsigned long value) {
-    number_of_calls_to_prune.fetch_and_add(value);
+    number_of_calls_to_prune += value;
 }
 
 void BranchAndBound::increaseNumberOfNodesPruned(unsigned long value) {
-    number_of_nodes_pruned.fetch_and_add(value);
+    number_of_nodes_pruned += value;
 }
 
 void BranchAndBound::increaseNumberOfReachedLeaves(unsigned long value) {
-    number_of_reached_leaves.fetch_and_add(value);
+    number_of_reached_leaves += value;
 }
 
 void BranchAndBound::increaseNumberOfUpdatesInLowerBound(unsigned long value) {
-    number_of_updates_in_lower_bound.fetch_and_add(value);
+    number_of_updates_in_lower_bound += value;
 }
 
 void BranchAndBound::increaseSharedWork(unsigned long value) {
-    number_of_shared_works.fetch_and_add(value);
+    number_of_shared_works += value;
 }
 
 void BranchAndBound::increaseExploredNodes() {
@@ -1109,8 +1147,8 @@ int BranchAndBound::saveParetoFront() {
 
 void BranchAndBound::saveEvery(double timeInSeconds) {
     
-    if (((std::clock() - start) / (double) CLOCKS_PER_SEC) > timeInSeconds) {
-        start = std::clock();
+    if (((std::clock() - time_start) / (double) CLOCKS_PER_SEC) > timeInSeconds) {
+        time_start = std::clock();
         
         pareto_front = paretoContainer.getParetoFront();
         

@@ -316,7 +316,9 @@ void MasterWorkerPBB::runWorkerProcess() {
     
     paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
-    BranchAndBound BB_container(rank, 0, true, true, true, problem, branch_init);
+    BranchAndBound BB_container(rank, 0, problem, branch_init);
+    BB_container.enablePriorityQueue();
+    BB_container.enableSortingNodes();
     branches_created += BB_container.initGlobalPoolWithInterval(branch_init);
     BB_container.setSummarizeFile(summarize_file);
     BB_container.setParetoFrontFile(pareto_front_file);
@@ -331,7 +333,9 @@ void MasterWorkerPBB::runWorkerProcess() {
     vector<BranchAndBound *> bb_threads;
     int n_bb = 0;
     while (n_bb++ < branchsandbound_per_worker) {
-        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(getRank(), n_bb, true, true, true,  problem, branch_init);
+        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(getRank(), n_bb,  problem, branch_init);
+        BaB_task->enableSortingNodes();
+        BaB_task->enablePriorityQueue();
         bb_threads.push_back(BaB_task);
         tl.push_back(*BaB_task);
     }

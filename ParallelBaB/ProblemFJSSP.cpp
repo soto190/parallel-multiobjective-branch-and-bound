@@ -2008,7 +2008,7 @@ void ProblemFJSSP::printProblemInfo() const {
     printf("\n");
     
     printf("Processing times: \n");
-    printf("\t\t\t");
+    printf("\t\t");
     for (machine = 0; machine < n_machines; ++machine)
         printf("M%-3d", machine);
     printf("| EST EET\n");

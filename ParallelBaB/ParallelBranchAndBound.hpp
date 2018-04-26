@@ -29,9 +29,20 @@ public:
     bool is_priority_enable = false;
     double time_limit;
 
+    unsigned long number_of_nodes;
+    unsigned long number_of_nodes_created;
+    unsigned long number_of_nodes_pruned;
+    unsigned long number_of_nodes_explored;
+    unsigned long number_of_nodes_unexplored;
+    unsigned long number_of_calls_to_branch;
+    unsigned long number_of_reached_leaves;
+    unsigned long number_of_calls_to_prune;
+    unsigned long number_of_updates_in_lower_bound;
+    unsigned long number_of_tree_levels;
+    unsigned long number_of_shared_works;
+    
     ProblemFJSSP problem;
     Interval branch_init;
-
 
     ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem);
     ~ParallelBranchAndBound();
