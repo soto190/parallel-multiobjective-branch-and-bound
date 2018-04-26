@@ -142,6 +142,10 @@ public:
     unsigned long getNumberOfCallsToPrune() const;
     unsigned long getNumberOfUpdatesInLowerBound() const;
     unsigned long getSharedWork() const;
+
+    unsigned long getNumberOfDominatedContainers() const;
+    unsigned long getNumberOfNonDominatedContainers() const;
+    unsigned long getNumberOfUnexploredContainers() const;
     
     void increaseNumberOfNodesExplored(unsigned long value);
     void increaseNumberOfCallsToBranch(unsigned long value);

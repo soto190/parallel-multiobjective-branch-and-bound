@@ -876,6 +876,18 @@ unsigned long BranchAndBound::getSharedWork() const {
     return number_of_shared_works;
 }
 
+unsigned long BranchAndBound::getNumberOfDominatedContainers() const {
+    return paretoContainer.getNumberOfDisabledBuckets();
+}
+
+unsigned long BranchAndBound::getNumberOfNonDominatedContainers() const {
+    return paretoContainer.getNumberOfActiveBuckets();
+}
+
+unsigned long BranchAndBound::getNumberOfUnexploredContainers() const {
+    return paretoContainer.getNumberOfUnexploredBuckets();
+}
+
 void BranchAndBound::increaseNumberOfNodesExplored(unsigned long value) {
     number_of_nodes_explored += value;
 }

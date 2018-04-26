@@ -29,6 +29,10 @@ branch_init(problem.getNumberOfVariables()) {
     number_of_tree_levels = 0;
     number_of_shared_works = 0;
 
+    number_of_active_buckets = 0;
+    number_of_unexplored_buckets = 0;
+    number_of_dominated_buckets = 0;
+
     time_start = std::clock();
     t1 = std::chrono::high_resolution_clock::now();
     t2 = std::chrono::high_resolution_clock::now();
@@ -87,6 +91,9 @@ tbb::task * ParallelBranchAndBound::execute() {
         number_of_updates_in_lower_bound += bb_in->getNumberOfUpdatesInLowerBound();
         number_of_shared_works += bb_in->getSharedWork();
 
+        number_of_active_buckets += bb_in->getNumberOfNonDominatedContainers();
+        number_of_dominated_buckets += bb_in->getNumberOfDominatedContainers();
+        number_of_unexplored_buckets += bb_in->getNumberOfUnexploredContainers();
     }
 
     printf("[Worker-%03d] Parallel Branch And Bound front.\n", rank);
@@ -253,6 +260,11 @@ void ParallelBranchAndBound::saveSummarize() {
     printf("Calls to prune:      %ld\n", number_of_calls_to_prune);
     printf("Updates in PF:       %ld\n", number_of_updates_in_lower_bound);
     printf("Shared work: %ld\n", number_of_shared_works);
+    printf("Grid data:\n");
+    //myfile << "\tdimension:         \t" << paretoContainer.getCols() << " x " << paretoContainer.getRows() << endl;
+    printf("\tnon-dominated:\t%ld\n", number_of_active_buckets);
+    printf("\tdominated:\t%ld\n", number_of_dominated_buckets);
+    printf("\tunexplored:\t%ld\n", number_of_unexplored_buckets);
 
     std::ofstream myfile(summarize_file);
     if (myfile.is_open()) {

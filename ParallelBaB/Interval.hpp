@@ -41,7 +41,7 @@ private:
     Deep deep;
     int build_up_to = -1;
     int max_size = 0;
-    float distance[2];
+    float distance[3];
     int * interval;
     
 public:
