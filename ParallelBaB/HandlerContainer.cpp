@@ -14,6 +14,9 @@ rangeiny(nullptr),
 maxinx(0),
 maxiny(0),
 numberOfElements(0),
+activeBuckets(0),
+unexploredBuckets(0),
+disabledBuckets(0),
 grid(0,0) {
 
 };
