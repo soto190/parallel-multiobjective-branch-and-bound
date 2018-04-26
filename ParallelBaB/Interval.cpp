@@ -150,8 +150,8 @@ void Interval::setHighPriority() {
     priority = Priority::P_High;
 }
 
-void Interval::setMediumPriority() {
-    priority = Priority::P_Medium;
+void Interval::setNormalPriority() {
+    priority = Priority::P_Normal;
 }
 
 void Interval::setDistance(int n_dim, float n_val) {

@@ -22,7 +22,7 @@
 const float large_branch  = 0.666f;
 const float short_branch = 0.333f;
 
-enum Priority {P_High = 0, P_Medium = 1, P_Low = 2};
+enum Priority {P_High = 0, P_Normal = 1, P_Low = 2};
 enum Deep{TOP = 0, MID = 1, BOTTOM = 2};
 
 typedef struct {
@@ -65,7 +65,7 @@ public:
     void setValueAt(int index, int value);
     void setLowPriority();
     void setHighPriority();
-    void setMediumPriority();
+    void setNormalPriority();
     void setDistance(int n_dim, float n_val);
     void removeLastValue();
     void print() const;

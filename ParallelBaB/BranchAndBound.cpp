@@ -760,11 +760,11 @@ void BranchAndBound::setPriorityTo(Interval& interval) const {
                 if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
                     interval.setHighPriority();
                 else if(interval.getDistance(0) <= half || interval.getDistance(1) <= half) /** Moderate distance. **/
-                    interval.setMediumPriority();
+                    interval.setNormalPriority();
                 break;
 
             case Deep::MID:
-                interval.setMediumPriority();
+                interval.setNormalPriority();
 
                 if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
                     interval.setHighPriority();

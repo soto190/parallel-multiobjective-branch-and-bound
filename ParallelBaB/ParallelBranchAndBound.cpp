@@ -118,7 +118,6 @@ void ParallelBranchAndBound::initSharedPF() {
     Solution temp_2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(2, temp_2);
     sharedParetoFront.push_back(temp_2);
-
 }
 
 int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {

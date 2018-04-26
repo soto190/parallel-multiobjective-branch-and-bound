@@ -48,5 +48,5 @@ bool SubproblemsPool::try_pop(Interval & interval) {
 
 void SubproblemsPool::print() const {
     unsigned long total_size = unsafe_size();
-    printf("T:%4lu\t[H:%4lu\tM:%4lu\tL:%4lu\t]\n", total_size, priority_queues[P_High].unsafe_size(), priority_queues[P_Medium].unsafe_size(), priority_queues[P_Low].unsafe_size());
+    printf("T:%4lu\t[H:%4lu\tM:%4lu\tL:%4lu\t]\n", total_size, priority_queues[P_High].unsafe_size(), priority_queues[P_Normal].unsafe_size(), priority_queues[P_Low].unsafe_size());
 }
