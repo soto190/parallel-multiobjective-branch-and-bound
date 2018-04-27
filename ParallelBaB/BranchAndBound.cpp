@@ -230,17 +230,17 @@ void BranchAndBound::initialize(int starts_tree) {
      updateBoundsWithSolution(algorithms_pf.at(solution_pf));
      */
     problem.createDefaultSolution(incumbent_s);
-    updateParetoGrid(incumbent_s);
+    updateParetoContainer(incumbent_s);
     updateBoundsWithSolution(incumbent_s);
 
     Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(1, temp);
-    updateParetoGrid(temp);
+    updateParetoContainer(temp);
     updateBoundsWithSolution(temp);
 
     Solution temp_2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(2, temp_2);
-    updateParetoGrid(temp_2);
+    updateParetoContainer(temp_2);
     updateBoundsWithSolution(temp_2);
 }
 
@@ -266,8 +266,8 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     problem.getSolutionWithLowerBoundInObj(1, temp);
     temp.print();
     incumbent_s.print();
-    updateParetoGrid(incumbent_s);
-    updateParetoGrid(temp);
+    updateParetoContainer(incumbent_s);
+    updateParetoContainer(temp);
     updateBoundsWithSolution(temp);
     
     int split_level = branch_to_split.getBuildUpTo() + 1;
@@ -299,7 +299,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
                 incumbent_s.setVariable(split_level, toAdd);
                 problem.evaluateDynamic(incumbent_s, fjssp_data, split_level);
                 increaseExploredNodes();
-                if (improvesTheGrid(incumbent_s)) {
+                if (improvesTheParetoContainer(incumbent_s)) {
                     branch_to_split.setValueAt(split_level, toAdd);
                     branch_to_split.setDistance(0, minMaxNormalization(fjssp_data.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
                     branch_to_split.setDistance(1, minMaxNormalization(fjssp_data.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
@@ -386,16 +386,25 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
 }
 
 tbb::task* BranchAndBound::execute() {
+    printf("[Worker-%03d:B&B-%03d] B&B Launched.\n", node_rank, bb_rank);
     t1 = std::chrono::high_resolution_clock::now();
     initialize(interval_to_solve.getBuildUpTo());
+    int number_of_sub_problems_popped = 0;
     while (!sharedPool.empty() || thereIsMoreWork()) {/** While the pool has intervals or there are more work on other nodes. **/
-        if(sharedPool.try_pop(interval_to_solve))
+        if(sharedPool.try_pop(interval_to_solve)) {
+            number_of_sub_problems_popped++;
+
+            printf("[Worker-%03d:B&B-%03d] Solving sub-problem %d.\n", node_rank, bb_rank, number_of_sub_problems_popped);
             solve(interval_to_solve);
+        }
 
         updateLocalPF();
+
     }
+    printf("[Worker-%03d:B&B-%03d] Number of sub-problems popped from queue: %d.\n", node_rank, bb_rank, number_of_sub_problems_popped);
 
     sleeping_bb++;
+    printf("[Worker-%03d:B&B-%03d] Generating pareto Front.\n", node_rank, bb_rank);
     pareto_front = paretoContainer.generateParetoFront();
 
     printf("[Worker-%03d:B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, bb_rank, getElapsedTime());
@@ -410,13 +419,13 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
         if (!aLeafHasBeenReached() && theTreeHasMoreNodes()) {
-            if (improvesTheGrid(incumbent_s))
+            if (improvesTheParetoContainer(incumbent_s))
                 branch(incumbent_s, currentLevel);
             else
                 prune(incumbent_s, currentLevel);
         } else {
             increaseReachedLeaves();
-            if (updateParetoGrid(incumbent_s)) {
+            if (updateParetoContainer(incumbent_s)) {
                 increaseUpdatesInLowerBound();
                 updateGlobalPF(incumbent_s);
             }
@@ -448,11 +457,15 @@ bool BranchAndBound::isLocalPFversionOutdated() const {
 void BranchAndBound::updateLocalPF() {
     if (isLocalPFversionOutdated()) {
         unsigned long global_version = sharedParetoFront.getVersionUpdate();
+
+        printf("[Worker-%03d:B&B-%03d] Updating local Pareto front from %ld to %ld size %ld.\n", node_rank, bb_rank, getPFVersion(), global_version, paretoContainer.getNumberOfElements());
+
         std::vector<Solution> global_pf = sharedParetoFront.getVector();
         for (auto element = global_pf.begin(); element != global_pf.end(); ++element)
             paretoContainer.add(*element);
-        
+
         local_update_version = global_version;
+        printf("[Worker-%03d:B&B-%03d] Updated local Pareto front to %ld size %ld.\n", node_rank, bb_rank, getPFVersion(), paretoContainer.getNumberOfElements());
     }
 }
 
@@ -531,7 +544,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         is_improving = true;
                 }
                 /** If distance in obj1 is better  or distance in obj2 is better then it can produce an improvement. **/
-                if (is_improving && improvesTheGrid(solution)) {
+                if (is_improving && improvesTheParetoContainer(solution)) {
 
                     /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
                     if(isSortingEnable()) {
@@ -658,7 +671,7 @@ bool BranchAndBound::theTreeHasMoreNodes() const {
     return ivm_tree.thereAreMoreBranches();
 }
 
-bool BranchAndBound::updateParetoGrid(const Solution & solution) {
+bool BranchAndBound::updateParetoContainer(const Solution & solution) {
     return paretoContainer.add(solution);
 }
 
@@ -672,7 +685,7 @@ bool BranchAndBound::updateParetoGrid(const Solution & solution) {
  *  6- It is non-dominated.
  *
  */
-bool BranchAndBound::improvesTheGrid(const Solution & solution) {
+bool BranchAndBound::improvesTheParetoContainer(const Solution & solution) {
     return paretoContainer.improvesTheGrid(solution);
 }
 

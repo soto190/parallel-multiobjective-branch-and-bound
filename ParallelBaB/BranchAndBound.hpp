@@ -195,8 +195,8 @@ private:
     unsigned long permut(unsigned long n, unsigned long i) const;
     
     void shareWorkAndSendToGlobalPool(const Interval& interval);
-    bool improvesTheGrid(const Solution & solution);
-    bool updateParetoGrid(const Solution & solution);
+    bool improvesTheParetoContainer(const Solution & solution);
+    bool updateParetoContainer(const Solution & solution);
     void updateBounds(const Solution & solution, FJSSPdata& data);
     void updateBoundsWithSolution(const Solution & solution);
     void setPriorityTo(Interval & interval) const;

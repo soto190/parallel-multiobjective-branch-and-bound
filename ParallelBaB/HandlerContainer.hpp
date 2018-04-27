@@ -19,7 +19,7 @@ private:
     double * rangeiny;
     double maxinx;
     double maxiny;
-    unsigned long numberOfElements;
+    //unsigned long numberOfElements;
 
     unsigned long activeBuckets;
     unsigned long unexploredBuckets;

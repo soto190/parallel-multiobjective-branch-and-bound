@@ -13,7 +13,7 @@ rangeinx(nullptr),
 rangeiny(nullptr),
 maxinx(0),
 maxiny(0),
-numberOfElements(0),
+//numberOfElements(0),
 activeBuckets(0),
 unexploredBuckets(0),
 disabledBuckets(0),
@@ -24,11 +24,11 @@ grid(0,0) {
 HandlerContainer::HandlerContainer(const HandlerContainer& toCopy):
 maxinx(toCopy.getMaxValueInX()),
 maxiny(toCopy.getMaxValueInY()),
-numberOfElements(toCopy.getNumberOfElements()),
+grid(toCopy.getGrid()),
+//numberOfElements(toCopy.getNumberOfElements()),
 activeBuckets(toCopy.getNumberOfActiveBuckets()),
 unexploredBuckets(toCopy.getNumberOfUnexploredBuckets()),
-disabledBuckets(toCopy.getNumberOfDisabledBuckets()),
-grid(toCopy.getGrid()) {
+disabledBuckets(toCopy.getNumberOfDisabledBuckets()) {
 
     rangeinx = new double[toCopy.getCols()];
     rangeiny = new double[toCopy.getRows()];
@@ -52,7 +52,7 @@ grid(cols, rows) {
      if (maxValY < rows)
      rows = maxValY;
      */
-    numberOfElements = 0;
+    //numberOfElements = 0;
     unexploredBuckets = rows * cols;
     activeBuckets = 0;
     disabledBuckets = 0;
@@ -96,7 +96,7 @@ HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int c
 
     //grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows);
 
-    numberOfElements = 0;
+    //numberOfElements = 0;
     unexploredBuckets = rows * cols;
     activeBuckets = 0;
     disabledBuckets = 0;
@@ -266,7 +266,7 @@ unsigned long HandlerContainer::getNumberOfDisabledBuckets() const {
 }
 
 unsigned long HandlerContainer::getNumberOfElements() const {
-    return numberOfElements;
+    return grid.getSize();
 }
 
 void HandlerContainer::setNonDominatedState(int x, int y) {

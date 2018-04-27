@@ -47,7 +47,7 @@ bool GridContainer::addTo(const Solution& obj, size_t x, size_t y) {
     unsigned long size_before = pareto_buckets[index].size();
     bool updated = pareto_buckets[index].push_back(obj);
     unsigned long size_after = pareto_buckets[index].size();
-    numberOfElements = size_after - size_before;
+    numberOfElements += size_after - size_before;
     return updated;
 }
 
