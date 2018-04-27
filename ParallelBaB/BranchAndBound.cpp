@@ -394,12 +394,12 @@ tbb::task* BranchAndBound::execute() {
         if(sharedPool.try_pop(interval_to_solve)) {
             number_of_sub_problems_popped++;
 
-            printf("[Worker-%03d:B&B-%03d] Solving sub-problem %d.\n", node_rank, bb_rank, number_of_sub_problems_popped);
+            printf("[Worker-%03d:B&B-%03d] Sub-problem in pool %ld.\n", node_rank, bb_rank, sharedPool.unsafe_size());
             solve(interval_to_solve);
-        }
+        }else
+            printf("[Worker-%03d:B&B-%03d] Cannot try_pop failed. Sub-problem in pool %ld.\n", node_rank, bb_rank, sharedPool.unsafe_size());
 
         updateLocalPF();
-
     }
     printf("[Worker-%03d:B&B-%03d] Number of sub-problems popped from queue: %d.\n", node_rank, bb_rank, number_of_sub_problems_popped);
 
@@ -426,6 +426,9 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         } else {
             increaseReachedLeaves();
             if (updateParetoContainer(incumbent_s)) {
+                printf("[Worker-%03d:B&B-%03d] New solution found:\n", node_rank, bb_rank);
+                cout << incumbent_s;
+
                 increaseUpdatesInLowerBound();
                 updateGlobalPF(incumbent_s);
             }
@@ -457,8 +460,6 @@ bool BranchAndBound::isLocalPFversionOutdated() const {
 void BranchAndBound::updateLocalPF() {
     if (isLocalPFversionOutdated()) {
         unsigned long global_version = sharedParetoFront.getVersionUpdate();
-
-        printf("[Worker-%03d:B&B-%03d] Updating local Pareto front from %ld to %ld size %ld.\n", node_rank, bb_rank, getPFVersion(), global_version, paretoContainer.getNumberOfElements());
 
         std::vector<Solution> global_pf = sharedParetoFront.getVector();
         for (auto element = global_pf.begin(); element != global_pf.end(); ++element)

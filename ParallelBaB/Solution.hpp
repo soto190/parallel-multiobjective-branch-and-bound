@@ -11,6 +11,8 @@
 
 #include <stdio.h>
 #include <string>
+#include <iostream>
+#include <iomanip>
 #include <random>
 #include "SolutionException.hpp"
 
@@ -78,7 +80,9 @@ public:
     bool operator==(const Solution & solution) const;
     bool operator>(const Solution& solution) const;
     bool operator<(const Solution& solution) const;
-    
+
+    friend std::ostream &operator<<(std::ostream& stream, const Solution& solution);
+
     /** print functions. **/
     void print() const;
     void printObjectives() const;
