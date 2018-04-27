@@ -67,6 +67,10 @@ Interval::Interval(const Payload_interval& payload) {
         interval[index] = payload.interval[index];
 }
 
+Interval::~Interval() {
+    delete [] interval;
+}
+
 Interval& Interval::operator()(int size) {
     distance[0] = 0;
     distance[1] = 0;
@@ -128,8 +132,18 @@ Interval& Interval::operator=(const Interval &toCopy) {
     return *this;
 }
 
-Interval::~Interval() {
-    delete [] interval;
+std::ostream &operator<<(std::ostream& stream, const Interval& interval) {
+    stream << "[" << interval.getBuildUpTo() << "] [";
+    for (int index_var = 0; index_var <= interval.getBuildUpTo(); ++index_var)
+        stream << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << interval.getValueAt(index_var);
+
+    for (int index_var = interval.getBuildUpTo() + 1; index_var < interval.getSize(); ++index_var)
+        stream << std::fixed << std::setw(6) << std::setfill(' ') << '-';
+
+    for (int index_dist = 0; index_dist < 3; ++index_dist)
+        stream << ']' << '[' << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << interval.getDistance(index_dist);
+    stream << ']' << ' ' <<'[' << interval.getDeep() << ' ' << interval.getPriority() << ']' << std::endl;
+    return stream;
 }
 
 int Interval::getSize() const {

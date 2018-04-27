@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <iomanip>
 
 /**
  *
@@ -54,7 +55,9 @@ public:
     Interval& operator=(const Interval& toCopy);
     Interval& operator()(int size);
     Interval& operator()(const Payload_interval& payload);
-    
+
+    friend std::ostream &operator<<(std::ostream& stream, const Interval& interval);
+
     int getSize() const;
     int getBuildUpTo() const;
     int getValueAt(int position) const;
