@@ -29,7 +29,7 @@ branch_init(problem.getNumberOfVariables()) {
     number_of_tree_levels = 0;
     number_of_shared_works = 0;
 
-    number_of_active_buckets = 0;
+    number_of_non_dominated_buckets = 0;
     number_of_unexplored_buckets = 0;
     number_of_dominated_buckets = 0;
 
@@ -91,7 +91,7 @@ tbb::task * ParallelBranchAndBound::execute() {
         number_of_updates_in_lower_bound += bb_in->getNumberOfUpdatesInLowerBound();
         number_of_shared_works += bb_in->getSharedWork();
 
-        number_of_active_buckets += bb_in->getNumberOfNonDominatedContainers();
+        number_of_non_dominated_buckets += bb_in->getNumberOfNonDominatedContainers();
         number_of_dominated_buckets += bb_in->getNumberOfDominatedContainers();
         number_of_unexplored_buckets += bb_in->getNumberOfUnexploredContainers();
     }
@@ -262,7 +262,7 @@ void ParallelBranchAndBound::saveSummarize() {
     printf("Shared work: %ld\n", number_of_shared_works);
     printf("Grid data:\n");
     //myfile << "\tdimension:         \t" << paretoContainer.getCols() << " x " << paretoContainer.getRows() << endl;
-    printf("\tnon-dominated:\t%ld\n", number_of_active_buckets);
+    printf("\tnon-dominated:\t%ld\n", number_of_non_dominated_buckets);
     printf("\tdominated:\t%ld\n", number_of_dominated_buckets);
     printf("\tunexplored:\t%ld\n", number_of_unexplored_buckets);
 
@@ -289,7 +289,7 @@ void ParallelBranchAndBound::saveSummarize() {
 
         myfile << "Grid data:\n";
         //myfile << "\tdimension:         \t" << paretoContainer.getCols() << " x " << paretoContainer.getRows() << endl;
-        myfile << "\tnon-dominated:     \t" << number_of_active_buckets << endl;
+        myfile << "\tnon-dominated:     \t" << number_of_non_dominated_buckets << endl;
         myfile << "\tdominated:         \t" << number_of_dominated_buckets << endl;
         myfile << "\tunexplored:        \t" << number_of_unexplored_buckets << endl;
         myfile << "The pareto front found is: \n";

@@ -41,7 +41,7 @@ public:
     unsigned long number_of_tree_levels;
     unsigned long number_of_shared_works;
 
-    unsigned long number_of_active_buckets;
+    unsigned long number_of_non_dominated_buckets;
     unsigned long number_of_unexplored_buckets;
     unsigned long number_of_dominated_buckets;
     
