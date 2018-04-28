@@ -14,6 +14,7 @@ SubproblemsPool::SubproblemsPool() {
 
 void SubproblemsPool::setSizeEmptying(unsigned long size) {
     size_emptying = size;
+    max_limit_size = size_emptying * 20;
 }
 
 unsigned long SubproblemsPool::getSizeEmptying() const {
@@ -22,6 +23,10 @@ unsigned long SubproblemsPool::getSizeEmptying() const {
 
 unsigned long SubproblemsPool::unsafe_size() const {
     return size;
+}
+
+bool SubproblemsPool::isMaxLimitSizeReached() const {
+    return size > max_limit_size;
 }
 
 bool SubproblemsPool::empty() const {

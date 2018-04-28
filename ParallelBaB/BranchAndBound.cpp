@@ -364,7 +364,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
     /** Send intervals to global_pool. **/
     int branches_to_move_to_global_pool = branches_created * getSizeToShare();
 
-    if (branches_created > branches_to_move_to_global_pool && branch_init.getBuildUpTo() <= getLimitLevelToShare())
+    if (!sharedPool.isMaxLimitSizeReached() && branches_created > branches_to_move_to_global_pool && branch_init.getBuildUpTo() <= getLimitLevelToShare())
         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
             int val = tree.removeLastNodeAtRow(build_up_to + 1);
             branch_init.setValueAt(build_up_to + 1, val);
@@ -394,7 +394,7 @@ tbb::task* BranchAndBound::execute() {
         if(sharedPool.try_pop(interval_to_solve)) {
             number_of_sub_problems_popped++;
 
-            printf("[Worker-%03d:B&B-%03d] Sub-problem in pool %ld.\n", node_rank, bb_rank, sharedPool.unsafe_size());
+            printf("[Worker-%03d:B&B-%03d] Sub-problems in pool %ld.\n", node_rank, bb_rank, sharedPool.unsafe_size());
             solve(interval_to_solve);
         }else
             printf("[Worker-%03d:B&B-%03d] Cannot try_pop failed. Sub-problem in pool %ld.\n", node_rank, bb_rank, sharedPool.unsafe_size());
@@ -613,7 +613,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
      * - If the level at which we are going to share is not too deep.
      * - If we have branches to share.
      */
-    if (sharedPool.isEmptying() && sharedPool.unsafe_size() < sharedPool.getSizeEmptying() * 10  && next_row < getLimitLevelToShare() && branches_to_move_to_global_pool > 1) {
+    if (sharedPool.isEmptying() && !sharedPool.isMaxLimitSizeReached() && next_row < getLimitLevelToShare() && branches_to_move_to_global_pool > 1) {
         
         Solution temp(incumbent_s.getNumberOfObjectives(), incumbent_s.getNumberOfVariables());
         FJSSPdata data(fjssp_data);
