@@ -393,8 +393,6 @@ tbb::task* BranchAndBound::execute() {
     while (!sharedPool.empty() || thereIsMoreWork()) {/** While the pool has intervals or there are more work on other nodes. **/
         if(sharedPool.try_pop(interval_to_solve)) {
             number_of_sub_problems_popped++;
-
-            printf("[Worker-%03d:B&B-%03d] Sub-problems in pool %ld.\n", node_rank, bb_rank, sharedPool.unsafe_size());
             solve(interval_to_solve);
         }else
             printf("[Worker-%03d:B&B-%03d] Cannot try_pop failed. Sub-problem in pool %ld.\n", node_rank, bb_rank, sharedPool.unsafe_size());
