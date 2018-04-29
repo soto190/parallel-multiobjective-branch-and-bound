@@ -389,7 +389,7 @@ tbb::task* BranchAndBound::execute() {
 
     t1 = std::chrono::high_resolution_clock::now();
     initialize(interval_to_solve.getBuildUpTo());
-    int number_of_sub_problems_popped = 0;
+    unsigned long number_of_sub_problems_popped = 0;
     while (!sharedPool.empty() || thereIsMoreWork())/** While the pool has intervals or there are more work on other nodes. **/
         if(sharedPool.try_pop(interval_to_solve)) {
             number_of_sub_problems_popped++;
@@ -397,13 +397,11 @@ tbb::task* BranchAndBound::execute() {
             solve(interval_to_solve);
         }
 
-    printf("[Worker-%03d:B&B-%03d] Number of sub-problems popped from queue: %d.\n", node_rank, bb_rank, number_of_sub_problems_popped);
-
     sleeping_bb++;
     updateLocalPF();
     pareto_front = paretoContainer.generateParetoFront();
 
-    printf("[Worker-%03d:B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, bb_rank, getElapsedTime());
+    printf("[Worker-%03d:B&B-%03d] No more intervals in global pool. Sub-problems popped from queue: %ld. Going to sleep. [ET: %6.6f sec.]\n", node_rank, bb_rank, number_of_sub_problems_popped, getElapsedTime());
     return NULL;
 }
 
