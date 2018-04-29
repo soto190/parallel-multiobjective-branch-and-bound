@@ -80,7 +80,7 @@ public:
     void saveParetoFront();
 private:
     int initSharedPool(const Interval& initial);
-    void initSharedPF();
+    void initSharedParetoFront();
     double getElapsedTime();
 
 };

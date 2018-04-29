@@ -1005,6 +1005,11 @@ void ProblemFJSSP::updateBestMakespanSolution(FJSSPdata& data) {
     }
 }
 
+void ProblemFJSSP::updateBestBoundsWith(const Solution& solution) {
+    updateBestMakespanSolutionWith(solution);
+    updateBestMaxWorkloadSolutionWith(solution);
+}
+
 void ProblemFJSSP::updateBestMakespanSolutionWith(const Solution& solution) {
     if (solution.getObjective(MAKESPAN) < best_makespan_found) {
         

@@ -44,7 +44,7 @@ ParallelBranchAndBound::~ParallelBranchAndBound() {
 
 tbb::task * ParallelBranchAndBound::execute() {
 
-    initSharedPF();
+    initSharedParetoFront();
     initSharedPool(branch_init);
 
     set_ref_count(number_of_bbs + 1);
@@ -111,7 +111,7 @@ tbb::task * ParallelBranchAndBound::execute() {
     return NULL;
 }
 
-void ParallelBranchAndBound::initSharedPF() {
+void ParallelBranchAndBound::initSharedParetoFront() {
     Solution temp_1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(temp_1);
     sharedParetoFront.push_back(temp_1);
@@ -125,6 +125,12 @@ void ParallelBranchAndBound::initSharedPF() {
     Solution temp_2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(2, temp_2);
     sharedParetoFront.push_back(temp_2);
+
+    problem.updateBestBoundsWith(temp_1);
+    problem.updateBestBoundsWith(temp);
+    problem.updateBestBoundsWith(temp_2);
+
+    std::cout << temp_1 << temp << temp_2;
 }
 
 int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {

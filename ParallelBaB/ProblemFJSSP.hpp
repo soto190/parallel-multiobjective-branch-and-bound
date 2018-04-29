@@ -140,7 +140,8 @@ public:
     int getDecodeMap(int code, int parameter) const;
     int getEncodeMap(int parameter1, int parameter2) const;
     int getTimesThatValueCanBeRepeated(int value);
-    
+
+    void updateBestBoundsWith(const Solution& solution);
     void updateBestMaxWorkloadSolution(FJSSPdata& data);
     void updateBestMakespanSolution(FJSSPdata& data);
     void updateBestMakespanSolutionWith(const Solution& solution);
