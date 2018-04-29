@@ -196,6 +196,15 @@ void ParetoFront::clear() {
     m_vec.clear();
 }
 
+std::ostream &operator<<(std::ostream& stream, const ParetoFront& pareto_f) {
+    unsigned int n_sol = 0;
+    for (size_t nSol = 0; nSol < pareto_f.size(); ++nSol) {
+        stream << '[' << n_sol++ << ']';
+        stream << pareto_f.at(nSol);
+    }
+    return stream;
+}
+
 void ParetoFront::print() const {
     unsigned int n_sol = 0;
     for (const auto& nSol : m_vec) {
