@@ -460,7 +460,6 @@ void BranchAndBound::updateLocalPF() {
             paretoContainer.add(element);
 
         local_update_version = global_version;
-        printf("[Worker-%03d:B&B-%03d] Updated local Pareto front to %ld, new size %ld.\n", node_rank, bb_rank, getPFVersion(), paretoContainer.getNumberOfElements());
     }
 }
 
