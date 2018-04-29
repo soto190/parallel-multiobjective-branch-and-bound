@@ -198,8 +198,8 @@ void ParetoFront::clear() {
 
 void ParetoFront::print() const {
     unsigned int n_sol = 0;
-    for (auto nSol = m_vec.begin(); nSol != m_vec.end(); ++nSol) {
-        printf("[%3d] ", n_sol);
-        (*nSol).print();
+    for (const auto& nSol : m_vec) {
+        printf("[%3d] ", n_sol++);
+        nSol.print();
     }
 }
