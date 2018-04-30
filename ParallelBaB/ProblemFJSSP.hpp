@@ -21,9 +21,6 @@
 #include "ParetoFront.hpp"
 #include "myutils.hpp"
 
-#define INF_PROC_TIME 9999999
-#define MAX_GANTT_LIMIT 262144
-
 /** jobaHasNoperations saids how many operations have each job.
  if we have 2 jobs with 3 operations and 1 job with 2 operations.
  Job 0 has 3 operations: [0] = 3
@@ -73,6 +70,7 @@ enum FJSSPobjectives {MAKESPAN = 0, MAX_WORKLOAD = 1, TOTAL_WORKLOAD = 2};
 class ProblemFJSSP: public Problem {
 
 private:
+    static const unsigned int MAX_GANTT_LIMIT = 262144;
     unsigned int n_jobs;
     unsigned int n_operations;
     unsigned int n_machines;
@@ -108,6 +106,8 @@ private:
 
     void computeNadirPoints();
 public:
+    static const unsigned int INF_PROC_TIME = 9999999;
+
     Solution goodSolutionWithMaxWorkload;
 
     ProblemFJSSP();

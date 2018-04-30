@@ -544,7 +544,7 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
                     int op_can_be_proc_in_n_mach = std::stoi(elemens.at(token++));
                     
                     for (int n_machine = 0; n_machine < problem.n_machines; ++n_machine)
-                        problem.processing_times[op_counter * problem.n_machines + n_machine] = INF_PROC_TIME;
+                        problem.processing_times[op_counter * problem.n_machines + n_machine] = ProblemFJSSP::INF_PROC_TIME;
                     
                     for (int n_mach = 0; n_mach < op_can_be_proc_in_n_mach; ++n_mach) {
                         int machine = std::stoi(elemens.at(token++)) - 1;

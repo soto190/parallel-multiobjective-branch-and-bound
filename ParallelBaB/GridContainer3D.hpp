@@ -22,7 +22,6 @@
  * An example of the Grid vectorization and 'row-major' order:
  *  https://stackoverflow.com/questions/14015556/how-to-map-the-indexes-of-a-matrix-to-a-1-dimensional-array-c
  **/
-#define BIG_VALUE 999999999
 
 class GridContainer3D {
 

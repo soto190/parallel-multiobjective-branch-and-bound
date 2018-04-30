@@ -15,11 +15,10 @@
 #include "ParetoFront.hpp"
 #include "tbb/atomic.h"
 
-#define DIMENSIONS 3
-
 class HandlerContainer3D {
 
 private:
+    static const unsigned int DIMENSIONS = 3;
     double * rangeinx;
     double * rangeiny;
     double * rangeinz;
