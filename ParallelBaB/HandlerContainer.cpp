@@ -28,10 +28,9 @@ grid(toCopy.getGrid()),
 //numberOfElements(toCopy.getNumberOfElements()),
 activeBuckets(toCopy.getNumberOfActiveBuckets()),
 unexploredBuckets(toCopy.getNumberOfUnexploredBuckets()),
-disabledBuckets(toCopy.getNumberOfDisabledBuckets()) {
-
-    rangeinx = new double[toCopy.getCols()];
-    rangeiny = new double[toCopy.getRows()];
+disabledBuckets(toCopy.getNumberOfDisabledBuckets()),
+rangeinx(new double[toCopy.getCols()]),
+rangeiny(new double[toCopy.getRows()]) {
 
     for (int indexy = 0; indexy < toCopy.getRows(); ++indexy)
         rangeiny[indexy] = toCopy.rangeiny[indexy];
@@ -44,7 +43,14 @@ disabledBuckets(toCopy.getNumberOfDisabledBuckets()) {
 }
 
 HandlerContainer::HandlerContainer(unsigned int rows, unsigned int cols, double maxValX, double maxValY):
-grid(cols, rows) {
+unexploredBuckets(rows * cols),
+activeBuckets(0),
+disabledBuckets(0),
+maxinx(maxValX),
+maxiny(maxValY),
+grid(cols, rows),
+rangeinx(new double[cols]),
+rangeiny(new double[rows]) {
     //    grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows) {
     /*
      if (maxValX < cols)
@@ -53,14 +59,6 @@ grid(cols, rows) {
      rows = maxValY;
      */
     //numberOfElements = 0;
-    unexploredBuckets = rows * cols;
-    activeBuckets = 0;
-    disabledBuckets = 0;
-
-    rangeinx = new double[cols];
-    rangeiny = new double[rows];
-    maxinx = maxValX;
-    maxiny = maxValY;
 
     double rx = maxValX / cols;
     double ry = maxValY / rows;
@@ -102,9 +100,9 @@ HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int c
     disabledBuckets = 0;
 
     if(rangeinx != nullptr)
-        delete rangeinx;
+        delete [] rangeinx;
     if(rangeiny != nullptr)
-        delete rangeiny;
+        delete [] rangeiny;
 
     pareto_front.clear();
 

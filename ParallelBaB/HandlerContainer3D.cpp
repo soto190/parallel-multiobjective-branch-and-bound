@@ -28,11 +28,10 @@ numberOfElements(toCopy.getNumberOfElements()),
 activeBuckets(toCopy.getNumberOfActiveBuckets()),
 unexploredBuckets(toCopy.getNumberOfUnexploredBuckets()),
 disabledBuckets(toCopy.getNumberOfDisabledBuckets()),
-grid(toCopy.getGrid()) {
-
-    rangeinx = new double[toCopy.getCols()];
-    rangeiny = new double[toCopy.getRows()];
-    rangeinz = new double[toCopy.getDeep()];
+grid(toCopy.getGrid()),
+rangeinx(new double[toCopy.getCols()]),
+rangeiny(new double[toCopy.getRows()]),
+rangeinz(new double[toCopy.getDeep()]){
 
     for (int indexy = 0; indexy < toCopy.getRows(); ++indexy)
         rangeiny[indexy] = toCopy.rangeiny[indexy];
