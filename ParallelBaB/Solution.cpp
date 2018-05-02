@@ -20,10 +20,10 @@ rank(0),
 distance(0),
 sort_by(0),
 index(0),
-dominated_by(0) {
-    build_up_to = -1;
-    objective = nullptr;
-    variable = nullptr;
+dominated_by(0),
+build_up_to(-1),
+objective(nullptr),
+variable(nullptr) {
 }
 
 Solution::Solution(int numberOfObjectives, int numberOfVariables):
