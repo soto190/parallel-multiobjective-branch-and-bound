@@ -2019,7 +2019,7 @@ void ProblemFJSSP::printProblemInfo() const {
     printf("| EST EET\n");
     for (operation = 0; operation < n_operations; ++operation) {
         
-        printf("[J%-2d] %2c %2d:", operation_belongs_to_job[operation], 'A' + operation, operation);
+        printf("[J%-2d] %2d:", operation_belongs_to_job[operation], operation);
         for (machine = 0; machine < n_machines; ++machine)
             if (processing_time[operation][machine] == INF_PROC_TIME)
                 printf("%4c", sep);
@@ -2138,10 +2138,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
                 
             }
         }
-        
-        for (time = startingTime[numberOp]; time < endingTime[numberOp]; time++)
-            gantt[machine][time] = 'A' + numberOp;
-        
+
         operationOfJob[job]++;
         
         if (timeInMachine[machine] > makespan)
@@ -2153,7 +2150,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     
     printf("\tOp :  M  ti -  tf\n");
     for (operation = 0; operation < n_operations; ++operation)
-        printf("%3c %3d: %2d %3d - %3d \n", 'A' + operation, operation, operation_in_machine[operation], startingTime[operation], endingTime[operation]);
+        printf("%3d: %2d %3d - %3d \n", operation, operation_in_machine[operation], startingTime[operation], endingTime[operation]);
     /*
      for (machine = n_machines - 1;  machine >= 0; --machine) {
      printf("M%d  | ", machine);
