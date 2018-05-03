@@ -364,7 +364,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
     /** Send intervals to global_pool. **/
     int branches_to_move_to_global_pool = branches_created * getSizeToShare();
 
-    if (!sharedPool.isMaxLimitSizeReached() && branches_created > branches_to_move_to_global_pool && branch_init.getBuildUpTo() <= getLimitLevelToShare())
+    if (!sharedPool.isMaxLimitReached() && branches_created > branches_to_move_to_global_pool && branch_init.getBuildUpTo() <= getLimitLevelToShare())
         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
             int val = tree.removeLastNodeAtRow(build_up_to + 1);
             branch_init.setValueAt(build_up_to + 1, val);
@@ -606,7 +606,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
      * - If the level at which we are going to share is not too deep.
      * - If we have branches to share.
      */
-    if (sharedPool.isEmptying() && !sharedPool.isMaxLimitSizeReached() && next_row < getLimitLevelToShare() && branches_to_move_to_global_pool > 1) {
+    if (sharedPool.isEmptying() && !sharedPool.isMaxLimitReached() && next_row < getLimitLevelToShare() && branches_to_move_to_global_pool > 1) {
         
         Solution temp(incumbent_s.getNumberOfObjectives(), incumbent_s.getNumberOfVariables());
         FJSSPdata data(fjssp_data);
@@ -1044,6 +1044,7 @@ void BranchAndBound::saveIVM() const {
 
 void BranchAndBound::saveGlobalPool() const {
     /** TODO: globalPoolFile is saved by the container B&B (bb_rank = 0).**/
+    std::vector<Interval> to_restore;
     std::ofstream myfile(pool_file);
     if (myfile.is_open()) {
         Interval interval(problem.getNumberOfVariables());
@@ -1052,7 +1053,8 @@ void BranchAndBound::saveGlobalPool() const {
         myfile << "pool_size: " << sharedPool.unsafe_size() << endl;
         for (size_t element = 0; element < sharedPool.unsafe_size(); ++element)
             if(sharedPool.try_pop(interval)) {
-                
+                to_restore.push_back(interval);
+
                 myfile << interval.getBuildUpTo() << " ";
                 for (int index_var = 0; index_var <= interval.getBuildUpTo(); ++index_var)
                     myfile << interval.getValueAt(index_var) << " ";
@@ -1061,7 +1063,11 @@ void BranchAndBound::saveGlobalPool() const {
                     myfile << "- ";
                 myfile << endl;
             }
-        
+
+        /** This have to be used only when the progress is saved and then we have to recover the data to continue with the exploration. **/
+        for (const auto& sub_problem : to_restore)
+            sharedPool.push(sub_problem);
+
         myfile.close();
     } else
         printf("[Worker-%03d:B&B-%03d] Unable to write global pool: %s\n", node_rank, bb_rank, pool_file);

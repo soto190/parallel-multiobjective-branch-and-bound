@@ -8,13 +8,16 @@
 
 #include "SubproblemsPool.hpp"
 
-SubproblemsPool::SubproblemsPool() {
-    size.store(0);
+SubproblemsPool::SubproblemsPool():
+size_emptying(4),
+max_limit_size(40),
+size(0) {
+
 }
 
 void SubproblemsPool::setSizeEmptying(unsigned long size) {
     size_emptying = size;
-    max_limit_size = size_emptying * 20;
+    max_limit_size = size_emptying * 10;
 }
 
 unsigned long SubproblemsPool::getSizeEmptying() const {
@@ -25,7 +28,7 @@ unsigned long SubproblemsPool::unsafe_size() const {
     return size;
 }
 
-bool SubproblemsPool::isMaxLimitSizeReached() const {
+bool SubproblemsPool::isMaxLimitReached() const {
     return size > max_limit_size;
 }
 
@@ -38,13 +41,16 @@ bool SubproblemsPool::isEmptying() const {
 }
 
 void SubproblemsPool::push(const Interval & subproblem) {
-    priority_queues[subproblem.getPriority()].push(subproblem);
     size.fetch_and_increment();
+    if (isMaxLimitReached())
+        std::cout << "SubProblemsPool: max_limit reached by " << size << std::endl;
+
+    priority_queues[subproblem.getPriority()].push(subproblem);
 }
 
 bool SubproblemsPool::try_pop(Interval & interval) {
-    for(int i = P_High; i <= P_Low; ++i) // Scan queues in priority order for a subproblem.
-        if(priority_queues[i].try_pop(interval)) {
+    for(int p_queue = P_High; p_queue <= P_Low; ++p_queue) // Scan queues in priority order for a subproblem.
+        if(priority_queues[p_queue].try_pop(interval)) {
             size.fetch_and_decrement();
             return true;
         }
