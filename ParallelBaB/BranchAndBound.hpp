@@ -116,9 +116,6 @@ public:
 
     void solve(Interval & interval);
     void initialize(int starting_level);
-    int explore(Solution & solution);
-    int branch(Solution & solution, int currentLevel);
-    void prune(Solution & solution, int currentLevel);
 
     void printParetoFront(int withVariables = 0);
 
@@ -184,6 +181,10 @@ public:
     task* execute();
     
 private:
+    int explore(Solution & solution);
+    int branch(Solution & solution, int currentLevel);
+    void prune(Solution & solution, int currentLevel);
+
     bool thereIsMoreTime();
     bool isLocalPFversionOutdated() const;
     double minMaxNormalization(int value, int min, int max) const;
