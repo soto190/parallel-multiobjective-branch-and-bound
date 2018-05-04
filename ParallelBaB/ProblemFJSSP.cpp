@@ -9,83 +9,73 @@
 #include "ProblemFJSSP.hpp"
 
 ProblemFJSSP::ProblemFJSSP() :
-Problem() {
-    n_jobs = 0;
-    n_operations = 0;
-    n_machines = 0;
-    sum_of_min_Pij = 0;
-    avg_op_per_machine = 0;
-    best_bound_max_workload = 0;
-    best_bound_makespan = 0;
-    sum_M_smallest_est = 0;
-    min_sum_shortest_proc_times = 0;
-    best_workload_found = 0;
-    best_makespan_found = INT_MAX;
-    max_eet_of_jobs = 0;
+Problem(0, 0),
+n_jobs(0),
+n_operations(0),
+n_machines(0),
+sum_of_min_Pij(0),
+avg_op_per_machine(0),
+best_bound_max_workload(0),
+best_bound_makespan(0),
+sum_M_smallest_est(0),
+min_sum_shortest_proc_times(0),
+best_workload_found(0),
+best_makespan_found(INT_MAX),
+max_eet_of_jobs(0),
+f_min(nullptr),
+f_max(nullptr),
+encode_job_machine_to_map(nullptr),
+decode_map_to_job_machine(nullptr),
+n_operations_in_job(nullptr),
+release_time(nullptr),
+operation_belongs_to_job(nullptr),
+assignation_min_Pij(nullptr),
+assignation_best_max_workload(nullptr),
+assignation_best_makespan(nullptr),
+best_workloads(nullptr),
+min_workloads(nullptr),
+job_operation_is_number(nullptr),
+processing_time(nullptr),
+earliest_starting_time(nullptr), /** Length equals to number of operations. **/
+earliest_ending_time(nullptr), /** Length equals to number of operations. **/
+eet_of_job(nullptr), /** Length equals to number of jobs. **/
+sum_shortest_proc_times(nullptr) { /** D^{k}_{Ñ}. Length equals to number of machines.**/
 
-    f_min = nullptr;
-    f_max = nullptr;
-    encode_job_machine_to_map = nullptr;
-    decode_map_to_job_machine = nullptr;
-    n_operations_in_job = nullptr;
-    release_time = nullptr;
-    operation_belongs_to_job = nullptr;
-    assignation_min_Pij = nullptr;
-    assignation_best_max_workload = nullptr;
-    assignation_best_makespan = nullptr;
-    best_workloads = nullptr;
-    min_workloads = nullptr;
-    job_operation_is_number = nullptr;
-    processing_time = nullptr;
-    
-    lower_bound = nullptr;
-    upper_bound = nullptr;
-    
-    earliest_starting_time = nullptr; /** Length equals to number of operations. **/
-    earliest_ending_time = nullptr; /** Length equals to number of operations. **/
-    eet_of_job = nullptr; /** Length equals to number of jobs. **/
-    sum_shortest_proc_times = nullptr; /** D^{k}_{Ñ}. Length equals to number of machines.**/
     machines_aviability.reserve(0);
 }
 
 ProblemFJSSP::ProblemFJSSP(int number_of_objectives, int number_of_variables) :
-Problem(number_of_objectives, number_of_variables) {
-    n_jobs = 0;
-    n_operations = 0;
-    n_machines = 0;
-    sum_of_min_Pij = 0;
-    avg_op_per_machine = 0;
-    best_bound_max_workload = 0;
-    best_bound_makespan = 0;
-    sum_M_smallest_est = 0;
-    min_sum_shortest_proc_times = 0;
-    best_workload_found = 0;
-    best_makespan_found = INT_MAX;
-    max_eet_of_jobs = 0;
-
-    f_min = nullptr;
-    f_max = nullptr;
-    encode_job_machine_to_map = nullptr;
-    decode_map_to_job_machine = nullptr;
-    n_operations_in_job = nullptr;
-    release_time = nullptr;
-    operation_belongs_to_job = nullptr;
-    assignation_min_Pij = nullptr;
-    assignation_best_max_workload = nullptr;
-    assignation_best_makespan = nullptr;
-    best_workloads = nullptr;
-    min_workloads = nullptr;
-    job_operation_is_number = nullptr;
-    processing_time = nullptr;
-    
-    lower_bound = nullptr;
-    upper_bound = nullptr;
-
-    earliest_starting_time = nullptr; /** Length equals to number of operations. **/
-    earliest_ending_time = nullptr; /** Length equals to number of operations. **/
-    eet_of_job = nullptr; /** Length equals to number of jobs. **/
-    sum_shortest_proc_times = nullptr; /** D^{k}_{Ñ}. Length equals to number of machines.**/
-
+Problem(number_of_objectives, number_of_variables),
+n_jobs(0),
+n_operations(0),
+n_machines(0),
+sum_of_min_Pij(0),
+avg_op_per_machine(0),
+best_bound_max_workload(0),
+best_bound_makespan(0),
+sum_M_smallest_est(0),
+min_sum_shortest_proc_times(0),
+best_workload_found(0),
+best_makespan_found(INT_MAX),
+max_eet_of_jobs(0),
+f_min(nullptr),
+f_max(nullptr),
+encode_job_machine_to_map(nullptr),
+decode_map_to_job_machine(nullptr),
+n_operations_in_job(nullptr),
+release_time(nullptr),
+operation_belongs_to_job(nullptr),
+assignation_min_Pij(nullptr),
+assignation_best_max_workload(nullptr),
+assignation_best_makespan(nullptr),
+best_workloads(nullptr),
+min_workloads(nullptr),
+job_operation_is_number(nullptr),
+processing_time(nullptr),
+earliest_starting_time(nullptr), /** Length equals to number of operations. **/
+earliest_ending_time(nullptr), /** Length equals to number of operations. **/
+eet_of_job(nullptr), /** Length equals to number of jobs. **/
+sum_shortest_proc_times(nullptr) { /** D^{k}_{Ñ}. Length equals to number of machines.**/
     machines_aviability.reserve(number_of_variables);
 }
 
