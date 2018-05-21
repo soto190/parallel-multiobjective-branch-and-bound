@@ -316,7 +316,9 @@ void MasterWorkerPBB::runWorkerProcess() {
     
     paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
-    BranchAndBound BB_container(rank, 0, true, true, true, problem, branch_init);
+    BranchAndBound BB_container(rank, 0, problem, branch_init);
+    BB_container.enablePriorityQueue();
+    BB_container.enableSortingNodes();
     branches_created += BB_container.initGlobalPoolWithInterval(branch_init);
     BB_container.setSummarizeFile(summarize_file);
     BB_container.setParetoFrontFile(pareto_front_file);
@@ -331,7 +333,9 @@ void MasterWorkerPBB::runWorkerProcess() {
     vector<BranchAndBound *> bb_threads;
     int n_bb = 0;
     while (n_bb++ < branchsandbound_per_worker) {
-        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(getRank(), n_bb, true, true, true,  problem, branch_init);
+        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(getRank(), n_bb,  problem, branch_init);
+        BaB_task->enableSortingNodes();
+        BaB_task->enablePriorityQueue();
         bb_threads.push_back(BaB_task);
         tl.push_back(*BaB_task);
     }
@@ -540,7 +544,7 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
                     int op_can_be_proc_in_n_mach = std::stoi(elemens.at(token++));
                     
                     for (int n_machine = 0; n_machine < problem.n_machines; ++n_machine)
-                        problem.processing_times[op_counter * problem.n_machines + n_machine] = INF_PROC_TIME;
+                        problem.processing_times[op_counter * problem.n_machines + n_machine] = ProblemFJSSP::INF_PROC_TIME;
                     
                     for (int n_mach = 0; n_mach < op_can_be_proc_in_n_mach; ++n_mach) {
                         int machine = std::stoi(elemens.at(token++)) - 1;

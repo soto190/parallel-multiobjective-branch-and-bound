@@ -8,21 +8,22 @@
 
 #include "ParetoFront.hpp"
 
-ParetoFront::ParetoFront() {
-    state = FrontState::Unexplored;
+ParetoFront::ParetoFront():
+state(FrontState::Unexplored),
+m_vec() {
+
 }
 
-ParetoFront::ParetoFront(const ParetoFront& toCopy) {
-    m_vec.reserve(toCopy.size());
-    state = toCopy.getState();
-    for (size_t solution = 0; solution < toCopy.size(); ++solution)
-        m_vec.push_back(toCopy.at(solution));
+ParetoFront::ParetoFront(const ParetoFront& toCopy):
+state(toCopy.getState()),
+m_vec(toCopy.getVectorToCopy()) {
+
 }
 
-ParetoFront::ParetoFront(const std::vector<Solution>& set_of_solutions) {
-    state = FrontState::Unexplored;
-    for (size_t n_sol = 0; n_sol < set_of_solutions.size(); ++n_sol)
-        push_back(set_of_solutions.at(n_sol));
+ParetoFront::ParetoFront(const std::vector<Solution>& set_of_solutions):
+state(FrontState::Unexplored),
+m_vec(set_of_solutions){
+    
 }
 
 ParetoFront::~ParetoFront() {
@@ -196,7 +197,19 @@ void ParetoFront::clear() {
     m_vec.clear();
 }
 
+std::ostream &operator<<(std::ostream& stream, const ParetoFront& pareto_f) {
+    unsigned int n_sol = 0;
+    for (size_t nSol = 0; nSol < pareto_f.size(); ++nSol) {
+        stream << '[' << n_sol++ << ']';
+        stream << pareto_f.at(nSol);
+    }
+    return stream;
+}
+
 void ParetoFront::print() const {
-    for (auto nSol = m_vec.begin(); nSol != m_vec.end(); ++nSol)
-        (*nSol).print();
+    unsigned int n_sol = 0;
+    for (const auto& nSol : m_vec) {
+        printf("[%3d] ", n_sol++);
+        nSol.print();
+    }
 }

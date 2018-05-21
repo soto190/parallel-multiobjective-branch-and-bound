@@ -42,7 +42,7 @@
  *
  **/
 
-const float size_to_share = 0.2f; /** We share the half of the row. **/
+const float size_to_share = 0.2f; /** We share two percent of the row. **/
 const float deep_limit_share = 0.80f;
 
 extern SubproblemsPool sharedPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
@@ -63,17 +63,17 @@ private:
     int bb_rank;
     unsigned long local_update_version;
     
-    tbb::atomic<unsigned long> number_of_nodes;
-    tbb::atomic<unsigned long> number_of_nodes_created;
-    tbb::atomic<unsigned long> number_of_nodes_pruned;
-    tbb::atomic<unsigned long> number_of_nodes_explored;
-    tbb::atomic<unsigned long> number_of_nodes_unexplored;
-    tbb::atomic<unsigned long> number_of_calls_to_branch;
-    tbb::atomic<unsigned long> number_of_reached_leaves;
-    tbb::atomic<unsigned long> number_of_calls_to_prune;
-    tbb::atomic<unsigned long> number_of_updates_in_lower_bound;
-    tbb::atomic<unsigned long> number_of_tree_levels;
-    tbb::atomic<unsigned long> number_of_shared_works;
+    unsigned long number_of_nodes;
+    unsigned long number_of_nodes_created;
+    unsigned long number_of_nodes_pruned;
+    unsigned long number_of_nodes_explored;
+    unsigned long number_of_nodes_unexplored;
+    unsigned long number_of_calls_to_branch;
+    unsigned long number_of_reached_leaves;
+    unsigned long number_of_calls_to_prune;
+    unsigned long number_of_updates_in_lower_bound;
+    unsigned long number_of_tree_levels;
+    unsigned long number_of_shared_works;
     
     int currentLevel; /** Active level **/
 
@@ -94,16 +94,19 @@ private:
     int limit_level_to_share;
     
     double elapsed_time;
-    std::clock_t start;
+    std::clock_t time_start;
     std::chrono::high_resolution_clock::time_point t1;
     std::chrono::high_resolution_clock::time_point t2;
     
 public:
+    BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
     BranchAndBound(const BranchAndBound& branchAndBound);
-    BranchAndBound(int node_rank, int rank, bool isGrid, bool isSorting, bool isPriority, const ProblemFJSSP& problem, const Interval & branch);
-    BranchAndBound& operator()(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
     ~BranchAndBound();
-    
+
+    BranchAndBound& operator()(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
+    BranchAndBound& operator=(const BranchAndBound& toCopy);
+
+    unsigned long getPFVersion() const;
     int getNodeRank() const;
     int getBBRank() const;
     int getCurrentLevel() const;
@@ -113,9 +116,6 @@ public:
 
     void solve(Interval & interval);
     void initialize(int starting_level);
-    int explore(Solution & solution);
-    int branch(Solution & solution, int currentLevel);
-    void prune(Solution & solution, int currentLevel);
 
     void printParetoFront(int withVariables = 0);
 
@@ -139,6 +139,10 @@ public:
     unsigned long getNumberOfCallsToPrune() const;
     unsigned long getNumberOfUpdatesInLowerBound() const;
     unsigned long getSharedWork() const;
+
+    unsigned long getNumberOfDominatedContainers() const;
+    unsigned long getNumberOfNonDominatedContainers() const;
+    unsigned long getNumberOfUnexploredContainers() const;
     
     void increaseNumberOfNodesExplored(unsigned long value);
     void increaseNumberOfCallsToBranch(unsigned long value);
@@ -177,9 +181,13 @@ public:
     task* execute();
     
 private:
+    int explore(Solution & solution);
+    int branch(Solution & solution, int currentLevel);
+    void prune(Solution & solution, int currentLevel);
+
     bool thereIsMoreTime();
     bool isLocalPFversionOutdated() const;
-    double minMaxNormalization(int value, int min, int max);
+    double minMaxNormalization(int value, int min, int max) const;
 
     bool aLeafHasBeenReached() const;
     bool theTreeHasMoreNodes() const;
@@ -188,8 +196,8 @@ private:
     unsigned long permut(unsigned long n, unsigned long i) const;
     
     void shareWorkAndSendToGlobalPool(const Interval& interval);
-    bool improvesTheGrid(const Solution & solution);
-    bool updateParetoGrid(const Solution & solution);
+    bool improvesTheParetoContainer(const Solution & solution);
+    bool updateParetoContainer(const Solution & solution);
     void updateBounds(const Solution & solution, FJSSPdata& data);
     void updateBoundsWithSolution(const Solution & solution);
     void setPriorityTo(Interval & interval) const;

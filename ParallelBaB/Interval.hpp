@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <iomanip>
 
 /**
  *
@@ -22,7 +23,7 @@
 const float large_branch  = 0.666f;
 const float short_branch = 0.333f;
 
-enum Priority {P_High = 0, P_Medium = 1, P_Low = 2};
+enum Priority {P_High = 0, P_Normal = 1, P_Low = 2};
 enum Deep{TOP = 0, MID = 1, BOTTOM = 2};
 
 typedef struct {
@@ -41,7 +42,7 @@ private:
     Deep deep;
     int build_up_to = -1;
     int max_size = 0;
-    float distance[2];
+    float distance[3];
     int * interval;
     
 public:
@@ -54,7 +55,9 @@ public:
     Interval& operator=(const Interval& toCopy);
     Interval& operator()(int size);
     Interval& operator()(const Payload_interval& payload);
-    
+
+    friend std::ostream &operator<<(std::ostream& stream, const Interval& interval);
+
     int getSize() const;
     int getBuildUpTo() const;
     int getValueAt(int position) const;
@@ -65,7 +68,7 @@ public:
     void setValueAt(int index, int value);
     void setLowPriority();
     void setHighPriority();
-    void setMediumPriority();
+    void setNormalPriority();
     void setDistance(int n_dim, float n_val);
     void removeLastValue();
     void print() const;

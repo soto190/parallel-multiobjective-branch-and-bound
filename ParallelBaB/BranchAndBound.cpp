@@ -18,6 +18,46 @@ ParetoBucket sharedParetoFront;
 tbb::atomic<int> sleeping_bb;
 tbb::atomic<int> there_is_more_work;
 
+BranchAndBound::BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problemToCopy, const Interval & branch):
+is_grid_enable(false),
+is_sorting_enable(false),
+is_priority_enable(false),
+node_rank(node_rank),
+bb_rank(rank),
+local_update_version(0),
+currentLevel(branch.getBuildUpTo()),
+problem(problemToCopy),
+fjssp_data(problemToCopy.getNumberOfJobs(),
+           problemToCopy.getNumberOfOperations(),
+           problemToCopy.getNumberOfMachines()),
+incumbent_s(problemToCopy.getNumberOfObjectives(), problemToCopy.getNumberOfVariables()),
+ivm_tree(problemToCopy.getNumberOfVariables(), problemToCopy.getUpperBound(0) + 1),
+interval_to_solve(branch),
+elapsed_time(0) {
+    number_of_shared_works = 0;
+    number_of_tree_levels = problemToCopy.getNumberOfVariables();
+    number_of_nodes = 0;
+    number_of_nodes_created = (0);
+    number_of_nodes_explored = (0);
+    number_of_reached_leaves = (0);
+    number_of_nodes_unexplored = (0);
+    number_of_nodes_pruned = (0);
+    number_of_calls_to_prune = (0);
+    number_of_calls_to_branch = (0);
+    number_of_updates_in_lower_bound = (0);
+    
+    time_start = std::clock();
+    t1 = std::chrono::high_resolution_clock::now();
+    t2 = std::chrono::high_resolution_clock::now();
+    
+    branches_to_move = problemToCopy.getUpperBound(0) * size_to_share;
+    limit_level_to_share = number_of_tree_levels * deep_limit_share;
+    
+    number_of_nodes = computeTotalNodes(problemToCopy.getNumberOfVariables());
+    
+    ivm_tree.setOwnerId(rank);
+}
+
 BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
 local_update_version(0),
 is_grid_enable(toCopy.isGridEnable()),
@@ -32,73 +72,63 @@ incumbent_s(toCopy.getIncumbentSolution()),
 ivm_tree(toCopy.getIVMTree()),
 paretoContainer(toCopy.getParetoContainer()),
 pareto_front(toCopy.getParetoFront()) {
-    number_of_shared_works.store(toCopy.getSharedWork());
-    number_of_tree_levels.store(toCopy.getNumberOfLevels());
-    number_of_nodes.store(toCopy.getNumberOfNodes());
-    number_of_nodes_created.store(toCopy.getNumberOfNodesCreated());
-    number_of_nodes_explored.store(toCopy.getNumberOfNodesExplored());
-    number_of_reached_leaves.store(toCopy.getNumberOfReachedLeaves());
-    number_of_nodes_unexplored.store(toCopy.getNumberOfNodesUnexplored());
-    number_of_nodes_pruned.store(toCopy.getNumberOfNodesPruned());
-    number_of_calls_to_prune.store(toCopy.getNumberOfCallsToPrune());
-    number_of_calls_to_branch.store(toCopy.getNumberOfCallsToBranch());
-    number_of_updates_in_lower_bound.store(toCopy.getNumberOfUpdatesInLowerBound());
-    start = toCopy.start;
+    number_of_shared_works = (toCopy.getSharedWork());
+    number_of_tree_levels = (toCopy.getNumberOfLevels());
+    number_of_nodes = (toCopy.getNumberOfNodes());
+    number_of_nodes_created = (toCopy.getNumberOfNodesCreated());
+    number_of_nodes_explored = (toCopy.getNumberOfNodesExplored());
+    number_of_reached_leaves = (toCopy.getNumberOfReachedLeaves());
+    number_of_nodes_unexplored = (toCopy.getNumberOfNodesUnexplored());
+    number_of_nodes_pruned = (toCopy.getNumberOfNodesPruned());
+    number_of_calls_to_prune = (toCopy.getNumberOfCallsToPrune());
+    number_of_calls_to_branch = (toCopy.getNumberOfCallsToBranch());
+    number_of_updates_in_lower_bound = (toCopy.getNumberOfUpdatesInLowerBound());
+    time_start = toCopy.time_start;
     elapsed_time = getElapsedTime();
-    
+
     branches_to_move = problem.getUpperBound(0) * size_to_share;
     limit_level_to_share = number_of_tree_levels * deep_limit_share;
-    
+
     std::strcpy(pareto_file, toCopy.pareto_file);
     std::strcpy(summarize_file, toCopy.summarize_file);
 }
 
-BranchAndBound::BranchAndBound(int node_rank, int rank, bool isGrid, bool isSorting, bool isPriority, const ProblemFJSSP& problemToCopy, const Interval & branch):
-is_grid_enable(isGrid),
-is_sorting_enable(isSorting),
-is_priority_enable(isPriority),
-node_rank(node_rank),
-bb_rank(rank),
-local_update_version(0),
-currentLevel(branch.getBuildUpTo()),
-problem(problemToCopy),
-fjssp_data(problemToCopy.getNumberOfJobs(),
-           problemToCopy.getNumberOfOperations(),
-           problemToCopy.getNumberOfMachines()),
-incumbent_s(problemToCopy.getNumberOfObjectives(), problemToCopy.getNumberOfVariables()),
-ivm_tree(problemToCopy.getNumberOfVariables(), problemToCopy.getUpperBound(0) + 1),
-interval_to_solve(branch),
-elapsed_time(0) {
-    number_of_shared_works.store(0);
-    number_of_tree_levels.store(problemToCopy.getNumberOfVariables());
-    number_of_nodes.store(0);
-    number_of_nodes_created.store(0);
-    number_of_nodes_explored.store(0);
-    number_of_reached_leaves.store(0);
-    number_of_nodes_unexplored.store(0);
-    number_of_nodes_pruned.store(0);
-    number_of_calls_to_prune.store(0);
-    number_of_calls_to_branch.store(0);
-    number_of_updates_in_lower_bound.store(0);
-    
-    start = std::clock();
-    t1 = std::chrono::high_resolution_clock::now();
-    t2 = std::chrono::high_resolution_clock::now();
-    
-    branches_to_move = problemToCopy.getUpperBound(0) * size_to_share;
+BranchAndBound& BranchAndBound::operator=(const BranchAndBound &toCopy) {
+    local_update_version = toCopy.getPFVersion();
+    is_grid_enable = toCopy.isGridEnable();
+    is_sorting_enable = toCopy.isSortingEnable();
+    is_priority_enable = toCopy.isPriorityEnable();
+    node_rank = toCopy.getNodeRank();
+    bb_rank = toCopy.getBBRank();
+    currentLevel = toCopy.getCurrentLevel();
+    problem = toCopy.getProblem();
+    fjssp_data = toCopy.getFJSSPdata();
+    incumbent_s = toCopy.getIncumbentSolution();
+    ivm_tree = toCopy.getIVMTree();
+    paretoContainer = toCopy.getParetoContainer();
+    pareto_front = toCopy.getParetoFront();
+
+    number_of_shared_works = (toCopy.getSharedWork());
+    number_of_tree_levels = (toCopy.getNumberOfLevels());
+    number_of_nodes = (toCopy.getNumberOfNodes());
+    number_of_nodes_created = (toCopy.getNumberOfNodesCreated());
+    number_of_nodes_explored = (toCopy.getNumberOfNodesExplored());
+    number_of_reached_leaves = (toCopy.getNumberOfReachedLeaves());
+    number_of_nodes_unexplored = (toCopy.getNumberOfNodesUnexplored());
+    number_of_nodes_pruned = (toCopy.getNumberOfNodesPruned());
+    number_of_calls_to_prune = (toCopy.getNumberOfCallsToPrune());
+    number_of_calls_to_branch = (toCopy.getNumberOfCallsToBranch());
+    number_of_updates_in_lower_bound = (toCopy.getNumberOfUpdatesInLowerBound());
+    time_start = toCopy.time_start;
+    elapsed_time = getElapsedTime();
+
+    branches_to_move = problem.getUpperBound(0) * size_to_share;
     limit_level_to_share = number_of_tree_levels * deep_limit_share;
-    
-    number_of_nodes.fetch_and_store(computeTotalNodes(problemToCopy.getNumberOfVariables()));
-    
-    ivm_tree.setOwnerId(rank);
 
-    Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    problem.createDefaultSolution(solution);
+    std::strcpy(pareto_file, toCopy.pareto_file);
+    std::strcpy(summarize_file, toCopy.summarize_file);
 
-    if (isGridEnable())
-        paretoContainer(25, 25, problem.getFmin(0), problem.getFmin(1), problem.getFmax(0), problem.getFmax(1));
-    else
-        paretoContainer(1, 1, problem.getFmin(0), problem.getFmin(1), problem.getFmax(0), problem.getFmax(1));
+    return *this;
 }
 
 BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch) {
@@ -106,7 +136,7 @@ BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, cons
     t1 = std::chrono::high_resolution_clock::now();
     t2 = std::chrono::high_resolution_clock::now();
     
-    start = std::clock();
+    time_start = std::clock();
     node_rank = node_rank_new;
     bb_rank = rank_new;
     problem = problem_to_copy;
@@ -149,7 +179,12 @@ BranchAndBound::~BranchAndBound() {
 }
 
 void BranchAndBound::initialize(int starts_tree) {
-    start = std::clock();
+    time_start = std::clock();
+
+    if (isGridEnable())
+        paretoContainer(10, 10, problem.getFmax(0), problem.getFmax(1), problem.getFmin(0), problem.getFmin(1));
+    else
+        paretoContainer(1, 1, problem.getFmax(0), problem.getFmax(1), problem.getFmin(0), problem.getFmin(1));
     
     if (starts_tree == -1)
         currentLevel = 0;
@@ -195,17 +230,17 @@ void BranchAndBound::initialize(int starts_tree) {
      updateBoundsWithSolution(algorithms_pf.at(solution_pf));
      */
     problem.createDefaultSolution(incumbent_s);
-    updateParetoGrid(incumbent_s);
+    updateParetoContainer(incumbent_s);
     updateBoundsWithSolution(incumbent_s);
 
     Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(1, temp);
-    updateParetoGrid(temp);
+    updateParetoContainer(temp);
     updateBoundsWithSolution(temp);
 
     Solution temp_2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(2, temp_2);
-    updateParetoGrid(temp_2);
+    updateParetoContainer(temp_2);
     updateBoundsWithSolution(temp_2);
 }
 
@@ -231,8 +266,8 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     problem.getSolutionWithLowerBoundInObj(1, temp);
     temp.print();
     incumbent_s.print();
-    updateParetoGrid(incumbent_s);
-    updateParetoGrid(temp);
+    updateParetoContainer(incumbent_s);
+    updateParetoContainer(temp);
     updateBoundsWithSolution(temp);
     
     int split_level = branch_to_split.getBuildUpTo() + 1;
@@ -264,7 +299,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
                 incumbent_s.setVariable(split_level, toAdd);
                 problem.evaluateDynamic(incumbent_s, fjssp_data, split_level);
                 increaseExploredNodes();
-                if (improvesTheGrid(incumbent_s)) {
+                if (improvesTheParetoContainer(incumbent_s)) {
                     branch_to_split.setValueAt(split_level, toAdd);
                     branch_to_split.setDistance(0, minMaxNormalization(fjssp_data.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
                     branch_to_split.setDistance(1, minMaxNormalization(fjssp_data.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
@@ -329,7 +364,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
     /** Send intervals to global_pool. **/
     int branches_to_move_to_global_pool = branches_created * getSizeToShare();
 
-    if (branches_created > branches_to_move_to_global_pool && branch_init.getBuildUpTo() <= getLimitLevelToShare())
+    if (!sharedPool.isMaxLimitReached() && branches_created > branches_to_move_to_global_pool && branch_init.getBuildUpTo() <= getLimitLevelToShare())
         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
             int val = tree.removeLastNodeAtRow(build_up_to + 1);
             branch_init.setValueAt(build_up_to + 1, val);
@@ -351,19 +386,22 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
 }
 
 tbb::task* BranchAndBound::execute() {
+
     t1 = std::chrono::high_resolution_clock::now();
     initialize(interval_to_solve.getBuildUpTo());
-    while (!sharedPool.empty() || thereIsMoreWork()) {/** While the pool has intervals or there are more work on other nodes. **/
-        if(sharedPool.try_pop(interval_to_solve))
+    unsigned long number_of_sub_problems_popped = 0;
+    while (!sharedPool.empty() || thereIsMoreWork())/** While the pool has intervals or there are more work on other nodes. **/
+        if(sharedPool.try_pop(interval_to_solve)) {
+            number_of_sub_problems_popped++;
+            updateLocalPF();
             solve(interval_to_solve);
-
-        updateLocalPF();
-    }
+        }
 
     sleeping_bb++;
+    updateLocalPF();
     pareto_front = paretoContainer.generateParetoFront();
 
-    printf("[Worker-%03d:B&B-%03d] No more intervals in global pool. Going to sleep. [ET: %6.6f sec.]\n", node_rank, bb_rank, getElapsedTime());
+    printf("[Worker-%03d:B&B-%03d] No more intervals in global pool. Sub-problems popped from queue: %ld. Going to sleep. [ET: %6.6f sec.]\n", node_rank, bb_rank, number_of_sub_problems_popped, getElapsedTime());
     return NULL;
 }
 
@@ -375,13 +413,16 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
         if (!aLeafHasBeenReached() && theTreeHasMoreNodes()) {
-            if (improvesTheGrid(incumbent_s))
+            if (improvesTheParetoContainer(incumbent_s))
                 branch(incumbent_s, currentLevel);
             else
                 prune(incumbent_s, currentLevel);
         } else {
             increaseReachedLeaves();
-            if (updateParetoGrid(incumbent_s)) {
+            if (updateParetoContainer(incumbent_s)) {
+                printf("[Worker-%03d:B&B-%03d] New solution found:\n", node_rank, bb_rank);
+                cout << incumbent_s;
+
                 increaseUpdatesInLowerBound();
                 updateGlobalPF(incumbent_s);
             }
@@ -402,6 +443,10 @@ bool BranchAndBound::thereIsMoreWork() const {
     return there_is_more_work;
 }
 
+unsigned long BranchAndBound::getPFVersion() const {
+    return local_update_version;
+}
+
 bool BranchAndBound::isLocalPFversionOutdated() const {
     return local_update_version < sharedParetoFront.getVersionUpdate();
 }
@@ -409,10 +454,11 @@ bool BranchAndBound::isLocalPFversionOutdated() const {
 void BranchAndBound::updateLocalPF() {
     if (isLocalPFversionOutdated()) {
         unsigned long global_version = sharedParetoFront.getVersionUpdate();
+
         std::vector<Solution> global_pf = sharedParetoFront.getVector();
-        for (auto element = global_pf.begin(); element != global_pf.end(); ++element)
-            paretoContainer.add(*element);
-        
+        for (const auto& element : global_pf)
+            paretoContainer.add(element);
+
         local_update_version = global_version;
     }
 }
@@ -461,109 +507,72 @@ int BranchAndBound::explore(Solution& solution) {
  */
 int BranchAndBound::branch(Solution& solution, int currentLevel) {
     number_of_calls_to_branch++;
-    int isInPermut = 0;
-    int row = 0;
-    int levelStarting= 0;
+
     int toAdd = 0;
     int nodes_created = 0;
     
-    double ub_normalized[2];
+    double ub_normalized[3];
     
     SortedVector sorted_elements;
     ObjectiveValues obj_values;
-    
-    int best_values_found[2];
-    for (int obj = 0; obj < 2; ++obj)
-        best_values_found[obj] = paretoContainer.getBestValueFoundIn(obj);
-    
-    switch (problem.getType()) {
-            
-        case ProblemType::permutation:
-            levelStarting = problem.getStartingRow();
-            
-            for (int element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
-                isInPermut = 0;
-                for (row = levelStarting; row <= currentLevel; ++row)
-                    if (solution.getVariable(row) == element) {
-                        isInPermut = 1;
-                        row = currentLevel + 1;
-                    }
-                
-                if (isInPermut == 0) {
-                    ivm_tree.addNodeToRow(currentLevel + 1, element);
-                    number_of_nodes_created++;
+
+    for (int element = 0; element < problem.getTotalElements(); ++element)
+        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element)) {
+
+            int op = problem.getOperationInJobIsNumber(element, fjssp_data.getNumberOfOperationsAllocatedFromJob(element));
+            unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(op);
+
+            for (int machine = 0; machine < machines_aviable; ++machine) {
+                int new_machine = problem.getMachinesAvaibleForOperation(op, machine);
+                toAdd = problem.getEncodeMap(element, new_machine);
+
+                solution.setVariable(currentLevel + 1, toAdd);
+                problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
+                increaseExploredNodes();
+
+                bool is_improving = false;
+                for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
+                    ub_normalized[objc] = minMaxNormalization(fjssp_data.getObjective(objc), problem.getBestObjectiveFound(objc), problem.getFmax(objc));
+
+                    if (ub_normalized[objc] <= 0)
+                        is_improving = true;
+                }
+                /** If distance in obj1 is better  or distance in obj2 is better then it can produce an improvement. **/
+                if (is_improving && improvesTheParetoContainer(solution)) {
+
+                    /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
+                    if(isSortingEnable()) {
+                        obj_values.setValue(toAdd);
+
+                        for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
+                            obj_values.setObjective(objc, fjssp_data.getObjective(objc));
+                            obj_values.setDistance(objc, minMaxNormalization(obj_values.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc)));
+                        }
+
+                        sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
+                    } else
+                        ivm_tree.addNodeToRow(currentLevel + 1, toAdd);
+
                     nodes_created++;
-                }
+                } else
+                    increasePrunedNodes();
+                problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
             }
-            
-            break;
-            
-        case ProblemType::permutation_with_repetition_and_combination:
-            /** TODO: test to add only nodes with feasible solutions. **/
-            for (int element = 0; element < problem.getTotalElements(); ++element)
-                if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element)) {
-                    int op = problem.getOperationInJobIsNumber(element, fjssp_data.getNumberOfOperationsAllocatedFromJob(element));
-                    unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(op);
-                    for (int machine = 0; machine < machines_aviable; ++machine) {
-                        int new_machine = problem.getMachinesAvaibleForOperation(op, machine);
-                        toAdd = problem.getEncodeMap(element, new_machine);
-                        
-                        solution.setVariable(currentLevel + 1, toAdd);
-                        problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
-                        increaseExploredNodes();
+        }
 
-                        ub_normalized[0] = minMaxNormalization(fjssp_data.getObjective(0), problem.getBestMakespanFound(), problem.getFmax(0));
-                        ub_normalized[1] = minMaxNormalization(fjssp_data.getObjective(1), problem.getBestWorkloadFound(), problem.getFmax(1));
-                        /** If distance in obj1 is better  or distance in obj2 is better then it can produce an improvement. **/
-                        if ((ub_normalized[0] <= 0 || ub_normalized[1] <= 0) && improvesTheGrid(solution)) {
-                            
-                            /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
-                            if(isSortingEnable()) {
-                                obj_values.setValue(toAdd);
-                                obj_values.setObjective(0, fjssp_data.getMakespan());
-                                obj_values.setObjective(1, fjssp_data.getMaxWorkload());
+    increaseNumberOfNodesCreated(nodes_created);
+    if (nodes_created > 0) {
+        if (isSortingEnable())
+            for (const auto& it : sorted_elements)
+                ivm_tree.addNodeToRow(currentLevel + 1, it.getValue());
 
-                                obj_values.setDistance(0, minMaxNormalization(obj_values.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
-                                obj_values.setDistance(1, minMaxNormalization(obj_values.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
+        ivm_tree.moveToNextRow();
+        ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), 0);
+        ivm_tree.setThereAreMoreBranches();
 
-                                sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
-                            } else
-                                ivm_tree.addNodeToRow(currentLevel + 1, toAdd);
-                            
-                            nodes_created++;
-                        } else
-                            increasePrunedNodes();
-                        problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
-                    }
-                }
+    } else  /** If no branches were created then move to the next node. **/
+        ivm_tree.pruneActiveNode();
 
-            increaseNumberOfNodesCreated(nodes_created);
-            if (nodes_created > 0) {
-                if (isSortingEnable())
-                    for (std::deque<ObjectiveValues>::iterator it = sorted_elements.begin(); it != sorted_elements.end(); ++it)
-                        ivm_tree.addNodeToRow(currentLevel + 1, (*it).getValue());
-
-                ivm_tree.moveToNextRow();
-                ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), 0);
-                ivm_tree.setThereAreMoreBranches();
-
-            } else  /** If no branches were created then move to the next node. **/
-                ivm_tree.pruneActiveNode();
-            break;
-            
-        case ProblemType::combination:
-            for (int element = problem.getUpperBound(0); element >= problem.getLowerBound(0); --element) {
-                ivm_tree.addNodeToRow(currentLevel + 1, element);
-                nodes_created++;
-            }
-            number_of_nodes_created += nodes_created;
-            
-            break;
-            
-        case ProblemType::XD:
-            break;
-    }
-    
     return nodes_created;
 }
 
@@ -597,7 +606,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
      * - If the level at which we are going to share is not too deep.
      * - If we have branches to share.
      */
-    if (sharedPool.isEmptying() && next_row < getLimitLevelToShare() && branches_to_move_to_global_pool > 1) {
+    if (sharedPool.isEmptying() && !sharedPool.isMaxLimitReached() && next_row < getLimitLevelToShare() && branches_to_move_to_global_pool > 1) {
         
         Solution temp(incumbent_s.getNumberOfObjectives(), incumbent_s.getNumberOfVariables());
         FJSSPdata data(fjssp_data);
@@ -656,7 +665,7 @@ bool BranchAndBound::theTreeHasMoreNodes() const {
     return ivm_tree.thereAreMoreBranches();
 }
 
-bool BranchAndBound::updateParetoGrid(const Solution & solution) {
+bool BranchAndBound::updateParetoContainer(const Solution & solution) {
     return paretoContainer.add(solution);
 }
 
@@ -670,7 +679,7 @@ bool BranchAndBound::updateParetoGrid(const Solution & solution) {
  *  6- It is non-dominated.
  *
  */
-bool BranchAndBound::improvesTheGrid(const Solution & solution) {
+bool BranchAndBound::improvesTheParetoContainer(const Solution & solution) {
     return paretoContainer.improvesTheGrid(solution);
 }
 
@@ -758,11 +767,11 @@ void BranchAndBound::setPriorityTo(Interval& interval) const {
                 if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
                     interval.setHighPriority();
                 else if(interval.getDistance(0) <= half || interval.getDistance(1) <= half) /** Moderate distance. **/
-                    interval.setMediumPriority();
+                    interval.setNormalPriority();
                 break;
 
             case Deep::MID:
-                interval.setMediumPriority();
+                interval.setNormalPriority();
 
                 if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
                     interval.setHighPriority();
@@ -790,7 +799,7 @@ float BranchAndBound::distanceToObjective(int value, int objective) {
     return (value - objective) / value;
 }
 
-double BranchAndBound::minMaxNormalization(int value, int min, int max) {
+double BranchAndBound::minMaxNormalization(int value, int min, int max) const{
     return ((value - min) * 1.0 )/ (max - min);
 }
 
@@ -874,36 +883,48 @@ unsigned long BranchAndBound::getSharedWork() const {
     return number_of_shared_works;
 }
 
+unsigned long BranchAndBound::getNumberOfDominatedContainers() const {
+    return paretoContainer.getNumberOfDisabledBuckets();
+}
+
+unsigned long BranchAndBound::getNumberOfNonDominatedContainers() const {
+    return paretoContainer.getNumberOfActiveBuckets();
+}
+
+unsigned long BranchAndBound::getNumberOfUnexploredContainers() const {
+    return paretoContainer.getNumberOfUnexploredBuckets();
+}
+
 void BranchAndBound::increaseNumberOfNodesExplored(unsigned long value) {
-    number_of_nodes_explored.fetch_and_add(value);
+    number_of_nodes_explored += value;
 }
 
 void BranchAndBound::increaseNumberOfCallsToBranch(unsigned long value) {
-    number_of_calls_to_branch.fetch_and_add(value);
+    number_of_calls_to_branch += value;
 }
 
 void BranchAndBound::increaseNumberOfNodesCreated(unsigned long value) {
-    number_of_nodes_created.fetch_and_add(value);
+    number_of_nodes_created += value;
 }
 
 void BranchAndBound::increaseNumberOfCallsToPrune(unsigned long value) {
-    number_of_calls_to_prune.fetch_and_add(value);
+    number_of_calls_to_prune += value;
 }
 
 void BranchAndBound::increaseNumberOfNodesPruned(unsigned long value) {
-    number_of_nodes_pruned.fetch_and_add(value);
+    number_of_nodes_pruned += value;
 }
 
 void BranchAndBound::increaseNumberOfReachedLeaves(unsigned long value) {
-    number_of_reached_leaves.fetch_and_add(value);
+    number_of_reached_leaves += value;
 }
 
 void BranchAndBound::increaseNumberOfUpdatesInLowerBound(unsigned long value) {
-    number_of_updates_in_lower_bound.fetch_and_add(value);
+    number_of_updates_in_lower_bound += value;
 }
 
 void BranchAndBound::increaseSharedWork(unsigned long value) {
-    number_of_shared_works.fetch_and_add(value);
+    number_of_shared_works += value;
 }
 
 void BranchAndBound::increaseExploredNodes() {
@@ -1023,6 +1044,7 @@ void BranchAndBound::saveIVM() const {
 
 void BranchAndBound::saveGlobalPool() const {
     /** TODO: globalPoolFile is saved by the container B&B (bb_rank = 0).**/
+    std::vector<Interval> to_restore;
     std::ofstream myfile(pool_file);
     if (myfile.is_open()) {
         Interval interval(problem.getNumberOfVariables());
@@ -1031,7 +1053,8 @@ void BranchAndBound::saveGlobalPool() const {
         myfile << "pool_size: " << sharedPool.unsafe_size() << endl;
         for (size_t element = 0; element < sharedPool.unsafe_size(); ++element)
             if(sharedPool.try_pop(interval)) {
-                
+                to_restore.push_back(interval);
+
                 myfile << interval.getBuildUpTo() << " ";
                 for (int index_var = 0; index_var <= interval.getBuildUpTo(); ++index_var)
                     myfile << interval.getValueAt(index_var) << " ";
@@ -1040,7 +1063,11 @@ void BranchAndBound::saveGlobalPool() const {
                     myfile << "- ";
                 myfile << endl;
             }
-        
+
+        /** This have to be used only when the progress is saved and then we have to recover the data to continue with the exploration. **/
+        for (const auto& sub_problem : to_restore)
+            sharedPool.push(sub_problem);
+
         myfile.close();
     } else
         printf("[Worker-%03d:B&B-%03d] Unable to write global pool: %s\n", node_rank, bb_rank, pool_file);
@@ -1104,15 +1131,15 @@ int BranchAndBound::saveSummarize() {
         int nVar = 0;
         
         int counterSolutions = 0;
-        for (auto it = pareto_front.begin(); it != pareto_front.end(); ++it) {
+        for (const auto& it : pareto_front) {
 
             myfile << std::fixed << std::setw(6) << std::setfill(' ') << ++counterSolutions << " ";
             for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << (*it).getObjective(nObj) << " ";
+                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << it.getObjective(nObj) << " ";
             myfile << " | ";
             
             for (nVar = 0; nVar < numberOfVariables; ++nVar)
-                myfile << std::fixed << std::setw(4) << std::setfill(' ') << (*it).getVariable(nVar) << " ";
+                myfile << std::fixed << std::setw(4) << std::setfill(' ') << it.getVariable(nVar) << " ";
             myfile << " |\n";
         }
         
@@ -1131,10 +1158,10 @@ int BranchAndBound::saveParetoFront() {
         int numberOfObjectives = problem.getNumberOfObjectives();
         
 
-        for (auto it = pareto_front.begin(); it != pareto_front.end(); ++it) {
+        for (const auto& it : pareto_front) {
             for (int nObj = 0; nObj < numberOfObjectives - 1; ++nObj)
-                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << (*it).getObjective(nObj) << " ";
-            myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << (*it).getObjective(numberOfObjectives - 1) << "\n";
+                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << it.getObjective(nObj) << " ";
+            myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << it.getObjective(numberOfObjectives - 1) << "\n";
         }
 
         myfile.close();
@@ -1145,8 +1172,8 @@ int BranchAndBound::saveParetoFront() {
 
 void BranchAndBound::saveEvery(double timeInSeconds) {
     
-    if (((std::clock() - start) / (double) CLOCKS_PER_SEC) > timeInSeconds) {
-        start = std::clock();
+    if (((std::clock() - time_start) / (double) CLOCKS_PER_SEC) > timeInSeconds) {
+        time_start = std::clock();
         
         pareto_front = paretoContainer.getParetoFront();
         
@@ -1170,12 +1197,12 @@ void BranchAndBound::printParetoFront(int withExtraInfo) {
     
     int counterSolutions = 0;
 
-    for (auto it = pareto_front.begin(); it != pareto_front.end(); ++it) {
+    for (const auto& it : pareto_front) {
         printf("[%6d] ", ++counterSolutions);
-        problem.printSolution(*it);
+        problem.printSolution(it);
         printf("\n");
         if (withExtraInfo == 1) {
-            problem.printSolutionInfo(*it);
+            problem.printSolutionInfo(it);
             printf("\n");
         }
     }

@@ -33,6 +33,7 @@ public:
     ParetoFront& operator=(const ParetoFront& rhs);
     ParetoFront& operator+=(const ParetoFront& rhs);
     ParetoFront& operator+(const ParetoFront& rhs);
+    friend std::ostream &operator<<(std::ostream& stream, const ParetoFront& pareto_f);
 
     FrontState getState() const;
     void setUnexplored();

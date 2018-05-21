@@ -9,83 +9,73 @@
 #include "ProblemFJSSP.hpp"
 
 ProblemFJSSP::ProblemFJSSP() :
-Problem() {
-    n_jobs = 0;
-    n_operations = 0;
-    n_machines = 0;
-    sum_of_min_Pij = 0;
-    avg_op_per_machine = 0;
-    best_bound_max_workload = 0;
-    best_bound_makespan = 0;
-    sum_M_smallest_est = 0;
-    min_sum_shortest_proc_times = 0;
-    best_workload_found = 0;
-    best_makespan_found = INT_MAX;
-    max_eet_of_jobs = 0;
+Problem(0, 0),
+n_jobs(0),
+n_operations(0),
+n_machines(0),
+sum_of_min_Pij(0),
+avg_op_per_machine(0),
+best_bound_max_workload(0),
+best_bound_makespan(0),
+sum_M_smallest_est(0),
+min_sum_shortest_proc_times(0),
+best_workload_found(0),
+best_makespan_found(INT_MAX),
+max_eet_of_jobs(0),
+f_min(nullptr),
+f_max(nullptr),
+encode_job_machine_to_map(nullptr),
+decode_map_to_job_machine(nullptr),
+n_operations_in_job(nullptr),
+release_time(nullptr),
+operation_belongs_to_job(nullptr),
+assignation_min_Pij(nullptr),
+assignation_best_max_workload(nullptr),
+assignation_best_makespan(nullptr),
+best_workloads(nullptr),
+min_workloads(nullptr),
+job_operation_is_number(nullptr),
+processing_time(nullptr),
+earliest_starting_time(nullptr), /** Length equals to number of operations. **/
+earliest_ending_time(nullptr), /** Length equals to number of operations. **/
+eet_of_job(nullptr), /** Length equals to number of jobs. **/
+sum_shortest_proc_times(nullptr) { /** D^{k}_{Ñ}. Length equals to number of machines.**/
 
-    f_min = nullptr;
-    f_max = nullptr;
-    encode_job_machine_to_map = nullptr;
-    decode_map_to_job_machine = nullptr;
-    n_operations_in_job = nullptr;
-    release_time = nullptr;
-    operation_belongs_to_job = nullptr;
-    assignation_min_Pij = nullptr;
-    assignation_best_max_workload = nullptr;
-    assignation_best_makespan = nullptr;
-    best_workloads = nullptr;
-    min_workloads = nullptr;
-    job_operation_is_number = nullptr;
-    processing_time = nullptr;
-    
-    lower_bound = nullptr;
-    upper_bound = nullptr;
-    
-    earliest_starting_time = nullptr; /** Length equals to number of operations. **/
-    earliest_ending_time = nullptr; /** Length equals to number of operations. **/
-    eet_of_job = nullptr; /** Length equals to number of jobs. **/
-    sum_shortest_proc_times = nullptr; /** D^{k}_{Ñ}. Length equals to number of machines.**/
     machines_aviability.reserve(0);
 }
 
 ProblemFJSSP::ProblemFJSSP(int number_of_objectives, int number_of_variables) :
-Problem(number_of_objectives, number_of_variables) {
-    n_jobs = 0;
-    n_operations = 0;
-    n_machines = 0;
-    sum_of_min_Pij = 0;
-    avg_op_per_machine = 0;
-    best_bound_max_workload = 0;
-    best_bound_makespan = 0;
-    sum_M_smallest_est = 0;
-    min_sum_shortest_proc_times = 0;
-    best_workload_found = 0;
-    best_makespan_found = INT_MAX;
-    max_eet_of_jobs = 0;
-
-    f_min = nullptr;
-    f_max = nullptr;
-    encode_job_machine_to_map = nullptr;
-    decode_map_to_job_machine = nullptr;
-    n_operations_in_job = nullptr;
-    release_time = nullptr;
-    operation_belongs_to_job = nullptr;
-    assignation_min_Pij = nullptr;
-    assignation_best_max_workload = nullptr;
-    assignation_best_makespan = nullptr;
-    best_workloads = nullptr;
-    min_workloads = nullptr;
-    job_operation_is_number = nullptr;
-    processing_time = nullptr;
-    
-    lower_bound = nullptr;
-    upper_bound = nullptr;
-
-    earliest_starting_time = nullptr; /** Length equals to number of operations. **/
-    earliest_ending_time = nullptr; /** Length equals to number of operations. **/
-    eet_of_job = nullptr; /** Length equals to number of jobs. **/
-    sum_shortest_proc_times = nullptr; /** D^{k}_{Ñ}. Length equals to number of machines.**/
-
+Problem(number_of_objectives, number_of_variables),
+n_jobs(0),
+n_operations(0),
+n_machines(0),
+sum_of_min_Pij(0),
+avg_op_per_machine(0),
+best_bound_max_workload(0),
+best_bound_makespan(0),
+sum_M_smallest_est(0),
+min_sum_shortest_proc_times(0),
+best_workload_found(0),
+best_makespan_found(INT_MAX),
+max_eet_of_jobs(0),
+f_min(nullptr),
+f_max(nullptr),
+encode_job_machine_to_map(nullptr),
+decode_map_to_job_machine(nullptr),
+n_operations_in_job(nullptr),
+release_time(nullptr),
+operation_belongs_to_job(nullptr),
+assignation_min_Pij(nullptr),
+assignation_best_max_workload(nullptr),
+assignation_best_makespan(nullptr),
+best_workloads(nullptr),
+min_workloads(nullptr),
+job_operation_is_number(nullptr),
+processing_time(nullptr),
+earliest_starting_time(nullptr), /** Length equals to number of operations. **/
+earliest_ending_time(nullptr), /** Length equals to number of operations. **/
+eet_of_job(nullptr), /** Length equals to number of jobs. **/
+sum_shortest_proc_times(nullptr) { /** D^{k}_{Ñ}. Length equals to number of machines.**/
     machines_aviability.reserve(number_of_variables);
 }
 
@@ -821,7 +811,10 @@ double ProblemFJSSP::evaluatePartialTest4(Solution & solution, int levelEvaluati
      */
     solution.setObjective(0, makespan);
     solution.setObjective(1, maxWorkload);
-    //    solution.setObjective(1, totalWorkload + minPij);
+    
+    if (solution.getNumberOfObjectives() == 3)
+        solution.setObjective(2, totalWorkload + minPij);
+
     return 0.0;
 }
 
@@ -887,7 +880,8 @@ void ProblemFJSSP::evaluateDynamic(Solution &solution, FJSSPdata &data, int leve
     //data.setTotalWorkload is computed internally when the operation is allocated.
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
-    //    solution.setObjective(1, data.getTotalWorkload());
+    if (solution.getNumberOfObjectives() == 3)
+        solution.setObjective(2, data.getTotalWorkload());
 }
 
 void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, int level) {
@@ -925,7 +919,8 @@ void ProblemFJSSP::evaluateRemoveDynamic(Solution & solution, FJSSPdata& data, i
     solution.setVariable(level, -1);
     solution.setObjective(0, makespan);
     solution.setObjective(1, max_workload);
-    //    solution.setObjective(1, data.getTotalWorkload());
+    if (solution.getNumberOfObjectives() == 3)
+        solution.setObjective(2, data.getTotalWorkload());
 }
 
 double ProblemFJSSP::evaluateLastLevel(Solution * solution) {
@@ -998,6 +993,11 @@ void ProblemFJSSP::updateBestMakespanSolution(FJSSPdata& data) {
         for (int n_op = 0; n_op < n_operations; ++n_op)
             assignation_best_makespan[n_op] = data.getOperationAllocation(n_op);
     }
+}
+
+void ProblemFJSSP::updateBestBoundsWith(const Solution& solution) {
+    updateBestMakespanSolutionWith(solution);
+    updateBestMaxWorkloadSolutionWith(solution);
 }
 
 void ProblemFJSSP::updateBestMakespanSolutionWith(const Solution& solution) {
@@ -1823,6 +1823,26 @@ int ProblemFJSSP::getSumOfMinPij() const {
     return sum_of_min_Pij;
 }
 
+int ProblemFJSSP::getBestObjectiveFound(unsigned int objective) const {
+    switch (objective) {
+        case 0:
+            return getBestMakespanFound();
+            break;
+
+        case 1:
+            return getBestWorkloadFound();
+            break;
+
+        case 2:
+            return getSumOfMinPij();
+            break;
+
+        default:
+            return 0;
+            break;
+    }
+}
+
 int ProblemFJSSP::getBestWorkloadFound() const {
     return best_workload_found;
 }
@@ -1983,13 +2003,13 @@ void ProblemFJSSP::printProblemInfo() const {
     printf("\n");
     
     printf("Processing times: \n");
-    printf("\t\t\t");
+    printf("\t\t");
     for (machine = 0; machine < n_machines; ++machine)
         printf("M%-3d", machine);
     printf("| EST EET\n");
     for (operation = 0; operation < n_operations; ++operation) {
         
-        printf("[J%-2d] %2c %2d:", operation_belongs_to_job[operation], 'A' + operation, operation);
+        printf("[J%-2d] %2d:", operation_belongs_to_job[operation], operation);
         for (machine = 0; machine < n_machines; ++machine)
             if (processing_time[operation][machine] == INF_PROC_TIME)
                 printf("%4c", sep);
@@ -2108,10 +2128,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
                 
             }
         }
-        
-        for (time = startingTime[numberOp]; time < endingTime[numberOp]; time++)
-            gantt[machine][time] = 'A' + numberOp;
-        
+
         operationOfJob[job]++;
         
         if (timeInMachine[machine] > makespan)
@@ -2123,7 +2140,7 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     
     printf("\tOp :  M  ti -  tf\n");
     for (operation = 0; operation < n_operations; ++operation)
-        printf("%3c %3d: %2d %3d - %3d \n", 'A' + operation, operation, operation_in_machine[operation], startingTime[operation], endingTime[operation]);
+        printf("%3d: %2d %3d - %3d \n", operation, operation_in_machine[operation], startingTime[operation], endingTime[operation]);
     /*
      for (machine = n_machines - 1;  machine >= 0; --machine) {
      printf("M%d  | ", machine);

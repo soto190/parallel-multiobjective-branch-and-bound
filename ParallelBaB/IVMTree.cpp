@@ -8,35 +8,37 @@
 
 #include "IVMTree.hpp"
 
-IVMTree::IVMTree() {
-    n_rows = 0;
-    n_cols = 0;
-    i_am = -1;
-    matrix_nodes = nullptr;
-    vector_pointing_to_col_at_row = nullptr;
-    start_exploration = nullptr; /** This is not used. **/
-    end_exploration = nullptr; /** This is not used. **/
-    integer_pointing_to_row = 0;
-    starting_row = 0;
-    there_are_more_ranches = false;
-    root_row = 0;
-    n_nodes_at_row = nullptr;
-    pending_nodes = 0;
+IVMTree::IVMTree():
+n_rows(0),
+n_cols(0),
+i_am(-1),
+matrix_nodes(nullptr),
+vector_pointing_to_col_at_row(nullptr),
+start_exploration(nullptr), /** This is not used. **/
+end_exploration(nullptr),/** This is not used. **/
+integer_pointing_to_row(0),
+starting_row(0),
+there_are_more_ranches(false),
+root_row(0),
+n_nodes_at_row(nullptr),
+pending_nodes(0) {
+
 }
 
-IVMTree::IVMTree(int rows, int cols) {
-    n_rows = rows;
-    n_cols = cols;
-    there_are_more_ranches = true;
-    root_row = 0;
-    starting_row = 0;
-    integer_pointing_to_row = 0;
-    pending_nodes = 0;
-    vector_pointing_to_col_at_row = new int[n_rows];
-    n_nodes_at_row = new int[n_rows];
-    start_exploration = new int[n_rows];
-    end_exploration = new int[n_rows];
-    matrix_nodes = new int *[n_rows];
+IVMTree::IVMTree(int rows, int cols):
+n_rows(rows),
+n_cols(cols),
+i_am(-1),
+matrix_nodes(new int *[n_rows]),
+vector_pointing_to_col_at_row(new int[n_rows]),
+start_exploration(new int[n_rows]), /** This is not used. **/
+end_exploration(new int[n_rows]),/** This is not used. **/
+integer_pointing_to_row(0),
+starting_row(0),
+there_are_more_ranches(true),
+root_row(0),
+n_nodes_at_row(new int[n_rows]),
+pending_nodes(0) {
     
     for (int r = 0; r < n_rows; ++r) {
         
@@ -51,21 +53,20 @@ IVMTree::IVMTree(int rows, int cols) {
     }
 }
 
-IVMTree::IVMTree(const IVMTree& toCopy) {
-    i_am = toCopy.getId();
-    n_rows = toCopy.getNumberOfRows();
-    n_cols = toCopy.getNumberOfCols();
-    there_are_more_ranches = toCopy.thereAreMoreBranches();
-    root_row = toCopy.getRootRow();
-    starting_row = toCopy.getStartingRow();
-    integer_pointing_to_row = toCopy.getActiveRow();
-    pending_nodes = toCopy.getNumberOfPendingNodes();
-    
-    vector_pointing_to_col_at_row = new int[n_rows];
-    n_nodes_at_row = new int[n_rows];
-    start_exploration = new int[n_rows];
-    end_exploration = new int[n_rows];
-    matrix_nodes = new int *[n_rows];
+IVMTree::IVMTree(const IVMTree& toCopy):
+n_rows(toCopy.getNumberOfRows()),
+n_cols(toCopy.getNumberOfCols()),
+i_am(toCopy.getId()),
+matrix_nodes(new int *[n_rows]),
+vector_pointing_to_col_at_row(new int[n_rows]),
+start_exploration(new int[n_rows]), /** This is not used. **/
+end_exploration(new int[n_rows]),/** This is not used. **/
+integer_pointing_to_row(toCopy.getActiveRow()),
+starting_row(toCopy.getStartingRow()),
+there_are_more_ranches(toCopy.thereAreMoreBranches()),
+root_row(toCopy.getRootRow()),
+n_nodes_at_row(new int[n_rows]),
+pending_nodes(toCopy.getNumberOfPendingNodes()) {
     
     for (int r = 0; r < n_rows; ++r) {
         vector_pointing_to_col_at_row[r] = toCopy.getActiveColAt(r);

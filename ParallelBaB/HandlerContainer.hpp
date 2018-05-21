@@ -15,11 +15,14 @@
 class HandlerContainer {
 
 private:
+    double lb_x, lb_y, ub_x, ub_y, d_x, d_y, d;
     double * rangeinx;
     double * rangeiny;
     double maxinx;
     double maxiny;
-    unsigned long numberOfElements;
+    double mininx;
+    double mininy;
+    //unsigned long numberOfElements;
 
     unsigned long activeBuckets;
     unsigned long unexploredBuckets;
@@ -31,7 +34,7 @@ private:
 
 public:
     HandlerContainer();
-    HandlerContainer(unsigned int width, unsigned int height, double maxValX, double maxValY);
+    //HandlerContainer(unsigned int width, unsigned int height, double maxValX, double maxValY);
     HandlerContainer(const HandlerContainer& toCopy);
     ~HandlerContainer();
 
@@ -44,8 +47,11 @@ public:
     unsigned long getNumberOfActiveBuckets() const;
     unsigned long getNumberOfUnexploredBuckets() const;
     unsigned long getNumberOfDisabledBuckets() const;
+    unsigned long getNumberOfElements() const;
     unsigned int getRows() const;
     unsigned int getCols() const;
+    double getMaxValueInX() const;
+    double getMaxValueInY() const;
     unsigned long getSize() const;
     unsigned long getSizeOf(int x, int y) const;
     FrontState getStateOf(int x, int y) const;

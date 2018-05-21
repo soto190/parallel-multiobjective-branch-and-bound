@@ -12,14 +12,16 @@
 #include <stdio.h>
 #include "myutils.hpp"
 
+
 enum Dom {Domtes = 1, Domted = -1, Nondom = 0, Eq = 11};
 enum SORTING_TYPES{DIST_1 = 0, DIST_2 = 1, DIST_COMB = 3, DOMINANCE = 4};
 
+
 class ObjectiveValues {
-    
+    static const unsigned int MAX_OBJECTIVES = 3;
     int variable_value;
-    int objective[2];
-    float distance[2];
+    int objective[MAX_OBJECTIVES];
+    float distance[MAX_OBJECTIVES];
     float mixed;
     
 public:

@@ -8,14 +8,15 @@
 
 #include "Problem.hpp"
 
-Problem::Problem() {
-    n_objectives = 0;
-    n_variables = 0;
-    n_constraints = 0;
-    starting_level = 0;
-    lower_bound = nullptr;
-    upper_bound = nullptr;
-    type = ProblemType::combination;
+Problem::Problem():
+n_objectives(0),
+n_variables(0),
+n_constraints(0),
+starting_level(0),
+lower_bound(nullptr),
+upper_bound(nullptr),
+type(ProblemType::combination){
+
 }
 
 Problem::Problem(const Problem& toCopy) :
@@ -23,12 +24,11 @@ type(toCopy.getType()),
 starting_level(toCopy.getStartingRow()),
 n_objectives(toCopy.getNumberOfObjectives()),
 n_variables(toCopy.getNumberOfVariables()),
-n_constraints(toCopy.getNumberOfConstraints()) {
+n_constraints(toCopy.getNumberOfConstraints()),
+lower_bound(new int[toCopy.getNumberOfVariables()]),
+upper_bound(new int[toCopy.getNumberOfVariables()]) {
     
     std::strcpy(name, toCopy.name);
-    lower_bound = new int[toCopy.getNumberOfVariables()];
-    upper_bound = new int[toCopy.getNumberOfVariables()];
-    
     for (int index = 0; index < n_variables; index++) {
         lower_bound[index] = toCopy.getLowerBound(index);
         upper_bound[index] = toCopy.getUpperBound(index);
@@ -40,16 +40,14 @@ type(ProblemType::XD),
 starting_level(0),
 n_objectives(numberOfObjectives),
 n_variables(numberOfVariables),
-n_constraints(0) {
-    lower_bound = new int[numberOfVariables];
-    upper_bound = new int[numberOfVariables];
+n_constraints(0),
+lower_bound(new int[numberOfVariables]),
+upper_bound(new int[numberOfVariables]) {
+
 }
 
 Problem::~Problem() {
-    /*
-     delete [] lower_bound;
-     delete [] upper_bound;
-     */
+
 }
 
 Problem& Problem::operator=(const Problem &toCopy) {

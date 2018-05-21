@@ -13,22 +13,24 @@ rangeinx(nullptr),
 rangeiny(nullptr),
 maxinx(0),
 maxiny(0),
-numberOfElements(0),
+//numberOfElements(0),
+activeBuckets(0),
+unexploredBuckets(0),
+disabledBuckets(0),
 grid(0,0) {
 
 };
 
 HandlerContainer::HandlerContainer(const HandlerContainer& toCopy):
-maxinx(toCopy.maxinx),
-maxiny(toCopy.maxiny),
-numberOfElements(toCopy.numberOfElements),
+maxinx(toCopy.getMaxValueInX()),
+maxiny(toCopy.getMaxValueInY()),
+grid(toCopy.getGrid()),
+//numberOfElements(toCopy.getNumberOfElements()),
 activeBuckets(toCopy.getNumberOfActiveBuckets()),
 unexploredBuckets(toCopy.getNumberOfUnexploredBuckets()),
 disabledBuckets(toCopy.getNumberOfDisabledBuckets()),
-grid(toCopy.getGrid()) {
-
-    rangeinx = new double[toCopy.getCols()];
-    rangeiny = new double[toCopy.getRows()];
+rangeinx(new double[toCopy.getCols()]),
+rangeiny(new double[toCopy.getRows()]) {
 
     for (int indexy = 0; indexy < toCopy.getRows(); ++indexy)
         rangeiny[indexy] = toCopy.rangeiny[indexy];
@@ -38,43 +40,58 @@ grid(toCopy.getGrid()) {
 
     for (int obj = 0; obj < 2; ++obj)
         min_value_found_in_obj[obj] = toCopy.getBestValueFoundIn(obj);
+
+    /*lb_x = minValX - ((maxinx - minValY) / (2 * toCopy.getCols()));
+    lb_y = minValY - ((maxiny - minValY) / (2 * toCopy.getRows()));
+
+    ub_x = maxinx + ((maxinx - minValY) / (2 * toCopy.getCols()));
+    ub_y = maxValY + ((maxiny - minValY) / (2 * toCopy.getRows()));
+
+    d_x = (lb_x - ub_x) / toCopy.getCols();
+    d_y = (lb_y - ub_y) / toCopy.getRows();
+*/
 }
 
-HandlerContainer::HandlerContainer(unsigned int rows, unsigned int cols, double maxValX, double maxValY):
-grid(cols, rows) {
-    //    grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows) {
-    /*
-     if (maxValX < cols)
-     cols = maxValX;
-     if (maxValY < rows)
-     rows = maxValY;
-     */
-    numberOfElements = 0;
-    unexploredBuckets = rows * cols;
-    activeBuckets = 0;
-    disabledBuckets = 0;
-
-    rangeinx = new double[cols];
-    rangeiny = new double[rows];
-    maxinx = maxValX;
-    maxiny = maxValY;
-
-    double rx = maxValX / cols;
-    double ry = maxValY / rows;
-
-    rangeinx[0] = 0;
-    rangeiny[0] = 0;
-
-    for (int divs = 1; divs < cols; ++divs)
-        rangeinx[divs] = rangeinx[divs - 1] + rx;
-
-    for (int divs = 1; divs < rows; ++divs)
-        rangeiny[divs] = rangeiny[divs - 1] + ry;
-
-    for (int obj = 0; obj < 2; ++obj)
-        min_value_found_in_obj[obj] = INFINITY;
-}
-
+//HandlerContainer::HandlerContainer(unsigned int rows, unsigned int cols, double maxValX, double maxValY):
+//unexploredBuckets(rows * cols),
+//activeBuckets(0),
+//disabledBuckets(0),
+//maxinx(maxValX),
+//maxiny(maxValY),
+//grid(cols, rows),
+//rangeinx(new double[cols]),
+//rangeiny(new double[rows]) {
+//    //    grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows) {
+//    /*
+//     if (maxValX < cols)
+//     cols = maxValX;
+//     if (maxValY < rows)
+//     rows = maxValY;
+//     */
+//    //numberOfElements = 0;
+//
+//    lb_x = 0 - ((maxValX - 0) / (2 * cols));
+//    lb_y = 0 - ((maxValY - 0) / (2 * rows));
+//
+//    ub_x = maxValX + ((maxValX - 0) / (2 * cols));
+//    ub_y = maxValY + ((maxValY - 0) / (2 * rows));
+//
+//    double rx = maxValX / cols;
+//    double ry = maxValY / rows;
+//
+//    rangeinx[0] = 0;
+//    rangeiny[0] = 0;
+//
+//    for (int divs = 1; divs < cols; ++divs)
+//        rangeinx[divs] = rangeinx[divs - 1] + rx;
+//
+//    for (int divs = 1; divs < rows; ++divs)
+//        rangeiny[divs] = rangeiny[divs - 1] + ry;
+//
+//    for (int obj = 0; obj < 2; ++obj)
+//        min_value_found_in_obj[obj] = INFINITY;
+//}
+//
 HandlerContainer::~HandlerContainer() {
     delete[] rangeinx;
     delete[] rangeiny;
@@ -93,22 +110,36 @@ HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int c
 
     //grid(maxValX < cols?maxValX:cols, maxValY < rows?maxValY:rows);
 
-    numberOfElements = 0;
+    //numberOfElements = 0;
     unexploredBuckets = rows * cols;
     activeBuckets = 0;
     disabledBuckets = 0;
 
     if(rangeinx != nullptr)
-        delete rangeinx;
+        delete [] rangeinx;
     if(rangeiny != nullptr)
-        delete rangeiny;
+        delete [] rangeiny;
 
     pareto_front.clear();
 
-    rangeinx = new double[cols];
-    rangeiny = new double[rows];
     maxinx = maxValX;
     maxiny = maxValY;
+    mininx = minValX;
+    mininy = minValY;
+
+    lb_x = mininx - ((maxinx - mininx) / (2 * cols));
+    ub_x = maxiny + ((maxinx - mininx) / (2 * cols));
+
+    lb_y = mininy - ((maxiny - mininy) / (2 * rows));
+    ub_y = maxiny + ((maxiny - mininy) / (2 * rows));
+
+    d_x = (ub_x - lb_x)/ cols;
+    d_y = (ub_y - lb_y)/ rows;
+
+    /*193 143 307 297 11 15*/
+    cout << lb_x << ' ' << lb_y << ' ' << ub_x << ' ' << ub_y << ' '<< d_x << ' ' << d_y << ' ' << std::endl;
+    rangeinx = new double[cols];
+    rangeiny = new double[rows];
 
     double rx = maxValX / cols;
     double ry = maxValY / rows;
@@ -129,8 +160,23 @@ HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int c
 }
 
 void HandlerContainer::getCoordinateForSolution(const Solution &solution, int * coordinate) const {
+    //int coordinate_new[2];
+    /*193 143 307 297 11 15*/
+
+   /* double value_x = (solution.getObjective(0) < mininx? mininx : solution.getObjective(0));
+    value_x = (solution.getObjective(0) > maxinx? maxinx : solution.getObjective(0));
+
+    double value_y = (solution.getObjective(1) < mininy? mininy : solution.getObjective(1));
+    value_y = (solution.getObjective(1) > maxiny? maxiny : solution.getObjective(1));
+
+    //cout << value_x << ' ' << value_y << ' ' << std::endl;
+    coordinate_new[0] = floor((value_x - lb_x) / d_x);
+    coordinate_new[1] = floor((value_y - lb_y) / d_y);
+*/
     coordinate[0] = binarySearch(solution.getObjective(0), rangeinx, getCols());
     coordinate[1] = binarySearch(solution.getObjective(1), rangeiny, getRows());
+
+    //cout << coordinate_new[0] << ' '<< coordinate_new[1] << ' '<<coordinate[0]<<' ' << coordinate[1] << std::endl;
 }
 
 /**
@@ -233,6 +279,15 @@ unsigned int HandlerContainer::getCols() const {
     return grid.getNumberOfCols();
 }
 
+
+double HandlerContainer::getMaxValueInX() const {
+    return maxinx;
+}
+
+double HandlerContainer::getMaxValueInY() const {
+    return maxiny;
+}
+
 unsigned long HandlerContainer::getSize() const {
     return grid.getSize();
 }
@@ -251,6 +306,10 @@ unsigned long HandlerContainer::getNumberOfUnexploredBuckets() const {
 
 unsigned long HandlerContainer::getNumberOfDisabledBuckets() const {
     return disabledBuckets;
+}
+
+unsigned long HandlerContainer::getNumberOfElements() const {
+    return grid.getSize();
 }
 
 void HandlerContainer::setNonDominatedState(int x, int y) {

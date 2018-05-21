@@ -8,12 +8,16 @@
 
 #include "SubproblemsPool.hpp"
 
-SubproblemsPool::SubproblemsPool() {
-    size.store(0);
+SubproblemsPool::SubproblemsPool():
+size_emptying(4),
+max_limit_size(40),
+size(0) {
+
 }
 
 void SubproblemsPool::setSizeEmptying(unsigned long size) {
     size_emptying = size;
+    max_limit_size = size_emptying * 10;
 }
 
 unsigned long SubproblemsPool::getSizeEmptying() const {
@@ -22,6 +26,10 @@ unsigned long SubproblemsPool::getSizeEmptying() const {
 
 unsigned long SubproblemsPool::unsafe_size() const {
     return size;
+}
+
+bool SubproblemsPool::isMaxLimitReached() const {
+    return size > max_limit_size;
 }
 
 bool SubproblemsPool::empty() const {
@@ -33,13 +41,16 @@ bool SubproblemsPool::isEmptying() const {
 }
 
 void SubproblemsPool::push(const Interval & subproblem) {
-    priority_queues[subproblem.getPriority()].push(subproblem);
     size.fetch_and_increment();
+    if (isMaxLimitReached())
+        std::cout << "SubProblemsPool: max_limit reached by " << size << std::endl;
+
+    priority_queues[subproblem.getPriority()].push(subproblem);
 }
 
 bool SubproblemsPool::try_pop(Interval & interval) {
-    for(int i = P_High; i <= P_Low; ++i) // Scan queues in priority order for a subproblem.
-        if(priority_queues[i].try_pop(interval)) {
+    for(int p_queue = P_High; p_queue <= P_Low; ++p_queue) // Scan queues in priority order for a subproblem.
+        if(priority_queues[p_queue].try_pop(interval)) {
             size.fetch_and_decrement();
             return true;
         }
@@ -48,5 +59,5 @@ bool SubproblemsPool::try_pop(Interval & interval) {
 
 void SubproblemsPool::print() const {
     unsigned long total_size = unsafe_size();
-    printf("T:%4lu\t[H:%4lu\tM:%4lu\tL:%4lu\t]\n", total_size, priority_queues[P_High].unsafe_size(), priority_queues[P_Medium].unsafe_size(), priority_queues[P_Low].unsafe_size());
+    printf("T:%4lu\t[H:%4lu\tM:%4lu\tL:%4lu\t]\n", total_size, priority_queues[P_High].unsafe_size(), priority_queues[P_Normal].unsafe_size(), priority_queues[P_Low].unsafe_size());
 }

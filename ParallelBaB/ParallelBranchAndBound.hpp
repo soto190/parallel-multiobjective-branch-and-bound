@@ -22,16 +22,37 @@ class ParallelBranchAndBound: public tbb::task {
 public:
     int rank;
     int number_of_bbs;
-    char outputParetoFile[255];
-    char summarizeFile[255];
+    char pareto_file[255];
+    char summarize_file[255];
     bool is_grid_enable = false;
     bool is_sorting_enable = false;
     bool is_priority_enable = false;
     double time_limit;
 
+    unsigned long number_of_nodes;
+    unsigned long number_of_nodes_created;
+    unsigned long number_of_nodes_pruned;
+    unsigned long number_of_nodes_explored;
+    unsigned long number_of_nodes_unexplored;
+    unsigned long number_of_calls_to_branch;
+    unsigned long number_of_reached_leaves;
+    unsigned long number_of_calls_to_prune;
+    unsigned long number_of_updates_in_lower_bound;
+    unsigned long number_of_tree_levels;
+    unsigned long number_of_shared_works;
+
+    unsigned long number_of_non_dominated_buckets;
+    unsigned long number_of_unexplored_buckets;
+    unsigned long number_of_dominated_buckets;
+    
     ProblemFJSSP problem;
     Interval branch_init;
+    ParetoFront pareto_front;
 
+    double elapsed_time;
+    std::clock_t time_start;
+    std::chrono::high_resolution_clock::time_point t1;
+    std::chrono::high_resolution_clock::time_point t2;
 
     ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem);
     ~ParallelBranchAndBound();
@@ -54,5 +75,13 @@ public:
     void setBranchInitPayload(const Payload_interval& payload);
     
     int getRank() const;
+
+    void saveSummarize();
+    void saveParetoFront();
+private:
+    int initSharedPool(const Interval& initial);
+    void initSharedParetoFront();
+    double getElapsedTime();
+
 };
 #endif /* ParallelBranchAndBound_hpp */

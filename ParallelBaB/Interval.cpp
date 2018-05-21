@@ -19,7 +19,9 @@ deep(Deep::TOP),
 build_up_to(-1),
 max_size(0),
 interval(nullptr) {
-
+    distance[0] = 0;
+    distance[1] = 0;
+    distance[2] = 0;
 }
 
 Interval::Interval(int max_size):
@@ -28,7 +30,9 @@ deep(Deep::TOP),
 build_up_to(-1),
 max_size(max_size),
 interval(new int[max_size]) {
-
+    distance[0] = 0;
+    distance[1] = 0;
+    distance[2] = 0;
 }
 
 Interval::Interval(const Interval &toCopy):
@@ -40,6 +44,7 @@ interval(new int[toCopy.getSize()]) {
     
     distance[0] = toCopy.getDistance(0);
     distance[1] = toCopy.getDistance(1);
+    distance[2] = toCopy.getDistance(2);
     
     for (int index = 0; index < max_size; ++index)
         interval[index] = toCopy.getValueAt(index);
@@ -47,6 +52,10 @@ interval(new int[toCopy.getSize()]) {
 }
 
 Interval::Interval(const Payload_interval& payload) {
+    distance[0] = 0;
+    distance[1] = 0;
+    distance[2] = 0;
+
     build_up_to = payload.build_up_to;
     max_size = payload.max_size;
     
@@ -58,8 +67,15 @@ Interval::Interval(const Payload_interval& payload) {
         interval[index] = payload.interval[index];
 }
 
+Interval::~Interval() {
+    delete [] interval;
+}
+
 Interval& Interval::operator()(int size) {
-    
+    distance[0] = 0;
+    distance[1] = 0;
+    distance[2] = 0;
+
     build_up_to = -1;
     max_size = size;
     priority = Priority::P_Low;
@@ -82,7 +98,8 @@ Interval& Interval::operator()(const Payload_interval& payload) {
     
     distance[0] = payload.distance[0];
     distance[1] = payload.distance[1];
-    
+//    distance[2] = payload.distance[2];
+
     if(interval != nullptr)
         delete [] interval;
     
@@ -103,6 +120,7 @@ Interval& Interval::operator=(const Interval &toCopy) {
     
     distance[0] = toCopy.getDistance(0);
     distance[1] = toCopy.getDistance(1);
+    distance[2] = toCopy.getDistance(2);
     
     if(interval != nullptr)
         delete [] interval; /** Freeing previously used memory. **/
@@ -114,8 +132,18 @@ Interval& Interval::operator=(const Interval &toCopy) {
     return *this;
 }
 
-Interval::~Interval() {
-    delete [] interval;
+std::ostream &operator<<(std::ostream& stream, const Interval& interval) {
+    stream << "[" << interval.getBuildUpTo() << "] [";
+    for (int index_var = 0; index_var <= interval.getBuildUpTo(); ++index_var)
+        stream << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << interval.getValueAt(index_var);
+
+    for (int index_var = interval.getBuildUpTo() + 1; index_var < interval.getSize(); ++index_var)
+        stream << std::fixed << std::setw(6) << std::setfill(' ') << '-';
+
+    for (int index_dist = 0; index_dist < 3; ++index_dist)
+        stream << ']' << '[' << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << interval.getDistance(index_dist);
+    stream << ']' << ' ' <<'[' << interval.getDeep() << ' ' << interval.getPriority() << ']' << std::endl;
+    return stream;
 }
 
 int Interval::getSize() const {
@@ -150,8 +178,8 @@ void Interval::setHighPriority() {
     priority = Priority::P_High;
 }
 
-void Interval::setMediumPriority() {
-    priority = Priority::P_Medium;
+void Interval::setNormalPriority() {
+    priority = Priority::P_Normal;
 }
 
 void Interval::setDistance(int n_dim, float n_val) {
@@ -212,5 +240,5 @@ void Interval::print() const {
     for (int index_var = build_up_to + 1; index_var < max_size; ++index_var)
         printf("%3c ", sep);
     
-    printf("] [%3.3f, %3.3f] [%1d, %1d]\n", distance[0], distance[1], deep, priority);
+    printf("] [%3.3f, %3.3f, %3.3f] [%1d, %1d]\n", distance[0], distance[1], distance[2], deep, priority);
 }
