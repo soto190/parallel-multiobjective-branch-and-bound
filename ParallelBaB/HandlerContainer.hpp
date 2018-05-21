@@ -15,10 +15,13 @@
 class HandlerContainer {
 
 private:
+    double lb_x, lb_y, ub_x, ub_y, d_x, d_y, d;
     double * rangeinx;
     double * rangeiny;
     double maxinx;
     double maxiny;
+    double mininx;
+    double mininy;
     //unsigned long numberOfElements;
 
     unsigned long activeBuckets;
@@ -31,7 +34,7 @@ private:
 
 public:
     HandlerContainer();
-    HandlerContainer(unsigned int width, unsigned int height, double maxValX, double maxValY);
+    //HandlerContainer(unsigned int width, unsigned int height, double maxValX, double maxValY);
     HandlerContainer(const HandlerContainer& toCopy);
     ~HandlerContainer();
 

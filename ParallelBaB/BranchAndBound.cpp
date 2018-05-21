@@ -182,9 +182,9 @@ void BranchAndBound::initialize(int starts_tree) {
     time_start = std::clock();
 
     if (isGridEnable())
-        paretoContainer(10, 10, problem.getFmin(0), problem.getFmin(1), problem.getFmax(0), problem.getFmax(1));
+        paretoContainer(10, 10, problem.getFmax(0), problem.getFmax(1), problem.getFmin(0), problem.getFmin(1));
     else
-        paretoContainer(1, 1, problem.getFmin(0), problem.getFmin(1), problem.getFmax(0), problem.getFmax(1));
+        paretoContainer(1, 1, problem.getFmax(0), problem.getFmax(1), problem.getFmin(0), problem.getFmin(1));
     
     if (starts_tree == -1)
         currentLevel = 0;

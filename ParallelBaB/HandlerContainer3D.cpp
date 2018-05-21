@@ -116,11 +116,11 @@ HandlerContainer3D& HandlerContainer3D::operator()(unsigned int rows, unsigned i
     disabledBuckets = 0;
 
     if(rangeinx != nullptr)
-        delete rangeinx;
+        delete[] rangeinx;
     if(rangeiny != nullptr)
-        delete rangeiny;
+        delete[] rangeiny;
     if(rangeinz != nullptr)
-        delete rangeinz;
+        delete[] rangeinz;
 
     pareto_front.clear();
 
