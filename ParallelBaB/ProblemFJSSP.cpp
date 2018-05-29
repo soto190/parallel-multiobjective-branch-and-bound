@@ -24,8 +24,8 @@ best_makespan_found(INT_MAX),
 max_eet_of_jobs(0),
 f_min(nullptr),
 f_max(nullptr),
-encode_job_machine_to_map(nullptr),
-decode_map_to_job_machine(nullptr),
+encode_job_machine(nullptr),
+decode_job_machine(nullptr),
 n_operations_in_job(nullptr),
 release_time(nullptr),
 operation_belongs_to_job(nullptr),
@@ -60,8 +60,8 @@ best_makespan_found(INT_MAX),
 max_eet_of_jobs(0),
 f_min(nullptr),
 f_max(nullptr),
-encode_job_machine_to_map(nullptr),
-decode_map_to_job_machine(nullptr),
+encode_job_machine(nullptr),
+decode_job_machine(nullptr),
 n_operations_in_job(nullptr),
 release_time(nullptr),
 operation_belongs_to_job(nullptr),
@@ -114,8 +114,8 @@ goodSolutionWithMaxWorkload(toCopy.getSolutionWithGoodMaxWorkload()) {
         f_max[obj] = toCopy.getFmax(obj);
     }
     
-    encode_job_machine_to_map = new int *[n_jobs];
-    decode_map_to_job_machine = new int *[n_jobs * n_machines];
+    encode_job_machine = new int *[n_jobs];
+    decode_job_machine = new int *[(n_jobs * n_machines) + 1];
     processing_time = new int *[n_operations];
     job_operation_is_number = new int *[n_jobs];
     
@@ -134,20 +134,20 @@ goodSolutionWithMaxWorkload(toCopy.getSolutionWithGoodMaxWorkload()) {
     sum_shortest_proc_times = new int[n_machines]; /** D^{k}_{Ñ}. Length equals to number of machines **/
     max_eet_of_jobs = toCopy.getMaxEarliestEndingTime(); /** TODO: Fix this.**/
     
-    int job = 0, map = 0, machine = 0, operation = 0, operationCounter = 0;
+    int job = 0, map = 1, machine = 0, operation = 0, operationCounter = 0;
     
     for (job = 0; job < n_jobs; ++job) {
         n_operations_in_job[job] = toCopy.getNumberOfOperationsInJob(job);
         release_time[job] = toCopy.getReleaseTimeOfJob(job);
         eet_of_job[job] = toCopy.getEarliestEndingJobTime(job);
         
-        encode_job_machine_to_map[job] = new int[toCopy.getNumberOfMachines()];
+        encode_job_machine[job] = new int[toCopy.getNumberOfMachines()];
         
         for (machine = 0; machine < n_machines; ++machine) {
-            decode_map_to_job_machine[map] = new int[2];
-            decode_map_to_job_machine[map][0] = toCopy.getMapOfJobMachine(map, 0);
-            decode_map_to_job_machine[map][1] = toCopy.getMapOfJobMachine(map, 1);
-            encode_job_machine_to_map[job][machine] = toCopy.getJobMachineToMap(job, machine);
+            decode_job_machine[map] = new int[2];
+            decode_job_machine[map][0] = toCopy.getMapOfJobMachine(map, 0);
+            decode_job_machine[map][1] = toCopy.getMapOfJobMachine(map, 1);
+            encode_job_machine[job][machine] = toCopy.getJobMachineToMap(job, machine);
             map++;
         }
     }
@@ -217,8 +217,8 @@ Problem(problem.n_objectives, problem.n_operations) {
     best_workloads = new int[n_machines];
     job_operation_is_number = new int *[n_jobs];
     processing_time = new int *[n_operations];
-    encode_job_machine_to_map = new int *[n_jobs];
-    decode_map_to_job_machine = new int *[n_jobs * n_machines];
+    encode_job_machine = new int *[n_jobs];
+    decode_job_machine = new int *[(n_jobs * n_machines) + 1];
     
     earliest_starting_time = new int[n_operations];/** Length equals to number of operations. **/
     earliest_ending_time = new int[n_operations]; /** Length equals to number of operations. **/
@@ -232,7 +232,7 @@ Problem(problem.n_objectives, problem.n_operations) {
     
     int minPij = INT_MAX;
     int minMachine = 0;
-    int map = 0;
+    int map = 1;
     
     for (int n_job = 0; n_job < n_jobs; ++n_job) {
         n_operations_in_job[n_job] = problem.n_operations_in_job[n_job];
@@ -241,12 +241,12 @@ Problem(problem.n_objectives, problem.n_operations) {
     
     /** Creates the mapping. **/
     for (int job = 0; job < n_jobs; ++job) {
-        encode_job_machine_to_map[job] = new int[n_machines];
+        encode_job_machine[job] = new int[n_machines];
         for (int machine = 0; machine < n_machines; ++machine) {
-            decode_map_to_job_machine[map] = new int[2];
-            decode_map_to_job_machine[map][0] = job;
-            decode_map_to_job_machine[map][1] = machine;
-            encode_job_machine_to_map[job][machine] = map;
+            decode_job_machine[map] = new int[2];
+            decode_job_machine[map][0] = job;
+            decode_job_machine[map][1] = machine;
+            encode_job_machine[job][machine] = map;
             map++;
         }
     }
@@ -363,8 +363,8 @@ void ProblemFJSSP::loadInstancePayload(const Payload_problem_fjssp& problem) {
     best_workloads = new int[n_machines];
     job_operation_is_number = new int *[n_jobs];
     processing_time = new int *[n_operations];
-    encode_job_machine_to_map = new int *[n_jobs];
-    decode_map_to_job_machine = new int *[n_jobs * n_machines];
+    encode_job_machine = new int *[n_jobs];
+    decode_job_machine = new int *[(n_jobs * n_machines) + 1];
     
     earliest_starting_time = new int[n_operations];/** Length equals to number of operations. **/
     earliest_ending_time = new int[n_operations]; /** Length equals to number of operations. **/
@@ -376,7 +376,7 @@ void ProblemFJSSP::loadInstancePayload(const Payload_problem_fjssp& problem) {
     max_eet_of_jobs = 0;
     sum_M_smallest_est = 0;
     
-    int map = 0;
+    int map = 1;
     
     for (int n_job = 0; n_job < n_jobs; ++n_job) {
         n_operations_in_job[n_job] = problem.n_operations_in_job[n_job];
@@ -393,12 +393,12 @@ void ProblemFJSSP::loadInstancePayload(const Payload_problem_fjssp& problem) {
     
     /** Creates the mapping. **/
     for (int job = 0; job < n_jobs; ++job) {
-        encode_job_machine_to_map[job] = new int[n_machines];
+        encode_job_machine[job] = new int[n_machines];
         for (int machine = 0; machine < n_machines; ++machine) {
-            decode_map_to_job_machine[map] = new int[2];
-            decode_map_to_job_machine[map][0] = job;
-            decode_map_to_job_machine[map][1] = machine;
-            encode_job_machine_to_map[job][machine] = map;
+            decode_job_machine[map] = new int[2];
+            decode_job_machine[map][0] = job;
+            decode_job_machine[map][1] = machine;
+            encode_job_machine[job][machine] = map;
             map++;
         }
     }
@@ -505,18 +505,18 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy) {
     if (processing_time != nullptr) {
         int job = 0, operation = 0;
         for (job = 0; job < n_jobs; ++job) {
-            delete[] encode_job_machine_to_map[job];
+            delete[] encode_job_machine[job];
             delete[] job_operation_is_number[job];
         }
         
         for (job = 0; job < n_jobs * n_machines; ++job)
-            delete[] decode_map_to_job_machine[job];
+            delete[] decode_job_machine[job];
         
         for (operation = 0; operation < n_operations; ++operation)
             delete[] processing_time[operation];
         
-        delete[] encode_job_machine_to_map;
-        delete[] decode_map_to_job_machine;
+        delete[] encode_job_machine;
+        delete[] decode_job_machine;
         delete[] processing_time;
         delete[] job_operation_is_number;
         delete[] n_operations_in_job;
@@ -559,8 +559,8 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy) {
     best_workload_found = toCopy.getBestWorkloadFound();
     best_makespan_found = toCopy.getBestMakespanFound();
     
-    encode_job_machine_to_map = new int *[n_jobs];
-    decode_map_to_job_machine = new int *[n_jobs * n_machines];
+    encode_job_machine = new int *[n_jobs];
+    decode_job_machine = new int *[n_jobs * n_machines];
     
     n_operations_in_job = new int[n_jobs];
     release_time = new int[n_jobs];
@@ -583,13 +583,13 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy) {
         release_time[job] = toCopy.getReleaseTimeOfJob(job);
         eet_of_job[job] = toCopy.getEarliestEndingJobTime(job);
         
-        encode_job_machine_to_map[job] = new int[n_machines];
+        encode_job_machine[job] = new int[n_machines];
         
         for (machine = 0; machine < n_machines; ++machine) {
-            decode_map_to_job_machine[map] = new int[2];
-            decode_map_to_job_machine[map][0] = toCopy.getMapOfJobMachine(map, 0);
-            decode_map_to_job_machine[map][1] = toCopy.getMapOfJobMachine(map, 1);
-            encode_job_machine_to_map[job][machine] = toCopy.getJobMachineToMap(job, machine);
+            decode_job_machine[map] = new int[2];
+            decode_job_machine[map][0] = toCopy.getMapOfJobMachine(map, 0);
+            decode_job_machine[map][1] = toCopy.getMapOfJobMachine(map, 1);
+            encode_job_machine[job][machine] = toCopy.getJobMachineToMap(job, machine);
             map++;
         }
     }
@@ -643,17 +643,17 @@ ProblemFJSSP::~ProblemFJSSP() {
     int job = 0, operation = 0;
     for (job = 0; job < n_jobs; ++job) {
         delete[] job_operation_is_number[job];
-        delete[] encode_job_machine_to_map[job];
+        delete[] encode_job_machine[job];
     }
     
     for (job = 0; job < n_jobs * n_machines; ++job)
-        delete[] decode_map_to_job_machine[job];
+        delete[] decode_job_machine[job];
     
     for (operation = 0; operation < n_operations; ++operation)
         delete[] processing_time[operation];
     
-    delete[] encode_job_machine_to_map;
-    delete[] decode_map_to_job_machine;
+    delete[] encode_job_machine;
+    delete[] decode_job_machine;
     delete[] processing_time;
     delete[] n_operations_in_job;
     delete[] release_time;
@@ -950,7 +950,7 @@ void ProblemFJSSP::createDefaultSolution(Solution & solution) {
                 if (machine++ == n_machines - 1)
                     machine = 0;
             
-            map = encode_job_machine_to_map[job][machine];
+            map = encode_job_machine[job][machine];
             solution.setVariable(countOperations, map);
             
             if (machine++ == n_machines - 1)
@@ -1040,7 +1040,7 @@ void ProblemFJSSP::getSolutionWithLowerBoundInObj(int nObj, Solution& solution) 
     
     else if (nObj == 2)
         for (int operation = 0; operation < n_operations; ++operation)
-            solution.setVariable(operation, encode_job_machine_to_map[operation_belongs_to_job[operation]][assignation_min_Pij[operation]]);
+            solution.setVariable(operation, encode_job_machine[operation_belongs_to_job[operation]][assignation_min_Pij[operation]]);
     
     evaluate(solution);
 }
@@ -1086,7 +1086,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution) {
             workload[machine] += procTiOp;
             totalWorkload += procTiOp;
             
-            solution.setVariable(counterOperations, encode_job_machine_to_map[nJob][machine]);
+            solution.setVariable(counterOperations, encode_job_machine[nJob][machine]);
             counterOperations++;
             
             if (workload[machine] > maxWorkload) {
@@ -1108,7 +1108,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution) {
         minWorkload = INT_MAX;
         
         for (int nOperation = 0; nOperation < n_operations; ++nOperation)
-            if (decode_map_to_job_machine[solution.getVariable(nOperation)][1] == maxWorkloadedMachine)
+            if (decode_job_machine[solution.getVariable(nOperation)][1] == maxWorkloadedMachine)
                 for (int nMachine = 0; nMachine < getNumberOfMachines(); ++nMachine)
                     if (nMachine != maxWorkloadedMachine
                         && (workload[nMachine] + processing_time[nOperation][nMachine]) < minWorkload) {
@@ -1124,7 +1124,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution) {
         totalWorkload += processing_time[bestOperation][bestMachine];
         workload[bestMachine] += processing_time[bestOperation][bestMachine];
         
-        solution.setVariable(bestOperation, encode_job_machine_to_map[operation_belongs_to_job[bestOperation]][bestMachine]);
+        solution.setVariable(bestOperation, encode_job_machine[operation_belongs_to_job[bestOperation]][bestMachine]);
         assignation_best_max_workload[bestOperation] = bestMachine;
         
         /** Recalculates the maxWorkload and minWorkload for the next iteration. **/
@@ -1149,7 +1149,7 @@ void ProblemFJSSP::buildSolutionWithGoodMaxWorkloadv2(Solution & solution) {
             totalWorkload += processing_time[bestOperation][lastMaxWorkloadedMachine];
             totalWorkload -= processing_time[bestOperation][lastBestWorkloadMachine];
             
-            solution.setVariable(bestOperation, encode_job_machine_to_map[operation_belongs_to_job[bestOperation]][lastMaxWorkloadedMachine]);
+            solution.setVariable(bestOperation, encode_job_machine[operation_belongs_to_job[bestOperation]][lastMaxWorkloadedMachine]);
             solution.setObjective(1, workload[lastMaxWorkloadedMachine]);
             
             assignation_best_max_workload[bestOperation] = lastMaxWorkloadedMachine;
@@ -1334,15 +1334,15 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
                 delete[] job_operation_is_number[job];
             delete[] job_operation_is_number;
         }
-        if (encode_job_machine_to_map != nullptr) {
+        if (encode_job_machine != nullptr) {
             for (job = 0; job < n_jobs; ++job)
-                delete[] encode_job_machine_to_map[job];
-            delete[] encode_job_machine_to_map;
+                delete[] encode_job_machine[job];
+            delete[] encode_job_machine;
         }
-        if (decode_map_to_job_machine != nullptr) {
+        if (decode_job_machine != nullptr) {
             for (job = 0; job < n_jobs * n_machines; ++job)
-                delete[] decode_map_to_job_machine[job];
-            delete[] decode_map_to_job_machine;
+                delete[] decode_job_machine[job];
+            delete[] decode_job_machine;
         }
         if (n_operations_in_job != nullptr)
             delete[] n_operations_in_job;
@@ -1427,8 +1427,8 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
             best_workloads = new int[n_machines];
             job_operation_is_number = new int *[n_jobs];
             processing_time = new int *[n_operations];
-            encode_job_machine_to_map = new int *[n_jobs];
-            decode_map_to_job_machine = new int *[n_jobs * n_machines];
+            encode_job_machine = new int *[n_jobs];
+            decode_job_machine = new int *[(n_jobs * n_machines) + 1];
             
             earliest_starting_time = new int[n_operations];/** Length equals to number of operations. **/
             earliest_ending_time = new int[n_operations]; /** Length equals to number of operations. **/
@@ -1442,15 +1442,15 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
             
             int minPij = INT_MAX;
             int minMachine = 0;
-            int map = 0;
+            int map = 1;
             
             for (int job = 0; job < n_jobs; ++job) {
-                encode_job_machine_to_map[job] = new int[n_machines];
+                encode_job_machine[job] = new int[n_machines];
                 for (int machine = 0; machine < n_machines; ++machine) {
-                    decode_map_to_job_machine[map] = new int[2];
-                    decode_map_to_job_machine[map][0] = job;
-                    decode_map_to_job_machine[map][1] = machine;
-                    encode_job_machine_to_map[job][machine] = map;
+                    decode_job_machine[map] = new int[2];
+                    decode_job_machine[map][0] = job;
+                    decode_job_machine[map][1] = machine;
+                    encode_job_machine[job][machine] = map;
                     map++;
                 }
             }
@@ -1582,17 +1582,17 @@ void ProblemFJSSP::loadInstanceTXT(char filePath[2][255], char file_extension[10
             int job = 0, operation = 0;
             for (job = 0; job < n_jobs; ++job) {
                 delete[] job_operation_is_number[job];
-                delete[] encode_job_machine_to_map[job];
+                delete[] encode_job_machine[job];
             }
             
             for (job = 0; job < n_jobs * n_machines; ++job)
-                delete[] decode_map_to_job_machine[job];
+                delete[] decode_job_machine[job];
             
             for (operation = 0; operation < n_operations; ++operation)
                 delete[] processing_time[operation];
             
-            delete[] encode_job_machine_to_map;
-            delete[] decode_map_to_job_machine;
+            delete[] encode_job_machine;
+            delete[] decode_job_machine;
             delete[] processing_time;
             delete[] n_operations_in_job;
             delete[] release_time;
@@ -1650,8 +1650,8 @@ void ProblemFJSSP::loadInstanceTXT(char filePath[2][255], char file_extension[10
             best_workloads = new int[n_machines];
             job_operation_is_number = new int *[n_jobs];
             processing_time = new int *[n_operations];
-            encode_job_machine_to_map = new int *[n_jobs];
-            decode_map_to_job_machine = new int *[n_jobs * n_machines];
+            encode_job_machine = new int *[n_jobs];
+            decode_job_machine = new int *[n_jobs * n_machines];
             
             earliest_starting_time = new int[n_operations];/** Length equals to number of operations. **/
             earliest_ending_time = new int[n_operations]; /** Length equals to number of operations. **/
@@ -1668,12 +1668,12 @@ void ProblemFJSSP::loadInstanceTXT(char filePath[2][255], char file_extension[10
             int map = 0;
             
             for (int job = 0; job < n_jobs; ++job) {
-                encode_job_machine_to_map[job] = new int[n_machines];
+                encode_job_machine[job] = new int[n_machines];
                 for (int machine = 0; machine < n_machines; ++machine) {
-                    decode_map_to_job_machine[map] = new int[2];
-                    decode_map_to_job_machine[map][0] = job;
-                    decode_map_to_job_machine[map][1] = machine;
-                    encode_job_machine_to_map[job][machine] = map;
+                    decode_job_machine[map] = new int[2];
+                    decode_job_machine[map][0] = job;
+                    decode_job_machine[map][1] = machine;
+                    encode_job_machine[job][machine] = map;
                     map++;
                 }
             }
@@ -1795,12 +1795,12 @@ int * ProblemFJSSP::getElemensToRepeat() {
 
 /** If position = 0 returns the job, if position = 1 returns the machine. (Decodes the map in job or machine). **/
 int ProblemFJSSP::getDecodeMap(int code, int parameter) const {
-    return decode_map_to_job_machine[code][parameter];
+    return decode_job_machine[code][parameter];
 }
 
 /** Returns the map corresponding to the configuration of job and machine. (Codes the job and machine in a map). **/
 int ProblemFJSSP::getEncodeMap(int job, int machine) const {
-    return encode_job_machine_to_map[job][machine];
+    return encode_job_machine[job][machine];
 }
 
 int ProblemFJSSP::getTimesThatValueCanBeRepeated(int value) {
@@ -1872,11 +1872,11 @@ int ProblemFJSSP::getMinWorkload(int n_machine) const {
 }
 
 int ProblemFJSSP::getMapOfJobMachine(int map, int machine_or_job) const {
-    return decode_map_to_job_machine[map][machine_or_job];
+    return decode_job_machine[map][machine_or_job];
 }
 
 int ProblemFJSSP::getJobMachineToMap(int job, int machine) const {
-    return encode_job_machine_to_map[job][machine];
+    return encode_job_machine[job][machine];
 }
 
 int ProblemFJSSP::getOperationInJobIsNumber(int job, int operation) const {
@@ -2092,8 +2092,8 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     for (operationInPosition = 0; operationInPosition < n_operations; operationInPosition++) {
         
         map = solution.getVariable(operationInPosition);
-        job = decode_map_to_job_machine[map][0];
-        machine = decode_map_to_job_machine[map][1];
+        job = decode_job_machine[map][0];
+        machine = decode_job_machine[map][1];
         
         numberOp = job_operation_is_number[job][operationOfJob[job]];
         operation_in_machine[numberOp] = machine;
