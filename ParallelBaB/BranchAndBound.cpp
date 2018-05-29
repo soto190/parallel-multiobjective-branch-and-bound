@@ -344,7 +344,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
         tree.setEndExploration(row, build_value);
         tree.setNumberOfNodesAt(row, 1);
         tree.setActiveColAtRow(row, build_value);
-        tree.setNodeValueAt(row, build_value, build_value);
+        tree.setNodeValueAt(row, build_value - 1, build_value);
         
         /** The interval is equivalent to the solution. **/
         incumbent_s.setVariable(row, build_value);
@@ -366,7 +366,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
 
     if (!sharedPool.isMaxLimitReached() && branches_created > branches_to_move_to_global_pool && branch_init.getBuildUpTo() <= getLimitLevelToShare())
         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
-            int val = tree.removeLastNodeAtRow(build_up_to + 1);
+            int val = tree.shareLastNodeAtRow(build_up_to + 1);
             branch_init.setValueAt(build_up_to + 1, val);
 
             incumbent_s.setVariable(build_up_to + 1, val);
@@ -629,7 +629,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
             
             branches_to_move_to_global_pool = ivm_tree.getNumberOfNodesAt(next_row) - 1;
             for(int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
-                int value = ivm_tree.removeLastNodeAtRow(next_row);
+                int value = ivm_tree.shareLastNodeAtRow(next_row);
                 
                 branch_to_send.setValueAt(next_row, value);
                 temp.setVariable(next_row, value);

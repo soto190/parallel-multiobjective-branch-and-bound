@@ -88,8 +88,8 @@ private:
     int * release_time;             /** Length equals to number of Jobs. **/
     int * operation_belongs_to_job;      /** Length equals to numberOfOperations. **/
     int ** processing_time;         /** Length equals to numberOfOperations x numberOfMachines. **/
-    int ** decode_map_to_job_machine;        /** Length equals to numberOfMaps x 2. Positio 0 is the job, position 1 is the machine.**/
-    int ** encode_job_machine_to_map;        /** Length equals to numberOfJobs x numberOfMachines. **/
+    int ** decode_job_machine;        /** Length equals to numberOfMaps x 2. Positio 0 is the job, position 1 is the machine.**/
+    int ** encode_job_machine;        /** Length equals to numberOfJobs x numberOfMachines. **/
     int ** job_operation_is_number;  /** Length equals to job x numberOfOperationsInJob. **/
     int * earliest_starting_time;  /** Length equals to number of operations. **/
     int * earliest_ending_time;    /** Length equals to number of operations. **/
