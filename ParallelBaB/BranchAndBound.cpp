@@ -335,32 +335,75 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
     }
     
     fjssp_data.reset();
-    
-    for (int row = 0; row <= build_up_to; ++row) {
-        for (int col = 0; col < tree.getNumberOfCols(); ++col)
-            tree.setNodeValueAt(row, col, -1);
-        build_value = branch_init.getValueAt(row);
-        tree.setStartExploration(row, build_value);
-        tree.setEndExploration(row, build_value);
-        tree.setNumberOfNodesAt(row, 1);
-        tree.setActiveColAtRow(row, build_value);
-        tree.setNodeValueAt(row, build_value - 1, build_value);
-        
-        /** The interval is equivalent to the solution. **/
-        incumbent_s.setVariable(row, build_value);
-        problem.evaluateDynamic(incumbent_s, fjssp_data, row);
+
+    if (build_up_to >= 0) {
+        int col_n = 0;
+        int node_start = 0;
+        for (int element = 0; element < problem.getTotalElements(); ++element)
+            if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element)) {
+                int op = problem.getOperationInJobIsNumber(element, fjssp_data.getNumberOfOperationsAllocatedFromJob(element));
+                unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(op);
+
+                for (int machine = 0; machine < machines_aviable; ++machine) {
+                    int new_machine = problem.getMachinesAvaibleForOperation(op, machine);
+                    int code = problem.getEncodeMap(element, new_machine);
+
+                    if (code == build_value)
+                        node_start = code;
+
+                    tree.setNodeValueAt(0, col_n++, code);
+                }
+            }
+
+        build_value = branch_init.getValueAt(0);
+        tree.setStartExploration(0, node_start);
+        tree.setEndExploration(0, node_start);
+        tree.setNumberOfNodesAt(0, 1);
+        tree.setActiveColAtRow(0, node_start);
+        tree.setNodeValueAt(0, node_start, build_value);
+        incumbent_s.setVariable(0, build_value);
+        problem.evaluateDynamic(incumbent_s, fjssp_data, 0);
+
+        for (int row = 1; row <= build_up_to; ++row) {
+            build_value = branch_init.getValueAt(row);
+
+            int node_counter = 0;
+            node_start = 0;
+            for (int col = 0; col < col_n; ++col) {
+                int code = tree.getNodeValueAt(row - 1, col);
+                int job = problem.getDecodeMap(code, 0);
+
+                if (fjssp_data.getNumberOfOperationsAllocatedFromJob(job) < problem.getTimesThatValueCanBeRepeated(job)) {
+                    if (code == build_value)
+                        node_start = code;
+
+                    tree.setNodeValueAt(row, node_counter++, code);
+                }
+            }
+            tree.setStartExploration(row, node_start);
+            tree.setEndExploration(row, node_start);
+            tree.setNumberOfNodesAt(row, 1);
+            tree.setActiveColAtRow(row, build_value);
+            tree.setNodeValueAt(row, node_start, build_value);
+
+            col_n = node_counter;
+
+            // The interval is equivalent to the solution.
+            incumbent_s.setVariable(row, build_value);
+            problem.evaluateDynamic(incumbent_s, fjssp_data, row);
+        }
+
+        for (int row = build_up_to + 1; row <= number_of_tree_levels; ++row) {
+            tree.setStartExploration(row, 0);
+            tree.setEndExploration(row, 0);
+            tree.setActiveColAtRow(row, -1);
+            tree.resetNumberOfNodesAt(row);
+            incumbent_s.setVariable(row, -1);
+        }
     }
-    
-    for (int row = build_up_to + 1; row <= number_of_tree_levels; ++row) {
-        tree.setStartExploration(row, -1);
-        tree.setActiveColAtRow(row, -1);
-        tree.resetNumberOfNodesAt(row);
-        incumbent_s.setVariable(row, -1);
-    }
-    
     incumbent_s.setBuildUpTo(build_up_to);
     int branches_created = branch(incumbent_s, build_up_to);
-    
+
     /** Send intervals to global_pool. **/
     int branches_to_move_to_global_pool = branches_created * getSizeToShare();
 
@@ -381,7 +424,6 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
             branch_init.removeLastValue();
             problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, currentLevel + 1);
         }
-    
     return 0;
 }
 
