@@ -175,7 +175,7 @@ void VRPTWdata::setCurrentVehicleCapacity(unsigned int to_n) {
 }
 
 void VRPTWdata::setCustomerServiceEndedAt(unsigned int customer, unsigned int time) {
-    ended_service[customer] = time;
+    ended_service[customer - 1] = time;
 }
 
 void VRPTWdata::setTotalTravelTime(double new_travel_time) {
@@ -332,7 +332,7 @@ void VRPTWdata::setIncomplete() {
 void VRPTWdata::print() const {
     printf("***********\n");
     printf("Position: %d", getPosition());
-    for (unsigned int route = 0; route < getMaxNumberOfVehicles(); ++route) {
+    for (unsigned int route = 0; route < 3 /*getNumberOfVehiclesUsed()*/; ++route) {
         printf("[%d] Cost: %6.6f\n", route, vehicle_cost[route]);
         printf("[%d] Travel time: %6.6f\n", route, travel_time[route]);
         printf("[%d] Capacity: %d\n", route, capacity[route]);
