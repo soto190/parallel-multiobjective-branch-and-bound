@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2103293E2013E3F8008C5679 /* FJSSPdata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2103293C2013E3F8008C5679 /* FJSSPdata.cpp */; };
+		21071A86213D8F5A00BAEFF0 /* ProblemVRPTW.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21071A84213D8F5900BAEFF0 /* ProblemVRPTW.cpp */; };
 		210751DF2019AB1D005F1A1D /* SolutionException.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 218182AC2016777800AE127B /* SolutionException.cpp */; };
 		2112825A1D639AB30038DBEE /* BranchAndBound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2112824A1D639AB30038DBEE /* BranchAndBound.cpp */; };
 		2112825B1D639AB30038DBEE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2112824C1D639AB30038DBEE /* main.cpp */; };
@@ -44,6 +45,7 @@
 		217D170F1F744B33004CECD8 /* MasterWorkerPBB.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 217D170D1F744B33004CECD8 /* MasterWorkerPBB.cpp */; };
 		218B0DB91E2D769F000B52F4 /* IVMTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 218B0DB71E2D769F000B52F4 /* IVMTree.cpp */; };
 		21D0D5002024C87A00CC599D /* ParetoFront.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21D0D4FE2024C87A00CC599D /* ParetoFront.cpp */; };
+		21E8B73A2146E811001A00A9 /* VRPTWdata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21E8B7382146E811001A00A9 /* VRPTWdata.cpp */; };
 		21E8EF8C1E48BD0800A716C6 /* ParallelBranchAndBound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21E8EF8A1E48BD0800A716C6 /* ParallelBranchAndBound.cpp */; };
 /* End PBXBuildFile section */
 
@@ -66,6 +68,8 @@
 /* Begin PBXFileReference section */
 		2103293C2013E3F8008C5679 /* FJSSPdata.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = FJSSPdata.cpp; sourceTree = "<group>"; };
 		2103293D2013E3F8008C5679 /* FJSSPdata.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = FJSSPdata.hpp; sourceTree = "<group>"; };
+		21071A84213D8F5900BAEFF0 /* ProblemVRPTW.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ProblemVRPTW.cpp; sourceTree = "<group>"; usesTabs = 0; };
+		21071A85213D8F5A00BAEFF0 /* ProblemVRPTW.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ProblemVRPTW.hpp; sourceTree = "<group>"; };
 		211282271D63988E0038DBEE /* ParallelBaB */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = ParallelBaB; sourceTree = BUILT_PRODUCTS_DIR; };
 		2112824A1D639AB30038DBEE /* BranchAndBound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BranchAndBound.cpp; sourceTree = "<group>"; };
 		2112824B1D639AB30038DBEE /* BranchAndBound.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BranchAndBound.hpp; sourceTree = "<group>"; };
@@ -135,6 +139,8 @@
 		21CE20641F9132C1006E0BE4 /* libtbbmalloc_debug.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libtbbmalloc_debug.dylib; path = ../../../../../opt/intel/compilers_and_libraries_2017.1.126/mac/tbb/lib/libtbbmalloc_debug.dylib; sourceTree = "<group>"; };
 		21D0D4FE2024C87A00CC599D /* ParetoFront.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ParetoFront.cpp; sourceTree = "<group>"; };
 		21D0D4FF2024C87A00CC599D /* ParetoFront.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ParetoFront.hpp; sourceTree = "<group>"; };
+		21E8B7382146E811001A00A9 /* VRPTWdata.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = VRPTWdata.cpp; sourceTree = "<group>"; };
+		21E8B7392146E811001A00A9 /* VRPTWdata.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = VRPTWdata.hpp; sourceTree = "<group>"; };
 		21E8EF8A1E48BD0800A716C6 /* ParallelBranchAndBound.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParallelBranchAndBound.cpp; sourceTree = "<group>"; };
 		21E8EF8B1E48BD0800A716C6 /* ParallelBranchAndBound.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ParallelBranchAndBound.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -229,6 +235,10 @@
 				211282551D639AB30038DBEE /* ProblemTSP.hpp */,
 				211282561D639AB30038DBEE /* ProblemVRP.cpp */,
 				211282571D639AB30038DBEE /* ProblemVRP.hpp */,
+				21E8B7382146E811001A00A9 /* VRPTWdata.cpp */,
+				21E8B7392146E811001A00A9 /* VRPTWdata.hpp */,
+				21071A84213D8F5900BAEFF0 /* ProblemVRPTW.cpp */,
+				21071A85213D8F5A00BAEFF0 /* ProblemVRPTW.hpp */,
 				211282581D639AB30038DBEE /* Solution.cpp */,
 				211282591D639AB30038DBEE /* Solution.hpp */,
 				218182AC2016777800AE127B /* SolutionException.cpp */,
@@ -335,6 +345,7 @@
 				213DA7D3204701B900440DF5 /* HandlerContainer.cpp in Sources */,
 				214C92E2200FCB2B00B55E58 /* ObjectiveValues.cpp in Sources */,
 				211282611D639AB30038DBEE /* ProblemVRP.cpp in Sources */,
+				21071A86213D8F5A00BAEFF0 /* ProblemVRPTW.cpp in Sources */,
 				211282601D639AB30038DBEE /* ProblemTSP.cpp in Sources */,
 				21D0D5002024C87A00CC599D /* ParetoFront.cpp in Sources */,
 				214467621FD8C3B000364E2A /* ParetoBucket.cpp in Sources */,
@@ -347,6 +358,7 @@
 				218B0DB91E2D769F000B52F4 /* IVMTree.cpp in Sources */,
 				2152C1C9204630F700152843 /* GridContainer.cpp in Sources */,
 				21E8EF8C1E48BD0800A716C6 /* ParallelBranchAndBound.cpp in Sources */,
+				21E8B73A2146E811001A00A9 /* VRPTWdata.cpp in Sources */,
 				2112825D1D639AB30038DBEE /* myutils.cpp in Sources */,
 				2112825F1D639AB30038DBEE /* ProblemHCSP.cpp in Sources */,
 				214467651FD8D74A00364E2A /* ConcurrentHandlerContainer.cpp in Sources */,

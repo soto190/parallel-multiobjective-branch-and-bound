@@ -640,16 +640,16 @@ ProblemFJSSP& ProblemFJSSP::operator=(const ProblemFJSSP &toCopy) {
 }
 
 ProblemFJSSP::~ProblemFJSSP() {
-    int job = 0, operation = 0;
-    for (job = 0; job < n_jobs; ++job) {
+    
+    for (int job = 0; job < n_jobs; ++job) {
         delete[] job_operation_is_number[job];
         delete[] encode_job_machine_to_map[job];
     }
     
-    for (job = 0; job < n_jobs * n_machines; ++job)
+    for (int job = 0; job < n_jobs * n_machines; ++job)
         delete[] decode_map_to_job_machine[job];
     
-    for (operation = 0; operation < n_operations; ++operation)
+    for (int operation = 0; operation < n_operations; ++operation)
         delete[] processing_time[operation];
     
     delete[] encode_job_machine_to_map;
@@ -1399,7 +1399,7 @@ void ProblemFJSSP::loadInstanceFJS(char filePath[2][255], char file_extension[10
         printf("[Master] Name: %s extension: %s\n", name_file_ext[0].c_str(), name_file_ext[1].c_str());
         std::strcpy(extension, name_file_ext[1].c_str());
         
-        /** If the instance is Kacem then it has the release time in the first value of each job. TODO: Re-think if its a good idea to update all the instances to include release time at 0. **/
+        /** If the instance is Kacem then it has the release time in the first value of each job. **/
         const int kacem_legnth = 5;
         char kacem[kacem_legnth] {'K', 'a', 'c', 'e', 'm'};
         for (int character = 0; character < kacem_legnth && instance_with_release_time == 1; ++character)

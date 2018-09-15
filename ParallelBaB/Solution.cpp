@@ -42,7 +42,7 @@ index(0) {
         objective[obj] = 0;
     
     for (int var = 0; var < numberOfVariables; ++var)
-        variable[var] = -1;
+        variable[var] = 0;
 }
 
 Solution::Solution(const Solution &solution):
@@ -94,7 +94,7 @@ Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
         objective[obj] = 0;
     
     for (int var = 0; var < numberOfVariables; ++var)
-        variable[var] = -1;
+        variable[var] = 0;
     
     return *this;
 }
