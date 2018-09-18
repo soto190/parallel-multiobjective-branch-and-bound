@@ -19,7 +19,7 @@ class IVMTree {
 private:
     unsigned int n_rows;
     unsigned int n_cols;
-    int i_am = -1;
+    unsigned int i_am = 0;
     int ** matrix_nodes;
     int * vector_pointing_to_col_at_row;
     int * start_exploration;
@@ -27,7 +27,7 @@ private:
     int * n_nodes_at_row;
     int integer_pointing_to_row;
     int starting_row;
-    bool there_are_more_ranches = true;
+    bool there_are_more_branches = true;
     int root_row = 0;
     unsigned long pending_nodes = 0;
     
@@ -70,6 +70,7 @@ public:
     int getEndExploration(int row) const;
     unsigned long getNumberOfPendingNodes() const;
     int removeLastNodeAtRow(int row);
+    int shareLastNodeAtRow(int row);
     bool thereAreMoreBranches() const;
     void addNodeToRow(int level, int value);
     int getActiveNode() const;

@@ -18,7 +18,7 @@ ParetoBucket sharedParetoFront;
 tbb::atomic<int> sleeping_bb;
 tbb::atomic<int> there_is_more_work;
 
-BranchAndBound::BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problemToCopy, const Interval & branch):
+BranchAndBound::BranchAndBound(int node_rank, int rank, const ProblemVRPTW& problemToCopy, const Interval & branch):
 is_grid_enable(false),
 is_sorting_enable(false),
 is_priority_enable(false),
@@ -27,9 +27,9 @@ bb_rank(rank),
 local_update_version(0),
 currentLevel(branch.getBuildUpTo()),
 problem(problemToCopy),
-fjssp_data(problemToCopy.getNumberOfJobs(),
-           problemToCopy.getNumberOfOperations(),
-           problemToCopy.getNumberOfMachines()),
+data_solution(problemToCopy.getNumberOfCustomers(),
+           problemToCopy.getMaxNumberOfVehicles(),
+           problemToCopy.getMaxVehicleCapacity()),
 incumbent_s(problemToCopy.getNumberOfObjectives(), problemToCopy.getNumberOfVariables()),
 ivm_tree(problemToCopy.getNumberOfVariables(), problemToCopy.getUpperBound(0) + 1),
 interval_to_solve(branch),
@@ -67,7 +67,7 @@ node_rank(toCopy.getNodeRank()),
 bb_rank(toCopy.getBBRank()),
 currentLevel(toCopy.getCurrentLevel()),
 problem(toCopy.getProblem()),
-fjssp_data(toCopy.getFJSSPdata()),
+data_solution(toCopy.getVRPTWdata()),
 incumbent_s(toCopy.getIncumbentSolution()),
 ivm_tree(toCopy.getIVMTree()),
 paretoContainer(toCopy.getParetoContainer()),
@@ -102,7 +102,7 @@ BranchAndBound& BranchAndBound::operator=(const BranchAndBound &toCopy) {
     bb_rank = toCopy.getBBRank();
     currentLevel = toCopy.getCurrentLevel();
     problem = toCopy.getProblem();
-    fjssp_data = toCopy.getFJSSPdata();
+    data_solution = toCopy.getVRPTWdata();
     incumbent_s = toCopy.getIncumbentSolution();
     ivm_tree = toCopy.getIVMTree();
     paretoContainer = toCopy.getParetoContainer();
@@ -131,7 +131,7 @@ BranchAndBound& BranchAndBound::operator=(const BranchAndBound &toCopy) {
     return *this;
 }
 
-BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch) {
+BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemVRPTW &problem_to_copy, const Interval &branch) {
     local_update_version = 0;
     t1 = std::chrono::high_resolution_clock::now();
     t2 = std::chrono::high_resolution_clock::now();
@@ -140,7 +140,7 @@ BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, cons
     node_rank = node_rank_new;
     bb_rank = rank_new;
     problem = problem_to_copy;
-    fjssp_data(problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
+    data_solution(problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
 
     currentLevel = 0;
     number_of_tree_levels = 0;
@@ -256,7 +256,7 @@ void BranchAndBound::initialize(int starts_tree) {
  *  This adds branches to the pending intervals.
  *
  *  NOTE: Remember to avoid to split the intervals in the last levels.
- **/
+ */
 int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     
     Interval branch_to_split(branch_init);
@@ -275,45 +275,35 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     int num_elements = problem.getTotalElements();
     int code = 0;
     int toAdd = 0;
-    
-    fjssp_data.reset(); /** This function call is not necesary because the structurs are empty.**/
-    fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
-    for (int m = 0; m < problem.getNumberOfMachines(); ++m) {
-        fjssp_data.setBestWorkloadInMachine(m, problem.getBestWorkload(m));
-        fjssp_data.setTempBestWorkloadInMachine(m, problem.getBestWorkload(m));
-    }
-    
+
+    data_solution.reset();
     for (int row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
         code = branch_to_split.getValueAt(row);
         incumbent_s.setVariable(row, code);
-        problem.evaluateDynamic(incumbent_s, fjssp_data, row);
+        problem.evaluateDynamic(incumbent_s, data_solution, row);
     }
     
-    for (int element = 0; element < num_elements; ++element)
-        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element)) {
-            int op = problem.getOperationInJobIsNumber(element, fjssp_data.getNumberOfOperationsAllocatedFromJob(element));
-            unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(op);
-            for (int machine = 0; machine < machines_aviable; ++machine) {
-                int new_machine = problem.getMachinesAvaibleForOperation(op, machine);
-                toAdd = problem.getEncodeMap(element, new_machine);
-                incumbent_s.setVariable(split_level, toAdd);
-                problem.evaluateDynamic(incumbent_s, fjssp_data, split_level);
-                increaseExploredNodes();
-                if (improvesTheParetoContainer(incumbent_s)) {
-                    branch_to_split.setValueAt(split_level, toAdd);
-                    branch_to_split.setDistance(0, minMaxNormalization(fjssp_data.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
-                    branch_to_split.setDistance(1, minMaxNormalization(fjssp_data.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
-                    setPriorityTo(branch_to_split);
-                    
-                    sharedPool.push(branch_to_split);
-                    increaseSharedWorks();
-                    branch_to_split.removeLastValue();
-                    nodes_created++;
-                } else
-                    increasePrunedNodes();
-                problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, split_level);
-            }
+    for (int element = 1; element <= num_elements; ++element)
+        if (data_solution.getTimesThatElementAppears(element) < problem.getTimesThatValueCanBeRepeated(element)) {
+
+            incumbent_s.setVariable(split_level, toAdd);
+            problem.evaluateDynamic(incumbent_s, data_solution, split_level);
+            increaseExploredNodes();
+            if (data_solution.isFeasible() && improvesTheParetoContainer(incumbent_s)) {
+                branch_to_split.setValueAt(split_level, toAdd);
+                branch_to_split.setDistance(0, minMaxNormalization(data_solution.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
+                branch_to_split.setDistance(1, minMaxNormalization(data_solution.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
+                setPriorityTo(branch_to_split);
+
+                sharedPool.push(branch_to_split);
+                increaseSharedWorks();
+                branch_to_split.removeLastValue();
+                nodes_created++;
+            } else
+                increasePrunedNodes();
+            problem.evaluateRemoveDynamic(incumbent_s, data_solution, split_level);
         }
+
     increaseNumberOfNodesCreated(nodes_created);
     return nodes_created;
 }
@@ -327,28 +317,21 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
     tree.setRootRow(build_up_to);/** root row of this tree**/
     tree.setStartingRow(build_up_to + 1); /** Level/row with the first branches of the tree. **/
     tree.setActiveRow(build_up_to);
-    
-    fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
-    for (int m = 0; m < problem.getNumberOfMachines(); ++m) {
-        fjssp_data.setBestWorkloadInMachine(m, problem.getBestWorkload(m));
-        fjssp_data.setTempBestWorkloadInMachine(m, problem.getBestWorkload(m));
-    }
-    
-    fjssp_data.reset();
-    
+
+    data_solution.reset();
     for (int row = 0; row <= build_up_to; ++row) {
         for (int col = 0; col < tree.getNumberOfCols(); ++col)
-            tree.setNodeValueAt(row, col, -1);
+            tree.setNodeValueAt(row, col, 0);
         build_value = branch_init.getValueAt(row);
         tree.setStartExploration(row, build_value);
         tree.setEndExploration(row, build_value);
         tree.setNumberOfNodesAt(row, 1);
         tree.setActiveColAtRow(row, build_value);
-        tree.setNodeValueAt(row, build_value, build_value);
+        tree.setNodeValueAt(row, build_value - 1, build_value);
         
         /** The interval is equivalent to the solution. **/
         incumbent_s.setVariable(row, build_value);
-        problem.evaluateDynamic(incumbent_s, fjssp_data, row);
+        problem.evaluateDynamic(incumbent_s, data_solution, row);
     }
     
     for (int row = build_up_to + 1; row <= number_of_tree_levels; ++row) {
@@ -370,16 +353,16 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
             branch_init.setValueAt(build_up_to + 1, val);
 
             incumbent_s.setVariable(build_up_to + 1, val);
-            problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel + 1);
+            problem.evaluateDynamic(incumbent_s, data_solution, currentLevel + 1);
             
-            branch_init.setDistance(0, minMaxNormalization(fjssp_data.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
-            branch_init.setDistance(1, minMaxNormalization(fjssp_data.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
+            branch_init.setDistance(0, minMaxNormalization(data_solution.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
+            branch_init.setDistance(1, minMaxNormalization(data_solution.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
             setPriorityTo(branch_init);
             sharedPool.push(branch_init);
             number_of_shared_works++;
             
             branch_init.removeLastValue();
-            problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, currentLevel + 1);
+            problem.evaluateRemoveDynamic(incumbent_s, data_solution, currentLevel + 1);
         }
     
     return 0;
@@ -411,7 +394,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
     while (theTreeHasMoreNodes() && thereIsMoreTime()) {
         updateLocalPF();
         explore(incumbent_s);
-        problem.evaluateDynamic(incumbent_s, fjssp_data, currentLevel);
+        problem.evaluateDynamic(incumbent_s, data_solution, currentLevel);
         if (!aLeafHasBeenReached() && theTreeHasMoreNodes()) {
             if (improvesTheParetoContainer(incumbent_s))
                 branch(incumbent_s, currentLevel);
@@ -426,13 +409,13 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                 increaseUpdatesInLowerBound();
                 updateGlobalPF(incumbent_s);
             }
-            updateBounds(incumbent_s, fjssp_data);
+            updateBounds(incumbent_s, data_solution);
             ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
         }
         
         /** If the branching operator doesnt creates branches or the prune function was called then we need to remove the evaluations. Also if a leave has been reached. **/
         for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
-            problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, l);
+            problem.evaluateRemoveDynamic(incumbent_s, data_solution, l);
         
         if(theTreeHasMoreNodes())
             shareWorkAndSendToGlobalPool(branch_to_solve);
@@ -516,36 +499,32 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     SortedVector sorted_elements;
     ObjectiveValues obj_values;
 
-    for (int element = 0; element < problem.getTotalElements(); ++element)
-        if (fjssp_data.getNumberOfOperationsAllocatedFromJob(element) < problem.getTimesThatValueCanBeRepeated(element)) {
+    for (int element = 1; element <= problem.getTotalElements(); ++element)
 
-            int op = problem.getOperationInJobIsNumber(element, fjssp_data.getNumberOfOperationsAllocatedFromJob(element));
-            unsigned long machines_aviable = problem.getNumberOfMachinesAvaibleForOperation(op);
+        if (data_solution.getTimesThatElementAppears(element) < problem.getTimesThatValueCanBeRepeated(element)) {
 
-            for (int machine = 0; machine < machines_aviable; ++machine) {
-                int new_machine = problem.getMachinesAvaibleForOperation(op, machine);
-                toAdd = problem.getEncodeMap(element, new_machine);
+                toAdd = element;
 
                 solution.setVariable(currentLevel + 1, toAdd);
-                problem.evaluateDynamic(solution, fjssp_data, currentLevel + 1);
+                problem.evaluateDynamic(solution, data_solution, currentLevel + 1);
                 increaseExploredNodes();
 
                 bool is_improving = false;
                 for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
-                    ub_normalized[objc] = minMaxNormalization(fjssp_data.getObjective(objc), problem.getBestObjectiveFound(objc), problem.getFmax(objc));
+                    ub_normalized[objc] = minMaxNormalization(data_solution.getObjective(objc), problem.getBestObjectiveFoundIn(objc), problem.getFmax(objc));
 
                     if (ub_normalized[objc] <= 0)
                         is_improving = true;
                 }
                 /** If distance in obj1 is better  or distance in obj2 is better then it can produce an improvement. **/
-                if (is_improving && improvesTheParetoContainer(solution)) {
+                if (data_solution.isFeasible() && is_improving && improvesTheParetoContainer(solution)) {
 
                     /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
                     if(isSortingEnable()) {
                         obj_values.setValue(toAdd);
 
                         for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
-                            obj_values.setObjective(objc, fjssp_data.getObjective(objc));
+                            obj_values.setObjective(objc, data_solution.getObjective(objc));
                             obj_values.setDistance(objc, minMaxNormalization(obj_values.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc)));
                         }
 
@@ -556,8 +535,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                     nodes_created++;
                 } else
                     increasePrunedNodes();
-                problem.evaluateRemoveDynamic(solution, fjssp_data, currentLevel + 1);
-            }
+                problem.evaluateRemoveDynamic(solution, data_solution, currentLevel + 1);
         }
 
     increaseNumberOfNodesCreated(nodes_created);
@@ -609,10 +587,10 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
     if (sharedPool.isEmptying() && !sharedPool.isMaxLimitReached() && next_row < getLimitLevelToShare() && branches_to_move_to_global_pool > 1) {
         
         Solution temp(incumbent_s.getNumberOfObjectives(), incumbent_s.getNumberOfVariables());
-        FJSSPdata data(fjssp_data);
+        VRPTWdata data(data_solution);
         Interval branch_to_send(branch_to_solve);
         
-        data.reset();
+        //data.reset();
         for (int l = 0; l <= ivm_tree.getRootRow() ; ++l) {
             temp.setVariable(l, incumbent_s.getVariable(l));
             problem.evaluateDynamic(temp, data, l);
@@ -636,8 +614,8 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
                 problem.evaluateDynamic(temp, data, next_row);
 
 
-                branch_to_send.setDistance(0, minMaxNormalization(data.getObjective(0), problem.getBestMakespanFound(), problem.getFmax(0)));
-                branch_to_send.setDistance(1, minMaxNormalization(data.getObjective(1), problem.getBestWorkloadFound(), problem.getFmax(1)));
+                branch_to_send.setDistance(0, minMaxNormalization(data.getObjective(0), problem.getBestObjectiveFoundIn(0), problem.getFmax(0)));
+                branch_to_send.setDistance(1, minMaxNormalization(data.getObjective(1), problem.getBestObjectiveFoundIn(1), problem.getFmax(1)));
                 
                 setPriorityTo(branch_to_send);
                 sharedPool.push(branch_to_send); /** This stores a copy.**/
@@ -731,22 +709,25 @@ unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) co
     return n_nodes;
 }
 
-void BranchAndBound::updateBounds(const Solution& sol, FJSSPdata& data) {
+void BranchAndBound::updateBounds(const Solution& sol, VRPTWdata& data) {
     
-    if (data.getMakespan() < problem.getBestMakespanFound())
+   /* if (data.getMakespan() < problem.getBestMakespanFound())
         problem.updateBestMakespanSolution(data);
     
     if (data.getMaxWorkload() < problem.getBestWorkloadFound())
         problem.updateBestMaxWorkloadSolution(data);
+    */
 }
 
 void BranchAndBound::updateBoundsWithSolution(const Solution & solution) {
     
-    if (solution.getObjective(0) < problem.getBestMakespanFound())
+  /*  if (solution.getObjective(0) < problem.getBestMakespanFound())
         problem.updateBestMakespanSolutionWith(solution);
     
     if (solution.getObjective(1) < problem.getBestWorkloadFound())
         problem.updateBestMaxWorkloadSolutionWith(solution);
+*/
+
 }
 /**
  *
@@ -794,7 +775,7 @@ void BranchAndBound::setPriorityTo(Interval& interval) const {
 
 /** Returns the proximity to the given objective. When minimizing objectives, if it is less than 0 then it produces an improvement.
  *  other distance: (objective - value) / objective;
- ***/
+ */
 float BranchAndBound::distanceToObjective(int value, int objective) {
     return (value - objective) / value;
 }
@@ -963,12 +944,12 @@ const Interval& BranchAndBound::getStartingInterval() const {
     return interval_to_solve;
 }
 
-const ProblemFJSSP& BranchAndBound::getProblem() const {
+const ProblemVRPTW& BranchAndBound::getProblem() const {
     return problem;
 }
 
-const FJSSPdata& BranchAndBound::getFJSSPdata() const {
-    return fjssp_data;
+const VRPTWdata& BranchAndBound::getVRPTWdata() const {
+    return data_solution;
 }
 
 const HandlerContainer& BranchAndBound::getParetoContainer() const {
@@ -1223,6 +1204,6 @@ void BranchAndBound::printDebug() {
     printf("IVM Tree:\n");
     ivm_tree.print();
     printf("FJSSP Data:\n");
-    fjssp_data.print();
+    data_solution.print();
     printf("END-DEBUG-INFO\n");
 }

@@ -76,8 +76,17 @@ ProblemVRPTW::~ProblemVRPTW() {
         delete [] coordinates[customer];
         delete [] time_window[customer];
     }
+
+    delete [] costs;
+    delete [] coordinates;
+    delete [] time_window;
 }
 
+/**
+ *Copies a solution*
+ - parameters toCopy: the problem to copy.
+ - return: A copy of the problem received.
+ */
 ProblemVRPTW& ProblemVRPTW::operator=(const ProblemVRPTW &toCopy) {
 
     if (this == &toCopy)
@@ -92,6 +101,9 @@ ProblemVRPTW& ProblemVRPTW::operator=(const ProblemVRPTW &toCopy) {
             delete [] coordinates[customer];
             delete [] time_window[customer];
         }
+        delete [] costs;
+        delete [] coordinates;
+        delete [] time_window;
     }
 
     n_objectives = toCopy.getNumberOfObjectives();
@@ -129,12 +141,12 @@ ProblemVRPTW& ProblemVRPTW::operator=(const ProblemVRPTW &toCopy) {
 }
 
 /**
- * Notes: Remember, when evaluating a branch if there are no more customers then the solution is complete. Thus, the branch can be evaluated.
- * If one or multiple of the next conditions occurs then the branch is infeasible.
- * - The time window is not reached.
- * - The demand can not be supplied.
- * Taking as an example an instance with 25 customers and 25 vehicles.
- * In this representation, we can have a solution with [26, 27, 28, 0, 1, 2, 3]. Notice that 26, 27, 28, and 0 are the depot. Also the 0 should not appear in the permutation because the lower bound for all the variables (in this problem) is from [1, 50].
+ Remember, when evaluating a branch if there are no more customers then the solution is complete. Thus, the branch can be evaluated. If one or multiple of the next conditions occurs then the branch is infeasible. 1) The time window is not reached; 2) The demand can not be supplied. Taking as an example an instance with 25 customers and 25 vehicles. In this representation, we can have a solution with [26, 27, 28, 0, 1, 2, 3]. Notice that 26, 27, 28, and 0 are the depot. Also the 0 should not appear in the permutation because the lower bound for all the variables (in this problem) is from [1, 50].
+
+ - Parameter solution: The solution to be evaluated.
+
+ - Returns: The value of the first objective.
+
  */
 double ProblemVRPTW::evaluate(Solution & solution) {
 
@@ -142,9 +154,9 @@ double ProblemVRPTW::evaluate(Solution & solution) {
     unsigned int n_dispatched_customers = 0;
     unsigned int origin = 0;
 
-    double * vehicle_cost = new double [getMaxNumberOfVehicles()];
-    double * travel_time = new double [getMaxNumberOfVehicles()];
-    unsigned int * capacity = new unsigned int [getMaxNumberOfVehicles()];
+    double vehicle_cost [getMaxNumberOfVehicles()];
+    double travel_time [getMaxNumberOfVehicles()];
+    unsigned int capacity [getMaxNumberOfVehicles()];
 
     double max_travel_time = 0;
     double max_cost = 0;
@@ -232,16 +244,18 @@ double ProblemVRPTW::evaluate(Solution & solution) {
     printf("Max cost: %f\n", max_cost);
     printf("Max travel time: %f\n", max_travel_time);
 
-    delete [] travel_time;
-    delete [] vehicle_cost;
-    delete [] capacity;
-
     return total_cost;
 }
 
+/**
+ Evaluates dynamically a solution with the help of a *data* object.
+ - parameters solution: solution to be evaluated.
+ - parameters data: The data which contains the information of the last evaluation.
+ - parameters level: Level of the vector to be evaluated.
+*/
 void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int level) {
     data.setCurrentPosition(level);
-
+    data.increaseTimesElementIsInUse(solution.getVariable(level));
     if (!data.isComplete()) {
         unsigned int destination = solution.getVariable(level) <= getNumberOfCustomers() ? solution.getVariable(level) : 0;
         if(data.getCurrentVehicleCapacity() >= getCustomerDemand(destination)) {
@@ -295,10 +309,17 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
     printf("Max travel time: %f\n", data.getMaxTravelTime());
 
 }
-
+/**
+  *Removes the evaluation at the level indicated.*
+ - Parameters:
+    - solution: Object solution to remove evaluation.
+    - data: The data which contains the information of the last evaluation.
+    - level: Level to be evaluated.
+ */
 void ProblemVRPTW::evaluateRemoveDynamic(Solution & solution, VRPTWdata& data, int level) {
 
-   /** If it is the first position of the vector. **/
+    data.decreaseTimesElementIsInUse(solution.getVariable(level));
+    /** If it is the first position of the vector. **/
     if (level == 0) {
         data.setCurrentPosition(0);
         data.setCurrentCustomer(0);
@@ -392,7 +413,7 @@ int ProblemVRPTW::getFinalLevel() {
 }
 
 int ProblemVRPTW::getTotalElements() {
-    return 0;
+    return getNumberOfVariables();
 }
 
 int * ProblemVRPTW::getElemensToRepeat() {
@@ -407,8 +428,9 @@ int ProblemVRPTW::getEncodeMap(int value1, int value2) const {
     return 0;
 }
 
+/** Each customer/vehicle can appear one time. **/
 int ProblemVRPTW::getTimesThatValueCanBeRepeated(int value) {
-    return 0;
+    return 1;
 }
 
 void ProblemVRPTW::createDefaultSolution(Solution& solution) {

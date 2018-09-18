@@ -20,7 +20,8 @@
 #include "NSGA_II.hpp"
 #include "MOSA.hpp"
 #include "Problem.hpp"
-#include "ProblemFJSSP.hpp"
+#include "ProblemVRPTW.hpp"
+#include "ProblemVRPTW.hpp"
 #include "Solution.hpp"
 #include "ConcurrentHandlerContainer.hpp"
 #include "HandlerContainer.hpp"
@@ -78,8 +79,8 @@ private:
     int currentLevel; /** Active level **/
 
     HandlerContainer paretoContainer;
-    ProblemFJSSP problem;
-    FJSSPdata fjssp_data;
+    ProblemVRPTW problem;
+    VRPTWdata data_solution;
     Solution incumbent_s;
     IVMTree ivm_tree;
     Interval interval_to_solve;
@@ -99,11 +100,11 @@ private:
     std::chrono::high_resolution_clock::time_point t2;
     
 public:
-    BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
+    BranchAndBound(int node_rank, int rank, const ProblemVRPTW& problem, const Interval & branch);
     BranchAndBound(const BranchAndBound& branchAndBound);
     ~BranchAndBound();
 
-    BranchAndBound& operator()(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
+    BranchAndBound& operator()(int node_rank, int rank, const ProblemVRPTW& problem, const Interval & branch);
     BranchAndBound& operator=(const BranchAndBound& toCopy);
 
     unsigned long getPFVersion() const;
@@ -155,11 +156,11 @@ public:
     
     const IVMTree& getIVMTree() const;
     const Interval& getStartingInterval() const;
-    const ProblemFJSSP& getProblem() const;
     const Solution& getIncumbentSolution() const;
-    const FJSSPdata& getFJSSPdata() const;
     const HandlerContainer& getParetoContainer() const;
     const ParetoFront& getParetoFront() const;
+    const ProblemVRPTW& getProblem() const;
+    const VRPTWdata& getVRPTWdata() const;
 
     float getDeepLimitToShare() const;
     float getSizeToShare() const;
@@ -198,7 +199,7 @@ private:
     void shareWorkAndSendToGlobalPool(const Interval& interval);
     bool improvesTheParetoContainer(const Solution & solution);
     bool updateParetoContainer(const Solution & solution);
-    void updateBounds(const Solution & solution, FJSSPdata& data);
+    void updateBounds(const Solution & solution, VRPTWdata& data);
     void updateBoundsWithSolution(const Solution & solution);
     void setPriorityTo(Interval & interval) const;
 

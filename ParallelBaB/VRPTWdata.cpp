@@ -20,6 +20,7 @@ vehicle_cost(new double[max_number_of_vehicles]),
 travel_time(new double[max_number_of_vehicles]),
 capacity(new unsigned int[max_number_of_vehicles]),
 ended_service(new double[number_of_customers]),
+variables(new unsigned int[number_of_customers + max_number_of_vehicles]),
 total_cost(0),
 max_cost(0),
 total_travel_time(0),
@@ -34,6 +35,10 @@ is_complete(false) {
 
     for (unsigned int customer = 0; customer < getNumberOfCustomers(); ++customer)
         ended_service[customer] = 0;
+
+    for (unsigned int var = 0; var < number_of_customers + max_number_of_vehicles; ++var)
+        variables[var] = 0;
+
 }
 
 VRPTWdata::VRPTWdata(const VRPTWdata& toCopy):
@@ -48,6 +53,7 @@ vehicle_cost(new double[max_number_of_vehicles]),
 travel_time(new double[max_number_of_vehicles]),
 capacity(new unsigned int[max_number_of_vehicles]),
 ended_service(new double[number_of_customers]),
+variables(new unsigned int[number_of_customers + max_number_of_vehicles]),
 total_cost(toCopy.getTotalCost()),
 max_cost(toCopy.getMaxCost()),
 total_travel_time(toCopy.getToltaTravelTime()),
@@ -64,6 +70,8 @@ is_complete(toCopy.isComplete()) {
     for (unsigned int customer = 0; customer < toCopy.getNumberOfCustomers(); ++customer) 
         ended_service[customer] = toCopy.getCustomerServiceEndedAt(customer);
 
+    for (unsigned int var = 0; var < number_of_customers + max_number_of_vehicles; ++var)
+        variables[var] = getTimesThatElementAppears(var);
 }
 
 VRPTWdata::~VRPTWdata() {
@@ -71,6 +79,76 @@ VRPTWdata::~VRPTWdata() {
     delete [] travel_time;
     delete [] capacity;
     delete [] ended_service;
+    delete [] variables;
+}
+
+VRPTWdata& VRPTWdata::operator()(unsigned int n_of_customers, unsigned int max_n_of_vehicles, unsigned int max_cap) {
+    /** Releasing used memory. **/
+    if (vehicle_cost != nullptr) {
+        delete [] vehicle_cost;
+        delete [] travel_time;
+        delete [] capacity;
+        delete [] ended_service;
+        delete [] variables;
+    }
+
+    number_of_customers = n_of_customers;
+    max_number_of_vehicles = max_n_of_vehicles;
+    max_capacity = max_cap;
+    n_vehicles = 0;
+    n_dispatched_customers = 0;
+    current_node = 0;
+    current_position = 0;
+    vehicle_cost = new double[max_number_of_vehicles];
+    travel_time = new double[max_number_of_vehicles];
+    capacity = new unsigned int[max_number_of_vehicles];
+    ended_service = new double[number_of_customers];
+    total_cost = 0;
+    max_cost = 0;
+    total_travel_time = 0;
+    max_travel_time = 0;
+    is_feasible = true;
+    is_complete = false;
+
+    for (unsigned int vehicle = 0; vehicle < getMaxNumberOfVehicles(); ++vehicle) {
+        capacity[vehicle] = getMaxVehicleCapacity();
+        vehicle_cost[vehicle] = 0;
+        travel_time[vehicle] = 0;
+    }
+
+    for (unsigned int customer = 0; customer < getNumberOfCustomers(); ++customer)
+        ended_service[customer] = 0;
+
+    for (unsigned int var = 0; var < number_of_customers + max_number_of_vehicles; ++var)
+        variables[var] = 0;
+
+    return *this;
+}
+
+void VRPTWdata::reset() {
+
+    n_vehicles = 0;
+    n_dispatched_customers = 0;
+    current_node = 0;
+    current_position = 0;
+
+    total_cost = 0;
+    max_cost = 0;
+    total_travel_time = 0;
+    max_travel_time = 0;
+
+    for (unsigned int vehicle = 0; vehicle < getMaxNumberOfVehicles(); ++vehicle) {
+        capacity[vehicle] = getMaxVehicleCapacity();
+        vehicle_cost[vehicle] = 0;
+        travel_time[vehicle] = 0;
+    }
+
+    for (unsigned int customer = 0; customer < getNumberOfCustomers(); ++customer)
+        ended_service[customer] = 0;
+
+    for (unsigned int var = 0; var < number_of_customers + max_number_of_vehicles; ++var)
+        variables[var] = 0;
+
 }
 
 void VRPTWdata::increaseNumberOfVehicles(unsigned int by_n) {
@@ -188,6 +266,22 @@ void VRPTWdata::setMaxCost(double new_max_cost) {
 
 void VRPTWdata::setTotalCost(double new_total_cost) {
     total_cost = new_total_cost;
+}
+
+
+/**
+ * TODO: check these functions.
+ **/
+void VRPTWdata::increaseTimesElementIsInUse(unsigned int element) {
+    variables[element]++;
+}
+
+void VRPTWdata::decreaseTimesElementIsInUse(unsigned int element) {
+    variables[element]--;
+}
+
+unsigned int VRPTWdata::getTimesThatElementAppears(unsigned int element) const {
+    return variables[element];
 }
 
 unsigned int VRPTWdata::getNumberOfCustomers() const {

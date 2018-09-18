@@ -32,6 +32,8 @@ private:
     unsigned int * capacity;
     double * ended_service;
 
+    unsigned int * variables;
+
     double total_cost = 0;
     double max_cost = 0;
     double total_travel_time = 0;
@@ -44,6 +46,8 @@ public:
     VRPTWdata(unsigned int number_of_customers, unsigned int max_number_of_vehicles, unsigned int max_capacity);
     VRPTWdata(const VRPTWdata& toCopy);
     ~VRPTWdata();
+
+    VRPTWdata& operator()(unsigned int number_of_customers, unsigned int max_number_of_vehicles, unsigned int max_capacity);
 
     void increaseNumberOfVehicles(unsigned int by_n);
     void increaseNumberOfDispatchedCustomers(unsigned int by_n);
@@ -98,6 +102,10 @@ public:
     void createNewVehicle(unsigned int max_capacity);
     void removeLastVehicle(unsigned int customer);
 
+    void increaseTimesElementIsInUse(unsigned int element);
+    void decreaseTimesElementIsInUse(unsigned int element);
+    unsigned int getTimesThatElementAppears(unsigned int element) const;
+
     unsigned int getNumberOfVehiclesUsed() const;
     double getMaxCost() const;
     double getTotalCost() const;
@@ -113,6 +121,7 @@ public:
     void setComplete();
     void setIncomplete();
 
+    void reset();
     void print() const;
 
 };

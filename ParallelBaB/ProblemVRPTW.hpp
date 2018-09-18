@@ -89,6 +89,10 @@ public:
     unsigned int getCustomerTimeWindowEnd(unsigned int customer) const;
     unsigned int getNumberOfNodes() const;
 
+    double getFmin(int n_objective) const;
+    double getFmax(int n_objective) const;
+    double getBestObjectiveFoundIn(int n_objective) const;
+
 private:
     double euclideanDistance(unsigned int xcoord_1, unsigned int ycoord_1, unsigned int xcoord_2, unsigned int ycoord_2) const;
     bool isCustomer(unsigned int node) const;
