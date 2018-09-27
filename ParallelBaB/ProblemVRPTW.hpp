@@ -35,6 +35,13 @@ private:
     unsigned int total_service_time;
     double total_distance_in_order;
 
+    double max_cost_found;
+    double min_cost_found;
+    unsigned int max_number_vehicles;
+    unsigned int min_number_vehicles;
+    unsigned int min_makespan_found;
+    unsigned int max_makespan_found;
+
 public:
 
     ProblemVRPTW();
@@ -58,7 +65,9 @@ public:
 
     int getLowerBound(int indexVar) const;
     int getUpperBound(int indexVar) const;
-    int getLowerBoundInObj(int nObj) const;
+    double getLowerBoundInObj(int nObj) const;
+    double getUpperBoundInObj(int nObj) const;
+
     ProblemType getType() const;
     int getStartingRow();
     int getFinalLevel();
@@ -92,6 +101,13 @@ public:
     double getFmin(int n_objective) const;
     double getFmax(int n_objective) const;
     double getBestObjectiveFoundIn(int n_objective) const;
+
+    void updateBestSolutionInObjectiveWith(unsigned int n_obj, const Solution& solution);
+
+    void updateBestBoundsWith(const Solution& solution);
+    void updateBestBoundsWithSolution(const Solution& solution);
+
+    //void loadInstancePayload(const Payload_problem_fjssp& payload);
 
 private:
     double euclideanDistance(unsigned int xcoord_1, unsigned int ycoord_1, unsigned int xcoord_2, unsigned int ycoord_2) const;

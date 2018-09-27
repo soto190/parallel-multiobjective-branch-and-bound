@@ -135,7 +135,9 @@ int ProblemHCSP::getStartingRow() { return 0; }
 int ProblemHCSP::getFinalLevel() { return this->n_variables - 1;}
 int ProblemHCSP::getLowerBound(int indexVar) const { return 0;}
 int ProblemHCSP::getUpperBound(int indexVar) const { return this->totalMappings - 1; }
-int ProblemHCSP::getLowerBoundInObj(int nObj) const { return INT_MAX; }
+double ProblemHCSP::getLowerBoundInObj(int nObj) const { return INT_MAX; }
+double ProblemHCSP::getUpperBoundInObj(int nObj) const { return INT_MAX; }
+
 int ProblemHCSP::getTotalElements() {return 0;}
 int * ProblemHCSP::getElemensToRepeat() { return nullptr;}
 int ProblemHCSP::getDecodeMap(int code, int parameter) const {return 0;}

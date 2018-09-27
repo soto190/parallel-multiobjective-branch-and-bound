@@ -101,8 +101,12 @@ int ProblemTSP::getUpperBound(int indexVar) const {
     return this->getNumberOfVariables() - 1;
 }
 
-int ProblemTSP::getLowerBoundInObj(int nObj) const {
-    return INT_MAX;
+double ProblemTSP::getLowerBoundInObj(int nObj) const {
+    return 0.0;
+}
+
+double ProblemTSP::getUpperBoundInObj(int nObj) const {
+    return 0.0;
 }
 
 int ProblemTSP::getTotalElements() {

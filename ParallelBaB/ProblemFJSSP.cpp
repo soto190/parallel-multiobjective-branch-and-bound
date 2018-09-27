@@ -1219,8 +1219,24 @@ int ProblemFJSSP::getBestBoundMakespan() const {
     return best_bound_makespan;
 }
 
-int ProblemFJSSP::getLowerBoundInObj(int nObj) const {
+double ProblemFJSSP::getLowerBoundInObj(int nObj) const {
     
+    switch (nObj) {
+        case 0:
+            return best_bound_makespan;
+            break;
+        case 1:
+            return best_bound_max_workload;
+            break;
+        case 2:
+            return sum_of_min_Pij;
+            break;
+    }
+    return -1;
+}
+
+double ProblemFJSSP::getUpperBoundInObj(int nObj) const {
+
     switch (nObj) {
         case 0:
             return best_bound_makespan;

@@ -289,10 +289,15 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
             incumbent_s.setVariable(split_level, toAdd);
             problem.evaluateDynamic(incumbent_s, data_solution, split_level);
             increaseExploredNodes();
-            if (data_solution.isFeasible() && improvesTheParetoContainer(incumbent_s)) {
+            if (data_solution.isFeasible() &&
+                improvesTheParetoContainer(incumbent_s)) {
+
                 branch_to_split.setValueAt(split_level, toAdd);
+
                 branch_to_split.setDistance(0, minMaxNormalization(data_solution.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
+
                 branch_to_split.setDistance(1, minMaxNormalization(data_solution.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
+
                 setPriorityTo(branch_to_split);
 
                 sharedPool.push(branch_to_split);
@@ -314,7 +319,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
     int build_up_to = branch_init.getBuildUpTo();
     currentLevel = build_up_to;
     
-    tree.setRootRow(build_up_to);/** root row of this tree**/
+    tree.setRootRow(build_up_to);/** root row of this tree. **/
     tree.setStartingRow(build_up_to + 1); /** Level/row with the first branches of the tree. **/
     tree.setActiveRow(build_up_to);
 
@@ -335,19 +340,23 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
     }
     
     for (int row = build_up_to + 1; row <= number_of_tree_levels; ++row) {
-        tree.setStartExploration(row, -1);
+        tree.setStartExploration(row, 0);
         tree.setActiveColAtRow(row, -1);
         tree.resetNumberOfNodesAt(row);
         incumbent_s.setVariable(row, -1);
     }
-    
+
+    tree.print();
     incumbent_s.setBuildUpTo(build_up_to);
-    int branches_created = branch(incumbent_s, build_up_to);
+    int branches_created = branchFromInterval(incumbent_s, build_up_to);
     
     /** Send intervals to global_pool. **/
     int branches_to_move_to_global_pool = branches_created * getSizeToShare();
 
-    if (!sharedPool.isMaxLimitReached() && branches_created > branches_to_move_to_global_pool && branch_init.getBuildUpTo() <= getLimitLevelToShare())
+    if (!sharedPool.isMaxLimitReached() &&
+        branches_created > branches_to_move_to_global_pool &&
+        branch_init.getBuildUpTo() <= getLimitLevelToShare())
+
         for (int moved = 0; moved < branches_to_move_to_global_pool; ++moved) {
             int val = tree.removeLastNodeAtRow(build_up_to + 1);
             branch_init.setValueAt(build_up_to + 1, val);
@@ -484,11 +493,17 @@ int BranchAndBound::explore(Solution& solution) {
 }
 
 /**
- * Modifies the variable at built_up_to + 1 of the solution.
- *
- * return the number of branches created.
+  *Modifies the variable at built_up_to + 1 of the solution. The branch operator generates the new row from the pending values to be added to IVM structure.*
+
+  - Parameters:
+
+   - solution: The solution/sub-problem to branch.
+
+ - currentLevel: The level or deep at which the branch will be performed.
+
+ - Returns: The number of branches created.
  */
-int BranchAndBound::branch(Solution& solution, int currentLevel) {
+int BranchAndBound::branchFromInterval(Solution& solution, int currentLevel) {
     number_of_calls_to_branch++;
 
     int toAdd = 0;
@@ -533,8 +548,11 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                         ivm_tree.addNodeToRow(currentLevel + 1, toAdd);
 
                     nodes_created++;
-                } else
+                } else {
+                    ivm_tree.addNodeToRow(currentLevel + 1, toAdd);
+                    ivm_tree.pruneFirstNodeAtRow(currentLevel + 1);
                     increasePrunedNodes();
+                }
                 problem.evaluateRemoveDynamic(solution, data_solution, currentLevel + 1);
         }
 
@@ -545,7 +563,95 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                 ivm_tree.addNodeToRow(currentLevel + 1, it.getValue());
 
         ivm_tree.moveToNextRow();
-        ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), 0);
+        ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), ivm_tree.getStartExploration(ivm_tree.getActiveRow()));
+        ivm_tree.setThereAreMoreBranches();
+
+    } else  /** If no branches were created then move to the next node. **/
+        ivm_tree.pruneActiveNode();
+
+    return nodes_created;
+}
+
+/**
+ *Modifies the variable at built_up_to + 1 of the solution. The branch operator copies the last row from the IVM structure.*
+
+ - Parameters:
+
+ - solution: The solution/sub-problem to branch.
+
+ - currentLevel: The level or deep at which the branch will be performed. The new nodes will be in currentLevel + 1.
+
+ - Returns: The number of branches created.
+ */
+int BranchAndBound::branch(Solution& solution, int currentLevel) {
+    number_of_calls_to_branch++;
+
+    int nodes_created = 0;
+
+    double ub_normalized[3];
+
+    SortedVector sorted_elements;
+    ObjectiveValues obj_values;
+
+
+    for (unsigned int node = 0; node < ivm_tree.getNumberOfCols(); ++node) {
+        int current_node = abs(ivm_tree.getNodeValueAt(currentLevel, node));
+
+        if (current_node == 0) /** It is an empty cell. **/
+            break;
+
+        /** Validates that the new node can be added. In problems like FJSSP some nodes can be repeated a number of times.
+         If not the next line does the work:
+            if (current_node != ivm_tree.getActiveNode())
+         **/
+        if (data_solution.getTimesThatElementAppears(current_node) < problem.getTimesThatValueCanBeRepeated(current_node)) {
+
+            solution.setVariable(currentLevel + 1, current_node);
+            problem.evaluateDynamic(solution, data_solution, currentLevel + 1);
+            increaseExploredNodes();
+
+            bool is_improving = false;
+            for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
+                ub_normalized[objc] = minMaxNormalization(data_solution.getObjective(objc), problem.getBestObjectiveFoundIn(objc), problem.getFmax(objc));
+
+                if (ub_normalized[objc] <= 0)
+                    is_improving = true;
+            }
+
+            if (data_solution.isFeasible() && is_improving && improvesTheParetoContainer(solution)) {
+
+                /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
+                if(isSortingEnable()) {
+                    obj_values.setValue(current_node);
+
+                    for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
+                        obj_values.setObjective(objc, data_solution.getObjective(objc));
+                        obj_values.setDistance(objc, minMaxNormalization(obj_values.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc)));
+                    }
+
+                    sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
+                } else
+                    ivm_tree.addNodeToRow(currentLevel + 1, current_node);
+
+                nodes_created++;
+            } else {
+                ivm_tree.addNodeToRow(currentLevel + 1, current_node);
+                ivm_tree.pruneLastNodeAtRow(currentLevel + 1);
+                increasePrunedNodes();
+            }
+            problem.evaluateRemoveDynamic(solution, data_solution, currentLevel + 1);
+            nodes_created++;
+        }
+    }
+
+    increaseNumberOfNodesCreated(nodes_created);
+    if (nodes_created > 0) {
+        if (isSortingEnable())
+            for (const auto& it : sorted_elements)
+                ivm_tree.addNodeToRow(currentLevel + 1, it.getValue());
+
+        ivm_tree.moveToNextRow();
+        ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), ivm_tree.getStartExploration(ivm_tree.getActiveRow()));
         ivm_tree.setThereAreMoreBranches();
 
     } else  /** If no branches were created then move to the next node. **/
@@ -1137,7 +1243,6 @@ int BranchAndBound::saveParetoFront() {
     if (myfile.is_open()) {
         printf("[Worker-%03d:B&B-%03d] Saving in file...\n", node_rank, bb_rank);
         int numberOfObjectives = problem.getNumberOfObjectives();
-        
 
         for (const auto& it : pareto_front) {
             for (int nObj = 0; nObj < numberOfObjectives - 1; ++nObj)

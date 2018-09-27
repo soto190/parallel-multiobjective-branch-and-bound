@@ -14,6 +14,7 @@
 #include "BranchAndBound.hpp"
 #include "Interval.hpp"
 #include "ProblemFJSSP.hpp"
+#include "ProblemVRPTW.hpp"
 #include "tbb/task.h"
 //#include <memory.h> /** For the Ehecatl wich uses GCC 4.4.7, this activates the shared_ptr. **/
 
@@ -45,7 +46,7 @@ public:
     unsigned long number_of_unexplored_buckets;
     unsigned long number_of_dominated_buckets;
     
-    ProblemFJSSP problem;
+    ProblemVRPTW problem;
     Interval branch_init;
     ParetoFront pareto_front;
 
@@ -54,7 +55,7 @@ public:
     std::chrono::high_resolution_clock::time_point t1;
     std::chrono::high_resolution_clock::time_point t2;
 
-    ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem);
+    ParallelBranchAndBound(int rank, int n_threads, const ProblemVRPTW& problem);
     ~ParallelBranchAndBound();
     tbb::task* execute();
 

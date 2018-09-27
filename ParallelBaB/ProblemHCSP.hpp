@@ -57,7 +57,8 @@ public:
     
     int getLowerBound(int indexVar) const;
     int getUpperBound(int indexVar) const;
-    int getLowerBoundInObj(int nObj) const;
+    double getLowerBoundInObj(int nObj) const;
+    double getUpperBoundInObj(int nObj) const;
     
     ProblemType getType() const;
     int getStartingRow();

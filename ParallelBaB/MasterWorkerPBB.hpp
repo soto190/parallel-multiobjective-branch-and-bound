@@ -56,7 +56,7 @@ private:
     long branches_pruned;
     //    int sleeping_workers;
     MPI_Status status;
-    ProblemFJSSP problem;
+    ProblemVRPTW problem;
     Interval branch_init;
     HandlerContainer paretoContainer;/** This is for testing the non-parallel container. **/
     

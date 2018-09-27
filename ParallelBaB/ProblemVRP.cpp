@@ -20,7 +20,8 @@ double ProblemVRP::removeLastLevelEvaluation(Solution * solution, int newLevel) 
 
 int ProblemVRP::getLowerBound(int indexVar) const { return 0; }
 int ProblemVRP::getUpperBound(int indexVar) const { return 1; }
-int ProblemVRP::getLowerBoundInObj(int nObj) const { return INT_MAX;}
+double ProblemVRP::getLowerBoundInObj(int nObj) const { return INT_MAX;}
+double ProblemVRP::getUpperBoundInObj(int nObj) const { return INT_MAX;}
 
 ProblemType ProblemVRP::getType() const {return ProblemType::combination;}
 int ProblemVRP::getStartingRow() {return 0;}

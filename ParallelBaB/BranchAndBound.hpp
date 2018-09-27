@@ -21,7 +21,6 @@
 #include "MOSA.hpp"
 #include "Problem.hpp"
 #include "ProblemVRPTW.hpp"
-#include "ProblemVRPTW.hpp"
 #include "Solution.hpp"
 #include "ConcurrentHandlerContainer.hpp"
 #include "HandlerContainer.hpp"
@@ -185,6 +184,8 @@ private:
     int explore(Solution & solution);
     int branch(Solution & solution, int currentLevel);
     void prune(Solution & solution, int currentLevel);
+
+    int branchFromInterval(Solution & solutoin, int currentLevel);
 
     bool thereIsMoreTime();
     bool isLocalPFversionOutdated() const;

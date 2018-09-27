@@ -8,7 +8,7 @@
 /** Dummy commit**/
 #include "ParallelBranchAndBound.hpp"
 
-ParallelBranchAndBound::ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem):
+ParallelBranchAndBound::ParallelBranchAndBound(int rank, int n_threads, const ProblemVRPTW& problem):
 time_limit(0),
 is_grid_enable(false),
 is_sorting_enable(false),
@@ -115,12 +115,12 @@ void ParallelBranchAndBound::initSharedParetoFront() {
     Solution temp_1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(temp_1);
     sharedParetoFront.push_back(temp_1);
-    problem.updateBestMakespanSolutionWith(temp_1);
+    problem.updateBestSolutionInObjectiveWith(0, temp_1);
 
     Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(1, temp);
     sharedParetoFront.push_back(temp);
-    problem.updateBestMaxWorkloadSolutionWith(temp);
+    problem.updateBestSolutionInObjectiveWith(1, temp_1);
 
     Solution temp_2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(2, temp_2);
@@ -132,11 +132,11 @@ void ParallelBranchAndBound::initSharedParetoFront() {
 
     std::cout << temp_1 << temp << temp_2;
 }
-
+/*
+ This is for the FJSSP.
 int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {
 
-    sharedPool.setSizeEmptying((unsigned long) (number_of_bbs * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
-
+    sharedPool.setSizeEmptying((unsigned long) (number_of_bbs * 2));
     Interval branch_to_split(branch_init);
     Solution incumbent_s(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(incumbent_s);
@@ -147,7 +147,7 @@ int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {
     int code = 0;
     int toAdd = 0;
 
-    FJSSPdata fjssp_data (problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines()); /** This function call is not necesary because the structurs are empty.**/
+    FJSSPdata fjssp_data (problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
     fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
     for (int m = 0; m < problem.getNumberOfMachines(); ++m) {
         fjssp_data.setBestWorkloadInMachine(m, problem.getBestWorkload(m));
@@ -184,6 +184,58 @@ int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {
                 } else
                     number_of_nodes_pruned++;
             }
+        }
+    return nodes_created;
+}
+ */
+
+/**
+ *Function for the VRPTW.*
+
+ - Parameter branch_init: initial branch from where the pool will be initialized.
+
+ */
+int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {
+    sharedPool.setSizeEmptying((unsigned long) (number_of_bbs * 2));
+    Interval branch_to_split(branch_init);
+    Solution incumbent_s(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.createDefaultSolution(incumbent_s);
+
+    int split_level = branch_to_split.getBuildUpTo() + 1;
+    int nodes_created = 0;
+    int num_elements = problem.getTotalElements();
+    int code = 0;
+    int toAdd = 0;
+
+    VRPTWdata fjssp_data (problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
+
+    for (int row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
+        code = branch_to_split.getValueAt(row);
+        incumbent_s.setVariable(row, code);
+        problem.evaluateDynamic(incumbent_s, fjssp_data, row);
+    }
+
+    for (int element = 1; element <= num_elements; ++element)
+        if (fjssp_data.getTimesThatElementAppears(element) < problem.getTimesThatValueCanBeRepeated(element)) {
+
+            toAdd = element;
+            incumbent_s.setVariable(split_level, toAdd);
+            problem.evaluateDynamic(incumbent_s, fjssp_data, split_level);
+
+            number_of_nodes_explored++;
+            if (fjssp_data.isFeasible() && sharedParetoFront.produceImprovement(incumbent_s)) {
+                branch_to_split.setValueAt(split_level, toAdd);
+
+                sharedPool.push(branch_to_split);
+                branch_to_split.removeLastValue();
+                nodes_created++;
+                problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, split_level);
+
+                number_of_shared_works++;
+                number_of_nodes_created++;
+            } else
+                number_of_nodes_pruned++;
+
         }
     return nodes_created;
 }
@@ -278,7 +330,7 @@ void ParallelBranchAndBound::saveSummarize() {
 
         myfile << "---Summarize---\n";
         myfile << "Number of threads:   " << number_of_bbs << endl;
-        myfile << "Sharing size:        " << problem.getNumberOfOperations() * size_to_share << endl;
+        myfile << "Sharing size:        " << problem.getNumberOfVariables() * size_to_share << endl;
         myfile << "Deep limit to share: " << deep_limit_share << endl;
         myfile << "Pareto front size:   " << sharedParetoFront.getSize() << endl;
         myfile << "Total nodes:         " << number_of_nodes << endl;

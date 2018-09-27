@@ -68,8 +68,9 @@ public:
     virtual int getLowerBound(int index) const = 0;
     virtual int getUpperBound(int index) const = 0;
     
-    virtual int getLowerBoundInObj(int nObj) const = 0;
-    
+    virtual double getLowerBoundInObj(int nObj) const = 0;
+    virtual double getUpperBoundInObj(int nObj) const = 0;
+
     virtual void printSolution(const Solution & solution) const;
     virtual void printPartialSolution(const Solution & solution, int level) const;
     virtual void printSolutionInfo(const Solution & solution) const;

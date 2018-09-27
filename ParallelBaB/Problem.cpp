@@ -120,8 +120,8 @@ int Problem::getUpperBound(int index) const {
     return 0;
 }
 
-int Problem::getLowerBoundInObj(int nObj) const {
-    return INT_MAX;
+double Problem::getLowerBoundInObj(int nObj) const {
+    return 9999999;
 }
 
 int Problem::getTotalElements() {

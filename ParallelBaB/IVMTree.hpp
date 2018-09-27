@@ -23,13 +23,13 @@ private:
     int ** matrix_nodes;
     int * vector_pointing_to_col_at_row;
     int * start_exploration;
-    int * end_exploration; /** This is not used. **/
+    int * end_exploration;
     int * n_nodes_at_row;
     int integer_pointing_to_row;
     int starting_row;
     bool there_are_more_branches = true;
-    int root_row = 0;
-    unsigned long pending_nodes = 0;
+    int root_row;
+    unsigned long pending_nodes;
     
 public:
     IVMTree();
@@ -47,7 +47,6 @@ public:
     void setActiveRow(int row) throw(IVMTreeException);
     void setStartingRow(int row);
     void setNumberOfNodesAt(int row, int value);
-    void setExplorationInterval(int starting_level, int * starts, int * ends);
     void setStartExploration(int row, int value);
     void setEndExploration(int row, int value);
     int increaseNumberOfNodesAt(int row);
@@ -71,6 +70,8 @@ public:
     unsigned long getNumberOfPendingNodes() const;
     int removeLastNodeAtRow(int row);
     int shareLastNodeAtRow(int row);
+    int pruneLastNodeAtRow(int row);
+    int pruneFirstNodeAtRow(int row);
     bool thereAreMoreBranches() const;
     void addNodeToRow(int level, int value);
     int getActiveNode() const;
@@ -93,9 +94,13 @@ private:
     unsigned long decreaseNumberOfPendingNodes();
     unsigned long increaseNumberOfPendingNodes();
     int decreaseEndExplorationAtRow(int row);
+    int increaseEndExplorationAtRow(int row);
+    int decreaseStartExplorationAtRow(int row);
+    int increaseStartExplorationAtRow(int row);
     bool isRootRow() const;
     bool isUnderRootRow() const;
     void markActiveNodeAsRemoved();
     void setNoMoreBranches();
+
 };
 #endif /* IVMTree_hpp */

@@ -127,7 +127,7 @@ void MasterWorkerPBB::runMasterProcess() {
     int number_of_works_received = 0;
     
     vector<Interval> pending_work;
-    Interval work_to_send(problem.getNumberOfOperations());
+    Interval work_to_send(problem.getTotalElements());
     vector<Solution> received_solutions;
     Solution received_solution(problem.getNumberOfObjectives(), payload_interval.max_size);
     
@@ -325,7 +325,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     BB_container.setPoolFile(pool_file);
     
 
-    printf("[WorkerPBB-%03d] Pool size: %3lu %3lu [%3d %3d]\n", getRank(), sharedPool.unsafe_size(), branches_created, problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
+    printf("[WorkerPBB-%03d] Pool size: %3lu %3lu [%3.4f %3.4f]\n", getRank(), sharedPool.unsafe_size(), branches_created, problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
     set_ref_count(branchsandbound_per_worker + 1);
     
@@ -351,7 +351,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     Solution received_solution(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     Solution sSub(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     
-    Interval interval_to_share(problem.getNumberOfOperations());
+    Interval interval_to_share(problem.getTotalElements());
     
     paretoFront.clear();
     while (sleeping_bb < branchsandbound_per_worker) { /** Waits for all B&Bs to end. **/
@@ -419,8 +419,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                     
                     recoverSolutionFromPayload(payload_interval, received_solution);
                     
-                    problem.updateBestMakespanSolutionWith(received_solution);
-                    problem.updateBestMaxWorkloadSolutionWith(received_solution);
+                    problem.updateBestSolutionInObjectiveWith(1, received_solution);
                     
                     paretoContainer.add(received_solution);
                     break;
@@ -693,7 +692,7 @@ void MasterWorkerPBB::unpack_payload_part2(Payload_problem_fjssp& payload_proble
     if(isMaster())
         printf("[Master] Jobs: %d Operations: %d Machines: %d\n", payload_problem.n_jobs, payload_problem.n_operations, payload_problem.n_machines);
     
-    problem.loadInstancePayload(payload_problem);
+    //problem.loadInstancePayload(payload_problem);
     
     if(isMaster())
         problem.printProblemInfo();
@@ -712,6 +711,11 @@ bool MasterWorkerPBB::isWorker() const {
 }
 
 int MasterWorkerPBB::splitInterval(Interval& branch_to_split) {
+    return 0;
+}
+
+/*
+int MasterWorkerPBB::splitInterval(Interval& branch_to_split) {
     Solution solution(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     int split_level = branch_to_split.getBuildUpTo() + 1;
     int branches_created_in = 0;
@@ -720,7 +724,7 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split) {
     int value_to_add = 0;
 
     FJSSPdata fjssp_data(problem.getNumberOfJobs(), problem.getNumberOfOperations(), problem.getNumberOfMachines());
-    fjssp_data.reset(); /** This function call is not necesary because the structurs are empty.**/
+    fjssp_data.reset();
     
     fjssp_data.setMinTotalWorkload(problem.getSumOfMinPij());
     for (int machine = 0; machine < problem.getNumberOfMachines(); ++machine) {
@@ -752,7 +756,7 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split) {
                     
                     branch_to_split.setHighPriority();
 
-                    sharedPool.push(branch_to_split); /** The vector adds a copy of interval. **/
+                    sharedPool.push(branch_to_split);
                     branch_to_split.removeLastValue();
                     branches_created_in++;
                     branches_created++;
@@ -763,6 +767,7 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split) {
         }
     return branches_created_in;
 }
+*/
 
 void MasterWorkerPBB::storesPayloadInterval(Payload_interval& payload, const Interval& interval) {
     payload.build_up_to = interval.getBuildUpTo();

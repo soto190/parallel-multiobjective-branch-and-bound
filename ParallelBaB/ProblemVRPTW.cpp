@@ -239,11 +239,6 @@ double ProblemVRPTW::evaluate(Solution & solution) {
         solution.setObjective(2, total_distance_in_order * 2);
     }
 
-    printf("Vehicles: %d\n", n_vehicles + 1);
-    printf("Total cost: %f\n", total_cost);
-    printf("Max cost: %f\n", max_cost);
-    printf("Max travel time: %f\n", max_travel_time);
-
     return total_cost;
 }
 
@@ -302,13 +297,8 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
         solution.setObjective(1, total_distance_in_order * 2);
         solution.setObjective(2, total_distance_in_order * 2);
     }
-
-    printf("Vehicles: %d\n", data.getNumberOfVehiclesUsed());
-    printf("Total cost: %f\n",  data.getTotalCost());
-    printf("Max cost: %f\n", data.getMaxCost());
-    printf("Max travel time: %f\n", data.getMaxTravelTime());
-
 }
+
 /**
   *Removes the evaluation at the level indicated.*
  - Parameters:
@@ -372,6 +362,30 @@ void ProblemVRPTW::evaluateRemoveDynamic(Solution & solution, VRPTWdata& data, i
     }
 }
 
+double ProblemVRPTW::getFmin(int n_objective) const {
+    return 0.0;
+}
+
+double ProblemVRPTW::getFmax(int n_objective) const {
+    return 0.0;
+}
+
+double ProblemVRPTW::getBestObjectiveFoundIn(int n_objective) const {
+    return 1000;
+}
+
+void ProblemVRPTW::updateBestSolutionInObjectiveWith(unsigned int n_obj, const Solution& solution) {
+
+}
+
+void ProblemVRPTW::updateBestBoundsWith(const Solution& solution) {
+
+}
+
+void ProblemVRPTW::updateBestBoundsWithSolution(const Solution& solution) {
+
+}
+
 double ProblemVRPTW::evaluatePartial(Solution & solution, int levelEvaluation) {
     return 0.0;
 }
@@ -396,8 +410,36 @@ int ProblemVRPTW::getUpperBound(int indexVar) const {
     return max_number_of_vehicles;
 }
 
-int ProblemVRPTW::getLowerBoundInObj(int nObj) const {
-    return INT_MAX;
+double ProblemVRPTW::getLowerBoundInObj(int nObj) const {
+    switch (nObj) {
+        case 0:
+            return min_number_vehicles;
+            break;
+
+        case 1:
+            return min_cost_found;
+
+        case 2:
+            return min_makespan_found;
+            break;
+    }
+    return 0.0;
+}
+
+double ProblemVRPTW::getUpperBoundInObj(int nObj) const {
+    switch (nObj) {
+        case 0:
+            return max_number_vehicles;
+            break;
+
+        case 1:
+            return max_cost_found;
+
+        case 2:
+            return max_makespan_found;
+            break;
+    }
+    return 0.0;
 }
 
 ProblemType ProblemVRPTW::getType() const {
@@ -434,7 +476,13 @@ int ProblemVRPTW::getTimesThatValueCanBeRepeated(int value) {
 }
 
 void ProblemVRPTW::createDefaultSolution(Solution& solution) {
-
+    unsigned int position = 0;
+    for (unsigned int customer = 1; customer <= getNumberOfCustomers(); ++customer) {
+        solution.setVariable(position, customer);
+        solution.setVariable(position + 1, getNumberOfCustomers() + customer);
+        position += 2;
+    }
+    evaluate(solution);
 }
 
 void ProblemVRPTW::getSolutionWithLowerBoundInObj(int nObj, Solution& solution) {

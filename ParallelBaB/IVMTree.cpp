@@ -14,8 +14,8 @@ n_cols(0),
 i_am(0),
 matrix_nodes(nullptr),
 vector_pointing_to_col_at_row(nullptr),
-start_exploration(nullptr), /** This is not used. **/
-end_exploration(nullptr),/** This is not used. **/
+start_exploration(nullptr),
+end_exploration(nullptr),
 integer_pointing_to_row(0),
 starting_row(0),
 there_are_more_branches(false),
@@ -29,10 +29,10 @@ IVMTree::IVMTree(int rows, int cols):
 n_rows(rows),
 n_cols(cols),
 i_am(0),
-matrix_nodes(new int *[n_rows]),
+matrix_nodes(new int * [n_rows]),
 vector_pointing_to_col_at_row(new int[n_rows]),
-start_exploration(new int[n_rows]), /** This is not used. **/
-end_exploration(new int[n_rows]),/** This is not used. **/
+start_exploration(new int[n_rows]),
+end_exploration(new int[n_rows]),
 integer_pointing_to_row(0),
 starting_row(0),
 there_are_more_branches(true),
@@ -59,8 +59,8 @@ n_cols(toCopy.getNumberOfCols()),
 i_am(toCopy.getId()),
 matrix_nodes(new int * [n_rows]),
 vector_pointing_to_col_at_row(new int[n_rows]),
-start_exploration(new int[n_rows]), /** This is not used. **/
-end_exploration(new int[n_rows]),/** This is not used. **/
+start_exploration(new int[n_rows]),
+end_exploration(new int[n_rows]),
 integer_pointing_to_row(toCopy.getActiveRow()),
 starting_row(toCopy.getStartingRow()),
 there_are_more_branches(toCopy.thereAreMoreBranches()),
@@ -73,9 +73,8 @@ pending_nodes(toCopy.getNumberOfPendingNodes()) {
         n_nodes_at_row[r] = toCopy.getNumberOfNodesAt(r);
         start_exploration[r] = toCopy.getStartExploration(r);
         end_exploration[r] = toCopy.getEndExploration(r);
-        pending_nodes += n_nodes_at_row[r];
+
         matrix_nodes[r] = new int[n_cols];
-        
         for (int c = 0; c < n_cols; ++c)
             matrix_nodes[r][c] = toCopy.getNodeValueAt(r, c);
     }
@@ -114,9 +113,8 @@ IVMTree& IVMTree::operator=(const IVMTree &toCopy) {
         n_nodes_at_row[r] = toCopy.getNumberOfNodesAt(r);
         start_exploration[r] = toCopy.getStartExploration(r);
         end_exploration[r] = toCopy.getEndExploration(r);
-        pending_nodes += n_nodes_at_row[r];
+
         matrix_nodes[r] = new int[n_cols];
-        
         for (int c = 0; c < n_cols; ++c)
             matrix_nodes[r][c] = toCopy.getNodeValueAt(r, c);
     }
@@ -175,6 +173,17 @@ void IVMTree::setRootRow(int row) {
     root_row = row;
 }
 
+/**
+ *Sets a new node value at the indicated row and col.*
+
+ - Parameters:
+
+ - row: Row to be affected.
+
+ - col: Column to be affected.
+
+ - value: New value to be set.
+ */
 void IVMTree::setNodeValueAt(int row, int col, int value) throw(IVMTreeException) {
     try{
         if (row < 0 || row >= n_rows || col < 0 || col >= n_cols)
@@ -211,41 +220,89 @@ void IVMTree::setEndExploration(int row, int value) {
     end_exploration[row] = value;
 }
 
+/**
+ *Set the number of nodes at the row indicated. This also updates the number of pending nodes. *
+
+ - Parameters:
+
+ - row: Row to be affected.
+
+ - value: Number of nodes to set.
+ */
 void IVMTree::setNumberOfNodesAt(int row, int value) {
-    pending_nodes -= n_nodes_at_row[row];
-    pending_nodes += value;
-    n_nodes_at_row[row] = value;
+    pending_nodes -= n_nodes_at_row[row]; /** Decrease the actual number of nodes at indicated row. **/
+    pending_nodes += value; /** Increase the number of nodes with new value. **/
+    n_nodes_at_row[row] = value; /**Set the new number of nodes. **/
 }
 
+/**
+ *Increases the number of nodes at the row by 1.*
+
+ - Parameters row: The row to be affected.
+ */
 int IVMTree::increaseNumberOfNodesAt(int row) {
     return n_nodes_at_row[row]++;
 }
 
+/**
+ *Decreases the number of nodes at the row by 1.*
+
+ - Parameters row: The row to be affected.
+ */
 int IVMTree::decreaseNumberOfNodesAt(int row) {
     return n_nodes_at_row[row]--;
 }
 
+/**
+ *Sets to 0 the number of nodes at the row indicated. Also updates the number of pending nodes.*
+
+ - Parameters row: The row to be affected.
+ */
 void IVMTree::resetNumberOfNodesAt(int row) {
     pending_nodes -= n_nodes_at_row[row];
     n_nodes_at_row[row] = 0;
 }
 
+/**
+ *Updates the flag to indicate that there are more pending branches to be explored.*
+ */
 void IVMTree::setThereAreMoreBranches() {
     there_are_more_branches = true;
 }
 
+/**
+ * - Returns: The node value of root.*
+ */
 int IVMTree::getRootNode() const {
     return getNodeValueAt(root_row, getActiveColAt(root_row));
 }
-
+/**
+ * - Returns: The row correspoing to root node.
+ */
 int IVMTree::getRootRow() const {
     return root_row;
 }
 
+/**
+ - Parameter row: Row to be query.
+
+ - Returns: The number of nodes at the given row.
+ */
 int IVMTree::getNumberOfNodesAt(int row) const {
     return n_nodes_at_row[row];
 }
 
+/**
+ *Retrieves the matrix value at the indicated row and col.*
+
+ - Parameters:
+
+ - row: Matrix row to be consulted.
+
+ - col: Matrix colum to be consulted.
+
+ - Returns: Node value at the given row and col.
+ */
 int IVMTree::getNodeValueAt(int row, int col) const throw(IVMTreeException) {
     try {
         if (row < 0 || row >= n_rows || col < 0 || col >= n_cols)
@@ -259,10 +316,22 @@ int IVMTree::getNodeValueAt(int row, int col) const throw(IVMTreeException) {
     return -1;
 }
 
+/**
+ *Returns the current column which is being explored.*
+
+ - Returns: The current column.
+ */
 int IVMTree::getActiveCol() const {
     return getActiveColAt(getActiveRow());
 }
 
+/**
+ *Returns the column which is being explored at the indicted row.*
+
+ - Parameter row: The row to be query.
+
+ - Returns: The current column.
+ */
 int IVMTree::getActiveColAt(int row) const throw(IVMTreeException) {
     try {
         if (row < 0 || row >= n_rows)
@@ -276,6 +345,9 @@ int IVMTree::getActiveColAt(int row) const throw(IVMTreeException) {
     return -1;
 }
 
+/**
+ - Returns: The row being pointed by I.
+ */
 int IVMTree::getActiveRow() const {
     return integer_pointing_to_row;
 }
@@ -308,8 +380,17 @@ int IVMTree::getId() const {
     return i_am;
 }
 
+/**
+ *Removes the last node value at the indicated row. The node value is marked as 0, thus updating end_exploration[row], pending_nodes, and n_nodes_at_row[row].*
+
+*Important*: The last node will be marked as 0 so the node value will be missed.
+
+ - Parameter row: The row to be affected.
+
+ - Returns: The node value corresponding to the last node of indicated row.
+ */
 int IVMTree::removeLastNodeAtRow(int row) {
-    int last_col = getActiveColAt(row) + getNumberOfNodesAt(row) - 1;
+    int last_col = end_exploration[row];
     int node_at_col = matrix_nodes[row][last_col];
     
     setNodeValueAt(row, last_col, 0);
@@ -319,14 +400,61 @@ int IVMTree::removeLastNodeAtRow(int row) {
     return node_at_col;
 }
 
+/**
+*Shares the last node value at the indicated row. The node value is marked as pruned in the row thus updating end_exploration[row], pending_nodes, and n_nodes_at_row[row].*
+
+ - Parameter row: The row to be affected.
+
+ - Returns: The node value corresponding to the last node of indicated row.
+ */
 int IVMTree::shareLastNodeAtRow(int row) {
-    int last_col = getActiveColAt(row) + getNumberOfNodesAt(row) - 1;
+    int last_col = end_exploration[row];
     int node_at_col = matrix_nodes[row][last_col];
 
-    //setNodeValueAt(row, last_col, -1);
+    setNodeValueAt(row, last_col, -1 * node_at_col); /**Marks the node with the negative value to be able to use the value when copyin the row. **/
     decreaseNumberOfNodesAt(row);
     decreaseEndExplorationAtRow(row);
     decreaseNumberOfPendingNodes();
+    return node_at_col;
+}
+
+/**
+ *Prunes the last node value at the indicated row. The node value is marked as pruned in the row thus updating end_exploration[row], pending_nodes, and n_nodes_at_row[row].*
+
+ - Parameter row: The row to be affected.
+
+ - Returns: The node value corresponding to the last node of indicated row.
+ */
+int IVMTree::pruneLastNodeAtRow(int row) {
+
+    int last_col = getEndExploration(row);
+    int node_at_col = getNodeValueAt(row, last_col);
+
+    setNodeValueAt(row, last_col, -1 * node_at_col); /**Marks the node with the negative value to be able to use the value when copyin the row. **/
+    decreaseNumberOfNodesAt(row);
+    decreaseNumberOfPendingNodes();
+    decreaseEndExplorationAtRow(row);
+
+    return node_at_col;
+}
+
+/**
+ *Prunes the first node value at the indicated row. The node value is marked as pruned in the row thus updating start_exploration[row], pending_nodes, and n_nodes_at_row[row].*
+
+ - Parameter row: The row to be affected.
+
+ - Returns: The node value corresponding to the first node of indicated row.
+ */
+int IVMTree::pruneFirstNodeAtRow(int row) {
+
+    int first_col =  getStartExploration(row);
+    int node_at_col = getNodeValueAt(row, first_col);
+
+    setNodeValueAt(row, first_col, -1 * node_at_col); /**Marks the node with the negative value to be able to use the value when copyin the row. **/
+    decreaseNumberOfNodesAt(row);
+    decreaseNumberOfPendingNodes();
+    increaseStartExplorationAtRow(row);
+
     return node_at_col;
 }
 
@@ -334,6 +462,23 @@ int IVMTree::decreaseEndExplorationAtRow(int row) {
     return end_exploration[row]--;
 }
 
+int IVMTree::increaseEndExplorationAtRow(int row) {
+    return end_exploration[row]++;
+}
+
+int IVMTree::decreaseStartExplorationAtRow(int row) {
+    return start_exploration[row]--;
+}
+
+int IVMTree::increaseStartExplorationAtRow(int row) {
+    return start_exploration[row]++;
+}
+
+/**
+ *Sets to 0 the node values at the given row.*
+
+ - Parameter row: The row to be affected.
+ */
 void IVMTree::resetRow(int row) {
     for (int col = 0; col < getNumberOfCols(); ++col)
         setNodeValueAt(row, col, 0);
@@ -358,32 +503,24 @@ void IVMTree::setOwnerId(int id_bb) {
 }
 
 /**
- * Initialize th IVM with the given interval.
- * TODO: Delete unused function.
- */
-void IVMTree::setExplorationInterval(int starting_level, int *starts, int *ends) {
-    starting_row = starting_level;
-    integer_pointing_to_row = starting_level - 1;
-    for (int level = 0; level < n_rows; ++level) {
-        vector_pointing_to_col_at_row[level] = starts[level];
-        start_exploration[level] = starts[level];
-        end_exploration[level] = ends[level];
-        n_nodes_at_row[level] = 0;
-        matrix_nodes[level][starts[level]] = starts[level];
-    }
-}
+ *Adds a new node to given row. This function updates: end_exploration[row], pending_nodes, n_nodes_at[row]. The n_nodes_at[row] and pending_nodes are increased by 1. Also the end_exploration[row] is increased by 1.*
 
+ - Parameters:
+
+ - row: Row to be affected.
+
+ - node_value: New node to be added.
+ */
 void IVMTree::addNodeToRow(int row, int node_value) {
     int next_free_col = getNextFreeColAtRow(row);
     setNodeValueAt(row, next_free_col, node_value);
     increaseNumberOfNodesAt(row);
     increaseNumberOfPendingNodes();
-    end_exploration[row]++;
-
+    increaseEndExplorationAtRow(row);
 }
 
 int IVMTree::getNextFreeColAtRow(int row) {
-    return getActiveColAt(row) + getNumberOfNodesAt(row) + 1;
+    return end_exploration[row] + 1;
 }
 
 bool IVMTree::thereAreMoreBranches() const {
@@ -392,7 +529,7 @@ bool IVMTree::thereAreMoreBranches() const {
 
 int IVMTree::moveToNextRow() {
     setActiveRow(getActiveRow() + 1);
-    return 1;
+    return getActiveRow();
 }
 
 int IVMTree::getActiveNode() const {
@@ -404,6 +541,9 @@ int IVMTree::getFatherNode() const {
     return root_row == 0 ? getNodeValueAt(father_row, getActiveColAt(father_row)) : 0;
 }
 
+/**
+ - Returns: The number of pending nodes to explored.
+ */
 unsigned long IVMTree::getNumberOfPendingNodes() const {
     return pending_nodes;
 }
@@ -476,7 +616,7 @@ void IVMTree::moveToRootRow() {
 }
 
 void IVMTree::markActiveNodeAsRemoved() {
-    setNodeValueAt(getActiveRow(), getActiveCol(), 0);
+    setNodeValueAt(getActiveRow(), getActiveCol(), getActiveNode() * -1);
 }
 
 unsigned long IVMTree::decreaseNumberOfPendingNodes() {

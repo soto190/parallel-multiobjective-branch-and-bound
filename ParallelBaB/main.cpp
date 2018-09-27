@@ -78,6 +78,21 @@ void testSolution() {
     test_solution.setVariable(28, 21);
     test_solution.setVariable(29, 30); /** New route. **/
     test_solution.setVariable(30, 31); /** New route. **/
+
+    /** Dynamic evaluation. **/
+    for (unsigned int var = 0; var < problem.getNumberOfVariables(); ++var) {
+        problem.evaluateDynamic(test_solution, test_data, var);
+    }
+
+    /** Dynamic deallocation of evaluation. **/
+    printf("Removing variables. %d\n", test_data.getPosition());
+    for (unsigned int n_var = test_data.getPosition() + 1; n_var > 0; --n_var) {
+        printf("idx: %d var: %d\n", n_var - 1, test_solution.getVariable(n_var - 1));
+        problem.evaluateRemoveDynamic(test_solution, test_data, n_var - 1);
+        test_data.print();
+    }
+
+    problem.evaluate(test_solution);
 }
 
 void one_node(int argc, char* argv[]) {
@@ -210,52 +225,6 @@ void one_node(int argc, char* argv[]) {
     problem.setName(splited[0].c_str());
     problem.loadInstance(files, extension);
     problem.printProblemInfo();
-
-    Solution test_solution (3, problem.getNumberOfVariables());
-    VRPTWdata test_data(problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
-
-    test_solution.setVariable(0, 20);
-    test_solution.setVariable(1, 3);
-    test_solution.setVariable(2, 25);
-    test_solution.setVariable(3, 8);
-    test_solution.setVariable(4, 15);
-    test_solution.setVariable(5, 11);
-    test_solution.setVariable(6, 9);
-    test_solution.setVariable(7, 6);
-    test_solution.setVariable(8, 4);
-    test_solution.setVariable(9, 22);
-    test_solution.setVariable(10, 1);
-    test_solution.setVariable(11, 26); /** New route. **/
-    test_solution.setVariable(12, 5);
-    test_solution.setVariable(13, 24);
-    test_solution.setVariable(14, 7);
-    test_solution.setVariable(15, 19);
-    test_solution.setVariable(16, 10);
-    test_solution.setVariable(17, 16);
-    test_solution.setVariable(18, 14);
-    test_solution.setVariable(19, 12);
-    test_solution.setVariable(20, 27); /** New route. **/
-    test_solution.setVariable(21, 28); /** New route. **/
-    test_solution.setVariable(22, 29); /** New route. **/
-    test_solution.setVariable(23, 13);
-    test_solution.setVariable(24, 17);
-    test_solution.setVariable(25, 18);
-    test_solution.setVariable(26, 23);
-    test_solution.setVariable(27, 2);
-    test_solution.setVariable(28, 21);
-    test_solution.setVariable(29, 30); /** New route. **/
-    test_solution.setVariable(30, 31); /** New route. **/
-
-    for (unsigned int var = 0; var < problem.getNumberOfVariables(); ++var) {
-        problem.evaluateDynamic(test_solution, test_data, var);
-    }
-    printf("Removing variables. %d\n", test_data.getPosition());
-    for (unsigned int n_var = test_data.getPosition() + 1; n_var > 0; --n_var) {
-        printf("idx: %d var: %d\n", n_var - 1, test_solution.getVariable(n_var - 1));
-        problem.evaluateRemoveDynamic(test_solution, test_data, n_var - 1);
-        test_data.print();
-    }
-    problem.evaluate(test_solution);
     
     /** End **/
     
@@ -267,7 +236,7 @@ void one_node(int argc, char* argv[]) {
     std::string summarizeFile = output_path + splited[0] + ".txt";
     
     try {
-        /*
+
         tbb::task_scheduler_init init(number_of_threads);
 
         ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(0, number_of_threads, problem);
@@ -288,7 +257,7 @@ void one_node(int argc, char* argv[]) {
         
         printf("Spawning root...\n");
         tbb::task::spawn_root_and_wait(*pbb);
-*/
+
     } catch (tbb::tbb_exception& e) {
         std::cerr << "Intercepted exception:\n" << e.name();
         std::cerr << "Reason is:\n" << e.what();

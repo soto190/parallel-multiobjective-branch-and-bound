@@ -172,7 +172,8 @@ public:
     int getProccessingTime(int operation, int machine) const;
     int getNumberOfOperationsInJob(int job) const;
     int getReleaseTimeOfJob(int job) const;
-    int getLowerBoundInObj(int nObj) const;
+    double getLowerBoundInObj(int nObj) const;
+    double getUpperBoundInObj(int nObj) const;
     int getBestBoundMaxWorkload() const;
     int getBestBoundMakespan() const;
     int getEarliestStartingTime(int nOperation) const;
