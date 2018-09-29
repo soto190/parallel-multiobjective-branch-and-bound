@@ -229,13 +229,13 @@ int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {
                 sharedPool.push(branch_to_split);
                 branch_to_split.removeLastValue();
                 nodes_created++;
-                problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, split_level);
 
                 number_of_shared_works++;
                 number_of_nodes_created++;
             } else
                 number_of_nodes_pruned++;
 
+            problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, split_level);
         }
     return nodes_created;
 }

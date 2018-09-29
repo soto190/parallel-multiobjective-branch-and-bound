@@ -20,7 +20,7 @@ vehicle_cost(new double[max_number_of_vehicles]),
 travel_time(new double[max_number_of_vehicles]),
 capacity(new unsigned int[max_number_of_vehicles]),
 ended_service(new double[number_of_customers]),
-variables(new unsigned int[number_of_customers + max_number_of_vehicles]),
+variables(new unsigned int[number_of_customers + 1]),
 total_cost(0),
 max_cost(0),
 total_travel_time(0),
@@ -36,7 +36,7 @@ is_complete(false) {
     for (unsigned int customer = 0; customer < getNumberOfCustomers(); ++customer)
         ended_service[customer] = 0;
 
-    for (unsigned int var = 0; var < number_of_customers + max_number_of_vehicles; ++var)
+    for (unsigned int var = 0; var < getNumberOfNodes(); ++var)
         variables[var] = 0;
 
 }
@@ -70,7 +70,7 @@ is_complete(toCopy.isComplete()) {
     for (unsigned int customer = 0; customer < toCopy.getNumberOfCustomers(); ++customer) 
         ended_service[customer] = toCopy.getCustomerServiceEndedAt(customer);
 
-    for (unsigned int var = 0; var < number_of_customers + max_number_of_vehicles; ++var)
+    for (unsigned int var = 0; var < getNumberOfNodes(); ++var)
         variables[var] = getTimesThatElementAppears(var);
 }
 
@@ -103,6 +103,7 @@ VRPTWdata& VRPTWdata::operator()(unsigned int n_of_customers, unsigned int max_n
     travel_time = new double[max_number_of_vehicles];
     capacity = new unsigned int[max_number_of_vehicles];
     ended_service = new double[number_of_customers];
+    variables = new unsigned int[number_of_customers + 1];
     total_cost = 0;
     max_cost = 0;
     total_travel_time = 0;
@@ -119,7 +120,7 @@ VRPTWdata& VRPTWdata::operator()(unsigned int n_of_customers, unsigned int max_n
     for (unsigned int customer = 0; customer < getNumberOfCustomers(); ++customer)
         ended_service[customer] = 0;
 
-    for (unsigned int var = 0; var < number_of_customers + max_number_of_vehicles; ++var)
+    for (unsigned int var = 0; var < getNumberOfNodes(); ++var)
         variables[var] = 0;
 
     return *this;
@@ -146,7 +147,7 @@ void VRPTWdata::reset() {
     for (unsigned int customer = 0; customer < getNumberOfCustomers(); ++customer)
         ended_service[customer] = 0;
 
-    for (unsigned int var = 0; var < number_of_customers + max_number_of_vehicles; ++var)
+    for (unsigned int var = 0; var < getNumberOfNodes(); ++var)
         variables[var] = 0;
 
 }
@@ -355,6 +356,10 @@ void VRPTWdata::removeLastVehicle(unsigned int customer) {
     setCurrentNode(customer);
 }
 
+unsigned int VRPTWdata::getNumberOfNodes() const {
+    return number_of_customers + 1;
+}
+
 unsigned int VRPTWdata::getNumberOfVehiclesUsed() const {
     return n_vehicles + 1; /** + 1 to count the vehicle with id 0. **/
 }
@@ -378,15 +383,15 @@ double VRPTWdata::getMaxTravelTime() const {
 double VRPTWdata::getObjective(int n_obj) const {
     switch (n_obj) {
         case 0:
-            return total_cost;
-            break;
-
-        case 1:
             return n_vehicles;
             break;
 
+        case 1:
+            return total_cost;
+            break;
+
         case 2:
-            return max_cost;
+            return total_travel_time;
             break;
 
         case 3:
@@ -425,8 +430,11 @@ void VRPTWdata::setIncomplete() {
 
 void VRPTWdata::print() const {
     printf("***********\n");
-    printf("Position: %d", getPosition());
-    for (unsigned int route = 0; route < 3 /*getNumberOfVehiclesUsed()*/; ++route) {
+    printf("Position: %d\n", getPosition());
+    printf("Number of vehicles: %d\n", getNumberOfVehiclesUsed());
+    printf("Total cost: %.3f\n", getTotalCost());
+    printf("Makespan: %d\n", getMaxTravelTime());
+    for (unsigned int route = 0; route < getNumberOfVehiclesUsed(); ++route) {
         printf("[%d] Cost: %6.6f\n", route, vehicle_cost[route]);
         printf("[%d] Travel time: %6.6f\n", route, travel_time[route]);
         printf("[%d] Capacity: %d\n", route, capacity[route]);

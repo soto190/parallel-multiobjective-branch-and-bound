@@ -433,7 +433,7 @@ int IVMTree::pruneLastNodeAtRow(int row) {
     setNodeValueAt(row, last_col, -1 * node_at_col); /**Marks the node with the negative value to be able to use the value when copyin the row. **/
     decreaseNumberOfNodesAt(row);
     decreaseNumberOfPendingNodes();
-    decreaseEndExplorationAtRow(row);
+    increaseStartExplorationAtRow(row);
 
     return node_at_col;
 }
@@ -516,10 +516,14 @@ void IVMTree::addNodeToRow(int row, int node_value) {
     setNodeValueAt(row, next_free_col, node_value);
     increaseNumberOfNodesAt(row);
     increaseNumberOfPendingNodes();
-    increaseEndExplorationAtRow(row);
+    //increaseEndExplorationAtRow(row);
+    end_exploration[row] = next_free_col;
 }
 
 int IVMTree::getNextFreeColAtRow(int row) {
+    if (getNodeValueAt(row, end_exploration[row]) == 0)
+        return end_exploration[row];
+    
     return end_exploration[row] + 1;
 }
 
@@ -551,7 +555,7 @@ unsigned long IVMTree::getNumberOfPendingNodes() const {
 /** Prune the active node and set the active_level pointing to new active node. **/
 unsigned long IVMTree::pruneActiveNode() {
     unsigned long pruned_nodes = 0;
-    /** TODO if the active node is the root node we cannot remove it.**/
+    /** If the active node is the root node we cannot remove it.**/
     if (isRootRow())
         setNoMoreBranches();
     
@@ -600,6 +604,9 @@ int IVMTree::thereAreMoreNodes() {
 }
 
 void IVMTree::moveToNodeAtRight() {
+    //unsigned int node_value = getNodeValueAt(getActiveRow(), getActiveColAt(getActiveRow()));
+    //setNodeValueAt(getActiveRow(), getActiveColAt(getActiveRow()), -1 * node_value);
+    start_exploration[getActiveRow()]++;
     setActiveColAtRow(getActiveRow(), getActiveColAt(getActiveRow()) + 1);
 }
 
@@ -608,6 +615,9 @@ void IVMTree::moveToFatherRow() {
 }
 
 void IVMTree::removeRow() {
+    start_exploration[getActiveRow()] = 0;
+    end_exploration[getActiveRow()] = 0;
+    setNodeValueAt(getActiveRow(), 0, 0);
     setActiveColAtRow(getActiveRow(), -1);
 }
 
@@ -640,23 +650,25 @@ void IVMTree::print() const {
     char sep = '-';
     printf("[Row]    S    V    #\n");
     for (int r = 0; r < getNumberOfRows(); ++r) {
-        /** The integer vector. **/
-        if (vector_pointing_to_col_at_row[r] == -1)
-            printf("[%4d] %4c ", r, sep);
-            printf("[%4d] %4d ", r, vector_pointing_to_col_at_row[r]);
-        if (vector_pointing_to_col_at_row[r] == -1 || matrix_nodes[r][vector_pointing_to_col_at_row[r]] == 0)
-            printf("[%4d] %4c ", r, sep);
-        else
-            printf("[%4d] %4d %4d ", r, start_exploration[r], vector_pointing_to_col_at_row[r]);
-        
+
+        /** The row. **/
+        printf("[%4d] ", r);
         /** The solution. **/
         if (vector_pointing_to_col_at_row[r] == -1 || matrix_nodes[r][vector_pointing_to_col_at_row[r]] == 0)
-            printf(" %4c ", sep);
+            printf("%4c ", sep);
         else
-            printf(" %4d ", matrix_nodes[r][vector_pointing_to_col_at_row[r]]);
+            printf("%4d ", matrix_nodes[r][vector_pointing_to_col_at_row[r]]);
+
+        /** The integer vector. **/
+        if (vector_pointing_to_col_at_row[r] == -1)
+            printf("%4c ", sep);
+        else
+            printf("%4d ", vector_pointing_to_col_at_row[r]);
         
-        /** Max nodes in row. **/
-        printf(" %4d | ", n_nodes_at_row[r]);
+
+        
+        /** Number of nodes at row. **/
+        printf("%4d | ", n_nodes_at_row[r]);
         
         /** The matrix. **/
         for (int c = 0; c < n_cols; ++c)

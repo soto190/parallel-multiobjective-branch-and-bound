@@ -331,7 +331,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
         tree.setStartExploration(row, build_value);
         tree.setEndExploration(row, build_value);
         tree.setNumberOfNodesAt(row, 1);
-        tree.setActiveColAtRow(row, build_value);
+        tree.setActiveColAtRow(row, build_value - 1);
         tree.setNodeValueAt(row, build_value - 1, build_value);
         
         /** The interval is equivalent to the solution. **/
@@ -349,7 +349,8 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
     tree.print();
     incumbent_s.setBuildUpTo(build_up_to);
     int branches_created = branchFromInterval(incumbent_s, build_up_to);
-    
+
+    tree.print();
     /** Send intervals to global_pool. **/
     int branches_to_move_to_global_pool = branches_created * getSizeToShare();
 
@@ -404,6 +405,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         updateLocalPF();
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, data_solution, currentLevel);
+        ivm_tree.print();
         if (!aLeafHasBeenReached() && theTreeHasMoreNodes()) {
             if (improvesTheParetoContainer(incumbent_s))
                 branch(incumbent_s, currentLevel);
@@ -420,6 +422,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             }
             updateBounds(incumbent_s, data_solution);
             ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
+            ivm_tree.print();
         }
         
         /** If the branching operator doesnt creates branches or the prune function was called then we need to remove the evaluations. Also if a leave has been reached. **/
@@ -489,7 +492,7 @@ double BranchAndBound::getElapsedTime() {
 int BranchAndBound::explore(Solution& solution) {
     currentLevel = ivm_tree.getActiveRow();
     solution.setVariable(currentLevel, ivm_tree.getActiveNode());
-    return 0;
+    return ivm_tree.getActiveNode();
 }
 
 /**
@@ -518,42 +521,41 @@ int BranchAndBound::branchFromInterval(Solution& solution, int currentLevel) {
 
         if (data_solution.getTimesThatElementAppears(element) < problem.getTimesThatValueCanBeRepeated(element)) {
 
-                toAdd = element;
+            toAdd = element;
+            solution.setVariable(currentLevel + 1, toAdd);
+            problem.evaluateDynamic(solution, data_solution, currentLevel + 1);
+            increaseExploredNodes();
 
-                solution.setVariable(currentLevel + 1, toAdd);
-                problem.evaluateDynamic(solution, data_solution, currentLevel + 1);
-                increaseExploredNodes();
+            bool is_improving = false;
+            for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
+                ub_normalized[objc] = minMaxNormalization(data_solution.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc));
 
-                bool is_improving = false;
-                for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
-                    ub_normalized[objc] = minMaxNormalization(data_solution.getObjective(objc), problem.getBestObjectiveFoundIn(objc), problem.getFmax(objc));
+                if (ub_normalized[objc] <= 0)
+                    is_improving = true;
+            }
+            /** If distance in obj1 is better  or distance in obj2 is better then it can produce an improvement. **/
+            if (data_solution.isFeasible() && is_improving && improvesTheParetoContainer(solution)) {
 
-                    if (ub_normalized[objc] <= 0)
-                        is_improving = true;
-                }
-                /** If distance in obj1 is better  or distance in obj2 is better then it can produce an improvement. **/
-                if (data_solution.isFeasible() && is_improving && improvesTheParetoContainer(solution)) {
+                /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
+                if(isSortingEnable()) {
+                    obj_values.setValue(toAdd);
 
-                    /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
-                    if(isSortingEnable()) {
-                        obj_values.setValue(toAdd);
+                    for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
+                        obj_values.setObjective(objc, data_solution.getObjective(objc));
+                        obj_values.setDistance(objc, minMaxNormalization(obj_values.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc)));
+                    }
 
-                        for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
-                            obj_values.setObjective(objc, data_solution.getObjective(objc));
-                            obj_values.setDistance(objc, minMaxNormalization(obj_values.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc)));
-                        }
-
-                        sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
-                    } else
-                        ivm_tree.addNodeToRow(currentLevel + 1, toAdd);
-
-                    nodes_created++;
-                } else {
+                    sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
+                } else
                     ivm_tree.addNodeToRow(currentLevel + 1, toAdd);
-                    ivm_tree.pruneFirstNodeAtRow(currentLevel + 1);
-                    increasePrunedNodes();
-                }
-                problem.evaluateRemoveDynamic(solution, data_solution, currentLevel + 1);
+
+                nodes_created++;
+            } else {
+                ivm_tree.addNodeToRow(currentLevel + 1, toAdd);
+                ivm_tree.pruneFirstNodeAtRow(currentLevel + 1);
+                increasePrunedNodes();
+            }
+            problem.evaluateRemoveDynamic(solution, data_solution, currentLevel + 1);
         }
 
     increaseNumberOfNodesCreated(nodes_created);
@@ -587,26 +589,23 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     number_of_calls_to_branch++;
 
     int nodes_created = 0;
-
     double ub_normalized[3];
 
     SortedVector sorted_elements;
     ObjectiveValues obj_values;
-
-
+    if (currentLevel == 29 && solution.getVariable(currentLevel) == 26) {
+        printCurrentSolution();
+    }
     for (unsigned int node = 0; node < ivm_tree.getNumberOfCols(); ++node) {
-        int current_node = abs(ivm_tree.getNodeValueAt(currentLevel, node));
+        int node_value = abs(ivm_tree.getNodeValueAt(currentLevel, node));
 
-        if (current_node == 0) /** It is an empty cell. **/
+        if (node_value == 0) /** It is an empty cell. **/
             break;
 
-        /** Validates that the new node can be added. In problems like FJSSP some nodes can be repeated a number of times.
-         If not the next line does the work:
-            if (current_node != ivm_tree.getActiveNode())
-         **/
-        if (data_solution.getTimesThatElementAppears(current_node) < problem.getTimesThatValueCanBeRepeated(current_node)) {
+        /** Validates that the new node can be added (feasibility). **/
+        if (data_solution.getTimesThatElementAppears(node_value) < problem.getTimesThatValueCanBeRepeated(node_value)) {
 
-            solution.setVariable(currentLevel + 1, current_node);
+            solution.setVariable(currentLevel + 1, node_value);
             problem.evaluateDynamic(solution, data_solution, currentLevel + 1);
             increaseExploredNodes();
 
@@ -621,9 +620,8 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             if (data_solution.isFeasible() && is_improving && improvesTheParetoContainer(solution)) {
 
                 /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
+                obj_values.setValue(node_value);
                 if(isSortingEnable()) {
-                    obj_values.setValue(current_node);
-
                     for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
                         obj_values.setObjective(objc, data_solution.getObjective(objc));
                         obj_values.setDistance(objc, minMaxNormalization(obj_values.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc)));
@@ -631,14 +629,15 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
                     sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
                 } else
-                    ivm_tree.addNodeToRow(currentLevel + 1, current_node);
+                    sorted_elements.push(obj_values, SORTING_TYPES::BY_VALUE);
 
                 nodes_created++;
             } else {
-                ivm_tree.addNodeToRow(currentLevel + 1, current_node);
+                ivm_tree.addNodeToRow(currentLevel + 1, node_value);
                 ivm_tree.pruneLastNodeAtRow(currentLevel + 1);
                 increasePrunedNodes();
             }
+            
             problem.evaluateRemoveDynamic(solution, data_solution, currentLevel + 1);
             nodes_created++;
         }
@@ -646,9 +645,8 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
 
     increaseNumberOfNodesCreated(nodes_created);
     if (nodes_created > 0) {
-        if (isSortingEnable())
-            for (const auto& it : sorted_elements)
-                ivm_tree.addNodeToRow(currentLevel + 1, it.getValue());
+        for (const auto& it : sorted_elements)
+            ivm_tree.addNodeToRow(currentLevel + 1, it.getValue());
 
         ivm_tree.moveToNextRow();
         ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), ivm_tree.getStartExploration(ivm_tree.getActiveRow()));
@@ -667,7 +665,7 @@ void BranchAndBound::prune(Solution & solution, int currentLevel) {
 }
 
 bool BranchAndBound::aLeafHasBeenReached() const {
-    return (currentLevel == number_of_tree_levels);
+    return (data_solution.isComplete() || currentLevel == number_of_tree_levels);
 }
 
 /**

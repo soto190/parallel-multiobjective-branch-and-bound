@@ -35,10 +35,13 @@ private:
     unsigned int total_service_time;
     double total_distance_in_order;
 
-    double max_cost_found;
+    /** The diference between the variables found with lower_bound are that found variables corresponds to solutions.
+     * Lower bound variables are the minimum achiviable values.
+     */
     double min_cost_found;
-    unsigned int max_number_vehicles;
-    unsigned int min_number_vehicles;
+    double max_cost_found;
+    unsigned int min_number_vehicles_found;
+    unsigned int max_number_vehicles_found;
     unsigned int min_makespan_found;
     unsigned int max_makespan_found;
 

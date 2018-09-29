@@ -14,8 +14,7 @@
 
 
 enum Dom {Domtes = 1, Domted = -1, Nondom = 0, Eq = 11};
-enum SORTING_TYPES{DIST_1 = 0, DIST_2 = 1, DIST_COMB = 3, DOMINANCE = 4};
-
+enum SORTING_TYPES{DIST_1 = 0, DIST_2 = 1, DIST_COMB = 3, DOMINANCE = 4, BY_VALUE = 5};
 
 class ObjectiveValues {
     static const unsigned int MAX_OBJECTIVES = 3;

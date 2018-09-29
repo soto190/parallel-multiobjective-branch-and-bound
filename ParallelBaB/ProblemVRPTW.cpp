@@ -13,6 +13,12 @@ Problem(0, 0),
 number_of_customers(0),
 max_vehicle_capacity(0),
 max_number_of_vehicles(0),
+min_cost_found(0),
+max_cost_found(0),
+min_number_vehicles_found(0),
+max_number_vehicles_found(0),
+min_makespan_found(0),
+max_makespan_found(0),
 total_demand(0),
 coordinates(nullptr),
 costs(nullptr),
@@ -28,6 +34,12 @@ number_of_customers(0),
 max_vehicle_capacity(0),
 max_number_of_vehicles(0),
 total_demand(0),
+min_cost_found(0),
+max_cost_found(0),
+min_number_vehicles_found(0),
+max_number_vehicles_found(0),
+min_makespan_found(0),
+max_makespan_found(0),
 coordinates(nullptr),
 costs(nullptr),
 time_window(nullptr),
@@ -40,7 +52,13 @@ ProblemVRPTW::ProblemVRPTW(const ProblemVRPTW& toCopy):
 Problem(toCopy),
 number_of_customers(toCopy.getNumberOfCustomers()),
 max_vehicle_capacity(toCopy.getMaxVehicleCapacity()),
-max_number_of_vehicles(toCopy.getMaxNumberOfVehicles()) {
+max_number_of_vehicles(toCopy.getMaxNumberOfVehicles()),
+min_cost_found(toCopy.getLowerBoundInObj(0)),
+max_cost_found(toCopy.getUpperBoundInObj(0)),
+min_number_vehicles_found(toCopy.getLowerBoundInObj(1)),
+max_number_vehicles_found(toCopy.getUpperBoundInObj(1)),
+min_makespan_found(toCopy.getLowerBoundInObj(2)),
+max_makespan_found(toCopy.getUpperBoundInObj(2)) {
 
     coordinates = new unsigned int*[getNumberOfNodes()];
     costs = new double * [getNumberOfNodes()];
@@ -249,10 +267,18 @@ double ProblemVRPTW::evaluate(Solution & solution) {
  - parameters level: Level of the vector to be evaluated.
 */
 void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int level) {
+
     data.setCurrentPosition(level);
     data.increaseTimesElementIsInUse(solution.getVariable(level));
-    if (!data.isComplete()) {
+    data.setFeasible();   /** Assuming that the solution is feasible. **/
+    data.setIncomplete(); /** Assuming that the solution is incomplete. **/
+
+    if (level == 0 && !isCustomer(solution.getVariable(0)))
+        data.setInfeasible(); /** The first node cannot be a depot/vehicle. **/
+
+    else if (!data.isComplete()) {
         unsigned int destination = solution.getVariable(level) <= getNumberOfCustomers() ? solution.getVariable(level) : 0;
+
         if(data.getCurrentVehicleCapacity() >= getCustomerDemand(destination)) {
 
             if(data.getCurrentVehicleTravelTime() <= getCustomerTimeWindowStart(destination))
@@ -277,9 +303,9 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
                     /** There are no more customers then it is a complete solution and adds cost of returning to depot. **/
                     if (data.isComplete())
                         data.increaseCurrentVehicleCost(getCustomerCostTo(destination, 0));
-
+                    // 0 -> 1; 1-> 3; current = 0; dest = 0;
                 /** It is a customer going to depot. **/
-                } else if (data.getCurrentNode() != destination)
+                } else if (isCustomer(data.getCurrentNode()))
                     data.createNewVehicle(getMaxVehicleCapacity());
                 /** else is an empty route and do nothing. **/
             }
@@ -293,9 +319,9 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
         solution.setObjective(2, data.getMaxCost());
 
     } else { /** Setting bad objectives values. **/
-        solution.setObjective(0, max_number_of_vehicles * 2);
-        solution.setObjective(1, total_distance_in_order * 2);
-        solution.setObjective(2, total_distance_in_order * 2);
+        solution.setObjective(0, max_number_vehicles_found);
+        solution.setObjective(1, max_cost_found);
+        solution.setObjective(2, max_makespan_found);
     }
 }
 
@@ -318,13 +344,13 @@ void ProblemVRPTW::evaluateRemoveDynamic(Solution & solution, VRPTWdata& data, i
         data.setCurrentVehicleCost(0);
         data.setNumberOfDispatchedCustomers(0);
 
-    } else {
+    } else if(data.isFeasible()) {
         data.setCurrentPosition(level - 1);
 
-        int node = isCustomer(solution.getVariable(level))? solution.getVariable(level) : 0;
+        unsigned int node = isCustomer(solution.getVariable(level))? solution.getVariable(level) : 0;
         unsigned int last_node = isCustomer(solution.getVariable(level - 1))? solution.getVariable(level - 1) : 0;
 
-        if (node != last_node) { /** If node == last_node then it is an empty route. **/
+        if (node != last_node) { /** If node == last_node then it is an empty route because the depot is the only which can be repeated. **/
 
             data.increaseCurrentVehicleCapacity(getCustomerDemand(node));
 
@@ -336,19 +362,21 @@ void ProblemVRPTW::evaluateRemoveDynamic(Solution & solution, VRPTWdata& data, i
 
             } else { /** If the current node is a vehicle then can occur that the vehicle compose an empty route.**/
                 /** If the next node contains a customer then it was a route we can reduce by 1 the number of vehicles.
-                 * If the next node is a vehicle then we do nothing.**/
-                if (isCustomer(solution.getVariable(level + 1)))
+                 * If the next node is a vehicle then we do nothing.
+                 1 2
+                 **/
+                if (isCustomer(last_node))
                     data.decreaseNumberOfVehicles(1);
 
-                data.setCurrentNode(0);
             }
             data.decreaseCurrentVehicleCost(getCustomerCostTo(last_node, node));
 
-        } else if(isCustomer(solution.getVariable(level + 1))) {
-            data.decreaseNumberOfVehicles(1);
-            data.setCurrentNode(last_node);
         }
+        
+        data.setCurrentNode(last_node);
+
     }
+    solution.setVariable(level, 0);
 
     if (data.isFeasible()) {
         solution.setObjective(0, data.getNumberOfVehiclesUsed());
@@ -356,18 +384,18 @@ void ProblemVRPTW::evaluateRemoveDynamic(Solution & solution, VRPTWdata& data, i
         solution.setObjective(2, data.getMaxCost());
 
     } else { /** Setting bad objectives values. **/
-        solution.setObjective(0, max_number_of_vehicles * 2);
-        solution.setObjective(1, total_distance_in_order * 2);
-        solution.setObjective(2, total_distance_in_order * 2);
+        solution.setObjective(0, max_number_vehicles_found);
+        solution.setObjective(1, max_cost_found);
+        solution.setObjective(2, max_makespan_found);
     }
 }
 
 double ProblemVRPTW::getFmin(int n_objective) const {
-    return 0.0;
+    return getLowerBoundInObj(n_objective);
 }
 
 double ProblemVRPTW::getFmax(int n_objective) const {
-    return 0.0;
+    return getUpperBoundInObj(n_objective);
 }
 
 double ProblemVRPTW::getBestObjectiveFoundIn(int n_objective) const {
@@ -407,13 +435,13 @@ int ProblemVRPTW::getLowerBound(int indexVar) const {
 }
 
 int ProblemVRPTW::getUpperBound(int indexVar) const {
-    return max_number_of_vehicles;
+    return number_of_customers + 1;
 }
 
 double ProblemVRPTW::getLowerBoundInObj(int nObj) const {
     switch (nObj) {
         case 0:
-            return min_number_vehicles;
+            return min_number_vehicles_found;
             break;
 
         case 1:
@@ -429,7 +457,7 @@ double ProblemVRPTW::getLowerBoundInObj(int nObj) const {
 double ProblemVRPTW::getUpperBoundInObj(int nObj) const {
     switch (nObj) {
         case 0:
-            return max_number_vehicles;
+            return max_number_vehicles_found;
             break;
 
         case 1:
@@ -454,8 +482,12 @@ int ProblemVRPTW::getFinalLevel() {
     return 0;
 }
 
+/**
+ * In this problem this can be number_of_customers + depot. Assign to the depot the number (customers + 1) and the depot can appear multiple times indicating a new route/vehicle. Reducing the number of columns in the IVM.  The number of columns corresponds to the number of customers. The number of rows is number of customers + max_number_of_vehicles.
+ *
+ */
 int ProblemVRPTW::getTotalElements() {
-    return getNumberOfVariables();
+    return number_of_customers + 1;
 }
 
 int * ProblemVRPTW::getElemensToRepeat() {
@@ -472,14 +504,17 @@ int ProblemVRPTW::getEncodeMap(int value1, int value2) const {
 
 /** Each customer/vehicle can appear one time. **/
 int ProblemVRPTW::getTimesThatValueCanBeRepeated(int value) {
-    return 1;
+    if (value == 0 || value > getNumberOfCustomers())
+        return max_number_of_vehicles;
+    else
+        return 1;
 }
 
 void ProblemVRPTW::createDefaultSolution(Solution& solution) {
     unsigned int position = 0;
     for (unsigned int customer = 1; customer <= getNumberOfCustomers(); ++customer) {
         solution.setVariable(position, customer);
-        solution.setVariable(position + 1, getNumberOfCustomers() + customer);
+        solution.setVariable(position + 1, getNumberOfCustomers() + 1);
         position += 2;
     }
     evaluate(solution);
@@ -585,6 +620,8 @@ void ProblemVRPTW::loadInstance(char filePath[2][255], char file_extension[4]) {
         total_service_time = 0;
         total_distance_in_order = 0;
 
+        max_makespan_found = 0;
+        min_makespan_found = 0;
         for (unsigned int customer = 0; customer < getNumberOfNodes(); ++customer) {
 
             if (customers_data.size() < 7) /** There are seven data for each customer. **/
@@ -604,10 +641,16 @@ void ProblemVRPTW::loadInstance(char filePath[2][255], char file_extension[4]) {
             service_time[customer] = customers_data.at(customer).at(6);
             total_service_time += service_time[customer];
 
+            if (customer != 0 && time_window[customer][1] + service_time[customer] > max_makespan_found)
+                max_makespan_found = time_window[customer][1] + service_time[customer];
+
+            else if(customer != 0 && time_window[customer][0] + service_time[customer] > min_makespan_found)
+                min_makespan_found = time_window[customer][0] + service_time[customer];
+
             costs[customer] = new double[getNumberOfNodes()];
         }
 
-        for (unsigned int customer = 0; customer < getNumberOfNodes(); ++customer)
+        for (unsigned int customer = 0; customer < getNumberOfNodes(); ++customer) {
             for (unsigned int customer_destination = customer + 1; customer_destination < getNumberOfNodes(); ++customer_destination)
                 if (customer != customer_destination) {
 
@@ -615,12 +658,20 @@ void ProblemVRPTW::loadInstance(char filePath[2][255], char file_extension[4]) {
 
                     costs[customer_destination][customer] = costs[customer][customer_destination];
 
-                    total_distance_in_order += costs[customer][customer_destination];
                 } else
                     costs[customer][customer_destination] = 0; /** Probably is better to use a big number. **/
+
+            total_distance_in_order += costs[0][customer] + costs[customer][0];
+        }
+
         n_variables = number_of_customers + max_number_of_vehicles; /** The permutaiton size is customers + max vehicles. **/
         infile.close();
 
+        min_number_vehicles_found = max_number_of_vehicles / 2;
+        max_number_vehicles_found = max_number_of_vehicles;
+
+        max_cost_found = total_distance_in_order;
+        min_cost_found = 600; /** TODO: edit this. **/
     } else {
         printf("File not found\n");
         exit(1);
@@ -685,6 +736,11 @@ void ProblemVRPTW::printProblemInfo() const {
     printf("Maximum capacity per vehicle: %d\n", getMaxVehicleCapacity());
     printf("Total demand: %d\n", total_demand);
     printf("Total service time: %d\n", total_service_time);
-    printf("Total distance in order: %f\n", total_distance_in_order);
+    printf("Min number of vehicles (max_vechiles/2): %d\n", min_number_vehicles_found);
+    printf("Max number of vehicles: %d\n", max_number_vehicles_found);
+    printf("Min cost (fixed): %f\n", min_cost_found);
+    printf("Max cost (on vehicle for each customer): %f\n", max_cost_found);
+    printf("Min makespan (max{Ti} + service_time): %d\n", min_makespan_found);
+    printf("Max makespan (max{Tf} + service_time): %d\n", max_makespan_found);
 }
 

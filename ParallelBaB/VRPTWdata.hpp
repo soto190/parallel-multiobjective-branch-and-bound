@@ -81,6 +81,7 @@ public:
     void setMaxCost(double new_max_cost);
     void setTotalCost(double new_total_cost);
 
+    unsigned int getNumberOfNodes() const;
     unsigned int getNumberOfCustomers() const;
     unsigned int getMaxNumberOfVehicles() const;
     unsigned int getMaxVehicleCapacity() const;
