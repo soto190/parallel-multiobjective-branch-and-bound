@@ -278,37 +278,41 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
 
     else if (!data.isComplete()) {
         unsigned int destination = solution.getVariable(level) <= getNumberOfCustomers() ? solution.getVariable(level) : 0;
+        unsigned int last_node = solution.getVariable(level - 1) <= getNumberOfCustomers() ? solution.getVariable(level - 1) : 0;
 
-        if(data.getCurrentVehicleCapacity() >= getCustomerDemand(destination)) {
+        if (destination == last_node) /** Both are depots. **/
+            data.setInfeasible();
+        else
+            if(data.getCurrentVehicleCapacity() >= getCustomerDemand(destination)) {
 
-            if(data.getCurrentVehicleTravelTime() <= getCustomerTimeWindowStart(destination))
-                data.setCurrentVehicleTravelTime(getCustomerTimeWindowStart(destination) + getCustomerServiceTime(destination));
+                if(data.getCurrentVehicleTravelTime() <= getCustomerTimeWindowStart(destination))
+                    data.setCurrentVehicleTravelTime(getCustomerTimeWindowStart(destination) + getCustomerServiceTime(destination));
 
-            else if (data.getCurrentVehicleTravelTime() >= getCustomerTimeWindowStart(destination) &&
-                     data.getCurrentVehicleTravelTime() <= getCustomerTimeWindowEnd(destination))
-                data.increaseCurrentVehicleTravelTime(getCustomerServiceTime(destination));
+                else if (data.getCurrentVehicleTravelTime() >= getCustomerTimeWindowStart(destination) &&
+                         data.getCurrentVehicleTravelTime() <= getCustomerTimeWindowEnd(destination))
+                    data.increaseCurrentVehicleTravelTime(getCustomerServiceTime(destination));
 
-            else
-                data.setInfeasible();
+                else
+                    data.setInfeasible();
 
 
-            if (data.isFeasible()) {
-                data.decreaseCurrentVehicleCapacity(getCustomerDemand(destination));
-                data.increaseCurrentVehicleCost(getCustomerCostTo(data.getCurrentNode(), destination));
+                if (data.isFeasible()) {
+                    data.decreaseCurrentVehicleCapacity(getCustomerDemand(destination));
+                    data.increaseCurrentVehicleCost(getCustomerCostTo(data.getCurrentNode(), destination));
 
-                if (isCustomer(destination)) {
-                    data.setCustomerServiceEndedAt(destination, data.getCurrentVehicleTravelTime());
-                    data.setCurrentNode(destination);
-                    data.increaseNumberOfDispatchedCustomers(1);
-                    /** There are no more customers then it is a complete solution and adds cost of returning to depot. **/
-                    if (data.isComplete())
-                        data.increaseCurrentVehicleCost(getCustomerCostTo(destination, 0));
-                    // 0 -> 1; 1-> 3; current = 0; dest = 0;
-                /** It is a customer going to depot. **/
-                } else if (isCustomer(data.getCurrentNode()))
-                    data.createNewVehicle(getMaxVehicleCapacity());
-                /** else is an empty route and do nothing. **/
-            }
+                    if (isCustomer(destination)) {
+                        data.setCustomerServiceEndedAt(destination, data.getCurrentVehicleTravelTime());
+                        data.setCurrentNode(destination);
+                        data.increaseNumberOfDispatchedCustomers(1);
+                        /** There are no more customers then it is a complete solution and adds cost of returning to depot. **/
+                        if (data.isComplete())
+                            data.increaseCurrentVehicleCost(getCustomerCostTo(destination, 0));
+                        // 0 -> 1; 1-> 3; current = 0; dest = 0;
+                    /** It is a customer going to depot. **/
+                    } else if (isCustomer(data.getCurrentNode()))
+                        data.createNewVehicle(getMaxVehicleCapacity());
+                    /** else is an empty route and do nothing. **/
+                }
         } else
             data.setInfeasible();
     }
@@ -667,7 +671,7 @@ void ProblemVRPTW::loadInstance(char filePath[2][255], char file_extension[4]) {
         n_variables = number_of_customers + max_number_of_vehicles; /** The permutaiton size is customers + max vehicles. **/
         infile.close();
 
-        min_number_vehicles_found = max_number_of_vehicles / 2;
+        min_number_vehicles_found = total_demand / max_vehicle_capacity;
         max_number_vehicles_found = max_number_of_vehicles;
 
         max_cost_found = total_distance_in_order;

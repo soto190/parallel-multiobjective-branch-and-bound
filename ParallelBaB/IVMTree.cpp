@@ -232,7 +232,7 @@ void IVMTree::setEndExploration(int row, int value) {
 void IVMTree::setNumberOfNodesAt(int row, int value) {
     pending_nodes -= n_nodes_at_row[row]; /** Decrease the actual number of nodes at indicated row. **/
     pending_nodes += value; /** Increase the number of nodes with new value. **/
-    n_nodes_at_row[row] = value; /**Set the new number of nodes. **/
+    n_nodes_at_row[row] = value; /** Set the new number of nodes. **/
 }
 
 /**
@@ -311,7 +311,8 @@ int IVMTree::getNodeValueAt(int row, int col) const throw(IVMTreeException) {
         return matrix_nodes[row][col];
         
     } catch (IVMTreeException& ivmTreeEx) {
-        printf("%s\n",  ivmTreeEx.what());
+        std::cerr << ivmTreeEx.what();
+        exit(EXIT_FAILURE);
     }
     return -1;
 }
@@ -340,7 +341,8 @@ int IVMTree::getActiveColAt(int row) const throw(IVMTreeException) {
         return vector_pointing_to_col_at_row[row];
         
     } catch (IVMTreeException& ivmTreeEx) {
-        printf("%s\n",  ivmTreeEx.what());
+        std::cerr << ivmTreeEx.what();
+        exit(EXIT_FAILURE);
     }
     return -1;
 }
@@ -419,7 +421,7 @@ int IVMTree::shareLastNodeAtRow(int row) {
 }
 
 /**
- *Prunes the last node value at the indicated row. The node value is marked as pruned in the row thus updating end_exploration[row], pending_nodes, and n_nodes_at_row[row].*
+ *Prunes the last node value at the indicated row. The node value is marked as pruned in the row thus updating start_exploration[row], pending_nodes, and n_nodes_at_row[row].*
 
  - Parameter row: The row to be affected.
 
@@ -427,7 +429,7 @@ int IVMTree::shareLastNodeAtRow(int row) {
  */
 int IVMTree::pruneLastNodeAtRow(int row) {
 
-    int last_col = getEndExploration(row);
+    int last_col = getEndExploration(row) - 1;
     int node_at_col = getNodeValueAt(row, last_col);
 
     setNodeValueAt(row, last_col, -1 * node_at_col); /**Marks the node with the negative value to be able to use the value when copyin the row. **/
@@ -494,7 +496,8 @@ void IVMTree::setActiveRow(int row) throw (IVMTreeException) {
         integer_pointing_to_row = row;
         
     }catch(IVMTreeException& ex) {
-        printf("%s\n", ex.what());
+        std::cerr << ex.what();
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -516,15 +519,11 @@ void IVMTree::addNodeToRow(int row, int node_value) {
     setNodeValueAt(row, next_free_col, node_value);
     increaseNumberOfNodesAt(row);
     increaseNumberOfPendingNodes();
-    //increaseEndExplorationAtRow(row);
-    end_exploration[row] = next_free_col;
+    increaseEndExplorationAtRow(row);
 }
 
 int IVMTree::getNextFreeColAtRow(int row) {
-    if (getNodeValueAt(row, end_exploration[row]) == 0)
-        return end_exploration[row];
-    
-    return end_exploration[row] + 1;
+    return end_exploration[row];
 }
 
 bool IVMTree::thereAreMoreBranches() const {
@@ -533,6 +532,8 @@ bool IVMTree::thereAreMoreBranches() const {
 
 int IVMTree::moveToNextRow() {
     setActiveRow(getActiveRow() + 1);
+    setActiveColAtRow(getActiveRow(), getStartExploration(getActiveRow()));
+
     return getActiveRow();
 }
 
@@ -604,8 +605,6 @@ int IVMTree::thereAreMoreNodes() {
 }
 
 void IVMTree::moveToNodeAtRight() {
-    //unsigned int node_value = getNodeValueAt(getActiveRow(), getActiveColAt(getActiveRow()));
-    //setNodeValueAt(getActiveRow(), getActiveColAt(getActiveRow()), -1 * node_value);
     start_exploration[getActiveRow()]++;
     setActiveColAtRow(getActiveRow(), getActiveColAt(getActiveRow()) + 1);
 }
@@ -626,7 +625,7 @@ void IVMTree::moveToRootRow() {
 }
 
 void IVMTree::markActiveNodeAsRemoved() {
-    setNodeValueAt(getActiveRow(), getActiveCol(), getActiveNode() * -1);
+    setNodeValueAt(getActiveRow(), getActiveCol(), -1 * getActiveNode());
 }
 
 unsigned long IVMTree::decreaseNumberOfPendingNodes() {

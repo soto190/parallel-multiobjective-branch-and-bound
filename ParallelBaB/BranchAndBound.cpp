@@ -143,7 +143,7 @@ BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, cons
     data_solution(problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
 
     currentLevel = 0;
-    number_of_tree_levels = 0;
+    number_of_tree_levels = problem.getNumberOfVariables();
     number_of_nodes = 0;
     number_of_nodes_created = 0;
     number_of_nodes_explored = 0;
@@ -190,7 +190,7 @@ void BranchAndBound::initialize(int starts_tree) {
         currentLevel = 0;
     else
         currentLevel = starts_tree;
-    number_of_tree_levels = problem.getFinalLevel();
+    number_of_tree_levels = problem.getNumberOfVariables();
     number_of_nodes_created = 0;
     number_of_nodes_explored = 0;
     number_of_nodes_unexplored = 0;
@@ -328,8 +328,8 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
         for (int col = 0; col < tree.getNumberOfCols(); ++col)
             tree.setNodeValueAt(row, col, 0);
         build_value = branch_init.getValueAt(row);
-        tree.setStartExploration(row, build_value);
-        tree.setEndExploration(row, build_value);
+        tree.setStartExploration(row, build_value - 1);
+        tree.setEndExploration(row, build_value); /** Excluding the end exploration [start, end).**/
         tree.setNumberOfNodesAt(row, 1);
         tree.setActiveColAtRow(row, build_value - 1);
         tree.setNodeValueAt(row, build_value - 1, build_value);
@@ -339,8 +339,9 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
         problem.evaluateDynamic(incumbent_s, data_solution, row);
     }
     
-    for (int row = build_up_to + 1; row <= number_of_tree_levels; ++row) {
+    for (int row = build_up_to + 1; row < getNumberOfLevels(); ++row) {
         tree.setStartExploration(row, 0);
+        tree.setEndExploration(row, 0);
         tree.setActiveColAtRow(row, -1);
         tree.resetNumberOfNodesAt(row);
         incumbent_s.setVariable(row, -1);
@@ -405,7 +406,6 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         updateLocalPF();
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, data_solution, currentLevel);
-        ivm_tree.print();
         if (!aLeafHasBeenReached() && theTreeHasMoreNodes()) {
             if (improvesTheParetoContainer(incumbent_s))
                 branch(incumbent_s, currentLevel);
@@ -422,6 +422,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             }
             updateBounds(incumbent_s, data_solution);
             ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
+            printf("--> After a leaf:\n");
             ivm_tree.print();
         }
         
@@ -510,8 +511,9 @@ int BranchAndBound::branchFromInterval(Solution& solution, int currentLevel) {
     number_of_calls_to_branch++;
 
     int toAdd = 0;
-    int nodes_created = 0;
-    
+    unsigned int nodes_created = 0;
+    unsigned int nodes_pruned = 0;
+
     double ub_normalized[3];
     
     SortedVector sorted_elements;
@@ -554,6 +556,7 @@ int BranchAndBound::branchFromInterval(Solution& solution, int currentLevel) {
                 ivm_tree.addNodeToRow(currentLevel + 1, toAdd);
                 ivm_tree.pruneFirstNodeAtRow(currentLevel + 1);
                 increasePrunedNodes();
+                nodes_pruned++;
             }
             problem.evaluateRemoveDynamic(solution, data_solution, currentLevel + 1);
         }
@@ -588,14 +591,15 @@ int BranchAndBound::branchFromInterval(Solution& solution, int currentLevel) {
 int BranchAndBound::branch(Solution& solution, int currentLevel) {
     number_of_calls_to_branch++;
 
-    int nodes_created = 0;
+    unsigned int nodes_created = 0;
+    unsigned int nodes_pruned = 0;
     double ub_normalized[3];
 
     SortedVector sorted_elements;
     ObjectiveValues obj_values;
-    if (currentLevel == 29 && solution.getVariable(currentLevel) == 26) {
-        printCurrentSolution();
-    }
+    ivm_tree.setStartExploration(currentLevel + 1, 0);
+    ivm_tree.setEndExploration(currentLevel + 1, 0);
+
     for (unsigned int node = 0; node < ivm_tree.getNumberOfCols(); ++node) {
         int node_value = abs(ivm_tree.getNodeValueAt(currentLevel, node));
 
@@ -608,7 +612,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             solution.setVariable(currentLevel + 1, node_value);
             problem.evaluateDynamic(solution, data_solution, currentLevel + 1);
             increaseExploredNodes();
-
+            
             bool is_improving = false;
             for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
                 ub_normalized[objc] = minMaxNormalization(data_solution.getObjective(objc), problem.getBestObjectiveFoundIn(objc), problem.getFmax(objc));
@@ -636,25 +640,27 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                 ivm_tree.addNodeToRow(currentLevel + 1, node_value);
                 ivm_tree.pruneLastNodeAtRow(currentLevel + 1);
                 increasePrunedNodes();
+                nodes_pruned++;
             }
             
             problem.evaluateRemoveDynamic(solution, data_solution, currentLevel + 1);
-            nodes_created++;
         }
     }
 
+    increaseNumberOfNodesPruned(nodes_pruned);
     increaseNumberOfNodesCreated(nodes_created);
     if (nodes_created > 0) {
         for (const auto& it : sorted_elements)
             ivm_tree.addNodeToRow(currentLevel + 1, it.getValue());
 
         ivm_tree.moveToNextRow();
-        ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), ivm_tree.getStartExploration(ivm_tree.getActiveRow()));
         ivm_tree.setThereAreMoreBranches();
 
     } else  /** If no branches were created then move to the next node. **/
         ivm_tree.pruneActiveNode();
 
+    printf("--> After Branching:\n");
+    ivm_tree.print();
     return nodes_created;
 }
 
@@ -662,10 +668,12 @@ void BranchAndBound::prune(Solution & solution, int currentLevel) {
     number_of_calls_to_prune++;
     ivm_tree.pruneActiveNode();
     increasePrunedNodes();
+    printf("--> After Pruning:\n");
+    ivm_tree.print();
 }
 
 bool BranchAndBound::aLeafHasBeenReached() const {
-    return (data_solution.isComplete() || currentLevel == number_of_tree_levels);
+    return (data_solution.isComplete() || currentLevel >= getNumberOfLevels() - 1);
 }
 
 /**
@@ -748,7 +756,9 @@ bool BranchAndBound::theTreeHasMoreNodes() const {
 }
 
 bool BranchAndBound::updateParetoContainer(const Solution & solution) {
-    return paretoContainer.add(solution);
+    if (data_solution.isComplete() && data_solution.isFeasible())
+        return paretoContainer.add(solution);
+    return false;
 }
 
 /**
@@ -789,7 +799,7 @@ unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) co
             
         case ProblemType::combination:
             nodes_per_branch = (problem.getUpperBound(0) + 1) - problem.getLowerBound(0);
-            deepest_level = number_of_tree_levels + 1;
+            deepest_level = number_of_tree_levels;
             n_nodes = (pow(nodes_per_branch, deepest_level + 1) - 1) / (nodes_per_branch - 1);
             break;
             
@@ -801,7 +811,7 @@ unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) co
              where n is the number of elements to use. And a is the number of times that a appears in the permutation.
              **/
             nodes_per_branch = (problem.getUpperBound(0) + 1) - problem.getLowerBound(0);
-            deepest_level = number_of_tree_levels + 1;
+            deepest_level = number_of_tree_levels;
             n_nodes = (pow(nodes_per_branch, deepest_level + 1) - 1) / (nodes_per_branch - 1);
             
             break;

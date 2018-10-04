@@ -432,8 +432,8 @@ void VRPTWdata::print() const {
     printf("***********\n");
     printf("Position: %d\n", getPosition());
     printf("Number of vehicles: %d\n", getNumberOfVehiclesUsed());
-    printf("Total cost: %.3f\n", getTotalCost());
-    printf("Makespan: %d\n", getMaxTravelTime());
+    printf("Total cost: %.4f\n", getTotalCost());
+    printf("Makespan: %.4f\n", getMaxTravelTime());
     for (unsigned int route = 0; route < getNumberOfVehiclesUsed(); ++route) {
         printf("[%d] Cost: %6.6f\n", route, vehicle_cost[route]);
         printf("[%d] Travel time: %6.6f\n", route, travel_time[route]);
