@@ -282,8 +282,7 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
 
         if (destination == last_node) /** Both are depots. **/
             data.setInfeasible();
-        else
-            if(data.getCurrentVehicleCapacity() >= getCustomerDemand(destination)) {
+        else if(data.getCurrentVehicleCapacity() >= getCustomerDemand(destination)) {
 
                 if(data.getCurrentVehicleTravelTime() <= getCustomerTimeWindowStart(destination))
                     data.setCurrentVehicleTravelTime(getCustomerTimeWindowStart(destination) + getCustomerServiceTime(destination));
@@ -294,7 +293,6 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
 
                 else
                     data.setInfeasible();
-
 
                 if (data.isFeasible()) {
                     data.decreaseCurrentVehicleCapacity(getCustomerDemand(destination));
@@ -317,16 +315,9 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
             data.setInfeasible();
     }
 
-    if (data.isFeasible()) {
-        solution.setObjective(0, data.getNumberOfVehiclesUsed());
-        solution.setObjective(1, data.getTotalCost());
-        solution.setObjective(2, data.getMaxCost());
-
-    } else { /** Setting bad objectives values. **/
-        solution.setObjective(0, max_number_vehicles_found);
-        solution.setObjective(1, max_cost_found);
-        solution.setObjective(2, max_makespan_found);
-    }
+    solution.setObjective(0, data.getNumberOfVehiclesUsed());
+    solution.setObjective(1, data.getTotalCost());
+    solution.setObjective(2, data.getMaxCost());
 }
 
 /**
@@ -340,19 +331,18 @@ void ProblemVRPTW::evaluateRemoveDynamic(Solution & solution, VRPTWdata& data, i
 
     data.decreaseTimesElementIsInUse(solution.getVariable(level));
     /** If it is the first position of the vector. **/
-    if (level == 0) {
-        data.setCurrentPosition(0);
-        data.setCurrentCustomer(0);
-        data.setCurrentVehicleCapacity(getMaxVehicleCapacity());
-        data.setCurrentVehicleTravelTime(0);
-        data.setCurrentVehicleCost(0);
-        data.setNumberOfDispatchedCustomers(0);
+    if (level == 0)
+        data.reset();
 
-    } else if(data.isFeasible()) {
+    else if(data.isFeasible()) {
         data.setCurrentPosition(level - 1);
 
         unsigned int node = isCustomer(solution.getVariable(level))? solution.getVariable(level) : 0;
         unsigned int last_node = isCustomer(solution.getVariable(level - 1))? solution.getVariable(level - 1) : 0;
+
+        if (data.isComplete()) {
+            data.decreaseCurrentVehicleCost(getCustomerCostTo(node, 0));
+        }
 
         if (node != last_node) { /** If node == last_node then it is an empty route because the depot is the only which can be repeated. **/
 
@@ -374,24 +364,14 @@ void ProblemVRPTW::evaluateRemoveDynamic(Solution & solution, VRPTWdata& data, i
 
             }
             data.decreaseCurrentVehicleCost(getCustomerCostTo(last_node, node));
-
         }
-        
         data.setCurrentNode(last_node);
-
     }
     solution.setVariable(level, 0);
 
-    if (data.isFeasible()) {
-        solution.setObjective(0, data.getNumberOfVehiclesUsed());
-        solution.setObjective(1, data.getTotalCost());
-        solution.setObjective(2, data.getMaxCost());
-
-    } else { /** Setting bad objectives values. **/
-        solution.setObjective(0, max_number_vehicles_found);
-        solution.setObjective(1, max_cost_found);
-        solution.setObjective(2, max_makespan_found);
-    }
+    solution.setObjective(0, data.getNumberOfVehiclesUsed());
+    solution.setObjective(1, data.getTotalCost());
+    solution.setObjective(2, data.getMaxCost());
 }
 
 double ProblemVRPTW::getFmin(int n_objective) const {

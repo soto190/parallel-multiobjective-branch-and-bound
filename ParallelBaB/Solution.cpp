@@ -185,15 +185,15 @@ std::ostream& operator<<(std::ostream& stream, const Solution& solution) {
 
     for (int nObj = 0; nObj < solution.getNumberOfObjectives(); ++nObj)
         stream << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << solution.getObjective(nObj) << " ";
+    stream << " | " << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << solution.getBuildUpTo();
     stream << " | ";
 
     for (int nVar = 0; nVar < solution.getNumberOfVariables(); ++nVar)
-        stream << std::fixed << std::setw(4) << std::setfill(' ') << solution.getVariable(nVar) << " ";
+        stream << std::fixed << std::setw(4) << std::setfill(' ') << (solution.getVariable(nVar) > 0?solution.getVariable(nVar) : '-') << " ";
     stream << " |" << std::endl;
 
     return stream;
 }
-
 
 void Solution::setBuildUpTo(int index) {
     build_up_to = index;

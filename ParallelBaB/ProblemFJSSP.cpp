@@ -2071,11 +2071,6 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     int makespan = 0;
     int maxWorkload = 0;
     int totalWorkload = 0;
-    int operationInPosition = 0;
-    int operation = 0;
-    int job = 0;
-    int machine = 0;
-    int numberOp = 0;
     int operation_in_machine[n_operations];
     int operationOfJob[n_jobs];
     int startingTime[n_operations];
@@ -2086,16 +2081,16 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
     char gantt[n_machines][MAX_GANTT_LIMIT];
     int time = 0;
     
-    for (operation = 0; operation < n_operations; ++operation) {
+    for (int operation = 0; operation < n_operations; ++operation) {
         startingTime[operation] = 0;
         endingTime[operation] = 0;
         operation_in_machine[operation] = 0;
     }
     
-    for (job = 0; job < n_jobs; ++job)
+    for (int job = 0; job < n_jobs; ++job)
         operationOfJob[job] = 0;
     
-    for (machine = 0; machine < n_machines; ++machine) {
+    for (int machine = 0; machine < n_machines; ++machine) {
         timeInMachine[machine] = 0;
         workload[machine] = 0;
         /**creates an empty gantt**/
@@ -2104,14 +2099,13 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
         }
     }
     
-    int map = 0;
-    for (operationInPosition = 0; operationInPosition < n_operations; operationInPosition++) {
+    for (int operationInPosition = 0; operationInPosition < n_operations; operationInPosition++) {
         
-        map = solution.getVariable(operationInPosition);
-        job = decode_map_to_job_machine[map][0];
-        machine = decode_map_to_job_machine[map][1];
+        int map = solution.getVariable(operationInPosition);
+        int job = decode_map_to_job_machine[map][0];
+        int machine = decode_map_to_job_machine[map][1];
         
-        numberOp = job_operation_is_number[job][operationOfJob[job]];
+        int numberOp = job_operation_is_number[job][operationOfJob[job]];
         operation_in_machine[numberOp] = machine;
         
         /** With the number of operation and the machine we can continue. **/
@@ -2153,10 +2147,18 @@ void ProblemFJSSP::printSchedule(const Solution & solution) const {
         if (workload[machine] > maxWorkload)
             maxWorkload = workload[machine];
     }
-    
-    printf("\tOp :  M  ti -  tf\n");
-    for (operation = 0; operation < n_operations; ++operation)
-        printf("%3d: %2d %3d - %3d \n", operation, operation_in_machine[operation], startingTime[operation], endingTime[operation]);
+    int jobs[getNumberOfJobs()];
+    for (unsigned int i = 0; i < getNumberOfJobs(); ++i)
+        jobs[i] = 0;
+
+    printf("&$O_{i,j}$ &  M & p & $t_i$ &-&  $t_f$ \\\\\\hline\n");
+    for (int operation = 0; operation < n_operations; ++operation) {
+        unsigned int job = getDecodeMap(solution.getVariable(operation), 0);
+        unsigned int machine = getDecodeMap(solution.getVariable(operation), 1);
+        unsigned int op = getOperationInJobIsNumber(job, jobs[job]);
+        jobs[job]++;
+        printf("&$O_{%3d, %3d}$ & %2d & %3d & %3d & %3d \\\\\n", job + 1, jobs[job], machine + 1, processing_time[op][machine], startingTime[op], endingTime[op]);
+    }
     /*
      for (machine = n_machines - 1;  machine >= 0; --machine) {
      printf("M%d  | ", machine);

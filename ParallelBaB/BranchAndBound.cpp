@@ -318,7 +318,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
     int build_value = 0;
     int build_up_to = branch_init.getBuildUpTo();
     currentLevel = build_up_to;
-    
+
     tree.setRootRow(build_up_to);/** root row of this tree. **/
     tree.setStartingRow(build_up_to + 1); /** Level/row with the first branches of the tree. **/
     tree.setActiveRow(build_up_to);
@@ -344,14 +344,15 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
         tree.setEndExploration(row, 0);
         tree.setActiveColAtRow(row, -1);
         tree.resetNumberOfNodesAt(row);
-        incumbent_s.setVariable(row, -1);
+        incumbent_s.setVariable(row, 0);
     }
 
-    tree.print();
     incumbent_s.setBuildUpTo(build_up_to);
     int branches_created = branchFromInterval(incumbent_s, build_up_to);
-
-    tree.print();
+    data_solution.print();
+    cout << "--> Branched from: " << incumbent_s << std::endl;
+    //tree.print();
+    
     /** Send intervals to global_pool. **/
     int branches_to_move_to_global_pool = branches_created * getSizeToShare();
 
@@ -365,13 +366,16 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
 
             incumbent_s.setVariable(build_up_to + 1, val);
             problem.evaluateDynamic(incumbent_s, data_solution, currentLevel + 1);
-            
-            branch_init.setDistance(0, minMaxNormalization(data_solution.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
-            branch_init.setDistance(1, minMaxNormalization(data_solution.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
-            setPriorityTo(branch_init);
-            sharedPool.push(branch_init);
-            number_of_shared_works++;
-            
+
+            if (data_solution.isFeasible()) {
+                branch_init.setDistance(0, minMaxNormalization(data_solution.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
+                branch_init.setDistance(1, minMaxNormalization(data_solution.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
+                setPriorityTo(branch_init);
+                sharedPool.push(branch_init);
+                number_of_shared_works++;
+                cout << "Sharing sub-problem: " << incumbent_s << endl;
+            }
+
             branch_init.removeLastValue();
             problem.evaluateRemoveDynamic(incumbent_s, data_solution, currentLevel + 1);
         }
@@ -422,16 +426,14 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             }
             updateBounds(incumbent_s, data_solution);
             ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
-            printf("--> After a leaf:\n");
-            ivm_tree.print();
         }
-        
+
         /** If the branching operator doesnt creates branches or the prune function was called then we need to remove the evaluations. Also if a leave has been reached. **/
         for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
             problem.evaluateRemoveDynamic(incumbent_s, data_solution, l);
         
-        if(theTreeHasMoreNodes())
-            shareWorkAndSendToGlobalPool(branch_to_solve);
+       // if(theTreeHasMoreNodes())
+         //   shareWorkAndSendToGlobalPool(branch_to_solve);
     }
 }
 
@@ -510,7 +512,6 @@ int BranchAndBound::explore(Solution& solution) {
 int BranchAndBound::branchFromInterval(Solution& solution, int currentLevel) {
     number_of_calls_to_branch++;
 
-    int toAdd = 0;
     unsigned int nodes_created = 0;
     unsigned int nodes_pruned = 0;
 
@@ -523,8 +524,7 @@ int BranchAndBound::branchFromInterval(Solution& solution, int currentLevel) {
 
         if (data_solution.getTimesThatElementAppears(element) < problem.getTimesThatValueCanBeRepeated(element)) {
 
-            toAdd = element;
-            solution.setVariable(currentLevel + 1, toAdd);
+            solution.setVariable(currentLevel + 1, element);
             problem.evaluateDynamic(solution, data_solution, currentLevel + 1);
             increaseExploredNodes();
 
@@ -540,7 +540,7 @@ int BranchAndBound::branchFromInterval(Solution& solution, int currentLevel) {
 
                 /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
                 if(isSortingEnable()) {
-                    obj_values.setValue(toAdd);
+                    obj_values.setValue(element);
 
                     for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
                         obj_values.setObjective(objc, data_solution.getObjective(objc));
@@ -549,11 +549,11 @@ int BranchAndBound::branchFromInterval(Solution& solution, int currentLevel) {
 
                     sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
                 } else
-                    ivm_tree.addNodeToRow(currentLevel + 1, toAdd);
+                    ivm_tree.addNodeToRow(currentLevel + 1, element);
 
                 nodes_created++;
             } else {
-                ivm_tree.addNodeToRow(currentLevel + 1, toAdd);
+                ivm_tree.addNodeToRow(currentLevel + 1, element);
                 ivm_tree.pruneFirstNodeAtRow(currentLevel + 1);
                 increasePrunedNodes();
                 nodes_pruned++;
@@ -600,7 +600,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     ivm_tree.setStartExploration(currentLevel + 1, 0);
     ivm_tree.setEndExploration(currentLevel + 1, 0);
 
-    for (unsigned int node = 0; node < ivm_tree.getNumberOfCols(); ++node) {
+    for (unsigned int node = 0; node < ivm_tree.getEndExploration(currentLevel); ++node) {
         int node_value = abs(ivm_tree.getNodeValueAt(currentLevel, node));
 
         if (node_value == 0) /** It is an empty cell. **/
@@ -659,8 +659,6 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     } else  /** If no branches were created then move to the next node. **/
         ivm_tree.pruneActiveNode();
 
-    printf("--> After Branching:\n");
-    ivm_tree.print();
     return nodes_created;
 }
 
@@ -668,8 +666,6 @@ void BranchAndBound::prune(Solution & solution, int currentLevel) {
     number_of_calls_to_prune++;
     ivm_tree.pruneActiveNode();
     increasePrunedNodes();
-    printf("--> After Pruning:\n");
-    ivm_tree.print();
 }
 
 bool BranchAndBound::aLeafHasBeenReached() const {

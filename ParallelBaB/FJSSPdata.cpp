@@ -616,12 +616,12 @@ void FJSSPdata::print() const {
     int machine = 0;
     int operation = 0;
     
-    printf("\tOp :  M  ti -  tf\n");
+    printf("\tOp :  M p ti -  tf\n");
     for (operation = 0; operation < n_operations; ++operation)
         if(operation_allocated_in[operation] > -1)
-            printf("%3c %3d: %2d %3d - %3d \n", 'a' + operation, operation, operation_allocated_in[operation], starting_time[operation], ending_time[operation]);
+            printf("%3c %3d: %2d %3d %3d - %3d \n", 'a' + operation, operation, operation_allocated_in[operation], ending_time[operation] - starting_time[operation], starting_time[operation], ending_time[operation]);
         else
-            printf("%3c %3d:  - %3d - %3d \n", 'a' + operation, operation, starting_time[operation], ending_time[operation]);
+            printf("%3c %3d: %3d - %3d - %3d \n", 'a' + operation, operation, ending_time[operation] - starting_time[operation], starting_time[operation], ending_time[operation]);
     
     /**creates an empty gantt**/
     for (machine = 0; machine < n_machines; ++machine)

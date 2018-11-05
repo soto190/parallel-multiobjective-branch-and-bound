@@ -31,13 +31,13 @@ n_cols(cols),
 i_am(0),
 matrix_nodes(new int * [n_rows]),
 vector_pointing_to_col_at_row(new int[n_rows]),
-start_exploration(new int[n_rows]),
-end_exploration(new int[n_rows]),
+start_exploration(new unsigned int[n_rows]),
+end_exploration(new unsigned int[n_rows]),
 integer_pointing_to_row(0),
 starting_row(0),
 there_are_more_branches(true),
 root_row(0),
-n_nodes_at_row(new int[n_rows]),
+n_nodes_at_row(new unsigned int[n_rows]),
 pending_nodes(0) {
     
     for (int r = 0; r < n_rows; ++r) {
@@ -59,13 +59,13 @@ n_cols(toCopy.getNumberOfCols()),
 i_am(toCopy.getId()),
 matrix_nodes(new int * [n_rows]),
 vector_pointing_to_col_at_row(new int[n_rows]),
-start_exploration(new int[n_rows]),
-end_exploration(new int[n_rows]),
+start_exploration(new unsigned int[n_rows]),
+end_exploration(new unsigned int[n_rows]),
 integer_pointing_to_row(toCopy.getActiveRow()),
 starting_row(toCopy.getStartingRow()),
 there_are_more_branches(toCopy.thereAreMoreBranches()),
 root_row(toCopy.getRootRow()),
-n_nodes_at_row(new int[n_rows]),
+n_nodes_at_row(new unsigned int[n_rows]),
 pending_nodes(toCopy.getNumberOfPendingNodes()) {
     
     for (int r = 0; r < n_rows; ++r) {
@@ -103,9 +103,9 @@ IVMTree& IVMTree::operator=(const IVMTree &toCopy) {
     pending_nodes = toCopy.getNumberOfPendingNodes();
     
     vector_pointing_to_col_at_row = new int[n_rows];
-    n_nodes_at_row = new int[n_rows];
-    start_exploration = new int[n_rows];
-    end_exploration = new int[n_rows];
+    n_nodes_at_row = new unsigned int[n_rows];
+    start_exploration = new unsigned int[n_rows];
+    end_exploration = new unsigned int[n_rows];
     matrix_nodes = new int *[n_rows];
     
     for (int r = 0; r < n_rows; ++r) {
@@ -143,9 +143,9 @@ IVMTree& IVMTree::operator()(int rows, int cols) {
     pending_nodes = 0;
     
     vector_pointing_to_col_at_row = new int[n_rows];
-    n_nodes_at_row = new int[n_rows];
-    start_exploration = new int[n_rows];
-    end_exploration = new int[n_rows];
+    n_nodes_at_row = new unsigned int[n_rows];
+    start_exploration = new unsigned int[n_rows];
+    end_exploration = new unsigned int[n_rows];
     matrix_nodes = new int *[n_rows];
     
     for (int r = 0; r < n_rows; ++r) {
@@ -212,11 +212,11 @@ void IVMTree::setStartingRow(int row) {
     starting_row = row;
 }
 
-void IVMTree::setStartExploration(int row, int value) {
+void IVMTree::setStartExploration(int row, unsigned int value) {
     start_exploration[row] = value;
 }
 
-void IVMTree::setEndExploration(int row, int value) {
+void IVMTree::setEndExploration(int row, unsigned int value) {
     end_exploration[row] = value;
 }
 
@@ -358,11 +358,11 @@ int IVMTree::getStartingRow() const {
     return starting_row;
 }
 
-int IVMTree::getStartExploration(int row)const {
+unsigned int IVMTree::getStartExploration(int row) const {
     return start_exploration[row];
 }
 
-int IVMTree::getEndExploration(int row) const {
+unsigned int IVMTree::getEndExploration(int row) const {
     return end_exploration[row];
 }
 
@@ -392,10 +392,10 @@ int IVMTree::getId() const {
  - Returns: The node value corresponding to the last node of indicated row.
  */
 int IVMTree::removeLastNodeAtRow(int row) {
-    int last_col = end_exploration[row];
+    int last_col = end_exploration[row] - 1;
     int node_at_col = matrix_nodes[row][last_col];
     
-    setNodeValueAt(row, last_col, 0);
+    setNodeValueAt(row, last_col, -1 * node_at_col);
     decreaseNumberOfNodesAt(row);
     decreaseEndExplorationAtRow(row);
     decreaseNumberOfPendingNodes();
@@ -460,19 +460,19 @@ int IVMTree::pruneFirstNodeAtRow(int row) {
     return node_at_col;
 }
 
-int IVMTree::decreaseEndExplorationAtRow(int row) {
+unsigned int IVMTree::decreaseEndExplorationAtRow(int row) {
     return end_exploration[row]--;
 }
 
-int IVMTree::increaseEndExplorationAtRow(int row) {
+unsigned int IVMTree::increaseEndExplorationAtRow(int row) {
     return end_exploration[row]++;
 }
 
-int IVMTree::decreaseStartExplorationAtRow(int row) {
+unsigned int IVMTree::decreaseStartExplorationAtRow(int row) {
     return start_exploration[row]--;
 }
 
-int IVMTree::increaseStartExplorationAtRow(int row) {
+unsigned int IVMTree::increaseStartExplorationAtRow(int row) {
     return start_exploration[row]++;
 }
 
@@ -614,10 +614,12 @@ void IVMTree::moveToFatherRow() {
 }
 
 void IVMTree::removeRow() {
-    start_exploration[getActiveRow()] = 0;
-    end_exploration[getActiveRow()] = 0;
+    setNodeValueAt(getActiveRow(), end_exploration[getActiveRow()], 0);
     setNodeValueAt(getActiveRow(), 0, 0);
     setActiveColAtRow(getActiveRow(), -1);
+
+    start_exploration[getActiveRow()] = 0;
+    end_exploration[getActiveRow()] = 0;
 }
 
 void IVMTree::moveToRootRow() {
@@ -651,33 +653,33 @@ void IVMTree::print() const {
     for (int r = 0; r < getNumberOfRows(); ++r) {
 
         /** The row. **/
-        printf("[%4d] ", r);
+        printf("[%4d]", r);
         /** The solution. **/
         if (vector_pointing_to_col_at_row[r] == -1 || matrix_nodes[r][vector_pointing_to_col_at_row[r]] == 0)
-            printf("%4c ", sep);
+            printf("%4c", sep);
         else
-            printf("%4d ", matrix_nodes[r][vector_pointing_to_col_at_row[r]]);
+            printf("%4d", matrix_nodes[r][vector_pointing_to_col_at_row[r]]);
 
         /** The integer vector. **/
         if (vector_pointing_to_col_at_row[r] == -1)
-            printf("%4c ", sep);
+            printf("%4c", sep);
         else
-            printf("%4d ", vector_pointing_to_col_at_row[r]);
-        
-
+            printf("%4d", vector_pointing_to_col_at_row[r]);
         
         /** Number of nodes at row. **/
-        printf("%4d | ", n_nodes_at_row[r]);
+        printf("%4d |", n_nodes_at_row[r]);
         
         /** The matrix. **/
         for (int c = 0; c < n_cols; ++c)
             if (matrix_nodes[r][c] == 0)
-                printf("%4c", sep);
+                printf("%5c", sep);
+            else if(vector_pointing_to_col_at_row[r] == c)
+                printf(" [%3d]", matrix_nodes[r][c]);
             else
-                printf("%4d", matrix_nodes[r][c]);
+                printf("%5d", matrix_nodes[r][c]);
 
         /** Begin and end. **/
-        printf(" | %4d %4d", start_exploration[r], end_exploration[r]);
+        printf(" |%4d %4d", start_exploration[r], end_exploration[r]);
 
         /** The active row. **/
         printf("|");
