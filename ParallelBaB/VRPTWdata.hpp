@@ -13,6 +13,8 @@
 #include <string>
 #include <math.h>
 
+enum VRPTW_INFEASIBILITY{FIRST_NODE_IS_DEPOT, CONSECUTIVE_DEPOTS, CUSTOMER_VISITED, COMPLETE_SOLUTION, TIME_WINDOW, CAPACITY, NONE};
+
 class VRPTWdata {
 
 private:
@@ -32,7 +34,7 @@ private:
     unsigned int * capacity;
     double * ended_service;
 
-    unsigned int * variables;
+    unsigned int * variable_times_used;
 
     double total_cost = 0;
     double max_cost = 0;
@@ -41,6 +43,8 @@ private:
 
     bool is_feasible;
     bool is_complete;
+
+    VRPTW_INFEASIBILITY infeasiblity_type;
 
 public:
     VRPTWdata(unsigned int number_of_customers, unsigned int max_number_of_vehicles, unsigned int max_capacity);
@@ -90,6 +94,8 @@ public:
     unsigned int getNumberOfRoutes() const;
     unsigned int getNumberOfDispatchedCustomers() const;
 
+    void updateTravelTime();
+    
     double getCurrentVehicleCost() const;
     double getCurrentVehicleTravelTime() const;
     unsigned int getCurrentVehicleCapacity() const;
@@ -113,6 +119,15 @@ public:
     double getToltaTravelTime() const;
     double getMaxTravelTime() const;
     double getObjective(int n_obj) const;
+
+    VRPTW_INFEASIBILITY getInfeasibilityType() const;
+    void setInfeasibilityType(VRPTW_INFEASIBILITY in_type);
+    void setInfeasibleByFirstNodeDepot();
+    void setInfeasibleByConsecutiveDepots();
+    void setInfeasibleByCustomerVisited();
+    void setInfeasibleByCompleteSolution();
+    void setInfeasibleByTimeWindow();
+    void setInfeasibleByCapacity();
 
     bool isFeasible() const;
     void setFeasible();

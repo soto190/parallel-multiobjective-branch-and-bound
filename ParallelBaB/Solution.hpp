@@ -49,6 +49,9 @@ public:
     Solution(int number_of_objectives, int number_of_variables);
     Solution(const Solution &solution);
     ~Solution();
+
+    int push_back(int value) throw(SolutionException);
+    int pull_back() throw(SolutionException);
     
     int setVariable(int index, int value) throw(SolutionException);
     void setObjective(int index, double value) throw(SolutionException);
@@ -60,7 +63,8 @@ public:
     void setSortByObjective(unsigned int objective);
     void incrementDominatedBy();
     void decrementDominatedBy();
-    
+
+    int getLastVariable() const;
     double getObjective(int n_objective) const throw(SolutionException);
     int getVariable(int index) const throw(SolutionException);
     int getNumberOfVariables() const;

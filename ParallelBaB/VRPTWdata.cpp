@@ -20,7 +20,7 @@ vehicle_cost(new double[max_number_of_vehicles]),
 travel_time(new double[max_number_of_vehicles]),
 capacity(new unsigned int[max_number_of_vehicles]),
 ended_service(new double[number_of_customers]),
-variables(new unsigned int[number_of_customers + 1]),
+variable_times_used(new unsigned int[number_of_customers + 1]),
 total_cost(0),
 max_cost(0),
 total_travel_time(0),
@@ -37,7 +37,7 @@ is_complete(false) {
         ended_service[customer] = 0;
 
     for (unsigned int var = 0; var < getNumberOfNodes(); ++var)
-        variables[var] = 0;
+        variable_times_used[var] = 0;
 
 }
 
@@ -53,7 +53,7 @@ vehicle_cost(new double[max_number_of_vehicles]),
 travel_time(new double[max_number_of_vehicles]),
 capacity(new unsigned int[max_number_of_vehicles]),
 ended_service(new double[number_of_customers]),
-variables(new unsigned int[number_of_customers + max_number_of_vehicles]),
+variable_times_used(new unsigned int[number_of_customers + max_number_of_vehicles]),
 total_cost(toCopy.getTotalCost()),
 max_cost(toCopy.getMaxCost()),
 total_travel_time(toCopy.getToltaTravelTime()),
@@ -71,7 +71,7 @@ is_complete(toCopy.isComplete()) {
         ended_service[customer] = toCopy.getCustomerServiceEndedAt(customer);
 
     for (unsigned int var = 0; var < getNumberOfNodes(); ++var)
-        variables[var] = getTimesThatElementAppears(var);
+        variable_times_used[var] = getTimesThatElementAppears(var);
 }
 
 VRPTWdata::~VRPTWdata() {
@@ -79,7 +79,7 @@ VRPTWdata::~VRPTWdata() {
     delete [] travel_time;
     delete [] capacity;
     delete [] ended_service;
-    delete [] variables;
+    delete [] variable_times_used;
 }
 
 VRPTWdata& VRPTWdata::operator()(unsigned int n_of_customers, unsigned int max_n_of_vehicles, unsigned int max_cap) {
@@ -89,7 +89,7 @@ VRPTWdata& VRPTWdata::operator()(unsigned int n_of_customers, unsigned int max_n
         delete [] travel_time;
         delete [] capacity;
         delete [] ended_service;
-        delete [] variables;
+        delete [] variable_times_used;
     }
 
     number_of_customers = n_of_customers;
@@ -103,7 +103,7 @@ VRPTWdata& VRPTWdata::operator()(unsigned int n_of_customers, unsigned int max_n
     travel_time = new double[max_number_of_vehicles];
     capacity = new unsigned int[max_number_of_vehicles];
     ended_service = new double[number_of_customers];
-    variables = new unsigned int[number_of_customers + 1];
+    variable_times_used = new unsigned int[number_of_customers + 1];
     total_cost = 0;
     max_cost = 0;
     total_travel_time = 0;
@@ -121,7 +121,7 @@ VRPTWdata& VRPTWdata::operator()(unsigned int n_of_customers, unsigned int max_n
         ended_service[customer] = 0;
 
     for (unsigned int var = 0; var < getNumberOfNodes(); ++var)
-        variables[var] = 0;
+        variable_times_used[var] = 0;
 
     return *this;
 }
@@ -137,6 +137,8 @@ void VRPTWdata::reset() {
     max_cost = 0;
     total_travel_time = 0;
     max_travel_time = 0;
+    is_feasible = true;
+    is_complete = false;
 
     for (unsigned int vehicle = 0; vehicle < getMaxNumberOfVehicles(); ++vehicle) {
         capacity[vehicle] = getMaxVehicleCapacity();
@@ -148,7 +150,7 @@ void VRPTWdata::reset() {
         ended_service[customer] = 0;
 
     for (unsigned int var = 0; var < getNumberOfNodes(); ++var)
-        variables[var] = 0;
+        variable_times_used[var] = 0;
 
 }
 
@@ -167,6 +169,10 @@ void VRPTWdata::increaseCurrentPosition(unsigned int by_n) {
 }
 
 void VRPTWdata::decreaseNumberOfVehicles(unsigned int by_n) {
+    capacity[n_vehicles] = getMaxVehicleCapacity();
+    vehicle_cost[n_vehicles] = 0;
+    travel_time[n_vehicles] = 0;
+    updateTravelTime();
     n_vehicles -= by_n;
 }
 
@@ -243,6 +249,13 @@ void VRPTWdata::setCurrentVehicleCost(double to_n) {
     vehicle_cost[n_vehicles] = to_n;
 }
 
+void VRPTWdata::updateTravelTime() {
+    max_travel_time = travel_time[0];
+    for (unsigned int tt_vehicle = 0; tt_vehicle < n_vehicles; ++tt_vehicle)
+        if (travel_time[tt_vehicle] > max_travel_time)
+            max_travel_time = travel_time[tt_vehicle];
+}
+
 void VRPTWdata::setCurrentVehicleTravelTime(double to_n) {
     travel_time[n_vehicles] = to_n;
     if (travel_time[n_vehicles] > max_travel_time)
@@ -274,15 +287,15 @@ void VRPTWdata::setTotalCost(double new_total_cost) {
  * TODO: check these functions.
  **/
 void VRPTWdata::increaseTimesElementIsInUse(unsigned int element) {
-    variables[element]++;
+    variable_times_used[element]++;
 }
 
 void VRPTWdata::decreaseTimesElementIsInUse(unsigned int element) {
-    variables[element]--;
+    variable_times_used[element]--;
 }
 
 unsigned int VRPTWdata::getTimesThatElementAppears(unsigned int element) const {
-    return variables[element];
+    return variable_times_used[element];
 }
 
 unsigned int VRPTWdata::getNumberOfCustomers() const {
@@ -383,25 +396,64 @@ double VRPTWdata::getMaxTravelTime() const {
 double VRPTWdata::getObjective(int n_obj) const {
     switch (n_obj) {
         case 0:
-            return n_vehicles;
+            return getNumberOfVehiclesUsed();
             break;
 
         case 1:
-            return total_cost;
+            return getTotalCost();
             break;
 
         case 2:
-            return total_travel_time;
+            return getToltaTravelTime();
             break;
 
         case 3:
-            return total_travel_time;
+            return getMaxTravelTime();
             break;
 
         default:
             break;
     }
     return -1;
+}
+
+VRPTW_INFEASIBILITY VRPTWdata::getInfeasibilityType() const {
+    return infeasiblity_type;
+}
+
+void VRPTWdata::setInfeasibilityType(VRPTW_INFEASIBILITY in_type){
+    infeasiblity_type = in_type;
+    setInfeasible();
+}
+
+void VRPTWdata::setInfeasibleByFirstNodeDepot() {
+    infeasiblity_type = VRPTW_INFEASIBILITY::FIRST_NODE_IS_DEPOT;
+    setInfeasible();
+}
+
+void VRPTWdata::setInfeasibleByConsecutiveDepots() {
+    infeasiblity_type = VRPTW_INFEASIBILITY::CONSECUTIVE_DEPOTS;
+    setInfeasible();
+}
+
+void VRPTWdata::setInfeasibleByCustomerVisited() {
+    infeasiblity_type = VRPTW_INFEASIBILITY::CUSTOMER_VISITED;
+    setInfeasible();
+}
+
+void VRPTWdata::setInfeasibleByCompleteSolution() {
+    infeasiblity_type = VRPTW_INFEASIBILITY::COMPLETE_SOLUTION;
+    setInfeasible();
+}
+
+void VRPTWdata::setInfeasibleByTimeWindow() {
+    infeasiblity_type = VRPTW_INFEASIBILITY::TIME_WINDOW;
+    setInfeasible();
+}
+
+void VRPTWdata::setInfeasibleByCapacity() {
+    infeasiblity_type = VRPTW_INFEASIBILITY::CAPACITY;
+    setInfeasible();
 }
 
 bool VRPTWdata::isFeasible() const {

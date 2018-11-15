@@ -188,48 +188,58 @@ void generateGantt(int argc, char* argv[]){
     }
 }
 
-void testSolution() {
+void testVRPSolution() {
     ProblemVRPTW problem(3, 0);
 
     Solution test_solution (3, problem.getNumberOfVariables());
     VRPTWdata test_data(problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
 
-    test_solution.setVariable(0, 20);
-    test_solution.setVariable(1, 3);
-    test_solution.setVariable(2, 25);
-    test_solution.setVariable(3, 8);
-    test_solution.setVariable(4, 15);
-    test_solution.setVariable(5, 11);
-    test_solution.setVariable(6, 9);
-    test_solution.setVariable(7, 6);
-    test_solution.setVariable(8, 4);
-    test_solution.setVariable(9, 22);
-    test_solution.setVariable(10, 1);
-    test_solution.setVariable(11, 26); /** New route. **/
-    test_solution.setVariable(12, 5);
-    test_solution.setVariable(13, 24);
-    test_solution.setVariable(14, 7);
-    test_solution.setVariable(15, 19);
-    test_solution.setVariable(16, 10);
-    test_solution.setVariable(17, 16);
-    test_solution.setVariable(18, 14);
-    test_solution.setVariable(19, 12);
-    test_solution.setVariable(20, 27); /** New route. **/
-    test_solution.setVariable(21, 28); /** New route. **/
-    test_solution.setVariable(22, 29); /** New route. **/
-    test_solution.setVariable(23, 13);
-    test_solution.setVariable(24, 17);
-    test_solution.setVariable(25, 18);
-    test_solution.setVariable(26, 23);
-    test_solution.setVariable(27, 2);
-    test_solution.setVariable(28, 21);
-    test_solution.setVariable(29, 30); /** New route. **/
-    test_solution.setVariable(30, 31); /** New route. **/
+    unsigned int values[30] = {
+        20,  3, 25,  8, 15, 11,  9,  6,  4, 22,
+         1, 26,  5, 24,  7, 10, 16, 14, 12, 27,
+        28, 29, 13, 17, 18, 23,  2, 21, 30, 31};
+
+    for (unsigned int variable = 0; variable < 30; ++variable) {
+        test_solution.push_back(values[variable]);
+        test_solution.print();
+        problem.evaluateDynamic(test_solution, test_data, variable);
+    }
+//    test_solution.setVariable(0, 20);
+//    test_solution.setVariable(1, 3);
+//    test_solution.setVariable(2, 25);
+//    test_solution.setVariable(3, 8);
+//    test_solution.setVariable(4, 15);
+//    test_solution.setVariable(5, 11);
+//    test_solution.setVariable(6, 9);
+//    test_solution.setVariable(7, 6);
+//    test_solution.setVariable(8, 4);
+//    test_solution.setVariable(9, 22);
+//    test_solution.setVariable(10, 1);
+//    test_solution.setVariable(11, 26); /** New route. **/
+//    test_solution.setVariable(12, 5);
+//    test_solution.setVariable(13, 24);
+//    test_solution.setVariable(14, 7);
+//    test_solution.setVariable(15, 19);
+//    test_solution.setVariable(16, 10);
+//    test_solution.setVariable(17, 16);
+//    test_solution.setVariable(18, 14);
+//    test_solution.setVariable(19, 12);
+//    test_solution.setVariable(20, 27); /** New route. **/ /** Infeasible solution. These values will not be added.**/
+//    test_solution.setVariable(20, 28); /** New route. **/
+//    test_solution.setVariable(20, 29); /** New route. **/
+//    test_solution.setVariable(21, 13);
+//    test_solution.setVariable(22, 17);
+//    test_solution.setVariable(23, 18);
+//    test_solution.setVariable(24, 23);
+//    test_solution.setVariable(25, 2);
+//    test_solution.setVariable(26, 21);
+//    test_solution.setVariable(27, 30); /** New route. **/
+//    test_solution.setVariable(28, 31); /** New route. **/
 
     /** Dynamic evaluation. **/
-    for (unsigned int var = 0; var < problem.getNumberOfVariables(); ++var) {
+    /*for (unsigned int var = 0; var < problem.getNumberOfVariables(); ++var) {
         problem.evaluateDynamic(test_solution, test_data, var);
-    }
+    }*/
 
     /** Dynamic deallocation of evaluation. **/
     printf("Removing variables. %d\n", test_data.getPosition());
@@ -381,7 +391,40 @@ void one_node(int argc, char* argv[]) {
      **/
     std::string outputFile = output_path + splited[0] + ".csv";
     std::string summarizeFile = output_path + splited[0] + ".txt";
-    
+
+    //ProblemVRPTW problem(3, 0);
+
+//    Solution test_solution (3, problem.getNumberOfVariables());
+//    VRPTWdata test_data(problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
+//
+//    unsigned int values[30] = {
+//        20,  3, 25,  8, 15, 11,  9,  6,  4, 22,
+//        1, 26,  5, 24,  7,  19, 10, 16, 14, 12,
+//        26, 26, 13, 17, 18, 23,  2, 21, 26, 26};
+//
+//    for (unsigned int variable = 0; variable < 30; ++variable) {
+//        bool was_complete = test_data.isComplete();
+//        test_solution.push_back(values[variable]);
+//        problem.evaluateDynamic(test_solution, test_data, test_solution.getBuildUpTo());
+//        test_solution.print();
+//        test_data.print();
+//        if (!test_data.isFeasible() || was_complete) {
+//            problem.evaluateRemoveDynamic(test_solution, test_data, test_solution.getBuildUpTo());
+//            test_solution.print();
+//            test_data.print();
+//        }
+//    }
+//
+//    while (test_solution.getBuildUpTo() > 0) {
+//        cout << "Before removing..."<< std::endl;
+//        test_solution.print();
+//        test_data.print();
+//        problem.evaluateRemoveDynamic(test_solution, test_data, test_solution.getBuildUpTo());
+//        cout << "After removing..."<< std::endl;
+//        test_solution.print();
+//        test_data.print();
+//    }
+
     try {
 
         tbb::task_scheduler_init init(number_of_threads);
@@ -447,5 +490,6 @@ int main(int argc, char* argv[]) {
         }
         printf("[Node-%02d] Done.\n", rank);
     }
+
     MPI_Finalize();
 }

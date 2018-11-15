@@ -185,11 +185,12 @@ std::ostream& operator<<(std::ostream& stream, const Solution& solution) {
 
     for (int nObj = 0; nObj < solution.getNumberOfObjectives(); ++nObj)
         stream << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << solution.getObjective(nObj) << " ";
+
     stream << " | " << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << solution.getBuildUpTo();
     stream << " | ";
 
     for (int nVar = 0; nVar < solution.getNumberOfVariables(); ++nVar)
-        stream << std::fixed << std::setw(4) << std::setfill(' ') << (solution.getVariable(nVar) > 0?solution.getVariable(nVar) : '-') << " ";
+        stream << std::fixed << std::setw(4) << std::setfill(' ') << solution.getVariable(nVar) << " ";
     stream << " |" << std::endl;
 
     return stream;
@@ -227,6 +228,50 @@ void Solution::setObjective(int index_obj, double value) throw(SolutionException
     }
 }
 
+/**
+ * Push the new value to the back of the solution.
+ * - Returns the position where the new value was inserted.
+ **/
+int Solution::push_back(int value) throw(SolutionException) {
+    try {
+        if (getBuildUpTo() >= n_variables || getBuildUpTo() < -1) /** The build_up_to is initialized in -1. **/
+            throw SolutionException(SolutionErrorCode::VARIABLES_OUT_OF_RANGE, "when calling push_back(var:" + std::to_string(static_cast<long long>(getBuildUpTo())) + ", value:" + std::to_string(static_cast<long long>(value)) + ")");
+
+        build_up_to++;
+        variable[getBuildUpTo()] = value;
+        return getBuildUpTo();
+
+    } catch (SolutionException& SolutionEx) {
+        printf("%s\n",  SolutionEx.what());
+        exit(EXIT_FAILURE);
+    }
+
+    return -1;
+}
+
+/**
+ * Removes the last variable of the solution.
+ * - returns the pulled value.
+ **/
+int Solution::pull_back() throw(SolutionException) {
+    try {
+        if (getBuildUpTo() < -1)
+            throw SolutionException(SolutionErrorCode::VARIABLES_OUT_OF_RANGE, "when calling pull_back(var:" + std::to_string(static_cast<long long>(getBuildUpTo())) + ")");
+
+        int last_value = variable[getBuildUpTo()];
+        variable[getBuildUpTo()] = 0;
+        build_up_to--;
+        return last_value;
+
+    } catch (SolutionException& SolutionEx) {
+        printf("%s\n",  SolutionEx.what());
+        exit(EXIT_FAILURE);
+    }
+
+    return -1;
+}
+
+
 int Solution::setVariable(int index_variable, int value) throw(SolutionException) {
     try {
         if (index_variable >= n_variables)
@@ -246,6 +291,10 @@ int Solution::setVariable(int index_variable, int value) throw(SolutionException
 
 void Solution::setSortByObjective(unsigned int objective) {
     sort_by = objective;
+}
+
+int Solution::getLastVariable() const {
+    return getVariable(build_up_to);
 }
 
 double Solution::getObjective(int index_obj) const throw(SolutionException) {
@@ -359,9 +408,9 @@ void Solution::print() const {
     
     for (int n_var = 0; n_var < n_variables; ++n_var)
         if (variable[n_var] == -1)
-            printf("%6c", sep);
+            printf("%4c", sep);
         else
-            printf("%6d", variable[n_var]);
+            printf("%4d", variable[n_var]);
     
     printf(" | ");
     printf("%6.3f", (distance == INFINITY ? 999999.999 : distance));
