@@ -392,39 +392,6 @@ void one_node(int argc, char* argv[]) {
     std::string outputFile = output_path + splited[0] + ".csv";
     std::string summarizeFile = output_path + splited[0] + ".txt";
 
-    //ProblemVRPTW problem(3, 0);
-
-//    Solution test_solution (3, problem.getNumberOfVariables());
-//    VRPTWdata test_data(problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
-//
-//    unsigned int values[30] = {
-//        20,  3, 25,  8, 15, 11,  9,  6,  4, 22,
-//        1, 26,  5, 24,  7,  19, 10, 16, 14, 12,
-//        26, 26, 13, 17, 18, 23,  2, 21, 26, 26};
-//
-//    for (unsigned int variable = 0; variable < 30; ++variable) {
-//        bool was_complete = test_data.isComplete();
-//        test_solution.push_back(values[variable]);
-//        problem.evaluateDynamic(test_solution, test_data, test_solution.getBuildUpTo());
-//        test_solution.print();
-//        test_data.print();
-//        if (!test_data.isFeasible() || was_complete) {
-//            problem.evaluateRemoveDynamic(test_solution, test_data, test_solution.getBuildUpTo());
-//            test_solution.print();
-//            test_data.print();
-//        }
-//    }
-//
-//    while (test_solution.getBuildUpTo() > 0) {
-//        cout << "Before removing..."<< std::endl;
-//        test_solution.print();
-//        test_data.print();
-//        problem.evaluateRemoveDynamic(test_solution, test_data, test_solution.getBuildUpTo());
-//        cout << "After removing..."<< std::endl;
-//        test_solution.print();
-//        test_data.print();
-//    }
-
     try {
 
         tbb::task_scheduler_init init(number_of_threads);

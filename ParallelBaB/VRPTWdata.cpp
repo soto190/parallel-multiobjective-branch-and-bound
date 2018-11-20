@@ -67,7 +67,7 @@ is_complete(toCopy.isComplete()) {
         capacity[route] = toCopy.getVehicleCapacity(route);
     }
 
-    for (unsigned int customer = 0; customer < toCopy.getNumberOfCustomers(); ++customer) 
+    for (unsigned int customer = 1; customer <= toCopy.getNumberOfCustomers(); ++customer)
         ended_service[customer] = toCopy.getCustomerServiceEndedAt(customer);
 
     for (unsigned int var = 0; var < getNumberOfNodes(); ++var)
