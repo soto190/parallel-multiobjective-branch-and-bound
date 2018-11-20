@@ -271,6 +271,8 @@ double ProblemVRPTW::evaluate(Solution & solution) {
  - parameters solution: solution to be evaluated.
  - parameters data: The data which contains the information of the last evaluation.
  - parameters level: Level of the vector to be evaluated.
+
+ In this function we have to consider to remove the evaluation if the solution is infeasible.
 */
 void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int level) {
     //cout << "Adding: " << solution.getVariable(level) << std::endl;
@@ -295,7 +297,7 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
         /** cout << "Customer is already visited." << std::endl; **/
 
     } else if (data.isComplete()) {
-        /* data.setInfeasibilityType(VRPTW_INFEASIBILITY::COMPLETE_SOLUTION);
+        /* data.setInfeasibilityType(VRPTW_INFEASIBILITY::COMPLETE_SOLUTION); */
         /** cout << "Solution is already complete." << std::endl; **/
 
     } else {
@@ -313,21 +315,18 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
                      data.getCurrentVehicleTravelTime() <= getCustomerTimeWindowEnd(destination))
                 data.increaseCurrentVehicleTravelTime(getCustomerServiceTime(destination));
 
-            else {
+            else
                 data.setInfeasibilityType(VRPTW_INFEASIBILITY::TIME_WINDOW);
-                /** cout << "Infeasible by time window." << std::endl; **/
-            }
+
             if (data.isFeasible()) {
 
                 data.decreaseCurrentVehicleCapacity(getCustomerDemand(destination));
                 data.increaseCurrentVehicleCost(getCustomerCostTo(previous_node, destination));
 
-
                 if (isCustomer(destination)) {
                     data.setCustomerServiceEndedAt(destination, data.getCurrentVehicleTravelTime());
                     data.setCurrentNode(destination);
                     data.increaseNumberOfDispatchedCustomers(1);
-
 
                     if (data.isComplete()) /** If there are no more customers then it is a complete solution and adds cost of returning to depot. **/
                         data.increaseCurrentVehicleCost(getCustomerCostTo(destination, 0));
@@ -339,7 +338,6 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
 
         } else {
             data.setInfeasibilityType(VRPTW_INFEASIBILITY::CAPACITY);
-            /** cout << "Infeasible by capacity." << std::endl; **/
         }
     }
 
@@ -364,9 +362,35 @@ void ProblemVRPTW::evaluateRemoveDynamic(Solution & solution, VRPTWdata& data, i
     if (level == 0) /** If we are removing the first position of the vector just do a reset. **/
         data.reset();
 
-    else if(!data.isFeasible()) {
-        /** The solution received was infeasible. Do nothing. **/
-        data.setFeasible();
+    else if (!data.isFeasible()) {
+        switch (data.getInfeasibilityType()) {
+            case FIRST_NODE_IS_DEPOT:
+                data.setFeasible();
+                break;
+
+            case CONSECUTIVE_DEPOTS:
+                data.setFeasible();
+                break;
+
+            case CUSTOMER_VISITED:
+                data.setFeasible();
+                break;
+
+            case COMPLETE_SOLUTION:
+                data.setFeasible();
+                break;
+
+            case TIME_WINDOW:
+                data.setFeasible();
+                break;
+
+            case CAPACITY:
+                data.setFeasible();
+                break;
+
+            default:
+                break;
+        }
     } else {
 
         unsigned int node = isCustomer(solution.getVariable(level))? solution.getVariable(level) : 0;

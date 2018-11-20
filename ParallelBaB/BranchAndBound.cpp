@@ -299,7 +299,6 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
                 branch_to_split.setDistance(1, minMaxNormalization(data_solution.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
 
                 setPriorityTo(branch_to_split);
-
                 sharedPool.push(branch_to_split);
                 increaseSharedWorks();
                 branch_to_split.removeLastValue();
@@ -401,7 +400,7 @@ tbb::task* BranchAndBound::execute() {
 }
 
 void BranchAndBound::solve(Interval& branch_to_solve) {
-    
+
     intializeIVM_data(branch_to_solve, ivm_tree);
     while (theTreeHasMoreNodes() && thereIsMoreTime()) {
         updateLocalPF();
@@ -428,9 +427,9 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         /** If the branching operator doesnt creates branches or the prune function was called then we need to remove the evaluations. Also if a leave has been reached. **/
         for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
             problem.evaluateRemoveDynamic(incumbent_s, data_solution, l);
-        
-        // if(theTreeHasMoreNodes())
-         //   shareWorkAndSendToGlobalPool(branch_to_solve);
+
+        if(theTreeHasMoreNodes())
+            shareWorkAndSendToGlobalPool(branch_to_solve);
     }
 }
 
@@ -526,22 +525,22 @@ int BranchAndBound::branchFromInterval(Solution& solution, int currentLevel) {
             increaseExploredNodes();
 
             bool is_improving = false;
-
             if (data_solution.isFeasible())
                 for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
                     ub_normalized[objc] = minMaxNormalization(data_solution.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc));
 
-                    if (ub_normalized[objc] <= 0)
+                    if (ub_normalized[objc] <= 0) {
                         is_improving = true;
+                        break;
+                    }
                 }
 
             /** If distance in obj1 is better or distance in obj2 is better then it can produce an improvement. **/
-            if (data_solution.isFeasible() && is_improving && improvesTheParetoContainer(solution)) {
+            if (is_improving && improvesTheParetoContainer(solution)) {
 
                 /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
+                obj_values.setValue(element);
                 if(isSortingEnable()) {
-                    obj_values.setValue(element);
-
                     for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
                         obj_values.setObjective(objc, data_solution.getObjective(objc));
                         obj_values.setDistance(objc, minMaxNormalization(obj_values.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc)));
@@ -549,12 +548,12 @@ int BranchAndBound::branchFromInterval(Solution& solution, int currentLevel) {
 
                     sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
                 } else
-                    ivm_tree.addNodeToRow(currentLevel + 1, element);
-
+                    sorted_elements.push(obj_values, SORTING_TYPES::BY_VALUE);
+                
                 nodes_created++;
             } else {
                 ivm_tree.addNodeToRow(currentLevel + 1, element);
-                ivm_tree.pruneFirstNodeAtRow(currentLevel + 1);
+                ivm_tree.pruneLastNodeAtRow(currentLevel + 1);
                 increasePrunedNodes();
                 nodes_pruned++;
             }
@@ -563,9 +562,8 @@ int BranchAndBound::branchFromInterval(Solution& solution, int currentLevel) {
 
     increaseNumberOfNodesCreated(nodes_created);
     if (nodes_created > 0) {
-        if (isSortingEnable())
-            for (const auto& it : sorted_elements)
-                ivm_tree.addNodeToRow(currentLevel + 1, it.getValue());
+        for (const auto& it : sorted_elements)
+            ivm_tree.addNodeToRow(currentLevel + 1, it.getValue());
 
         ivm_tree.moveToNextRow();
         ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), ivm_tree.getStartExploration(ivm_tree.getActiveRow()));
@@ -613,38 +611,40 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             problem.evaluateDynamic(solution, data_solution, currentLevel + 1);
             increaseExploredNodes();
 
-            if (data_solution.isFeasible()) {
 
-                bool is_improving = false;
+            bool is_improving = false;
+            if (data_solution.isFeasible())
                 for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
                     ub_normalized[objc] = minMaxNormalization(data_solution.getObjective(objc), problem.getBestObjectiveFoundIn(objc), problem.getFmax(objc));
 
-                    if (ub_normalized[objc] <= 0)
+                    if (ub_normalized[objc] <= 0) {
                         is_improving = true;
+                        break;
+                    }
                 }
 
-                if (is_improving && improvesTheParetoContainer(solution)) {
+            if (is_improving && improvesTheParetoContainer(solution)) {
 
-                    /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
-                    obj_values.setValue(node_value);
-                    if(isSortingEnable()) {
-                        for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
-                            obj_values.setObjective(objc, data_solution.getObjective(objc));
-                            obj_values.setDistance(objc, minMaxNormalization(obj_values.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc)));
-                        }
+                /** TODO: Here we can use a Fuzzy method to give priority to branches at the top or less priority to branches at bottom also considering the error or distance to the lower bound.**/
+                obj_values.setValue(node_value);
+                if(isSortingEnable()) {
+                    for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
+                        obj_values.setObjective(objc, data_solution.getObjective(objc));
+                        obj_values.setDistance(objc, minMaxNormalization(obj_values.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc)));
+                    }
 
-                        sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
-                    } else
-                        sorted_elements.push(obj_values, SORTING_TYPES::BY_VALUE);
+                    sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
+                } else
+                    sorted_elements.push(obj_values, SORTING_TYPES::BY_VALUE);
 
-                    nodes_created++;
-                } else {
-                    ivm_tree.addNodeToRow(currentLevel + 1, node_value);
-                    ivm_tree.pruneLastNodeAtRow(currentLevel + 1);
-                    increasePrunedNodes();
-                    nodes_pruned++;
-                }
+                nodes_created++;
+            } else {
+                ivm_tree.addNodeToRow(currentLevel + 1, node_value);
+                ivm_tree.pruneLastNodeAtRow(currentLevel + 1);
+                increasePrunedNodes();
+                nodes_pruned++;
             }
+
             problem.evaluateRemoveDynamic(solution, data_solution, currentLevel + 1);
         }
     }
@@ -694,7 +694,10 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
      * - If the level at which we are going to share is not too deep.
      * - If we have branches to share.
      */
-    if (sharedPool.isEmptying() && !sharedPool.isMaxLimitReached() && next_row < getLimitLevelToShare() && branches_to_move_to_global_pool > 1) {
+    if (sharedPool.isEmptying() &&
+        !sharedPool.isMaxLimitReached() &&
+        next_row < getLimitLevelToShare() &&
+        branches_to_move_to_global_pool > 1) {
         
         Solution temp(incumbent_s.getNumberOfObjectives(), incumbent_s.getNumberOfVariables());
         VRPTWdata data(data_solution);
@@ -736,7 +739,8 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
             }
             
             /** Resets / Clears the interval. **/
-            if (next_row > ivm_tree.getRootRow() && next_row <= ivm_tree.getActiveRow() ) {
+            if (next_row > ivm_tree.getRootRow() &&
+                next_row <= ivm_tree.getActiveRow() ) {
                 branch_to_send.setValueAt(next_row, ivm_tree.getNodeValueAt(next_row, ivm_tree.getActiveColAt(next_row)));
                 temp.setVariable(next_row, ivm_tree.getNodeValueAt(next_row, ivm_tree.getActiveColAt(next_row)));
                 problem.evaluateDynamic(temp, data, next_row);

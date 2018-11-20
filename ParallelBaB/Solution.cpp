@@ -225,6 +225,7 @@ void Solution::setObjective(int index_obj, double value) throw(SolutionException
 
     } catch (SolutionException& SolutionEx) {
         printf("%s\n",  SolutionEx.what());
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -284,6 +285,7 @@ int Solution::setVariable(int index_variable, int value) throw(SolutionException
         
     } catch (SolutionException& SolutionEx) {
         printf("%s\n",  SolutionEx.what());
+        exit(EXIT_FAILURE);
     }
     
     return -1;
@@ -306,6 +308,7 @@ double Solution::getObjective(int index_obj) const throw(SolutionException) {
         
     } catch (SolutionException& solutionEx) {
         printf("%s\n",  solutionEx.what());
+        exit(EXIT_FAILURE);
     }
     
     return -1;
@@ -320,6 +323,8 @@ int Solution::getVariable(int index_variable) const throw(SolutionException) {
 
     } catch (SolutionException& SolutionEx) {
         printf("%s\n",  SolutionEx.what());
+        exit(EXIT_FAILURE);
+        return variable[index_variable];
     }
     return -1;
 }
