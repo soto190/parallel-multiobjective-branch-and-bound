@@ -19,12 +19,23 @@
 #include "VRPTWdata.hpp"
 #include "myutils.hpp"
 
+typedef struct {
+    unsigned int n_objectives;
+    unsigned int max_number_of_vehicles;
+    unsigned int max_vehicle_capacity;
+    unsigned int number_of_customers;
+    unsigned int * coordinates;  /** Length is (number_of_customers + depot) x 2. **/
+    unsigned int * time_window;  /** Length is (number_of_customers + depot) x 2. **/
+    unsigned int * service_time; /** Length is (number_of_customers + depot). **/
+    unsigned int * demand;       /** Length is (number_of_customers + depot). **/
+} Payload_problem_vrptw;
+
 class ProblemVRPTW: public Problem {
 
 private:
     unsigned int ** coordinates; /** A matrix of n x 2 with the ubication of each customer. The index 0 is the depot. The first column is the x coordinate and the second column is the y coord. **/
     double** costs;         /** A matrix of costs. This can be the euclidean distance between customers. **/
-    unsigned int** time_window;   /** A vector of n x 2. The first columun is the starting time window, the second column is the ending time window. **/
+    unsigned int** time_window;   /** A vector of n x 2. The first column is the starting time window, the second column is the ending time window. **/
     unsigned int* service_time;   /** Service time required for each customer. **/
     unsigned int* demand;         /** Demand of each customer. **/
     unsigned int number_of_customers;
@@ -50,6 +61,7 @@ public:
     ProblemVRPTW();
     ProblemVRPTW(int number_of_objectives, int number_of_variables);
     ProblemVRPTW(const ProblemVRPTW& toCopy);
+    ProblemVRPTW(const Payload_problem_vrptw& payload_problem);
     ~ProblemVRPTW();
 
     ProblemVRPTW& operator=(const ProblemVRPTW& toCopy);
@@ -88,6 +100,7 @@ public:
     void printInstance() const;
     void printProblemInfo() const;
     void loadInstance(char filePath[2][255], char file_extension[4]);
+    void loadInstancePayload(const Payload_problem_vrptw& payload);
 
     /** VRPTW functions **/
     unsigned int getNumberOfCustomers() const;

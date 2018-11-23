@@ -53,7 +53,7 @@ vehicle_cost(new double[max_number_of_vehicles]),
 travel_time(new double[max_number_of_vehicles]),
 capacity(new unsigned int[max_number_of_vehicles]),
 ended_service(new double[number_of_customers]),
-variable_times_used(new unsigned int[number_of_customers + max_number_of_vehicles]),
+variable_times_used(new unsigned int[number_of_customers + 1]),
 total_cost(toCopy.getTotalCost()),
 max_cost(toCopy.getMaxCost()),
 total_travel_time(toCopy.getToltaTravelTime()),
@@ -84,13 +84,20 @@ VRPTWdata::~VRPTWdata() {
 
 VRPTWdata& VRPTWdata::operator()(unsigned int n_of_customers, unsigned int max_n_of_vehicles, unsigned int max_cap) {
     /** Releasing used memory. **/
-    if (vehicle_cost != nullptr) {
+    if (vehicle_cost != nullptr)
         delete [] vehicle_cost;
+
+    if (travel_time != nullptr)
         delete [] travel_time;
+
+    if (capacity != nullptr)
         delete [] capacity;
+
+    if (ended_service != nullptr)
         delete [] ended_service;
+
+    if (variable_times_used != nullptr)
         delete [] variable_times_used;
-    }
 
     number_of_customers = n_of_customers;
     max_number_of_vehicles = max_n_of_vehicles;
@@ -281,7 +288,6 @@ void VRPTWdata::setMaxCost(double new_max_cost) {
 void VRPTWdata::setTotalCost(double new_total_cost) {
     total_cost = new_total_cost;
 }
-
 
 /**
  * TODO: check these functions.

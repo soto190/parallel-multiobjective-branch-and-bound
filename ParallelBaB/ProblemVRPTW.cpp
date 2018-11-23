@@ -548,11 +548,14 @@ int ProblemVRPTW::getTimesThatValueCanBeRepeated(int value) {
 }
 
 void ProblemVRPTW::createDefaultSolution(Solution& solution) {
-    unsigned int position = 0;
+    unsigned int n_vehicles = 1;
+    solution.setBuildUpTo(-1);
     for (unsigned int customer = 1; customer <= getNumberOfCustomers(); ++customer) {
-        solution.setVariable(position, customer);
-        solution.setVariable(position + 1, getNumberOfCustomers() + 1);
-        position += 2;
+        solution.push_back(customer);
+        if (solution.getBuildUpTo() < getNumberOfVariables() - 1 && n_vehicles < getMaxNumberOfVehicles()) {
+            solution.push_back(getNumberOfCustomers() + 1);
+            n_vehicles++;
+        }
     }
     evaluate(solution);
 }
@@ -607,7 +610,7 @@ void ProblemVRPTW::loadInstance(char filePath[2][255], char file_extension[4]) {
     if (infile.is_open()) {
 
         std::string line;
-        std::getline(infile, line); /**The frist line contains the name. **/
+        std::getline(infile, line); /**The first line contains the name. **/
         std::strcpy(name, line.c_str());
 
         std::getline(infile, line); /** Reads an empty line. **/
@@ -708,11 +711,79 @@ void ProblemVRPTW::loadInstance(char filePath[2][255], char file_extension[4]) {
         max_number_vehicles_found = max_number_of_vehicles;
 
         max_cost_found = total_distance_in_order;
-        min_cost_found = 600; /** TODO: edit this. **/
+        min_cost_found = total_distance_in_order; /** TODO: edit this. **/
     } else {
         printf("File not found\n");
         exit(EXIT_FAILURE);
     }
+}
+
+void ProblemVRPTW::loadInstancePayload(const Payload_problem_vrptw& payload) {
+
+    max_number_of_vehicles = payload.max_number_of_vehicles;
+    max_vehicle_capacity = payload.max_vehicle_capacity;
+    number_of_customers = payload.number_of_customers;
+
+    coordinates = new unsigned int * [getNumberOfNodes()];
+    costs = new double * [getNumberOfNodes()];
+    time_window = new unsigned int * [getNumberOfNodes()];
+    service_time = new unsigned int[getNumberOfNodes()];
+    demand = new unsigned int[getNumberOfNodes()];
+
+    total_demand = 0;
+    total_service_time = 0;
+    total_distance_in_order = 0;
+
+    max_makespan_found = 0;
+    min_makespan_found = 0;
+
+    for (unsigned int customer = 0; customer < getNumberOfNodes(); ++customer) {
+        unsigned int current_value = customer * 2;
+        unsigned int next_value = (customer * 2) + 1;
+        coordinates[customer] = new unsigned int[2];
+            coordinates[customer][0] = payload.coordinates[current_value];
+            coordinates[customer][1] = payload.coordinates[next_value];
+
+            demand[customer] = payload.demand[customer];
+            total_demand += demand[customer];
+
+            time_window[customer] = new unsigned int[2];
+            time_window[customer][0] = payload.time_window[current_value];
+            time_window[customer][1] = payload.time_window[next_value];
+
+            service_time[customer] = payload.service_time[customer];
+            total_service_time += service_time[customer];
+
+            if (customer != 0 && time_window[customer][1] + service_time[customer] > max_makespan_found)
+                max_makespan_found = time_window[customer][1] + service_time[customer];
+
+            else if(customer != 0 && time_window[customer][0] + service_time[customer] > min_makespan_found)
+                min_makespan_found = time_window[customer][0] + service_time[customer];
+
+            costs[customer] = new double[getNumberOfNodes()];
+        }
+
+        for (unsigned int customer = 0; customer < getNumberOfNodes(); ++customer) {
+            for (unsigned int customer_destination = customer + 1; customer_destination < getNumberOfNodes(); ++customer_destination)
+                if (customer != customer_destination) {
+
+                    costs[customer][customer_destination] = euclideanDistance(coordinates[customer][0], coordinates[customer][1], coordinates[customer_destination][0], coordinates[customer_destination][1]);
+
+                    costs[customer_destination][customer] = costs[customer][customer_destination];
+
+                } else
+                    costs[customer][customer_destination] = 0; /** Probably is better to use a big number. **/
+
+            total_distance_in_order += costs[0][customer] + costs[customer][0];
+        }
+
+        n_variables = number_of_customers + max_number_of_vehicles; /** The permutaiton size is customers + max vehicles. **/
+
+        min_number_vehicles_found = total_demand / max_vehicle_capacity;
+        max_number_vehicles_found = max_number_of_vehicles;
+
+        max_cost_found = total_distance_in_order;
+        min_cost_found = 600; /** TODO: edit this. **/
 }
 
 double ProblemVRPTW::euclideanDistance(unsigned int xcoord_1, unsigned int ycoord_1, unsigned int xcoord_2, unsigned int ycoord_2) const {

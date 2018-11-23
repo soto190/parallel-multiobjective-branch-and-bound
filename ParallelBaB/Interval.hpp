@@ -31,7 +31,7 @@ typedef struct {
     int deep;
     int build_up_to;
     int max_size;
-    float distance[2];
+    float distance[3];
     int * interval;
 } Payload_interval;
 

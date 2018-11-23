@@ -700,7 +700,8 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
         branches_to_move_to_global_pool > 1) {
         
         Solution temp(incumbent_s.getNumberOfObjectives(), incumbent_s.getNumberOfVariables());
-        VRPTWdata data(data_solution);
+        VRPTWdata data (data_solution.getNumberOfCustomers(), data_solution.getMaxNumberOfVehicles(), data_solution.getMaxVehicleCapacity());
+//VRPTWdata data(data_solution);
         Interval branch_to_send(branch_to_solve);
         
         //data.reset();

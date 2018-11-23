@@ -14,7 +14,7 @@
 #include <tbb/task.h>
 #include "BranchAndBound.hpp"
 #include "Interval.hpp"
-#include "ProblemFJSSP.hpp"
+#include "ProblemVRPTW.hpp"
 #include "Solution.hpp"
 #include "myutils.hpp"
 
@@ -30,7 +30,17 @@ public:
     bool isMaster() const;
     bool isWorker() const;
     tbb::task* execute();
-    
+
+    double getTimeLimit() const;
+    void setTimeLimit(double time_sec);
+
+    void enableGrid();
+    void enableSortingNodes();
+    void enablePriorityQueue();
+    bool isGridEnable() const;
+    bool isSortingEnable() const;
+    bool isPriorityEnable() const;
+
     void setParetoFrontFile(const char outputFile[255]);
     void setSummarizeFile(const char outputFile[255]);
     
@@ -38,7 +48,7 @@ public:
     int getNumberOfBranchsAndBound() const;
     
 private:
-    Payload_problem_fjssp payload_problem;
+    Payload_problem_vrptw payload_problem;
     Payload_interval payload_interval;
     Payload_solution payload_solution;
     //Payload_interval payload_solutions[10]; /** Sending 10 solutions at the time. Recycling the interval struct because it has the same values. **/
@@ -46,6 +56,10 @@ private:
     MPI_Datatype datatype_interval; /** For committing. **/
     MPI_Datatype datatype_solution; /** For committing. **/
     //MPI_Datatype datatyple_solutions; /** For committing. **/
+    bool is_grid_enable = false;
+    bool is_sorting_enable = false;
+    bool is_priority_enable = false;
+    double time_limit;
     
     int rank;
     int n_workers;
@@ -77,18 +91,25 @@ private:
     static const int TAG_SHARE_WORK = 197;
     
     char TAGS[8][50];
+
+    void loadInstanceFJSSP(Payload_problem_fjssp& problem, const char filePath[]);
+    void preparePayloadFJSSPpart1(const Payload_problem_fjssp& problem, MPI_Datatype& datatype_problem);
+    void preparePayloadFJSSPpart2(const Payload_problem_fjssp& problem, MPI_Datatype& datatype_problem);
+    void unpack_payload_fjssp_part1(Payload_problem_fjssp& problem, Payload_interval& interval, Payload_solution& solution);
+    void unpack_payload_fjssp_part2(Payload_problem_fjssp& problem);
+
+    void loadInstanceVRPTW(Payload_problem_vrptw& problem, const char filePath[]);
+    void preparePayloadVRPTWpart1(const Payload_problem_vrptw& problem, MPI_Datatype& datatype_problem);
+    void preparePayloadVRPTWpart2(const Payload_problem_vrptw& problem, MPI_Datatype& datatype_problem);
+    void unpack_payload_vrptw_part1(Payload_problem_vrptw& problem, Payload_interval& interval, Payload_solution& solution);
+    void unpack_payload_vrptw_part2(Payload_problem_vrptw& problem);
     
-    void loadInstance(Payload_problem_fjssp& problem, const char filePath[]);
-    void preparePayloadProblemPart1(const Payload_problem_fjssp& problem, MPI_Datatype& datatype_problem);
-    void preparePayloadProblemPart2(const Payload_problem_fjssp& problem, MPI_Datatype& datatype_problem);
     void preparePayloadSolution(const Payload_solution& solution, MPI_Datatype& datatype_solution);
-    //void preparePayloadSolutions(const Payload_interval* solutions, MPI_Datatype& datatype_solutions);
     void preparePayloadInterval(const Payload_interval& interval, MPI_Datatype& datatype_interval);
     void storesPayloadInterval(Payload_interval& payload, const Interval& interval);
     void storesSolutionInInterval(Payload_interval& payload, const Solution& solution);
     void recoverSolutionFromPayload(const Payload_interval& payload, Solution& solution);
-    void unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval, Payload_solution& solution);
-    void unpack_payload_part2(Payload_problem_fjssp& problem);
+
     void runMasterProcess();
     void runWorkerProcess();
     void printPayloadInterval() const;

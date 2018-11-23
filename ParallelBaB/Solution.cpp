@@ -239,8 +239,8 @@ int Solution::push_back(int value) throw(SolutionException) {
             throw SolutionException(SolutionErrorCode::VARIABLES_OUT_OF_RANGE, "when calling push_back(var:" + std::to_string(static_cast<long long>(getBuildUpTo())) + ", value:" + std::to_string(static_cast<long long>(value)) + ")");
 
         build_up_to++;
-        variable[getBuildUpTo()] = value;
-        return getBuildUpTo();
+        variable[build_up_to] = value;
+        return build_up_to;
 
     } catch (SolutionException& SolutionEx) {
         printf("%s\n",  SolutionEx.what());
