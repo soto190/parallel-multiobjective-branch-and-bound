@@ -79,6 +79,7 @@ public:
 
     void saveSummarize();
     void saveParetoFront();
+    void saveParetoFrontInLaTex();
 private:
     int initSharedPool(const Interval& initial);
     void initSharedParetoFront();

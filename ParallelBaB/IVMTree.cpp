@@ -452,7 +452,7 @@ int IVMTree::pruneFirstNodeAtRow(int row) {
     int first_col =  getStartExploration(row);
     int node_at_col = getNodeValueAt(row, first_col);
 
-    setNodeValueAt(row, first_col, -1 * node_at_col); /**Marks the node with the negative value to be able to use the value when copyin the row. **/
+    setNodeValueAt(row, first_col, -1 * node_at_col); /**Marks the node with negative value to be able to use the value when copying the row. **/
     decreaseNumberOfNodesAt(row);
     decreaseNumberOfPendingNodes();
     increaseStartExplorationAtRow(row);

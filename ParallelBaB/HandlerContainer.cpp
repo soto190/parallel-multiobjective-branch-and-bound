@@ -127,8 +127,9 @@ HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int c
     mininx = minValX;
     mininy = minValY;
 
+    /** This is for another approach to locate the cells. **/
     lb_x = mininx - ((maxinx - mininx) / (2 * cols));
-    ub_x = maxiny + ((maxinx - mininx) / (2 * cols));
+    ub_x = maxinx + ((maxinx - mininx) / (2 * cols));
 
     lb_y = mininy - ((maxiny - mininy) / (2 * rows));
     ub_y = maxiny + ((maxiny - mininy) / (2 * rows));
@@ -136,8 +137,7 @@ HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int c
     d_x = (ub_x - lb_x)/ cols;
     d_y = (ub_y - lb_y)/ rows;
 
-    /*193 143 307 297 11 15*/
-    cout << lb_x << ' ' << lb_y << ' ' << ub_x << ' ' << ub_y << ' '<< d_x << ' ' << d_y << ' ' << std::endl;
+    // cout << "From Handler Container" << lb_x << ' ' << lb_y << ' ' << ub_x << ' ' << ub_y << ' '<< d_x << ' ' << d_y << ' ' << std::endl;
     rangeinx = new double[cols];
     rangeiny = new double[rows];
 

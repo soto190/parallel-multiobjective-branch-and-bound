@@ -105,6 +105,7 @@ tbb::task * ParallelBranchAndBound::execute() {
 
     saveSummarize();
     saveParetoFront();
+    saveParetoFrontInLaTex();
 
     bb_threads.clear();
     printf("[Worker-%03d] Parallel Branch And Bound ended.\n", rank);
@@ -207,23 +208,23 @@ int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {
     int code = 0;
     int toAdd = 0;
 
-    VRPTWdata fjssp_data (problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
+    VRPTWdata solution_data (problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
 
     for (int row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
         code = branch_to_split.getValueAt(row);
         incumbent_s.setVariable(row, code);
-        problem.evaluateDynamic(incumbent_s, fjssp_data, row);
+        problem.evaluateDynamic(incumbent_s, solution_data, row);
     }
 
     for (int element = 1; element <= num_elements; ++element)
-        if (fjssp_data.getTimesThatElementAppears(element) < problem.getTimesThatValueCanBeRepeated(element)) {
+        if (solution_data.getTimesThatElementAppears(element) < problem.getTimesThatValueCanBeRepeated(element)) {
 
             toAdd = element;
             incumbent_s.setVariable(split_level, toAdd);
-            problem.evaluateDynamic(incumbent_s, fjssp_data, split_level);
+            problem.evaluateDynamic(incumbent_s, solution_data, split_level);
 
             number_of_nodes_explored++;
-            if (fjssp_data.isFeasible() && sharedParetoFront.produceImprovement(incumbent_s)) {
+            if (solution_data.isFeasible() && sharedParetoFront.produceImprovement(incumbent_s)) {
                 branch_to_split.setValueAt(split_level, toAdd);
 
                 sharedPool.push(branch_to_split);
@@ -235,7 +236,7 @@ int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {
             } else
                 number_of_nodes_pruned++;
 
-            problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, split_level);
+            problem.evaluateRemoveDynamic(incumbent_s, solution_data, split_level);
         }
     return nodes_created;
 }
@@ -363,7 +364,7 @@ void ParallelBranchAndBound::saveSummarize() {
 
             myfile << std::fixed << std::setw(6) << std::setfill(' ') << ++counterSolutions << " ";
             for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << (*it).getObjective(nObj) << " ";
+                myfile << std::fixed << std::setw(6) << std::setprecision(3) << std::setfill(' ') << (*it).getObjective(nObj) << " ";
             myfile << " | ";
 
             for (nVar = 0; nVar < numberOfVariables; ++nVar)
@@ -384,14 +385,17 @@ void ParallelBranchAndBound::saveParetoFront() {
         printf("[Worker-%03d:B&B-%03d] Saving in file...\n", 0, 0);
         int numberOfObjectives = problem.getNumberOfObjectives();
 
-
         for (auto it = pareto_front.begin(); it != pareto_front.end(); ++it) {
             for (int nObj = 0; nObj < numberOfObjectives - 1; ++nObj)
-                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << (*it).getObjective(nObj) << " ";
-            myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << (*it).getObjective(numberOfObjectives - 1) << "\n";
+                myfile << std::fixed << std::setw(6) << std::setprecision(3) << std::setfill(' ') << (*it).getObjective(nObj) << " ";
+            myfile << std::fixed << std::setw(6) << std::setprecision(3) << std::setfill(' ') << (*it).getObjective(numberOfObjectives - 1) << "\n";
         }
 
         myfile.close();
     } else
         printf("[Worker-%03d:B&B-%03d] Unable to write on pareto front file: %s\n", 0, 0, pareto_file);
+}
+
+void ParallelBranchAndBound::saveParetoFrontInLaTex() {
+
 }

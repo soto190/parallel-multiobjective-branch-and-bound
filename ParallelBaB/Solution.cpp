@@ -184,9 +184,9 @@ bool Solution::operator<(const Solution &solution) const {
 std::ostream& operator<<(std::ostream& stream, const Solution& solution) {
 
     for (int nObj = 0; nObj < solution.getNumberOfObjectives(); ++nObj)
-        stream << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << solution.getObjective(nObj) << " ";
+        stream << std::fixed << std::setw(6) << std::setprecision(3) << std::setfill(' ') << solution.getObjective(nObj) << " ";
 
-    stream << " | " << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << solution.getBuildUpTo();
+    stream << " | " << std::fixed << std::setw(6) << std::setprecision(3) << std::setfill(' ') << solution.getBuildUpTo();
     stream << " | ";
 
     for (int nVar = 0; nVar < solution.getNumberOfVariables(); ++nVar)
@@ -407,7 +407,7 @@ DominanceRelation Solution::dominanceTest(const Solution & solution) const {
 void Solution::print() const {
     char sep = '-';
     for (int n_obj = 0; n_obj < n_objectives; ++n_obj)
-        printf("%4.0f ", getObjective(n_obj));
+        printf("%4.3f ", getObjective(n_obj));
     
     printf("| ");
     

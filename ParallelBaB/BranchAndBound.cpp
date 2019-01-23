@@ -405,6 +405,22 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
     while (theTreeHasMoreNodes() && thereIsMoreTime()) {
         updateLocalPF();
         explore(incumbent_s);
+        /** 2  11   1  11   4  11   9  11   6  11   7   8  10  11   5   3 **/
+        if (incumbent_s.getVariable(0) == 2 &&
+            incumbent_s.getVariable(1) == 11 &&
+            incumbent_s.getVariable(2) == 1 &&
+            incumbent_s.getVariable(3) == 11 &&
+            incumbent_s.getVariable(4) == 4 &&
+            incumbent_s.getVariable(5) == 11 &&
+            incumbent_s.getVariable(6) == 9 &&
+            incumbent_s.getVariable(7) == 11
+            //incumbent_s.getVariable(8) == 6
+            //incumbent_s.getVariable(9) == 11 &&
+            //incumbent_s.getVariable(10) == 7
+            //incumbent_s.getVariable(11) == 8
+            ) {
+            cout << "DEBUG"<< std::endl;
+        }
         problem.evaluateDynamic(incumbent_s, data_solution, currentLevel);
         if (!aLeafHasBeenReached() && theTreeHasMoreNodes()) {
             if (improvesTheParetoContainer(incumbent_s))

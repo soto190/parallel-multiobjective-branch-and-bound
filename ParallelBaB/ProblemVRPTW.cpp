@@ -86,18 +86,31 @@ max_makespan_found(toCopy.getUpperBoundInObj(2)) {
 }
 
 ProblemVRPTW::~ProblemVRPTW() {
-    delete [] demand;
-    delete [] service_time;
+    if(demand != nullptr)
+        delete [] demand;
+
+    if (service_time != nullptr)
+        delete [] service_time;
 
     for (int customer = 0; customer < getNumberOfNodes(); ++customer) {
-        delete [] costs[customer];
-        delete [] coordinates[customer];
-        delete [] time_window[customer];
+        if (costs[customer] != nullptr )
+            delete [] costs[customer];
+
+        if (coordinates[customer] != nullptr )
+            delete [] coordinates[customer];
+
+        if (time_window[customer] != nullptr )
+            delete [] time_window[customer];
     }
 
-    delete [] costs;
-    delete [] coordinates;
-    delete [] time_window;
+    if (costs != nullptr )
+        delete [] costs;
+
+    if (coordinates != nullptr)
+        delete [] coordinates;
+
+    if (time_window != nullptr)
+        delete [] time_window;
 }
 
 /**
@@ -707,11 +720,11 @@ void ProblemVRPTW::loadInstance(char filePath[2][255], char file_extension[4]) {
         n_variables = number_of_customers + max_number_of_vehicles; /** The permutaiton size is customers + max vehicles. **/
         infile.close();
 
-        min_number_vehicles_found = total_demand / max_vehicle_capacity;
+        min_number_vehicles_found = ceil(total_demand / (max_vehicle_capacity * 1.0));
         max_number_vehicles_found = max_number_of_vehicles;
 
         max_cost_found = total_distance_in_order;
-        min_cost_found = total_distance_in_order; /** TODO: edit this. **/
+        min_cost_found = total_distance_in_order / (min_number_vehicles_found + 1); /** TODO: edit this. **/
     } else {
         printf("File not found\n");
         exit(EXIT_FAILURE);
@@ -720,6 +733,9 @@ void ProblemVRPTW::loadInstance(char filePath[2][255], char file_extension[4]) {
 
 void ProblemVRPTW::loadInstancePayload(const Payload_problem_vrptw& payload) {
 
+    n_objectives = payload.n_objectives;
+    n_variables = payload.number_of_customers + payload.max_number_of_vehicles;
+    
     max_number_of_vehicles = payload.max_number_of_vehicles;
     max_vehicle_capacity = payload.max_vehicle_capacity;
     number_of_customers = payload.number_of_customers;
@@ -738,17 +754,17 @@ void ProblemVRPTW::loadInstancePayload(const Payload_problem_vrptw& payload) {
     min_makespan_found = 0;
 
     for (unsigned int customer = 0; customer < getNumberOfNodes(); ++customer) {
-        unsigned int current_value = customer * 2;
-        unsigned int next_value = (customer * 2) + 1;
+        unsigned int current_position = customer * 2;
+        unsigned int next_value = current_position + 1;
         coordinates[customer] = new unsigned int[2];
-            coordinates[customer][0] = payload.coordinates[current_value];
+            coordinates[customer][0] = payload.coordinates[current_position];
             coordinates[customer][1] = payload.coordinates[next_value];
 
             demand[customer] = payload.demand[customer];
             total_demand += demand[customer];
 
             time_window[customer] = new unsigned int[2];
-            time_window[customer][0] = payload.time_window[current_value];
+            time_window[customer][0] = payload.time_window[current_position];
             time_window[customer][1] = payload.time_window[next_value];
 
             service_time[customer] = payload.service_time[customer];
@@ -779,11 +795,11 @@ void ProblemVRPTW::loadInstancePayload(const Payload_problem_vrptw& payload) {
 
         n_variables = number_of_customers + max_number_of_vehicles; /** The permutaiton size is customers + max vehicles. **/
 
-        min_number_vehicles_found = total_demand / max_vehicle_capacity;
+        min_number_vehicles_found = ceil(total_demand / (max_vehicle_capacity * 1.0));
         max_number_vehicles_found = max_number_of_vehicles;
 
         max_cost_found = total_distance_in_order;
-        min_cost_found = 600; /** TODO: edit this. **/
+        min_cost_found =  total_distance_in_order / (min_number_vehicles_found + 1); /** TODO: edit this. **/
 }
 
 double ProblemVRPTW::euclideanDistance(unsigned int xcoord_1, unsigned int ycoord_1, unsigned int xcoord_2, unsigned int ycoord_2) const {
@@ -844,10 +860,10 @@ void ProblemVRPTW::printProblemInfo() const {
     printf("Maximum capacity per vehicle: %d\n", getMaxVehicleCapacity());
     printf("Total demand: %d\n", total_demand);
     printf("Total service time: %d\n", total_service_time);
-    printf("Min number of vehicles (max_vechiles/2): %d\n", min_number_vehicles_found);
+    printf("Min number of vehicles (total demand/max_vehicles): %d\n", min_number_vehicles_found);
     printf("Max number of vehicles: %d\n", max_number_vehicles_found);
     printf("Min cost (fixed): %f\n", min_cost_found);
-    printf("Max cost (on vehicle for each customer): %f\n", max_cost_found);
+    printf("Max cost (one vehicle for each customer): %f\n", max_cost_found);
     printf("Min makespan (max{Ti} + service_time): %d\n", min_makespan_found);
     printf("Max makespan (max{Tf} + service_time): %d\n", max_makespan_found);
 }
