@@ -118,5 +118,9 @@ private:
     const char* getTagText(int tag) const;
     bool thereIsMoreWork() const;
     void buildOutputFiles();
+
+    int initSharedPool(const Interval& initial);
+    void initSharedParetoFront();
+
 };
 #endif /* MASTERWORKER_HPP_ */

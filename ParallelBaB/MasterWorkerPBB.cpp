@@ -103,15 +103,16 @@ void MasterWorkerPBB::run() {
     MPI::COMM_WORLD.Barrier();
     /** First we need to prepare the payloads and the values required to initialize the payloads vectors. **/
     preparePayloadVRPTWpart1(payload_problem, datatype_problem);
-
     MPI::COMM_WORLD.Bcast(&payload_problem, 1, datatype_problem, MASTER_RANK); /* The MASTER_NODE broadcast the part 1 of payload and the workers nodes receives it. */
 
-    unpack_payload_vrptw_part1(payload_problem, payload_interval, payload_solution); /** Each node initialize their own problem structure and data. The MASTER_NODE has initialized them from the loadInstanceVRPTW function. **/
-    preparePayloadVRPTWpart2(payload_problem, datatype_problem); /** Prepares the second part (matrix and arrays, computed data such as costs, distances).**/
+    /** Each node initialize their own problem structure and data. The MASTER_NODE has initialized them from the loadInstanceVRPTW function. **/
+    unpack_payload_vrptw_part1(payload_problem, payload_interval, payload_solution);
 
+    /** Prepares the second part (matrix and arrays, computed data such as costs, distances).**/
+    preparePayloadVRPTWpart2(payload_problem, datatype_problem);
     MPI::COMM_WORLD.Bcast(&payload_problem, 1, datatype_problem, MASTER_RANK);
-
     unpack_payload_vrptw_part2(payload_problem);
+
     preparePayloadInterval(payload_interval, datatype_interval); /** Each node prepares the payload for receiving intervals. **/
 //    preparePayloadSolutions(payload_solutions, datatyple_solutions);
 }
@@ -293,7 +294,7 @@ void MasterWorkerPBB::runMasterProcess() {
     /**
      * Receive data from workers.
      **/
-    
+    printf("[Master] Received solutions: %lu\n", received_solutions.size());
     printf("[Master] Number of works received: %03d\n", number_of_works_received);
     printf("[Master] No more work.\n");
 }
@@ -314,24 +315,17 @@ void MasterWorkerPBB::runWorkerProcess() {
     printf("[WorkerPBB-%03d] Waiting for interval.\n", rank);
     MPI_Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
 
+    //printPayloadInterval();
     branch_init(payload_interval);
-
-    sharedPool.setSizeEmptying((unsigned long) (branchsandbound_per_worker * 2)); /** If the global pool reach this size then the B&B tasks starts sending part of their work to the global pool. **/
-
-    Solution solution (problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    problem.createDefaultSolution(solution);
-
-    paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
+    initSharedParetoFront();
+    initSharedPool(branch_init);
 
     BranchAndBound BB_container(rank, 0, problem, branch_init);
     BB_container.enablePriorityQueue();
     BB_container.enableSortingNodes();
-    branches_created += BB_container.initGlobalPoolWithInterval(branch_init);
     BB_container.setSummarizeFile(summarize_file);
     BB_container.setParetoFrontFile(pareto_front_file);
     BB_container.setPoolFile(pool_file);
-
-    printf("[WorkerPBB-%03d] Pool size: %3lu %3lu [%3.4f %3.4f]\n", getRank(), sharedPool.unsafe_size(), branches_created, problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
 
     set_ref_count(branchsandbound_per_worker + 1);
 
@@ -386,11 +380,13 @@ void MasterWorkerPBB::runWorkerProcess() {
                     splitInterval(branch_init); /** Splits and push to GlobalPool. **/
 
                     /** This avoid to send repeated solutions. **/
-                    subFront = BB_container.getParetoFront();
+                    printf("[WorkerPBB-%03d] Shared Pareto front size %lu.\n", getRank(), sharedParetoFront.getSize());
+
+                    subFront = sharedParetoFront.getVector();
                     solutionsToSend.clear();
                     if (paretoFront.empty()) { /** If the pareto front is empty then send all the front. **/
-                        paretoFront = BB_container.getParetoFront();
-                        solutionsToSend = BB_container.getParetoFront();
+                        paretoFront = sharedParetoFront.getVector();//BB_container.getParetoFront();
+                        solutionsToSend = sharedParetoFront.getVector();//BB_container.getParetoFront();
                     }
                     else {
                         for (int sub_sol = 0; sub_sol < subFront.size(); ++sub_sol) {  /** Choosing the new non-dominated solutions to send. **/
@@ -407,7 +403,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                                 solutionsToSend.push_back(sSub);
                         }
                     }
-                    paretoFront = BB_container.getParetoFront(); /** Updates the Pareto front. **/
+                    paretoFront = sharedParetoFront.getVector();//BB_container.getParetoFront(); /** Updates the Pareto front. **/
                     payload_interval.build_up_to = (int) solutionsToSend.size();
                     if (solutionsToSend.size() > 0) {
                         /** TODO: Improve this function. Send all the pareto set in one message instead of multiple messages. **/
@@ -437,8 +433,8 @@ void MasterWorkerPBB::runWorkerProcess() {
                     recoverSolutionFromPayload(payload_interval, received_solution);
 
                     problem.updateBestSolutionInObjectiveWith(1, received_solution);
-
-                    paretoContainer.add(received_solution);
+                    sharedParetoFront.push_back(received_solution);
+//                    paretoContainer.add(received_solution);
                     break;
 
                 case TAG_NOT_ENOUGH_WORK:  /** There is no more work.**/
@@ -486,7 +482,6 @@ void MasterWorkerPBB::runWorkerProcess() {
     /**
      * Send the data to Master.
      **/
-
     BB_container.getParetoFront();
     BB_container.printParetoFront(0);
     BB_container.saveParetoFront();
@@ -494,6 +489,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     BB_container.saveGlobalPool();
     bb_threads.clear();
 
+    sharedParetoFront.print();
     printf("[WorkerPBB-%03d] Data swarm recollected and saved.\n", getRank());
     printf("[WorkerPBB-%03d] Parallel Branch And Bound ended.\n", getRank());
 
@@ -1006,14 +1002,15 @@ void MasterWorkerPBB::printPayloadInterval() const {
         printf("[Master] [ ");
     else
         printf("[WorkerPBB-%03d] [ ", getRank());
-//
-//    printf(", Size: %d, ", payload_interval.max_size);
-//    for (int element = 0; element < payload_interval.max_size; ++element)
-//        if (payload_interval.interval[element] == -1)
-//            printf("- ");
-//        else
-//            printf("%d ", payload_interval.interval[element]);
-//    printf("]\n");
+
+    printf("Size: %d, ", payload_interval.max_size);
+    for (int element = 0; element < payload_interval.max_size; ++element)
+        if (payload_interval.interval[element] == -1 ||
+            payload_interval.interval[element] == 0)
+            printf("- ");
+        else
+            printf("%d ", payload_interval.interval[element]);
+    printf("]\n");
 }
 
 double MasterWorkerPBB::getTimeLimit() const {
@@ -1067,4 +1064,71 @@ void MasterWorkerPBB::printMessageStatus(int source, int tag) {
 
 const char* MasterWorkerPBB::getTagText(int tag) const {
     return TAGS[tag - 190];
+}
+
+void MasterWorkerPBB::initSharedParetoFront() {
+    Solution temp_1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.createDefaultSolution(temp_1);
+    sharedParetoFront.push_back(temp_1);
+    problem.updateBestSolutionInObjectiveWith(0, temp_1);
+
+    Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.getSolutionWithLowerBoundInObj(1, temp);
+    sharedParetoFront.push_back(temp);
+    problem.updateBestSolutionInObjectiveWith(1, temp_1);
+
+    Solution temp_2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.getSolutionWithLowerBoundInObj(2, temp_2);
+    sharedParetoFront.push_back(temp_2);
+
+    problem.updateBestBoundsWith(temp_1);
+    problem.updateBestBoundsWith(temp);
+    problem.updateBestBoundsWith(temp_2);
+
+    std::cout << "sol1:" <<  temp_1 <<"\nsol2: "<< temp << "\nsol2: "<<temp_2 << std::endl;
+}
+
+int MasterWorkerPBB::initSharedPool(const Interval & branch_init) {
+    sharedPool.setSizeEmptying((unsigned long) (branchsandbound_per_worker * 2));
+    Interval branch_to_split(branch_init);
+    Solution incumbent_s(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.createDefaultSolution(incumbent_s);
+
+    int split_level = branch_to_split.getBuildUpTo() + 1;
+    int nodes_created = 0;
+    int num_elements = problem.getTotalElements();
+    int code = 0;
+    int toAdd = 0;
+
+    VRPTWdata solution_data (problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
+
+    for (int row = 0; row <= branch_to_split.getBuildUpTo(); ++row) {
+        code = branch_to_split.getValueAt(row);
+        incumbent_s.setVariable(row, code);
+        problem.evaluateDynamic(incumbent_s, solution_data, row);
+    }
+
+    for (int element = 1; element <= num_elements; ++element)
+        if (solution_data.getTimesThatElementAppears(element) < problem.getTimesThatValueCanBeRepeated(element)) {
+
+            toAdd = element;
+            incumbent_s.setVariable(split_level, toAdd);
+            problem.evaluateDynamic(incumbent_s, solution_data, split_level);
+
+            //number_of_nodes_explored++;
+            if (solution_data.isFeasible() && sharedParetoFront.produceImprovement(incumbent_s)) {
+                branch_to_split.setValueAt(split_level, toAdd);
+
+                sharedPool.push(branch_to_split);
+                branch_to_split.removeLastValue();
+                nodes_created++;
+
+                //number_of_shared_works++;
+                //number_of_nodes_created++;
+            } else {
+                //number_of_nodes_pruned++;
+            }
+            problem.evaluateRemoveDynamic(incumbent_s, solution_data, split_level);
+        }
+    return nodes_created;
 }

@@ -15,6 +15,7 @@ size(0) {
 
 }
 
+/** If the global pool reach this size then the B&B tasks starts sending part of their work to the global pool. **/
 void SubproblemsPool::setSizeEmptying(unsigned long size) {
     size_emptying = size;
     max_limit_size = size_emptying * 10;

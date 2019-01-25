@@ -405,22 +405,6 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
     while (theTreeHasMoreNodes() && thereIsMoreTime()) {
         updateLocalPF();
         explore(incumbent_s);
-        /** 2  11   1  11   4  11   9  11   6  11   7   8  10  11   5   3 **/
-        if (incumbent_s.getVariable(0) == 2 &&
-            incumbent_s.getVariable(1) == 11 &&
-            incumbent_s.getVariable(2) == 1 &&
-            incumbent_s.getVariable(3) == 11 &&
-            incumbent_s.getVariable(4) == 4 &&
-            incumbent_s.getVariable(5) == 11 &&
-            incumbent_s.getVariable(6) == 9 &&
-            incumbent_s.getVariable(7) == 11
-            //incumbent_s.getVariable(8) == 6
-            //incumbent_s.getVariable(9) == 11 &&
-            //incumbent_s.getVariable(10) == 7
-            //incumbent_s.getVariable(11) == 8
-            ) {
-            cout << "DEBUG"<< std::endl;
-        }
         problem.evaluateDynamic(incumbent_s, data_solution, currentLevel);
         if (!aLeafHasBeenReached() && theTreeHasMoreNodes()) {
             if (improvesTheParetoContainer(incumbent_s))
@@ -440,7 +424,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
         }
 
-        /** If the branching operator doesnt creates branches or the prune function was called then we need to remove the evaluations. Also if a leave has been reached. **/
+        /** If the branching operator does not creates branches or the prune function was called then we need to remove the evaluations. Also if a leave has been reached. **/
         for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
             problem.evaluateRemoveDynamic(incumbent_s, data_solution, l);
 
@@ -703,7 +687,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
     
     int next_row = ivm_tree.getRootRow() + 1;
     unsigned long branches_to_move_to_global_pool = ivm_tree.getActiveRow() - ivm_tree.getNumberOfPendingNodes() - 1;
-    
+
     /**
      * To start sharing we have to consider:
      * - If the global pool has enough subproblems to keep feeding the other threads.
@@ -717,7 +701,6 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
         
         Solution temp(incumbent_s.getNumberOfObjectives(), incumbent_s.getNumberOfVariables());
         VRPTWdata data (data_solution.getNumberOfCustomers(), data_solution.getMaxNumberOfVehicles(), data_solution.getMaxVehicleCapacity());
-//VRPTWdata data(data_solution);
         Interval branch_to_send(branch_to_solve);
         
         //data.reset();
@@ -750,7 +733,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
                 setPriorityTo(branch_to_send);
                 sharedPool.push(branch_to_send); /** This stores a copy.**/
                 number_of_shared_works++;
-                
+
                 branch_to_send.removeLastValue();
                 problem.evaluateRemoveDynamic(temp, data, next_row);
             }
@@ -1309,7 +1292,7 @@ void BranchAndBound::printCurrentSolution(int withVariables) {
 void BranchAndBound::printParetoFront(int withExtraInfo) {
     
     int counterSolutions = 0;
-
+    printf("Pareto front with %lu solutions.\n", pareto_front.size());
     for (const auto& it : pareto_front) {
         printf("[%6d] ", ++counterSolutions);
         problem.printSolution(it);
