@@ -25,7 +25,7 @@ public:
     MasterWorkerPBB(int num_nodes, int num_bb, const char file[], const char output_path[]);
     virtual ~MasterWorkerPBB();
     
-    void run();
+    void initializePayloads();
     int getRank() const;
     bool isMaster() const;
     bool isWorker() const;
@@ -72,7 +72,7 @@ private:
     MPI_Status status;
     ProblemVRPTW problem;
     Interval branch_init;
-    HandlerContainer paretoContainer;/** This is for testing the non-parallel container. **/
+    //HandlerContainer paretoContainer;/** This is for testing the non-parallel container. **/
     
     char instance_file[255];
     char pareto_front_file[255];
@@ -113,7 +113,6 @@ private:
     void runMasterProcess();
     void runWorkerProcess();
     void printPayloadInterval() const;
-    int splitInterval(Interval& branch_to_split);
     void printMessageStatus(int source, int tag);
     const char* getTagText(int tag) const;
     bool thereIsMoreWork() const;

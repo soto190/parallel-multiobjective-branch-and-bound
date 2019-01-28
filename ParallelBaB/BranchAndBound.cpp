@@ -1252,13 +1252,9 @@ int BranchAndBound::saveParetoFront() {
     std::ofstream myfile(pareto_file);
     if (myfile.is_open()) {
         printf("[Worker-%03d:B&B-%03d] Saving in file...\n", node_rank, bb_rank);
-        int numberOfObjectives = problem.getNumberOfObjectives();
 
-        for (const auto& it : pareto_front) {
-            for (int nObj = 0; nObj < numberOfObjectives - 1; ++nObj)
-                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << it.getObjective(nObj) << " ";
-            myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << it.getObjective(numberOfObjectives - 1) << "\n";
-        }
+        for (const auto& it : pareto_front)
+            myfile << it;
 
         myfile.close();
     } else
