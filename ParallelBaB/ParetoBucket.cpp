@@ -202,3 +202,16 @@ void ParetoBucket::print() const {
         m_vec.at(nSol).print();
     }
 }
+
+std::ostream &operator<<(std::ostream& stream, const ParetoBucket& pareto_f) {
+
+    stream << "[x: " << pareto_f.getPosx() << " y: " << pareto_f.getPosy() << " z:0]" ;
+    stream << "[size: " << pareto_f.getSize() << " state: " << pareto_f.getState() << " version: " << pareto_f.getVersionUpdate() << ']'<< std::endl;
+
+    unsigned int n_sol = 0;
+    std::vector<Solution> vec_sol = pareto_f.getVectorToCopy();
+    for (size_t nSol = 0; nSol < vec_sol.size(); ++nSol)
+        stream << '[' << n_sol++ << ']' << ' ' << vec_sol.at(nSol);
+
+    return stream;
+}

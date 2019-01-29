@@ -36,7 +36,9 @@ public:
     ParetoBucket(unsigned long posx, unsigned long posy);
     ParetoBucket(const ParetoBucket& toCopy);
     ~ParetoBucket();
-    
+
+    friend std::ostream &operator<<(std::ostream& stream, const ParetoBucket& pareto_f);
+
     void setPosX(unsigned long new_posx);
     void setPosY(unsigned long new_posy);
     void setPositionXY(unsigned long new_posx, unsigned long new_posy);

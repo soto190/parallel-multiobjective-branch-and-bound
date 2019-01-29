@@ -127,7 +127,7 @@ void MasterWorkerPBB::initializePayloads() {
 void MasterWorkerPBB::runMasterProcess() {
     
     printf("[Master] Launching Master...\n");
-    int number_of_initial_subproblems = payload_problem.number_of_customers; /** From customer 1 to n_customers. The subproblems which starts with the depot are infeasible.**/
+    int number_of_initial_subproblems = problem.getTotalElements(); /** The subproblems which starts with the depot are infeasible.**/
     int counter_of_subproblems_at_first_level = 1; /** Starts at 1 (first customer) the last sub-problem is n_customers.**/
     int sleeping_workers = 0;
     int requesting_worker = 0;
@@ -139,7 +139,10 @@ void MasterWorkerPBB::runMasterProcess() {
     vector<Solution> received_solutions;
     Solution received_solution(problem.getNumberOfObjectives(), payload_interval.max_size);
 
-    int workers_with_work[n_workers + 1];
+//    VRPTWdata data (problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
+//    Solution test(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+
+    bool worker_has_work[n_workers + 1];
     int worker_at_right[n_workers + 1];
     worker_at_right[0] = 0; /** This position is not used. **/
 
@@ -161,7 +164,7 @@ void MasterWorkerPBB::runMasterProcess() {
         printPayloadInterval();
         MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, worker, TAG_INTERVAL);
 
-        workers_with_work[worker] = 1;
+        worker_has_work[worker] = true;
 
         counter_of_subproblems_at_first_level++;
         if (counter_of_subproblems_at_first_level == number_of_initial_subproblems)
@@ -192,7 +195,7 @@ void MasterWorkerPBB::runMasterProcess() {
                         payload_interval.interval[var] = -1;
 
                     MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_INTERVAL, MPI_COMM_WORLD);
-                    workers_with_work[status.MPI_SOURCE] = 1;
+                    worker_has_work[status.MPI_SOURCE] = true;
                     counter_of_subproblems_at_first_level++;
                 } else if(pending_work.size() > 0) {
                     /** TODO: Starts a process to request work from other nodes.
@@ -206,18 +209,18 @@ void MasterWorkerPBB::runMasterProcess() {
 
                     MPI_Send(&payload_interval, 1, datatype_interval, status.MPI_SOURCE, TAG_INTERVAL, MPI_COMM_WORLD);
 
-                    workers_with_work[status.MPI_SOURCE] = 1;
+                    worker_has_work[status.MPI_SOURCE] = true;
 
                 } else {
                     requesting_worker = status.MPI_SOURCE; /** Saving the requesting worker. **/
-                    workers_with_work[requesting_worker] = 0;  /** Requesting node doesn't has work. **/
+                    worker_has_work[requesting_worker] = false;  /** Requesting node doesn't has work. **/
                     for (int worker = 1; worker <= n_workers; ++worker)  /** Requesting all nodes to share one work except the source worker.**/
-                        if(worker != requesting_worker && workers_with_work[worker] == 1) {
+                        if(worker != requesting_worker && worker_has_work[worker]) {
                             MPI_Send(&payload_interval, 1, datatype_interval, worker, TAG_SHARE_WORK, MPI_COMM_WORLD);
                         }
 
                     for (int worker = 1; worker <= n_workers; ++worker) /** Receives the response of each worker. **/
-                        if(worker != requesting_worker && workers_with_work[worker] == 1) {
+                        if(worker != requesting_worker && worker_has_work[worker]) {
                             MPI_Recv(&payload_interval, 1, datatype_interval, worker, TAG_SHARE_WORK, MPI_COMM_WORLD, &status);
                             if (payload_interval.build_up_to > -1) {
                                 number_of_works_received++;
@@ -225,12 +228,12 @@ void MasterWorkerPBB::runMasterProcess() {
                                 pending_work.push_back(work_to_send);
 
                             }else
-                                workers_with_work[worker] = 0;
+                                worker_has_work[worker] = false;
                         }
 
-                    number_of_workers_with_work = 0; /** Verify if the workers have work.**/
+                    number_of_workers_with_work = false; /** Verify if the workers have work.**/
                     for (int worker = 1; worker <= n_workers; ++worker)
-                        if (workers_with_work[worker] == 1)
+                        if (worker_has_work[worker])
                             number_of_workers_with_work++;
 
                     if (number_of_workers_with_work == 0) /** If no worker has work to share then send a stop signal to all workers. **/
@@ -239,12 +242,12 @@ void MasterWorkerPBB::runMasterProcess() {
                             sleeping_workers++;
                         }
                     else {
-                        /** Re-send the received work to the requesting worker. **/
+                        /** Re-send received work to the requesting worker. **/
                         work_to_send = pending_work.back();
                         pending_work.pop_back();
                         storesPayloadInterval(payload_interval, work_to_send);
                         MPI_Send(&payload_interval, 1, datatype_interval, requesting_worker, TAG_INTERVAL, MPI_COMM_WORLD);
-                        workers_with_work[requesting_worker] = 1; /** The requesting worker now has work. **/
+                        worker_has_work[requesting_worker] = false; /** The requesting worker now has work. **/
                     }
                 }
                 break;
@@ -261,10 +264,10 @@ void MasterWorkerPBB::runMasterProcess() {
 
             case TAG_NOT_ENOUGH_WORK:
                 number_of_workers_with_work = 0;
-                workers_with_work[status.MPI_SOURCE] = 0;
+                worker_has_work[status.MPI_SOURCE] = false;
 
                 for (int worker = 1; worker <= n_workers; ++worker)
-                    if (workers_with_work[worker] == 1)
+                    if (worker_has_work[worker])
                         number_of_workers_with_work++;
 
                 if (number_of_workers_with_work == 0) /** If any worker has work to share then send a stop signal to all workers. **/
@@ -358,10 +361,9 @@ void MasterWorkerPBB::runWorkerProcess() {
     printf("[WorkerPBB-%03d] Spawning the swarm...\n", getRank());
     tbb::task::spawn(tl);
     /**TODO: Spawn the thread with the metaheuristic. **/
-    bool send_sol = true;
     ParetoFront paretoFront;
-    ParetoFront subFront;
-    ParetoFront solutionsToSend;
+    ParetoFront newFront;
+    ParetoFront newSolutionsToSend;
 
     Solution received_solution(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     Solution sSub(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
@@ -380,39 +382,24 @@ void MasterWorkerPBB::runWorkerProcess() {
 
                 case TAG_INTERVAL:
                     branch_init(payload_interval);
+                    cout << "Received: " << branch_init;
+                    sharedPool.push(branch_init);
 
-                    /** This avoid to send repeated solutions. **/
-                    subFront = sharedParetoFront.getVector();
-                    solutionsToSend.clear();
-                    if (paretoFront.empty()) { /** If the pareto front is empty then send all the front. **/
-                        paretoFront = sharedParetoFront.getVector();
-                        solutionsToSend = sharedParetoFront.getVector();
-                    } else {
-                        for (int sub_sol = 0; sub_sol < subFront.size(); ++sub_sol) {  /** Choosing the new non-dominated solutions to send. **/
-                            sSub = subFront.at(sub_sol);
-                            send_sol = true;
-                            for (int fro_sol = 0; fro_sol < paretoFront.size(); ++fro_sol) {
-                                DominanceRelation result_dom = sSub.dominanceTest(paretoFront.at(fro_sol));
-                                if(result_dom == Equals || result_dom == Dominated) {
-                                    send_sol = false;
-                                    fro_sol = (int) paretoFront.size();
-                                }
-                            }
-                            if (send_sol)
-                                solutionsToSend.push_back(sSub);
-                        }
-                    }
-                    paretoFront = sharedParetoFront.getVector();
-                    payload_interval.build_up_to = (int) solutionsToSend.size();
-                    if (solutionsToSend.size() > 0) {
-                        /** TODO: Improve this function. Send all the pareto set in one message instead of multiple messages. **/
-                        for (int n_sol = 0; n_sol < solutionsToSend.size(); ++n_sol) {
-                            received_solution = solutionsToSend.at(n_sol);
-                            storesSolutionInInterval(payload_interval, received_solution);
+                    /** We store the new non-dominated solutions to send them later. Avoiding to send repeated solutions. **/
+                    newFront = sharedParetoFront.getVector();
+                    newSolutionsToSend.clear();
+                    for (const auto& new_sol : newFront)
+                        if (paretoFront.push_back(new_sol))
+                            newSolutionsToSend.push_back(new_sol);
 
-                            /** Sending the solutions to the worker at the right. With this reducing the number of messages sended and also guaranting to send the best solution to all the nodes. If the sended solution is good the worker at the right will be sended to their node at the right. **/
-                            MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, worker_at_right, TAG_SOLUTION);
-                        }
+                    /** TODO: Improve this function by sending all the pareto set in one message instead of multiple messages. **/
+                    /** Sending the solutions to the worker at the right. This reduces the number of messages sended and  guaranting to send the best solution to all the nodes. If the send solution is good the worker at the right will send it to their node at the right. **/
+
+                    /** Reusing the payload interval to indicate how maney solutions are send. **/
+                    payload_interval.build_up_to = (int) newSolutionsToSend.size();
+                    for(const auto& n_sol : newSolutionsToSend) {
+                        storesSolutionInInterval(payload_interval, n_sol);
+                        MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, worker_at_right, TAG_SOLUTION);
                     }
                     break;
 
@@ -486,6 +473,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     BB_container.saveGlobalPool();
     bb_threads.clear();
 
+    cout << sharedParetoFront;
     printf("[WorkerPBB-%03d] Data swarm recollected and saved.\n", getRank());
     printf("[WorkerPBB-%03d] Parallel Branch And Bound ended.\n", getRank());
 
