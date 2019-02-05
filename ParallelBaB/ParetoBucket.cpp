@@ -211,7 +211,15 @@ std::ostream &operator<<(std::ostream& stream, const ParetoBucket& pareto_f) {
     unsigned int n_sol = 0;
     std::vector<Solution> vec_sol = pareto_f.getVectorToCopy();
     for (size_t nSol = 0; nSol < vec_sol.size(); ++nSol)
-        stream << '[' << n_sol++ << ']' << ' ' << vec_sol.at(nSol);
+        stream << '[' << std::fixed << std::setw(3) << n_sol++ << ']' << ' ' << vec_sol.at(nSol);
 
     return stream;
+}
+
+std::vector<Solution>::iterator ParetoBucket::begin() {
+    return m_vec.begin();
+}
+
+std::vector<Solution>::iterator ParetoBucket::end() {
+    return m_vec.end();
 }

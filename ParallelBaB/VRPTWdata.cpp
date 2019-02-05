@@ -196,14 +196,18 @@ void VRPTWdata::decreaseCurrentPosition(unsigned int by_n) {
 void VRPTWdata::increaseCurrentVehicleCost(double by_n) {
     vehicle_cost[n_vehicles] += by_n;
     total_cost += by_n;
-    if (vehicle_cost[n_vehicles] > max_cost)
-        max_cost = vehicle_cost[n_vehicles];
+    max_cost = vehicle_cost[n_vehicles];
+    for (unsigned int vehicle = 0; vehicle <= n_vehicles; ++vehicle)
+        if (vehicle_cost[vehicle] > max_cost)
+            max_cost = vehicle_cost[vehicle];
 }
 
 void VRPTWdata::increaseCurrentVehicleTravelTime(double by_n) {
     travel_time[n_vehicles] += by_n;
-    if (travel_time[n_vehicles] > max_travel_time)
-        max_travel_time = travel_time[n_vehicles];
+    max_travel_time = travel_time[n_vehicles];
+    for (unsigned int vehicle = 0; vehicle <= n_vehicles; ++vehicle)
+        if (travel_time[vehicle] > max_travel_time)
+            max_travel_time = travel_time[vehicle];
 }
 void VRPTWdata::increaseCurrentVehicleCapacity(unsigned int by_n) {
     capacity[n_vehicles] += by_n;
@@ -212,8 +216,8 @@ void VRPTWdata::increaseCurrentVehicleCapacity(unsigned int by_n) {
 void VRPTWdata::decreaseCurrentVehicleCost(double by_n) {
     vehicle_cost[n_vehicles] -= by_n;
     total_cost -= by_n;
-
-    for (unsigned int vehicle = 0; vehicle < n_vehicles; ++vehicle)
+    max_cost = vehicle_cost[n_vehicles];
+    for (unsigned int vehicle = 0; vehicle <= n_vehicles; ++vehicle)
         if (vehicle_cost[vehicle] > max_cost)
             max_cost = vehicle_cost[vehicle];
 }
@@ -221,7 +225,8 @@ void VRPTWdata::decreaseCurrentVehicleCost(double by_n) {
 void VRPTWdata::decreaseCurrentVehicleTravelTime(double by_n) {
     travel_time[n_vehicles] -= by_n;
 
-    for (unsigned int vehicle = 0; vehicle < n_vehicles; ++vehicle)
+    max_travel_time = travel_time[n_vehicles];
+    for (unsigned int vehicle = 0; vehicle <= n_vehicles; ++vehicle)
         if (travel_time[vehicle] > max_travel_time)
             max_travel_time = travel_time[vehicle];
 }
@@ -258,7 +263,7 @@ void VRPTWdata::setCurrentVehicleCost(double to_n) {
 
 void VRPTWdata::updateTravelTime() {
     max_travel_time = travel_time[0];
-    for (unsigned int tt_vehicle = 0; tt_vehicle < n_vehicles; ++tt_vehicle)
+    for (unsigned int tt_vehicle = 0; tt_vehicle <= n_vehicles; ++tt_vehicle)
         if (travel_time[tt_vehicle] > max_travel_time)
             max_travel_time = travel_time[tt_vehicle];
 }
@@ -297,10 +302,15 @@ void VRPTWdata::increaseTimesElementIsInUse(unsigned int element) {
 }
 
 void VRPTWdata::decreaseTimesElementIsInUse(unsigned int element) {
-    variable_times_used[element]--;
+    if (element > getNumberOfCustomers())
+        variable_times_used[0]--;
+    else
+        variable_times_used[element]--;
 }
 
 unsigned int VRPTWdata::getTimesThatElementAppears(unsigned int element) const {
+    if (element > getNumberOfCustomers())
+        return variable_times_used[0]; /** The depot is the firs position. **/
     return variable_times_used[element];
 }
 
@@ -364,16 +374,16 @@ double VRPTWdata::getCustomerServiceEndedAt(unsigned int customer) const {
 
 void VRPTWdata::createNewVehicle(unsigned int max_capacity) {
     increaseNumberOfVehicles(1);
-    setCurrentNode(0); /** Node 0 is the depot. **/
+    //setCurrentNode(0); /** Node 0 is the depot. **/
     setCurrentVehicleCapacity(max_capacity);
     setCurrentVehicleCost(0);
     setCurrentVehicleTravelTime(0);
 }
-
+/*
 void VRPTWdata::removeLastVehicle(unsigned int customer) {
     decreaseNumberOfVehicles(1);
-    setCurrentNode(customer);
-}
+    //setCurrentNode(customer);
+}*/
 
 unsigned int VRPTWdata::getNumberOfNodes() const {
     return number_of_customers + 1;
@@ -410,11 +420,11 @@ double VRPTWdata::getObjective(int n_obj) const {
             break;
 
         case 2:
-            return getToltaTravelTime();
+            return getMaxCost();
             break;
 
         case 3:
-            return getMaxTravelTime();
+            return getToltaTravelTime();
             break;
 
         default:

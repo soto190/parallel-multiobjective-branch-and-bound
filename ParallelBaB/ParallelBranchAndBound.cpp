@@ -97,7 +97,7 @@ tbb::task * ParallelBranchAndBound::execute() {
     }
 
     printf("[Worker-%03d] Parallel Branch And Bound front.\n", rank);
-    sharedParetoFront.print();
+    cout << sharedParetoFront;
 
     vector<Solution> v_pf = sharedParetoFront.getVector();
     for (auto solution = v_pf.begin(); solution != v_pf.end(); ++solution)
@@ -131,7 +131,7 @@ void ParallelBranchAndBound::initSharedParetoFront() {
     problem.updateBestBoundsWith(temp);
     problem.updateBestBoundsWith(temp_2);
 
-    std::cout << temp_1 << temp << temp_2;
+    std::cout << temp_1 << temp << temp_2 << sharedParetoFront;
 }
 /*
  This is for the FJSSP.
@@ -353,24 +353,7 @@ void ParallelBranchAndBound::saveSummarize() {
         myfile << "\tunexplored:        \t" << number_of_unexplored_buckets << endl;
         myfile << "The pareto front found is: \n";
 
-        int numberOfObjectives = problem.getNumberOfObjectives();
-        int numberOfVariables = problem.getNumberOfVariables();
-
-        int nObj = 0;
-        int nVar = 0;
-
-        int counterSolutions = 0;
-        for (auto it = pareto_front.begin(); it != pareto_front.end(); ++it) {
-
-            myfile << std::fixed << std::setw(6) << std::setfill(' ') << ++counterSolutions << " ";
-            for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-                myfile << std::fixed << std::setw(6) << std::setprecision(3) << std::setfill(' ') << (*it).getObjective(nObj) << " ";
-            myfile << " | ";
-
-            for (nVar = 0; nVar < numberOfVariables; ++nVar)
-                myfile << std::fixed << std::setw(4) << std::setfill(' ') << (*it).getVariable(nVar) << " ";
-            myfile << " |\n";
-        }
+        myfile << pareto_front;
 
         myfile.close();
     } else
@@ -383,13 +366,8 @@ void ParallelBranchAndBound::saveParetoFront() {
     std::ofstream myfile(pareto_file);
     if (myfile.is_open()) {
         printf("[Worker-%03d:B&B-%03d] Saving in file...\n", 0, 0);
-        int numberOfObjectives = problem.getNumberOfObjectives();
 
-        for (auto it = pareto_front.begin(); it != pareto_front.end(); ++it) {
-            for (int nObj = 0; nObj < numberOfObjectives - 1; ++nObj)
-                myfile << std::fixed << std::setw(6) << std::setprecision(3) << std::setfill(' ') << (*it).getObjective(nObj) << " ";
-            myfile << std::fixed << std::setw(6) << std::setprecision(3) << std::setfill(' ') << (*it).getObjective(numberOfObjectives - 1) << "\n";
-        }
+        myfile << pareto_front;
 
         myfile.close();
     } else

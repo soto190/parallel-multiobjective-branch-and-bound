@@ -27,7 +27,6 @@ private:
     unsigned int n_dispatched_customers;
     unsigned int current_node;
     unsigned int current_position;
-    unsigned int n_empty_routes;
 
     double * vehicle_cost;
     double * travel_time;
@@ -107,7 +106,7 @@ public:
     double getCustomerServiceEndedAt(unsigned int customer) const;
 
     void createNewVehicle(unsigned int max_capacity);
-    void removeLastVehicle(unsigned int customer);
+    //void removeLastVehicle(unsigned int customer);
 
     void increaseTimesElementIsInUse(unsigned int element);
     void decreaseTimesElementIsInUse(unsigned int element);

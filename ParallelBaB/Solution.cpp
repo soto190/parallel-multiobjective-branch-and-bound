@@ -19,6 +19,8 @@ n_variables(0),
 rank(0),
 distance(0),
 sort_by(0),
+is_feasible(true),
+is_complete(false),
 index(0),
 dominated_by(0),
 build_up_to(-1),
@@ -31,6 +33,8 @@ n_objectives(numberOfObjectives),
 n_variables(numberOfVariables),
 rank(0),
 distance(0),
+is_feasible(true),
+is_complete(false),
 sort_by(0),
 dominated_by(0),
 build_up_to(-1),
@@ -50,6 +54,8 @@ n_objectives(solution.getNumberOfObjectives()),
 n_variables(solution.getNumberOfVariables()),
 rank(solution.getRank()),
 distance(solution.getDistance()),
+is_feasible(solution.isFeasible()),
+is_complete(solution.isComplete()),
 sort_by(solution.getSortByObjective()),
 dominated_by(solution.getDominatedBy()),
 build_up_to(solution.getBuildUpTo()),
@@ -76,6 +82,8 @@ Solution& Solution::operator()(int numberOfObjectives, int numberOfVariables) {
     rank = 0;
     dominated_by = 0;
     distance = 0;
+    is_feasible = true;
+    is_complete = false;
     sort_by = 0;
     build_up_to = -1;
     n_objectives = numberOfObjectives;
@@ -110,6 +118,8 @@ Solution& Solution::operator=(const Solution &solution) {
     rank = solution.getRank();
     distance = solution.getDistance();
     index = solution.getIndex();
+    is_feasible = solution.isFeasible();
+    is_complete = solution.isComplete();
     sort_by = solution.getSortByObjective();
     dominated_by = solution.getDominatedBy();
     /** Freeing previously used memory. **/
@@ -184,16 +194,40 @@ bool Solution::operator<(const Solution &solution) const {
 std::ostream& operator<<(std::ostream& stream, const Solution& solution) {
 
     for (int nObj = 0; nObj < solution.getNumberOfObjectives(); ++nObj)
-        stream << std::fixed << std::setw(6) << std::setprecision(3) << std::setfill(' ') << solution.getObjective(nObj) << " ";
+        stream << std::fixed << std::setw(6) << std::setprecision(6) << std::setfill(' ') << solution.getObjective(nObj) << " ";
 
     stream << " | " << std::fixed << std::setw(6) << std::setprecision(3) << std::setfill(' ') << solution.getBuildUpTo();
     stream << " | ";
 
     for (int nVar = 0; nVar < solution.getNumberOfVariables(); ++nVar)
-        stream << std::fixed << std::setw(4) << std::setfill(' ') << solution.getVariable(nVar) << " ";
+        stream << std::fixed << std::setw(4) << std::setfill(' ') << solution.getVariable(nVar) << ", ";
     stream << " |" << std::endl;
 
     return stream;
+}
+
+void Solution::setFeasible() {
+    is_feasible = true;
+}
+
+void Solution::setInfeasible() {
+    is_feasible = false;
+}
+
+bool Solution::isFeasible() const {
+    return is_feasible;
+}
+
+void Solution::setComplete() {
+    is_complete = true;
+}
+
+void Solution::setIncomplete() {
+    is_complete = false;
+}
+
+bool Solution::isComplete() const {
+    return is_complete;
 }
 
 void Solution::setBuildUpTo(int index) {
@@ -237,9 +271,10 @@ int Solution::push_back(int value) throw(SolutionException) {
     try {
         if (getBuildUpTo() >= n_variables || getBuildUpTo() < -1) /** The build_up_to is initialized in -1. **/
             throw SolutionException(SolutionErrorCode::VARIABLES_OUT_OF_RANGE, "when calling push_back(var:" + std::to_string(static_cast<long long>(getBuildUpTo())) + ", value:" + std::to_string(static_cast<long long>(value)) + ")");
-
-        build_up_to++;
-        variable[build_up_to] = value;
+        if (value > 0) {
+            build_up_to++;
+            variable[build_up_to] = value;
+        }
         return build_up_to;
 
     } catch (SolutionException& SolutionEx) {
@@ -373,27 +408,30 @@ DominanceRelation Solution::dominanceTest(const Solution & solution) const {
     int n_obj = 0;
     int localSolIsBetterIn = 0;
     int exterSolIsBetterIn = 0;
-    int equals = 1;
-    double obj_A = 0;
-    double obj_B = 0;
+    double obj_Left = 0;
+    double obj_Right = 0;
+    bool equals = true;
     
     /**
      * For more objectives consider
      * if (solAIsBetterIn > 0 and solBIsBetterIn > 0) break the FOR because the solutions are non-dominated.
      **/
     for (n_obj = 0; n_obj < n_objectives; ++n_obj) {
-        obj_A = getObjective(n_obj);
-        obj_B = solution.getObjective(n_obj);
-        
-        if (obj_A < obj_B) {
+        obj_Left = getObjective(n_obj);
+        obj_Right = solution.getObjective(n_obj);
+
+        double diff = obj_Right - obj_Left;
+        diff = (diff < 0)? diff * -1.0 : diff;
+
+        if (obj_Left < obj_Right && diff > 0.000000001) {
             localSolIsBetterIn++;
-            equals = 0;
-        } else if (obj_B < obj_A) {
+            equals = false;
+        } else if (obj_Right < obj_Left && diff > 0.000000001) {
             exterSolIsBetterIn++;
-            equals = 0;
+            equals = false;
         }
     }
-    
+
     if (equals == 1)
         return DominanceRelation::Equals;
     else if (localSolIsBetterIn > 0 && exterSolIsBetterIn == 0)

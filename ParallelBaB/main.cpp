@@ -188,53 +188,24 @@ void generateGantt(int argc, char* argv[]){
     }
 }
 
-void testVRPSolution() {
-    ProblemVRPTW problem(3, 0);
+void testVRPSolution(ProblemVRPTW& problem) {
+    //ProblemVRPTW problem(3, 0);
 
     Solution test_solution (3, problem.getNumberOfVariables());
     VRPTWdata test_data(problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
+    test_data.reset();
 
-    unsigned int values[30] = {
+    unsigned int values[20] = /*{
         20,  3, 25,  8, 15, 11,  9,  6,  4, 22,
          1, 26,  5, 24,  7, 10, 16, 14, 12, 27,
-        28, 29, 13, 17, 18, 23,  2, 21, 30, 31};
+        28, 29, 13, 17, 18, 23,  2, 21, 30, 31};*/
 
-    for (unsigned int variable = 0; variable < 30; ++variable) {
+    {1,   11,   10,   11,    2,   11,    8,    9,    6,   11,    5,    3,    7,    4,    0,    0,    0,    0,    0,    0};
+    for (unsigned int variable = 0; variable < 20; ++variable) {
         test_solution.push_back(values[variable]);
-        test_solution.print();
         problem.evaluateDynamic(test_solution, test_data, variable);
+        cout << "Dynamic: " << test_solution;
     }
-//    test_solution.setVariable(0, 20);
-//    test_solution.setVariable(1, 3);
-//    test_solution.setVariable(2, 25);
-//    test_solution.setVariable(3, 8);
-//    test_solution.setVariable(4, 15);
-//    test_solution.setVariable(5, 11);
-//    test_solution.setVariable(6, 9);
-//    test_solution.setVariable(7, 6);
-//    test_solution.setVariable(8, 4);
-//    test_solution.setVariable(9, 22);
-//    test_solution.setVariable(10, 1);
-//    test_solution.setVariable(11, 26); /** New route. **/
-//    test_solution.setVariable(12, 5);
-//    test_solution.setVariable(13, 24);
-//    test_solution.setVariable(14, 7);
-//    test_solution.setVariable(15, 19);
-//    test_solution.setVariable(16, 10);
-//    test_solution.setVariable(17, 16);
-//    test_solution.setVariable(18, 14);
-//    test_solution.setVariable(19, 12);
-//    test_solution.setVariable(20, 27); /** New route. **/ /** Infeasible solution. These values will not be added.**/
-//    test_solution.setVariable(20, 28); /** New route. **/
-//    test_solution.setVariable(20, 29); /** New route. **/
-//    test_solution.setVariable(21, 13);
-//    test_solution.setVariable(22, 17);
-//    test_solution.setVariable(23, 18);
-//    test_solution.setVariable(24, 23);
-//    test_solution.setVariable(25, 2);
-//    test_solution.setVariable(26, 21);
-//    test_solution.setVariable(27, 30); /** New route. **/
-//    test_solution.setVariable(28, 31); /** New route. **/
 
     /** Dynamic evaluation. **/
     /*for (unsigned int var = 0; var < problem.getNumberOfVariables(); ++var) {
@@ -242,14 +213,15 @@ void testVRPSolution() {
     }*/
 
     /** Dynamic deallocation of evaluation. **/
-    printf("Removing variables. %d\n", test_data.getPosition());
-    for (unsigned int n_var = test_data.getPosition() + 1; n_var > 0; --n_var) {
-        printf("idx: %d var: %d\n", n_var - 1, test_solution.getVariable(n_var - 1));
-        problem.evaluateRemoveDynamic(test_solution, test_data, n_var - 1);
-        test_data.print();
-    }
+//    printf("Removing variables. %d\n", test_data.getPosition());
+//    for (unsigned int n_var = test_data.getPosition() + 1; n_var > 0; --n_var) {
+//        printf("idx: %d var: %d\n", n_var - 1, test_solution.getVariable(n_var - 1));
+//        problem.evaluateRemoveDynamic(test_solution, test_data, n_var - 1);
+//        test_data.print();
+//    }
 
     problem.evaluate(test_solution);
+    cout << "Evaluate: "  << test_solution;
 }
 
 void one_node(int argc, char* argv[]) {
@@ -382,9 +354,10 @@ void one_node(int argc, char* argv[]) {
     problem.setName(splited[0].c_str());
     problem.loadInstance(files, extension);
     problem.printProblemInfo();
-    
     /** End **/
-    
+
+//    testVRPSolution(problem);
+
     /** Preparing output files:
      * - CSV: contains the Pareto front.
      * - TXT: contains a log file.

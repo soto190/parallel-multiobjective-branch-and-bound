@@ -56,6 +56,9 @@ public:
     bool produceImprovement(const Solution& obj);
     bool push_back(const Solution& obj);
     unsigned long getVersionUpdate() const;
+    std::vector<Solution>::iterator begin();
+    std::vector<Solution>::iterator end();
+
     void clear();
     void print() const;
 };

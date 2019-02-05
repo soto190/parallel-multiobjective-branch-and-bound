@@ -42,6 +42,9 @@ private:
     double * objective;
     int * variable;
 
+    bool is_feasible;
+    bool is_complete;
+
     unsigned int sort_by;
 public:
 
@@ -52,7 +55,14 @@ public:
 
     int push_back(int value) throw(SolutionException);
     int pull_back() throw(SolutionException);
-    
+
+    void setFeasible();
+    void setInfeasible();
+    bool isFeasible() const;
+    void setComplete();
+    void setIncomplete();
+    bool isComplete() const;
+
     int setVariable(int index, int value) throw(SolutionException);
     void setObjective(int index, double value) throw(SolutionException);
     void setBuildUpTo(int index);

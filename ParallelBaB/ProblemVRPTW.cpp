@@ -181,96 +181,101 @@ ProblemVRPTW& ProblemVRPTW::operator=(const ProblemVRPTW &toCopy) {
  */
 double ProblemVRPTW::evaluate(Solution & solution) {
 
-    unsigned int n_vehicles = 0;
-    unsigned int n_dispatched_customers = 0;
-    unsigned int origin = 0;
+    VRPTWdata data (getNumberOfCustomers(), getMaxNumberOfVehicles(), getMaxVehicleCapacity());
+    for (unsigned int var = 0; var <= solution.getBuildUpTo(); ++var)
+        evaluateDynamic(solution, data, var);
+    return solution.getObjective(0);
 
-    double vehicle_cost [getMaxNumberOfVehicles()];
-    double travel_time [getMaxNumberOfVehicles()];
-    unsigned int capacity [getMaxNumberOfVehicles()];
-
-    double max_travel_time = 0;
-    double max_cost = 0;
-    double total_cost = 0;
-
-    capacity[0] = getMaxVehicleCapacity();
-    vehicle_cost[0] = 0;
-    travel_time[0] = 0;
-
-    bool is_feasible = true;
-    bool is_complete = false;
-
-    for (unsigned int idx_var = 0; idx_var < getNumberOfVariables(); ++idx_var) {
-
-        /** There are more customers to dispatch. **/
-        if (n_dispatched_customers < getNumberOfCustomers()) {
-            int destination = solution.getVariable(idx_var) <= getNumberOfCustomers() ? solution.getVariable(idx_var) : 0;
-
-            /** Validating the time window and customer demand. **/
-            if (capacity[n_vehicles] >= getCustomerDemand(destination)) {
-
-                if (travel_time[n_vehicles] <= getCustomerTimeWindowStart(destination))
-                    travel_time[n_vehicles] = getCustomerTimeWindowStart(destination) + getCustomerServiceTime(destination);
-
-                else if(travel_time[n_vehicles] >= getCustomerTimeWindowStart(destination) &&
-                        travel_time[n_vehicles] <= getCustomerTimeWindowEnd(destination))
-                    travel_time[n_vehicles] += getCustomerServiceTime(destination);
-
-                else {
-                    is_feasible = false;
-                    break; /** Not a feasible time window. **/
-                }
-
-                capacity[n_vehicles] -= getCustomerDemand(destination);
-                vehicle_cost[n_vehicles] += getCustomerCostTo(origin, destination);
-
-                if (isCustomer(destination)) {
-                    origin = destination;
-                    n_dispatched_customers++;
-                } else if (origin != destination){ /** It is a customer going to depot. **/
-                    origin = 0;
-                    n_vehicles++;
-                    capacity[n_vehicles] = getMaxVehicleCapacity();
-                    vehicle_cost[n_vehicles] = 0;
-                    travel_time[n_vehicles] = 0;
-
-                } /** else is an empty route and do nothing. **/
-
-            } else {
-                is_feasible = false;
-                break; /** Not enough capacity. **/
-            }
-        } else { /** If there are no more customers to dispatch then it is a complete solution. **/
-            vehicle_cost[n_vehicles] += costs[solution.getVariable(idx_var - 1)][0]; /** Adds cost of returning to depot. **/
-            is_complete = true;
-            break;
-        }
-    }
-
-    if (is_feasible && is_complete) {
-        for (unsigned int vehicle = 0; vehicle <= n_vehicles; ++vehicle) {
-
-            if (vehicle_cost[vehicle] > max_cost)
-                max_cost = vehicle_cost[vehicle];
-
-            if (travel_time[vehicle] > max_travel_time)
-                max_travel_time = travel_time[vehicle];
-
-            total_cost += vehicle_cost[vehicle];
-        }
-
-        solution.setObjective(0, n_vehicles + 1);
-        solution.setObjective(1, total_cost);
-        solution.setObjective(2, max_cost);
-
-    } else {
-        /** Setting bad objectives values by infeasibility. **/
-        solution.setObjective(0, max_number_of_vehicles * 2);
-        solution.setObjective(1, total_distance_in_order * 2);
-        solution.setObjective(2, total_distance_in_order * 2);
-    }
-
-    return total_cost;
+//    unsigned int n_vehicles = 0;
+//    unsigned int n_dispatched_customers = 0;
+//    unsigned int origin = 0;
+//
+//    double vehicle_cost [getMaxNumberOfVehicles()];
+//    double travel_time [getMaxNumberOfVehicles()];
+//    unsigned int capacity [getMaxNumberOfVehicles()];
+//
+//    double max_travel_time = 0;
+//    double max_cost = 0;
+//    double total_cost = 0;
+//
+//    capacity[0] = getMaxVehicleCapacity();
+//    vehicle_cost[0] = 0;
+//    travel_time[0] = 0;
+//
+//    bool is_feasible = true;
+//    bool is_complete = false;
+//
+//    for (unsigned int idx_var = 0; idx_var < getNumberOfVariables(); ++idx_var) {
+//
+//        /** There are more customers to dispatch. **/
+//        if (n_dispatched_customers < getNumberOfCustomers()) {
+//            int destination = solution.getVariable(idx_var) <= getNumberOfCustomers() ? solution.getVariable(idx_var) : 0;
+//
+//            /** Validating the time window and customer demand. **/
+//            if (capacity[n_vehicles] >= getCustomerDemand(destination)) {
+//
+//                if (travel_time[n_vehicles] <= getCustomerTimeWindowStart(destination))
+//                    travel_time[n_vehicles] = getCustomerTimeWindowStart(destination) + getCustomerServiceTime(destination);
+//
+//                else if(travel_time[n_vehicles] >= getCustomerTimeWindowStart(destination) &&
+//                        travel_time[n_vehicles] <= getCustomerTimeWindowEnd(destination))
+//                    travel_time[n_vehicles] += getCustomerServiceTime(destination);
+//
+//                else {
+//                    is_feasible = false;
+//                    break; /** Not a feasible time window. **/
+//                }
+//
+//                capacity[n_vehicles] -= getCustomerDemand(destination);
+//                vehicle_cost[n_vehicles] += getCustomerCostTo(origin, destination);
+//
+//                if (isCustomer(destination)) {
+//                    origin = destination;
+//                    n_dispatched_customers++;
+//                } else if (origin != destination){ /** It is a customer going to depot. **/
+//                    origin = 0;
+//                    n_vehicles++;
+//                    capacity[n_vehicles] = getMaxVehicleCapacity();
+//                    vehicle_cost[n_vehicles] = 0;
+//                    travel_time[n_vehicles] = 0;
+//
+//                } /** else is an empty route and do nothing. **/
+//
+//            } else {
+//                is_feasible = false;
+//                break; /** Not enough capacity. **/
+//            }
+//        } else { /** If there are no more customers to dispatch then it is a complete solution. **/
+//            vehicle_cost[n_vehicles] += costs[solution.getVariable(idx_var - 1)][0]; /** Adds cost of returning to depot. **/
+//            is_complete = true;
+//            break;
+//        }
+//    }
+//
+//    if (is_feasible && is_complete) {
+//        for (unsigned int vehicle = 0; vehicle <= n_vehicles; ++vehicle) {
+//
+//            if (vehicle_cost[vehicle] > max_cost)
+//                max_cost = vehicle_cost[vehicle];
+//
+//            if (travel_time[vehicle] > max_travel_time)
+//                max_travel_time = travel_time[vehicle];
+//
+//            total_cost += vehicle_cost[vehicle];
+//        }
+//
+//        solution.setObjective(0, n_vehicles + 1);
+//        solution.setObjective(1, total_cost);
+//        solution.setObjective(2, max_cost);
+//
+//    } else {
+//        /** Setting bad objectives values by infeasibility. **/
+//        solution.setObjective(0, max_number_of_vehicles * 2);
+//        solution.setObjective(1, total_distance_in_order * 2);
+//        solution.setObjective(2, total_distance_in_order * 2);
+//    }
+//
+//    return total_cost;
 }
 
 /**
@@ -289,22 +294,23 @@ double ProblemVRPTW::evaluate(Solution & solution) {
 */
 void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int level) {
     //cout << "Adding: " << solution.getVariable(level) << std::endl;
+    unsigned int destination = solution.getVariable(level) <= getNumberOfCustomers() ? solution.getVariable(level) : 0;
 
     data.setCurrentPosition(level);
-    data.increaseTimesElementIsInUse(solution.getLastVariable());
+    data.increaseTimesElementIsInUse(destination);
 
-    if (level == 0 && !isCustomer(solution.getVariable(0))) {
+    if (level == 0 && isDepot(solution.getVariable(0))) {
         data.setInfeasibilityType(VRPTW_INFEASIBILITY::FIRST_NODE_IS_DEPOT);
         /** cout << "The first node can not be a depot/vehicle." << std::endl; **/
 
     } else if(level > 0 &&
-            !isCustomer(solution.getVariable(level)) &&
-            !isCustomer(solution.getVariable(level - 1))) {
+            isDepot(solution.getVariable(level)) &&
+            isDepot(solution.getVariable(level - 1))) {
         data.setInfeasibilityType(VRPTW_INFEASIBILITY::CONSECUTIVE_DEPOTS);
 
         /** cout << "Infeasible by consecutive depots." << std::endl; **/
 
-    } else if(data.getTimesThatElementAppears(solution.getLastVariable()) > getTimesThatValueCanBeRepeated(solution.getLastVariable())) {
+    } else if(data.getTimesThatElementAppears(destination) > getTimesThatValueCanBeRepeated(destination)) {
         data.setInfeasibilityType(VRPTW_INFEASIBILITY::CUSTOMER_VISITED);
         /** This is avoided by counting the times that an element appears.**/
         /** cout << "Customer is already visited." << std::endl; **/
@@ -314,7 +320,6 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
         /** cout << "Solution is already complete." << std::endl; **/
 
     } else {
-        unsigned int destination = solution.getVariable(level) <= getNumberOfCustomers() ? solution.getVariable(level) : 0;
         unsigned int previous_node = 0;
         if (level > 0)
             previous_node = solution.getVariable(level - 1) <= getNumberOfCustomers() ? solution.getVariable(level - 1) : 0;
@@ -341,7 +346,7 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
                     data.setCurrentNode(destination);
                     data.increaseNumberOfDispatchedCustomers(1);
 
-                    if (data.isComplete()) /** If there are no more customers then it is a complete solution and adds cost of returning to depot. **/
+                    if (data.isComplete())
                         data.increaseCurrentVehicleCost(getCustomerCostTo(destination, 0));
 
                 } else /** It is a customer going to depot. The cost of going to depot has been already computed. **/
@@ -353,6 +358,16 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
             data.setInfeasibilityType(VRPTW_INFEASIBILITY::CAPACITY);
         }
     }
+
+    if (data.isComplete())
+        solution.setComplete();
+    else
+        solution.setIncomplete();
+
+    if (data.isFeasible())
+        solution.setFeasible();
+    else
+        data.setInfeasible();
 
     solution.setObjective(0, data.getNumberOfVehiclesUsed());
     solution.setObjective(1, data.getTotalCost());
@@ -435,6 +450,16 @@ void ProblemVRPTW::evaluateRemoveDynamic(Solution & solution, VRPTWdata& data, i
     if (level > 0)
         data.setCurrentPosition(solution.getBuildUpTo());
 
+    if (data.isComplete())
+        solution.setComplete();
+    else
+        solution.setIncomplete();
+
+    if (data.isFeasible())
+        solution.setFeasible();
+    else
+        data.setInfeasible();
+
     solution.setObjective(0, data.getNumberOfVehiclesUsed());
     solution.setObjective(1, data.getTotalCost());
     solution.setObjective(2, data.getMaxCost());
@@ -449,10 +474,41 @@ double ProblemVRPTW::getFmax(int n_objective) const {
 }
 
 double ProblemVRPTW::getBestObjectiveFoundIn(int n_objective) const {
-    return 1000;
+    switch (n_objective) {
+        case 0:
+            return min_number_vehicles_found;
+            break;
+
+        case 1:
+            return min_cost_found;
+            break;
+
+        case 2:
+            return min_critical_cost_found;
+            break;
+
+        case 3:
+            return min_makespan_found;
+
+        default:
+            break;
+    }
+    return 0.0;
 }
 
 void ProblemVRPTW::updateBestSolutionInObjectiveWith(unsigned int n_obj, const Solution& solution) {
+    if (solution.getObjective(0) < min_number_vehicles_found)
+        min_number_vehicles_found = solution.getObjective(0);
+
+    if (solution.getObjective(1) < min_cost_found)
+        min_cost_found = solution.getObjective(1);
+
+    if (solution.getObjective(2) < min_critical_cost_found)
+        min_critical_cost_found = solution.getObjective(2);
+
+    /* if (solution.getObjective(3) < min_makespan_found)
+        min_makespan_found = solution.getObjective(3);
+     */
 
 }
 
@@ -496,8 +552,13 @@ double ProblemVRPTW::getLowerBoundInObj(int nObj) const {
 
         case 1:
             return min_cost_found;
-
+            break;
+            
         case 2:
+            return min_critical_cost_found;
+            break;
+
+        case 3:
             return min_makespan_found;
             break;
     }
@@ -514,6 +575,10 @@ double ProblemVRPTW::getUpperBoundInObj(int nObj) const {
             return max_cost_found;
 
         case 2:
+            return max_critical_cost_found;
+            break;
+
+        case 3:
             return max_makespan_found;
             break;
     }
@@ -725,6 +790,9 @@ void ProblemVRPTW::loadInstance(char filePath[2][255], char file_extension[4]) {
 
         max_cost_found = total_distance_in_order;
         min_cost_found = total_distance_in_order / (min_number_vehicles_found + 1); /** TODO: edit this. **/
+
+        max_critical_cost_found = total_distance_in_order;
+        min_critical_cost_found = total_distance_in_order / (min_number_vehicles_found + 1);
     } else {
         printf("File not found\n");
         exit(EXIT_FAILURE);
@@ -757,49 +825,53 @@ void ProblemVRPTW::loadInstancePayload(const Payload_problem_vrptw& payload) {
         unsigned int current_position = customer * 2;
         unsigned int next_value = current_position + 1;
         coordinates[customer] = new unsigned int[2];
-            coordinates[customer][0] = payload.coordinates[current_position];
-            coordinates[customer][1] = payload.coordinates[next_value];
+        coordinates[customer][0] = payload.coordinates[current_position];
+        coordinates[customer][1] = payload.coordinates[next_value];
 
-            demand[customer] = payload.demand[customer];
-            total_demand += demand[customer];
+        demand[customer] = payload.demand[customer];
+        total_demand += demand[customer];
 
-            time_window[customer] = new unsigned int[2];
-            time_window[customer][0] = payload.time_window[current_position];
-            time_window[customer][1] = payload.time_window[next_value];
+        time_window[customer] = new unsigned int[2];
+        time_window[customer][0] = payload.time_window[current_position];
+        time_window[customer][1] = payload.time_window[next_value];
 
-            service_time[customer] = payload.service_time[customer];
-            total_service_time += service_time[customer];
+        service_time[customer] = payload.service_time[customer];
+        total_service_time += service_time[customer];
 
-            if (customer != 0 && time_window[customer][1] + service_time[customer] > max_makespan_found)
-                max_makespan_found = time_window[customer][1] + service_time[customer];
+        if (customer != 0 && time_window[customer][1] + service_time[customer] > max_makespan_found)
+            max_makespan_found = time_window[customer][1] + service_time[customer];
 
-            else if(customer != 0 && time_window[customer][0] + service_time[customer] > min_makespan_found)
-                min_makespan_found = time_window[customer][0] + service_time[customer];
+        else if(customer != 0 && time_window[customer][0] + service_time[customer] > min_makespan_found)
+            min_makespan_found = time_window[customer][0] + service_time[customer];
 
-            costs[customer] = new double[getNumberOfNodes()];
-        }
+        costs[customer] = new double[getNumberOfNodes()];
+    }
 
-        for (unsigned int customer = 0; customer < getNumberOfNodes(); ++customer) {
-            for (unsigned int customer_destination = customer + 1; customer_destination < getNumberOfNodes(); ++customer_destination)
-                if (customer != customer_destination) {
+    for (unsigned int customer = 0; customer < getNumberOfNodes(); ++customer) {
+        for (unsigned int customer_destination = customer + 1; customer_destination < getNumberOfNodes(); ++customer_destination)
+            if (customer != customer_destination) {
 
-                    costs[customer][customer_destination] = euclideanDistance(coordinates[customer][0], coordinates[customer][1], coordinates[customer_destination][0], coordinates[customer_destination][1]);
+                costs[customer][customer_destination] = euclideanDistance(coordinates[customer][0], coordinates[customer][1], coordinates[customer_destination][0], coordinates[customer_destination][1]);
 
-                    costs[customer_destination][customer] = costs[customer][customer_destination];
+                costs[customer_destination][customer] = costs[customer][customer_destination];
 
-                } else
-                    costs[customer][customer_destination] = 0; /** Probably is better to use a big number. **/
+            } else
+                costs[customer][customer_destination] = 0; /** Probably is better to use a big number. **/
 
-            total_distance_in_order += costs[0][customer] + costs[customer][0];
-        }
+        total_distance_in_order += costs[0][customer] + costs[customer][0];
+    }
 
-        n_variables = number_of_customers + max_number_of_vehicles; /** The permutaiton size is customers + max vehicles. **/
+    n_variables = number_of_customers + max_number_of_vehicles; /** The permutaiton size is customers + max vehicles. **/
 
-        min_number_vehicles_found = ceil(total_demand / (max_vehicle_capacity * 1.0));
-        max_number_vehicles_found = max_number_of_vehicles;
+    min_number_vehicles_found = ceil(total_demand / (max_vehicle_capacity * 1.0));
+    max_number_vehicles_found = max_number_of_vehicles;
 
-        max_cost_found = total_distance_in_order;
-        min_cost_found =  total_distance_in_order / (min_number_vehicles_found + 1); /** TODO: edit this. **/
+    max_cost_found = total_distance_in_order;
+    min_cost_found =  total_distance_in_order / (min_number_vehicles_found + 1); /** TODO: edit this. **/
+
+    max_critical_cost_found = total_distance_in_order;
+    min_critical_cost_found = total_distance_in_order / (min_number_vehicles_found + 1);
+
 }
 
 double ProblemVRPTW::euclideanDistance(unsigned int xcoord_1, unsigned int ycoord_1, unsigned int xcoord_2, unsigned int ycoord_2) const {
@@ -811,6 +883,10 @@ double ProblemVRPTW::euclideanDistance(unsigned int xcoord_1, unsigned int ycoor
 
 bool ProblemVRPTW::isCustomer(unsigned int node) const {
     return (node <= getNumberOfCustomers() && node != 0)? true : false;
+}
+
+bool ProblemVRPTW::isDepot(unsigned int node) const {
+    return node > getNumberOfCustomers()? true : false;
 }
 
 void ProblemVRPTW::printSolution(const Solution & solution) const{
@@ -868,3 +944,10 @@ void ProblemVRPTW::printProblemInfo() const {
     printf("Max makespan (max{Tf} + service_time): %d\n", max_makespan_found);
 }
 
+double ProblemVRPTW::trunc(double lf) const {
+
+    int iSigned = lf > 0? 1: -1;
+    unsigned int uiTemp = (lf * pow(10, 6)) * iSigned; //Note I'm using unsigned int so that I can increase the precision of the truncate
+    lf = (((double) uiTemp) / pow(10, 6) * iSigned);
+    return lf;
+}

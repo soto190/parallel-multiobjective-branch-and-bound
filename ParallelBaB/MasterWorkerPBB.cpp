@@ -391,7 +391,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                     for (const auto& new_sol : newFront)
                         if (paretoFront.push_back(new_sol))
                             newSolutionsToSend.push_back(new_sol);
-
+                    //paretoFront = sharedParetoFront.getVector(); /** The shared Pareto front contains the last solutions. If a new one was inserted then it will be send in the next request. **/
                     /** TODO: Improve this function by sending all the pareto set in one message instead of multiple messages. **/
                     /** Sending the solutions to the worker at the right. This reduces the number of messages sended and  guaranting to send the best solution to all the nodes. If the send solution is good the worker at the right will send it to their node at the right. **/
 
@@ -464,6 +464,14 @@ void MasterWorkerPBB::runWorkerProcess() {
     BB_container.increaseNumberOfNodesCreated(branches_created);
     BB_container.increaseNumberOfNodesPruned(branches_pruned);
 
+    cout << "Shared Front: " << sharedParetoFront;
+    paretoFront.clear();
+    for (auto &sol : sharedParetoFront) {
+        problem.evaluate(sol);
+        paretoFront.push_back(sol);
+    }
+    cout << "Pareto front:" << std::endl << paretoFront;
+
     /**
      * Send the data to Master.
      **/
@@ -473,7 +481,6 @@ void MasterWorkerPBB::runWorkerProcess() {
     BB_container.saveGlobalPool();
     bb_threads.clear();
 
-    cout << sharedParetoFront;
     printf("[WorkerPBB-%03d] Data swarm recollected and saved.\n", getRank());
     printf("[WorkerPBB-%03d] Parallel Branch And Bound ended.\n", getRank());
 
@@ -487,7 +494,7 @@ void MasterWorkerPBB::loadInstanceFJSSP(Payload_problem_fjssp& problem, const ch
     char extension[4];
     int instance_with_release_time = 1; /** This is used because the Kacem's instances have release times and the other sets dont. **/
 
-    problem.n_objectives = 2;
+    problem.n_objectives = 3;
     problem.n_jobs = 0;
     problem.n_machines = 0;
     problem.n_operations = 0;

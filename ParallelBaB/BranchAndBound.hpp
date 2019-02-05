@@ -222,5 +222,6 @@ private:
     void increaseUpdatesInLowerBound();
     void increaseSharedWorks();
     void printCurrentSolution(int withVariables = 0);
+    void debugForSolution();
 };
 #endif /* BranchAndBound_hpp */

@@ -200,7 +200,7 @@ void ParetoFront::clear() {
 std::ostream &operator<<(std::ostream& stream, const ParetoFront& pareto_f) {
     unsigned int n_sol = 0;
     for (size_t nSol = 0; nSol < pareto_f.size(); ++nSol)
-        stream << '[' << n_sol++ << ']' << ' ' << pareto_f.at(nSol);
+        stream << '[' << std::fixed << std::setw(3) << n_sol++ << ']' << ' ' << pareto_f.at(nSol);
 
     return stream;
 }

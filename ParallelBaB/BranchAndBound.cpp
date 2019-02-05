@@ -233,15 +233,6 @@ void BranchAndBound::initialize(int starts_tree) {
     updateParetoContainer(incumbent_s);
     updateBoundsWithSolution(incumbent_s);
 
-    Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    problem.getSolutionWithLowerBoundInObj(1, temp);
-    updateParetoContainer(temp);
-    updateBoundsWithSolution(temp);
-
-    Solution temp_2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    problem.getSolutionWithLowerBoundInObj(2, temp_2);
-    updateParetoContainer(temp_2);
-    updateBoundsWithSolution(temp_2);
 }
 
 /** Generates an interval for each possible value in the given level of the branch_to_split
@@ -384,7 +375,7 @@ tbb::task* BranchAndBound::execute() {
     t1 = std::chrono::high_resolution_clock::now();
     initialize(interval_to_solve.getBuildUpTo());
     unsigned long number_of_sub_problems_popped = 0;
-    while (!sharedPool.empty() || thereIsMoreWork())/** While the pool has intervals or there are more work on other nodes. **/
+    while (!sharedPool.empty() || thereIsMoreWork())
         if(sharedPool.try_pop(interval_to_solve)) {
             number_of_sub_problems_popped++;
             updateLocalPF();
@@ -399,6 +390,39 @@ tbb::task* BranchAndBound::execute() {
     return NULL;
 }
 
+void BranchAndBound::debugForSolution() {
+    unsigned int s1_var[20] = {1,   11,   10,   11,    5,    3,    6,    4,   11,    2,   11,    7,    8,    9,    0,    0,    0,    0,    0,    0};
+
+    VRPTWdata s5_dat(problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
+    Solution s1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+
+    unsigned int s2_var[20] = {  1,   11,    2,   11,    5,    3,    6,    4,   11,   10,   11,    7,    8,    9,    0,    0,    0,    0,    0,    0};
+    Solution s2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    VRPTWdata s2_dat(problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
+
+    bool flag = true;
+    for (unsigned int idxvar = 0; idxvar < 20; ++idxvar) {
+        /*if (incumbent_s.getVariable(idxvar) != s1_var[idxvar]) {
+           flag = false;
+            break;
+         }
+*/
+        s1.push_back(s1_var[idxvar]);
+        problem.evaluateDynamic(s1, s5_dat, idxvar);
+        s2.push_back(s2_var[idxvar]);
+        problem.evaluateDynamic(s2, s2_dat, idxvar);
+    }
+    cout << "Solutions:\n" << s1 << s2 << std::endl << (s1 == s2) << 'e' << s1.dominanceTest(s2) << 'd' << std::endl;
+    printf("Solutions: %6.12f %6.12f %6.12f %6.16f %6.12f %d", s1.getObjective(1), s1.getObjective(2), s2.getObjective(1), s1.getObjective(2), (s1.getObjective(2) - s2.getObjective(2)), s1.dominanceTest(s2));
+
+    if (flag) {
+        cout << s1;
+        cout << incumbent_s;
+        ivm_tree.print();
+        paretoContainer.print();
+    }
+}
+
 void BranchAndBound::solve(Interval& branch_to_solve) {
 
     intializeIVM_data(branch_to_solve, ivm_tree);
@@ -406,6 +430,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         updateLocalPF();
         explore(incumbent_s);
         problem.evaluateDynamic(incumbent_s, data_solution, currentLevel);
+        //debugForSolution();
         if (!aLeafHasBeenReached() && theTreeHasMoreNodes()) {
             if (improvesTheParetoContainer(incumbent_s))
                 branch(incumbent_s, currentLevel);
@@ -611,17 +636,17 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             problem.evaluateDynamic(solution, data_solution, currentLevel + 1);
             increaseExploredNodes();
 
-
             bool is_improving = false;
             if (data_solution.isFeasible())
-                for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
+                is_improving = true;
+            /*for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
                     ub_normalized[objc] = minMaxNormalization(data_solution.getObjective(objc), problem.getBestObjectiveFoundIn(objc), problem.getFmax(objc));
 
                     if (ub_normalized[objc] <= 0) {
                         is_improving = true;
                         break;
                     }
-                }
+                }*/
 
             if (is_improving && improvesTheParetoContainer(solution)) {
 
@@ -758,7 +783,7 @@ bool BranchAndBound::theTreeHasMoreNodes() const {
 }
 
 bool BranchAndBound::updateParetoContainer(const Solution & solution) {
-    if (data_solution.isComplete() && data_solution.isFeasible())
+    if (solution.isComplete() && solution.isFeasible())
         return paretoContainer.add(solution);
     return false;
 }
@@ -897,7 +922,7 @@ float BranchAndBound::distanceToObjective(int value, int objective) {
 }
 
 double BranchAndBound::minMaxNormalization(int value, int min, int max) const{
-    return ((value - min) * 1.0 )/ (max - min);
+    return ((value - min) * 1.0 )/ ((max - min) * 1.0);
 }
 
 void BranchAndBound::enableGrid() {

@@ -30,6 +30,8 @@ typedef struct {
     unsigned int * demand;       /** Length is (number_of_customers + depot). **/
 } Payload_problem_vrptw;
 
+enum VRTPW_OBJECTIVES {NUMBER_OF_VEHICLES, TOTAL_COST, CRITICAL_COST, TOTAL_TRAVEL_TIME, CRITICAL_TRAVEL_TIME};
+
 class ProblemVRPTW: public Problem {
 
 private:
@@ -51,6 +53,8 @@ private:
      */
     double min_cost_found;
     double max_cost_found;
+    double min_critical_cost_found;
+    double max_critical_cost_found;
     unsigned int min_number_vehicles_found;
     unsigned int max_number_vehicles_found;
     unsigned int min_makespan_found;
@@ -128,5 +132,7 @@ public:
 private:
     double euclideanDistance(unsigned int xcoord_1, unsigned int ycoord_1, unsigned int xcoord_2, unsigned int ycoord_2) const;
     bool isCustomer(unsigned int node) const;
+    bool isDepot(unsigned int node) const;
+    double trunc(double value) const;
 };
 #endif /* ProblemVRPTW_hpp */
