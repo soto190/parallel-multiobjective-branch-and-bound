@@ -298,8 +298,9 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
 
     data.setCurrentPosition(level);
     data.increaseTimesElementIsInUse(destination);
-
-    if (level == 0 && isDepot(solution.getVariable(0))) {
+    if (solution.getVariable(level) == 0) {
+        /** Inserting an empty node. **/
+    } else if (level == 0 && isDepot(solution.getVariable(0))) {
         data.setInfeasibilityType(VRPTW_INFEASIBILITY::FIRST_NODE_IS_DEPOT);
         /** cout << "The first node can not be a depot/vehicle." << std::endl; **/
 
@@ -367,7 +368,7 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
     if (data.isFeasible())
         solution.setFeasible();
     else
-        data.setInfeasible();
+        solution.setInfeasible();
 
     solution.setObjective(0, data.getNumberOfVehiclesUsed());
     solution.setObjective(1, data.getTotalCost());
@@ -383,67 +384,69 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
  */
 void ProblemVRPTW::evaluateRemoveDynamic(Solution & solution, VRPTWdata& data, int level) {
 
-    data.decreaseTimesElementIsInUse(solution.getVariable(level));
+    if (solution.getVariable(level) != 0) {
+        data.decreaseTimesElementIsInUse(solution.getVariable(level));
 
-    //cout << "Substracting: " << solution.getVariable(level) << std::endl;
+        //cout << "Substracting: " << solution.getVariable(level) << std::endl;
 
-    if (level == 0) /** If we are removing the first position of the vector just do a reset. **/
-        data.reset();
+        if (level == 0) /** If we are removing the first position of the vector just do a reset. **/
+            data.reset();
 
-    else if (!data.isFeasible()) {
-        switch (data.getInfeasibilityType()) {
-            case FIRST_NODE_IS_DEPOT:
-                data.setFeasible();
-                break;
+        else if (!data.isFeasible()) {
+            switch (data.getInfeasibilityType()) {
+                case FIRST_NODE_IS_DEPOT:
+                    data.setFeasible();
+                    break;
 
-            case CONSECUTIVE_DEPOTS:
-                data.setFeasible();
-                break;
+                case CONSECUTIVE_DEPOTS:
+                    data.setFeasible();
+                    break;
 
-            case CUSTOMER_VISITED:
-                data.setFeasible();
-                break;
+                case CUSTOMER_VISITED:
+                    data.setFeasible();
+                    break;
 
-            case COMPLETE_SOLUTION:
-                data.setFeasible();
-                break;
+                case COMPLETE_SOLUTION:
+                    data.setFeasible();
+                    break;
 
-            case TIME_WINDOW:
-                data.setFeasible();
-                break;
+                case TIME_WINDOW:
+                    data.setFeasible();
+                    break;
 
-            case CAPACITY:
-                data.setFeasible();
-                break;
+                case CAPACITY:
+                    data.setFeasible();
+                    break;
 
-            default:
-                break;
-        }
-    } else {
-
-        unsigned int node = isCustomer(solution.getVariable(level))? solution.getVariable(level) : 0;
-        unsigned int previous_node = isCustomer(solution.getVariable(level - 1))? solution.getVariable(level - 1) : 0;
-
-        if (data.isComplete()) {
-            data.decreaseCurrentVehicleCost(getCustomerCostTo(node, 0));
-            data.setIncomplete();
-        }
-
-        data.increaseCurrentVehicleCapacity(getCustomerDemand(node));
-
-        if (isCustomer(node)) {
-            data.setCurrentVehicleTravelTime(isCustomer(previous_node) ? data.getCustomerServiceEndedAt(previous_node) : 0);
-            data.updateTravelTime();
-            data.decreaseNumberOfDispatchedCustomers(1);
-            data.setCurrentNode(previous_node);
-            data.setCustomerServiceEndedAt(node, 0);
-
+                default:
+                    break;
+            }
         } else {
-            /** If the node is a vehicle then we can reduce by 1 the number of vehicles. **/
-                data.decreaseNumberOfVehicles(1);
+
+            unsigned int node = isCustomer(solution.getVariable(level))? solution.getVariable(level) : 0;
+            unsigned int previous_node = isCustomer(solution.getVariable(level - 1))? solution.getVariable(level - 1) : 0;
+
+            if (data.isComplete()) {
+                data.decreaseCurrentVehicleCost(getCustomerCostTo(node, 0));
+                data.setIncomplete();
+            }
+
+            data.increaseCurrentVehicleCapacity(getCustomerDemand(node));
+
+            if (isCustomer(node)) {
+                data.setCurrentVehicleTravelTime(isCustomer(previous_node) ? data.getCustomerServiceEndedAt(previous_node) : 0);
+                data.updateTravelTime();
+                data.decreaseNumberOfDispatchedCustomers(1);
+                data.setCurrentNode(previous_node);
+                data.setCustomerServiceEndedAt(node, 0);
+
+            } else {
+                /** If the node is a vehicle then we can reduce by 1 the number of vehicles. **/
+                    data.decreaseNumberOfVehicles(1);
+            }
+            data.decreaseCurrentVehicleCost(getCustomerCostTo(previous_node, node));
+            data.setCurrentNode(previous_node);
         }
-        data.decreaseCurrentVehicleCost(getCustomerCostTo(previous_node, node));
-        data.setCurrentNode(previous_node);
     }
 
     solution.pull_back();
@@ -458,11 +461,12 @@ void ProblemVRPTW::evaluateRemoveDynamic(Solution & solution, VRPTWdata& data, i
     if (data.isFeasible())
         solution.setFeasible();
     else
-        data.setInfeasible();
+        solution.setInfeasible();
 
     solution.setObjective(0, data.getNumberOfVehiclesUsed());
     solution.setObjective(1, data.getTotalCost());
     solution.setObjective(2, data.getMaxCost());
+
 }
 
 double ProblemVRPTW::getFmin(int n_objective) const {

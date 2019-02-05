@@ -393,30 +393,31 @@ tbb::task* BranchAndBound::execute() {
 void BranchAndBound::debugForSolution() {
     unsigned int s1_var[20] = {1,   11,   10,   11,    5,    3,    6,    4,   11,    2,   11,    7,    8,    9,    0,    0,    0,    0,    0,    0};
 
-    VRPTWdata s5_dat(problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
+    VRPTWdata s1_dat(problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
     Solution s1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
 
-    unsigned int s2_var[20] = {  1,   11,    2,   11,    5,    3,    6,    4,   11,   10,   11,    7,    8,    9,    0,    0,    0,    0,    0,    0};
+    unsigned int s2_var[20] = {     5,    3,    7,    8,    9,    6,    4,    2,    1,   11,   10,    0,    0,    0,    0,    0,    0,    0,    0,    0};
     Solution s2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     VRPTWdata s2_dat(problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
 
     bool flag = true;
     for (unsigned int idxvar = 0; idxvar < 20; ++idxvar) {
-        /*if (incumbent_s.getVariable(idxvar) != s1_var[idxvar]) {
+       /* if (incumbent_s.getVariable(idxvar) != s2_var[idxvar]) {
            flag = false;
             break;
-         }
-*/
+         }*/
         s1.push_back(s1_var[idxvar]);
-        problem.evaluateDynamic(s1, s5_dat, idxvar);
+        problem.evaluateDynamic(s1, s1_dat, idxvar);
         s2.push_back(s2_var[idxvar]);
         problem.evaluateDynamic(s2, s2_dat, idxvar);
+        cout << "Solutions:\n" << s1 << s2 << 'f' << s1.isFeasible() << 'f' << s2.isFeasible() << std::endl;
+
     }
-    cout << "Solutions:\n" << s1 << s2 << std::endl << (s1 == s2) << 'e' << s1.dominanceTest(s2) << 'd' << std::endl;
+    cout << "Solutions:\n" << s1 << s2 << 'f' << s1.isFeasible() << 'f' << s2.isFeasible() << std::endl;
     printf("Solutions: %6.12f %6.12f %6.12f %6.16f %6.12f %d", s1.getObjective(1), s1.getObjective(2), s2.getObjective(1), s1.getObjective(2), (s1.getObjective(2) - s2.getObjective(2)), s1.dominanceTest(s2));
 
     if (flag) {
-        cout << s1;
+        cout << s2;
         cout << incumbent_s;
         ivm_tree.print();
         paretoContainer.print();
@@ -1278,8 +1279,7 @@ int BranchAndBound::saveParetoFront() {
     if (myfile.is_open()) {
         printf("[Worker-%03d:B&B-%03d] Saving in file...\n", node_rank, bb_rank);
 
-        for (const auto& it : pareto_front)
-            myfile << it;
+        myfile << pareto_front;
 
         myfile.close();
     } else
@@ -1291,8 +1291,13 @@ void BranchAndBound::saveEvery(double timeInSeconds) {
     
     if (((std::clock() - time_start) / (double) CLOCKS_PER_SEC) > timeInSeconds) {
         time_start = std::clock();
-        
-        pareto_front = paretoContainer.getParetoFront();
+
+        pareto_front.clear();
+        ParetoFront pf = sharedParetoFront.getVector();
+        for (auto &sol : pf) {
+            problem.evaluate(sol);
+            pareto_front.push_back(sol);
+        }
         
         t2 = std::chrono::high_resolution_clock::now();
         std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);

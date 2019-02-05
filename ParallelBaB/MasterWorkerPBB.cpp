@@ -440,7 +440,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                     break;
             }
         }
-        //BB_container.saveEvery(300);
+        BB_container.saveEvery(300);
     }
 
     /** Recollects the data. **/
