@@ -297,69 +297,70 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
     unsigned int destination = solution.getVariable(level) <= getNumberOfCustomers() ? solution.getVariable(level) : 0;
 
     data.setCurrentPosition(level);
-    data.increaseTimesElementIsInUse(destination);
-    if (solution.getVariable(level) == 0) {
-        /** Inserting an empty node. **/
-    } else if (level == 0 && isDepot(solution.getVariable(0))) {
-        data.setInfeasibilityType(VRPTW_INFEASIBILITY::FIRST_NODE_IS_DEPOT);
-        /** cout << "The first node can not be a depot/vehicle." << std::endl; **/
+    if (solution.getVariable(level) > 0 && solution.isFeasible()) {
+        data.increaseTimesElementIsInUse(destination);
 
-    } else if(level > 0 &&
-            isDepot(solution.getVariable(level)) &&
-            isDepot(solution.getVariable(level - 1))) {
-        data.setInfeasibilityType(VRPTW_INFEASIBILITY::CONSECUTIVE_DEPOTS);
+            /** Inserting an empty node. **/
+        if (level == 0 && isDepot(solution.getVariable(0))) {
+            data.setInfeasibilityType(VRPTW_INFEASIBILITY::FIRST_NODE_IS_DEPOT);
+            /** cout << "The first node can not be a depot/vehicle." << std::endl; **/
 
-        /** cout << "Infeasible by consecutive depots." << std::endl; **/
+        } else if(level > 0 &&
+                isDepot(solution.getVariable(level)) &&
+                isDepot(solution.getVariable(level - 1))) {
+            data.setInfeasibilityType(VRPTW_INFEASIBILITY::CONSECUTIVE_DEPOTS);
 
-    } else if(data.getTimesThatElementAppears(destination) > getTimesThatValueCanBeRepeated(destination)) {
-        data.setInfeasibilityType(VRPTW_INFEASIBILITY::CUSTOMER_VISITED);
-        /** This is avoided by counting the times that an element appears.**/
-        /** cout << "Customer is already visited." << std::endl; **/
+            /** cout << "Infeasible by consecutive depots." << std::endl; **/
 
-    } else if (data.isComplete()) {
-        /* data.setInfeasibilityType(VRPTW_INFEASIBILITY::COMPLETE_SOLUTION); */
-        /** cout << "Solution is already complete." << std::endl; **/
+        } else if(data.getTimesThatElementAppears(destination) > getTimesThatValueCanBeRepeated(destination)) {
+            data.setInfeasibilityType(VRPTW_INFEASIBILITY::CUSTOMER_VISITED);
+            /** This is avoided by counting the times that an element appears.**/
+            /** cout << "Customer is already visited." << std::endl; **/
 
-    } else {
-        unsigned int previous_node = 0;
-        if (level > 0)
-            previous_node = solution.getVariable(level - 1) <= getNumberOfCustomers() ? solution.getVariable(level - 1) : 0;
-
-        if(data.getCurrentVehicleCapacity() >= getCustomerDemand(destination)) {
-            data.setFeasible();
-            if(data.getCurrentVehicleTravelTime() <= getCustomerTimeWindowStart(destination))
-                data.setCurrentVehicleTravelTime(getCustomerTimeWindowStart(destination) + getCustomerServiceTime(destination));
-
-            else if (data.getCurrentVehicleTravelTime() >= getCustomerTimeWindowStart(destination) &&
-                     data.getCurrentVehicleTravelTime() <= getCustomerTimeWindowEnd(destination))
-                data.increaseCurrentVehicleTravelTime(getCustomerServiceTime(destination));
-
-            else
-                data.setInfeasibilityType(VRPTW_INFEASIBILITY::TIME_WINDOW);
-
-            if (data.isFeasible()) {
-
-                data.decreaseCurrentVehicleCapacity(getCustomerDemand(destination));
-                data.increaseCurrentVehicleCost(getCustomerCostTo(previous_node, destination));
-
-                if (isCustomer(destination)) {
-                    data.setCustomerServiceEndedAt(destination, data.getCurrentVehicleTravelTime());
-                    data.setCurrentNode(destination);
-                    data.increaseNumberOfDispatchedCustomers(1);
-
-                    if (data.isComplete())
-                        data.increaseCurrentVehicleCost(getCustomerCostTo(destination, 0));
-
-                } else /** It is a customer going to depot. The cost of going to depot has been already computed. **/
-                    data.createNewVehicle(getMaxVehicleCapacity());
-
-            } else { /** It is an infeasible by time window solution and do nothing. **/}
+        } else if (data.isComplete()) {
+            /* data.setInfeasibilityType(VRPTW_INFEASIBILITY::COMPLETE_SOLUTION); */
+            cout << "Solution is already complete." << std::endl;
 
         } else {
-            data.setInfeasibilityType(VRPTW_INFEASIBILITY::CAPACITY);
+            unsigned int previous_node = 0;
+            if (level > 0)
+                previous_node = solution.getVariable(level - 1) <= getNumberOfCustomers() ? solution.getVariable(level - 1) : 0;
+
+            if(data.getCurrentVehicleCapacity() >= getCustomerDemand(destination)) {
+                data.setFeasible();
+                if(data.getCurrentVehicleTravelTime() <= getCustomerTimeWindowStart(destination))
+                    data.setCurrentVehicleTravelTime(getCustomerTimeWindowStart(destination) + getCustomerServiceTime(destination));
+
+                else if (data.getCurrentVehicleTravelTime() >= getCustomerTimeWindowStart(destination) &&
+                         data.getCurrentVehicleTravelTime() <= getCustomerTimeWindowEnd(destination))
+                    data.increaseCurrentVehicleTravelTime(getCustomerServiceTime(destination));
+
+                else
+                    data.setInfeasibilityType(VRPTW_INFEASIBILITY::TIME_WINDOW);
+
+                if (data.isFeasible()) {
+
+                    data.decreaseCurrentVehicleCapacity(getCustomerDemand(destination));
+                    data.increaseCurrentVehicleCost(getCustomerCostTo(previous_node, destination));
+
+                    if (isCustomer(destination)) {
+                        data.setCustomerServiceEndedAt(destination, data.getCurrentVehicleTravelTime());
+                        data.setCurrentNode(destination);
+                        data.increaseNumberOfDispatchedCustomers(1);
+
+                        if (data.isComplete())
+                            data.increaseCurrentVehicleCost(getCustomerCostTo(destination, 0));
+
+                    } else /** It is a customer going to depot. The cost of going to depot has been already computed. **/
+                        data.createNewVehicle(getMaxVehicleCapacity());
+
+                } else { /** It is an infeasible by time window solution and do nothing. **/}
+
+            } else {
+                data.setInfeasibilityType(VRPTW_INFEASIBILITY::CAPACITY);
+            }
         }
     }
-
     if (data.isComplete())
         solution.setComplete();
     else
@@ -384,6 +385,7 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
  */
 void ProblemVRPTW::evaluateRemoveDynamic(Solution & solution, VRPTWdata& data, int level) {
 
+    data.setCurrentPosition(level);
     if (solution.getVariable(level) != 0) {
         data.decreaseTimesElementIsInUse(solution.getVariable(level));
 

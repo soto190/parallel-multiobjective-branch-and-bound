@@ -84,6 +84,9 @@ private:
     IVMTree ivm_tree;
     Interval interval_to_solve;
     ParetoFront pareto_front; /** paretoFront. **/
+
+    double min_values_found[3];
+    double max_values_found[3];
     
     char pareto_file[255];
     char summarize_file[255];
@@ -200,7 +203,7 @@ private:
     void shareWorkAndSendToGlobalPool(const Interval& interval);
     bool improvesTheParetoContainer(const Solution & solution);
     bool updateParetoContainer(const Solution & solution);
-    void updateBounds(const Solution & solution, VRPTWdata& data);
+    void updateBounds(const Solution & solution);
     void updateBoundsWithSolution(const Solution & solution);
     void setPriorityTo(Interval & interval) const;
 

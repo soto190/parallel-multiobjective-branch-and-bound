@@ -205,6 +205,11 @@ void BranchAndBound::initialize(int starts_tree) {
     problem.createDefaultSolution(sample_solution);
     problem.evaluate(sample_solution);
 
+    for (unsigned int idx_obj = 0; idx_obj < problem.getNumberOfObjectives(); ++idx_obj) {
+        min_values_found[idx_obj] = problem.getFmin(idx_obj);
+        max_values_found[idx_obj] = problem.getFmax(idx_obj);
+    }
+    updateBounds(sample_solution);
     /*
      NSGA_II nsgaii_algorithm(problem);
      nsgaii_algorithm.setSampleSolution(sample_solution);
@@ -285,9 +290,9 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
 
                 branch_to_split.setValueAt(split_level, toAdd);
 
-                branch_to_split.setDistance(0, minMaxNormalization(data_solution.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
+                branch_to_split.setDistance(0, minMaxNormalization(data_solution.getObjective(0), min_values_found[0], max_values_found[0]));
 
-                branch_to_split.setDistance(1, minMaxNormalization(data_solution.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
+                branch_to_split.setDistance(1, minMaxNormalization(data_solution.getObjective(1), min_values_found[1], max_values_found[1]));
 
                 setPriorityTo(branch_to_split);
                 sharedPool.push(branch_to_split);
@@ -356,8 +361,8 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
             problem.evaluateDynamic(incumbent_s, data_solution, currentLevel + 1);
 
             if (data_solution.isFeasible()) {
-                branch_init.setDistance(0, minMaxNormalization(data_solution.getObjective(0), problem.getFmin(0), problem.getFmax(0)));
-                branch_init.setDistance(1, minMaxNormalization(data_solution.getObjective(1), problem.getFmin(1), problem.getFmax(1)));
+                branch_init.setDistance(0, minMaxNormalization(data_solution.getObjective(0), min_values_found[0], max_values_found[0]));
+                branch_init.setDistance(1, minMaxNormalization(data_solution.getObjective(1),min_values_found[1], max_values_found[1]));
                 setPriorityTo(branch_init);
                 sharedPool.push(branch_init);
                 number_of_shared_works++;
@@ -396,7 +401,7 @@ void BranchAndBound::debugForSolution() {
     VRPTWdata s1_dat(problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
     Solution s1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
 
-    unsigned int s2_var[20] = {     5,    3,    7,    8,    9,    6,    4,    2,    1,   11,   10,    0,    0,    0,    0,    0,    0,    0,    0,    0};
+    unsigned int s2_var[20] = { 9,    6,    4,    2,    1,   11,    5,    3,    7,    8,   10,    0,    0,    0,    0,    0,    0,    0,    0,    0};
     Solution s2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     VRPTWdata s2_dat(problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
 
@@ -446,7 +451,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
                 increaseUpdatesInLowerBound();
                 updateGlobalPF(incumbent_s);
             }
-            updateBounds(incumbent_s, data_solution);
+            updateBounds(incumbent_s);
             ivm_tree.pruneActiveNode();  /** Go back and prepare to remove the evaluations. **/
         }
 
@@ -553,7 +558,7 @@ int BranchAndBound::branchFromInterval(Solution& solution, int currentLevel) {
             bool is_improving = false;
             if (data_solution.isFeasible())
                 for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
-                    ub_normalized[objc] = minMaxNormalization(data_solution.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc));
+                    ub_normalized[objc] = minMaxNormalization(data_solution.getObjective(objc), min_values_found[objc], max_values_found[objc]);
 
                     if (ub_normalized[objc] <= 0) {
                         is_improving = true;
@@ -569,7 +574,7 @@ int BranchAndBound::branchFromInterval(Solution& solution, int currentLevel) {
                 if(isSortingEnable()) {
                     for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
                         obj_values.setObjective(objc, data_solution.getObjective(objc));
-                        obj_values.setDistance(objc, minMaxNormalization(obj_values.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc)));
+                        obj_values.setDistance(objc, minMaxNormalization(obj_values.getObjective(objc), min_values_found[objc], max_values_found[objc]));
                     }
 
                     sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
@@ -640,14 +645,14 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
             bool is_improving = false;
             if (data_solution.isFeasible())
                 is_improving = true;
-            /*for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
-                    ub_normalized[objc] = minMaxNormalization(data_solution.getObjective(objc), problem.getBestObjectiveFoundIn(objc), problem.getFmax(objc));
+            for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
+                    ub_normalized[objc] = minMaxNormalization(data_solution.getObjective(objc), min_values_found[objc], max_values_found[objc]);
 
                     if (ub_normalized[objc] <= 0) {
                         is_improving = true;
                         break;
                     }
-                }*/
+                }
 
             if (is_improving && improvesTheParetoContainer(solution)) {
 
@@ -656,7 +661,7 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
                 if(isSortingEnable()) {
                     for (unsigned int objc = 0; objc < problem.getNumberOfObjectives(); ++objc) {
                         obj_values.setObjective(objc, data_solution.getObjective(objc));
-                        obj_values.setDistance(objc, minMaxNormalization(obj_values.getObjective(objc), problem.getFmin(objc), problem.getFmax(objc)));
+                        obj_values.setDistance(objc, minMaxNormalization(obj_values.getObjective(objc), min_values_found[objc], max_values_found[objc]));
                     }
 
                     sorted_elements.push(obj_values, SORTING_TYPES::DIST_1); //** sorting the nodes to give priority to promising nodes.
@@ -753,8 +758,8 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
                 problem.evaluateDynamic(temp, data, next_row);
 
 
-                branch_to_send.setDistance(0, minMaxNormalization(data.getObjective(0), problem.getBestObjectiveFoundIn(0), problem.getFmax(0)));
-                branch_to_send.setDistance(1, minMaxNormalization(data.getObjective(1), problem.getBestObjectiveFoundIn(1), problem.getFmax(1)));
+                branch_to_send.setDistance(0, minMaxNormalization(data.getObjective(0), min_values_found[0], max_values_found[0]));
+                branch_to_send.setDistance(1, minMaxNormalization(data.getObjective(1), min_values_found[1], max_values_found[1]));
                 
                 setPriorityTo(branch_to_send);
                 sharedPool.push(branch_to_send); /** This stores a copy.**/
@@ -800,7 +805,10 @@ bool BranchAndBound::updateParetoContainer(const Solution & solution) {
  *
  */
 bool BranchAndBound::improvesTheParetoContainer(const Solution & solution) {
-    return paretoContainer.improvesTheGrid(solution);
+    if(solution.isFeasible())
+        return paretoContainer.improvesTheGrid(solution);
+    else
+        return false;
 }
 
 unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) const {
@@ -851,14 +859,14 @@ unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) co
     return n_nodes;
 }
 
-void BranchAndBound::updateBounds(const Solution& sol, VRPTWdata& data) {
-    
-   /* if (data.getMakespan() < problem.getBestMakespanFound())
-        problem.updateBestMakespanSolution(data);
-    
-    if (data.getMaxWorkload() < problem.getBestWorkloadFound())
-        problem.updateBestMaxWorkloadSolution(data);
-    */
+void BranchAndBound::updateBounds(const Solution& sol) {
+    for (unsigned int idx_obj = 0; idx_obj < sol.getNumberOfObjectives(); ++idx_obj) {
+        if (sol.getObjective(idx_obj) < min_values_found[idx_obj])
+            min_values_found[idx_obj] = sol.getObjective(idx_obj);
+
+        if (sol.getObjective(idx_obj) > max_values_found[idx_obj])
+            max_values_found[idx_obj] = sol.getObjective(idx_obj);
+    }
 }
 
 void BranchAndBound::updateBoundsWithSolution(const Solution & solution) {
