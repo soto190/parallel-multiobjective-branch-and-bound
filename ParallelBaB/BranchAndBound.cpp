@@ -447,6 +447,8 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
             if (updateParetoContainer(incumbent_s)) {
                 printf("[Worker-%03d:B&B-%03d] New solution found:\n", node_rank, bb_rank);
                 cout << incumbent_s;
+                bool validated = problem.validateVariables(incumbent_s);
+                cout << "Validated: " << validated;
 
                 increaseUpdatesInLowerBound();
                 updateGlobalPF(incumbent_s);

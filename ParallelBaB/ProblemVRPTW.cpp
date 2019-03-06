@@ -408,10 +408,10 @@ void ProblemVRPTW::evaluateRemoveDynamic(Solution & solution, VRPTWdata& data, i
                     data.setFeasible();
                     break;
 
-                case COMPLETE_SOLUTION:
-                    data.setFeasible();
+                /*case COMPLETE_SOLUTION:
+                    data.setIncomplete(); This case is handled later.
                     break;
-
+                    */
                 case TIME_WINDOW:
                     data.setFeasible();
                     break;
@@ -892,7 +892,7 @@ bool ProblemVRPTW::isCustomer(unsigned int node) const {
 }
 
 bool ProblemVRPTW::isDepot(unsigned int node) const {
-    return node > getNumberOfCustomers()? true : false;
+    return (node > getNumberOfCustomers()? true : false) || node == 0;
 }
 
 void ProblemVRPTW::printSolution(const Solution & solution) const{
@@ -957,3 +957,117 @@ double ProblemVRPTW::trunc(double lf) const {
     lf = (((double) uiTemp) / pow(10, 6) * iSigned);
     return lf;
 }
+
+bool ProblemVRPTW::validateVariables(Solution &solution) {
+    unsigned int n_vehicles = 0;
+    unsigned int n_dispatched_customers = 0;
+    unsigned int origin = 0;
+
+    double vehicle_cost [getMaxNumberOfVehicles()];
+    double travel_time [getMaxNumberOfVehicles()];
+    unsigned int capacity [getMaxNumberOfVehicles()];
+    bool visited[getNumberOfNodes()];
+
+    double max_travel_time = 0;
+    double max_cost = 0;
+    double total_cost = 0;
+
+    capacity[0] = getMaxVehicleCapacity();
+    vehicle_cost[0] = 0;
+    travel_time[0] = 0;
+
+    bool is_feasible = true;
+    bool is_complete = false;
+
+    for (unsigned int idx_n = 0; idx_n < getNumberOfNodes(); ++idx_n)
+        visited[idx_n] = false;
+
+    for (unsigned int idx_var = 0; idx_var <= solution.getBuildUpTo(); ++idx_var) {
+        int destination = solution.getVariable(idx_var) <= getNumberOfCustomers() ? solution.getVariable(idx_var) : 0;
+
+        if (idx_var == 0) {
+            if (isDepot(destination)) /** First node can not be a depot. **/
+                is_feasible = false;
+        } else {
+            int last_node = solution.getVariable(idx_var - 1);
+            if (isDepot(last_node) && isDepot(destination)) /** Two consecutive depots. Empty route. **/
+                is_feasible = false;
+
+            if (isCustomer(destination) && visited[destination]) /** Already visited. **/
+                is_feasible = false;
+
+            if (n_dispatched_customers >= getNumberOfCustomers())
+                is_feasible = false; /** Solution is already complete. **/
+
+        }
+        /** There are more customers to dispatch. **/
+        if (is_feasible && n_dispatched_customers < getNumberOfCustomers()) {
+            origin = (idx_var == 0)? 0: (solution.getVariable(idx_var - 1) >= getNumberOfCustomers()? 0: solution.getVariable(idx_var - 1));
+
+            /** Validating the time window and customer demand. **/
+            if (capacity[n_vehicles] >= getCustomerDemand(destination)) {
+
+                if (travel_time[n_vehicles] <= getCustomerTimeWindowStart(destination))
+                    travel_time[n_vehicles] = getCustomerTimeWindowStart(destination) + getCustomerServiceTime(destination);
+
+                else if(travel_time[n_vehicles] >= getCustomerTimeWindowStart(destination) &&
+                        travel_time[n_vehicles] <= getCustomerTimeWindowEnd(destination))
+                    travel_time[n_vehicles] += getCustomerServiceTime(destination);
+
+                else {
+                    is_feasible = false;
+                    break; /** Not a feasible time window. **/
+                }
+
+                capacity[n_vehicles] -= getCustomerDemand(destination);
+                vehicle_cost[n_vehicles] += getCustomerCostTo(origin, destination);
+
+                if (isCustomer(destination)) {
+                    origin = destination;
+                    n_dispatched_customers++;
+                } else { /** It is a customer going to depot. **/
+                    origin = 0;
+                    n_vehicles++;
+                    capacity[n_vehicles] = getMaxVehicleCapacity();
+                    vehicle_cost[n_vehicles] = 0;
+                    travel_time[n_vehicles] = 0;
+
+                } /** else is an empty route and do nothing. **/
+
+            } else {
+                is_feasible = false;
+                break; /** Not enough capacity. **/
+            }
+        } else { /** If there are no more customers to dispatch then it is a complete solution. **/
+            vehicle_cost[n_vehicles] += costs[solution.getVariable(idx_var - 1)][0]; /** Adds cost of returning to depot. **/
+            is_complete = true;
+            break;
+        }
+    }
+
+    if (is_feasible && is_complete) {
+        for (unsigned int vehicle = 0; vehicle <= n_vehicles; ++vehicle) {
+
+            if (vehicle_cost[vehicle] > max_cost)
+                max_cost = vehicle_cost[vehicle];
+
+            if (travel_time[vehicle] > max_travel_time)
+                max_travel_time = travel_time[vehicle];
+
+            total_cost += vehicle_cost[vehicle];
+        }
+        
+        solution.setObjective(0, n_vehicles + 1);
+        solution.setObjective(1, total_cost);
+        solution.setObjective(2, max_cost);
+
+    } else {
+        /** Setting bad objectives values by infeasibility. **/
+//        solution.setObjective(0, max_number_of_vehicles * 2);
+//        solution.setObjective(1, total_distance_in_order * 2);
+//        solution.setObjective(2, total_distance_in_order * 2);
+    }
+
+    return is_feasible;
+}
+
