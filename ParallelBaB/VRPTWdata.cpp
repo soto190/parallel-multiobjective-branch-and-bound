@@ -310,7 +310,7 @@ void VRPTWdata::decreaseTimesElementIsInUse(unsigned int element) {
 
 unsigned int VRPTWdata::getTimesThatElementAppears(unsigned int element) const {
     if (element > getNumberOfCustomers())
-        return variable_times_used[0]; /** The depot is the firs position. **/
+        return variable_times_used[0]; /** The depot is the first position. **/
     return variable_times_used[element];
 }
 

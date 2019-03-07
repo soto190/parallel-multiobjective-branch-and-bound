@@ -301,12 +301,12 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
         data.increaseTimesElementIsInUse(destination);
 
             /** Inserting an empty node. **/
-        if (level == 0 && isDepot(solution.getVariable(0))) {
+        if (level == 0 && isDepot(destination)) {
             data.setInfeasibilityType(VRPTW_INFEASIBILITY::FIRST_NODE_IS_DEPOT);
             /** cout << "The first node can not be a depot/vehicle." << std::endl; **/
 
         } else if(level > 0 &&
-                isDepot(solution.getVariable(level)) &&
+                isDepot(destination) &&
                 isDepot(solution.getVariable(level - 1))) {
             data.setInfeasibilityType(VRPTW_INFEASIBILITY::CONSECUTIVE_DEPOTS);
 
@@ -728,8 +728,9 @@ void ProblemVRPTW::loadInstance(char filePath[2][255], char file_extension[4]) {
             for (unsigned int text = 0; text < splitted_text.size(); ++text)
                 data.push_back(std::stoi(splitted_text.at(text)));
             customers_data.push_back(data);
-
-            number_of_customers++;
+            
+            if (data.size() == 7)
+                number_of_customers++;
         }
 
         number_of_customers--;  /** Discounts the depot node. **/
@@ -748,7 +749,7 @@ void ProblemVRPTW::loadInstance(char filePath[2][255], char file_extension[4]) {
         min_makespan_found = 0;
         for (unsigned int customer = 0; customer < getNumberOfNodes(); ++customer) {
 
-            if (customers_data.size() < 7) /** There are seven data for each customer. **/
+            if (customers_data.at(customer).size() < 7) /** There are seven data for each customer. **/
                 break;
 
             coordinates[customer] = new unsigned int[2];
@@ -1023,10 +1024,8 @@ bool ProblemVRPTW::validateVariables(Solution &solution) {
                 vehicle_cost[n_vehicles] += getCustomerCostTo(origin, destination);
 
                 if (isCustomer(destination)) {
-                    origin = destination;
                     n_dispatched_customers++;
                 } else { /** It is a customer going to depot. **/
-                    origin = 0;
                     n_vehicles++;
                     capacity[n_vehicles] = getMaxVehicleCapacity();
                     vehicle_cost[n_vehicles] = 0;

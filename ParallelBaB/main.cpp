@@ -200,11 +200,11 @@ void testVRPSolution(ProblemVRPTW& problem) {
          1, 26,  5, 24,  7, 10, 16, 14, 12, 27,
         28, 29, 13, 17, 18, 23,  2, 21, 30, 31};*/
 
-    {1,   11,   10,   11,    2,   11,    8,    9,    6,   11,    5,    3,    7,    4,    0,    0,    0,    0,    0,    0};
-    for (unsigned int variable = 0; variable < 20; ++variable) {
+    {   9,    6,    4,    2,    1,   11,    5,    3,    7,    8,   10,    0,    0,    0,    0,    0,    0,    0,    0,    0,  };
+    for (unsigned int variable = 0; variable < 11; ++variable) {
         test_solution.push_back(values[variable]);
         problem.evaluateDynamic(test_solution, test_data, variable);
-        cout << "Dynamic: " << test_solution;
+        cout << "Dynamic: " << test_solution << ' ' << test_solution.isFeasible();
     }
 
     /** Dynamic evaluation. **/
