@@ -728,7 +728,7 @@ void ProblemVRPTW::loadInstance(char filePath[2][255], char file_extension[4]) {
             for (unsigned int text = 0; text < splitted_text.size(); ++text)
                 data.push_back(std::stoi(splitted_text.at(text)));
             customers_data.push_back(data);
-            
+
             if (data.size() == 7)
                 number_of_customers++;
         }
