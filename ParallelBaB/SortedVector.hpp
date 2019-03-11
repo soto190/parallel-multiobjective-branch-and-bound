@@ -17,7 +17,7 @@
 
 class SortedVector {
     
-    deque<ObjectiveValues> m_data;
+    std::deque<ObjectiveValues> m_data;
     
 public:
     SortedVector();

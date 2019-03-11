@@ -113,25 +113,28 @@ tbb::task * ParallelBranchAndBound::execute() {
 }
 
 void ParallelBranchAndBound::initSharedParetoFront() {
+    std::cout << "PBB bounds: " << problem.getFmin(0) << ' ' << problem.getFmin(1) << std::endl;
+
     Solution temp_1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(temp_1);
     sharedParetoFront.push_back(temp_1);
     problem.updateBestSolutionInObjectiveWith(0, temp_1);
 
-    Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    /*Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(1, temp);
     sharedParetoFront.push_back(temp);
     problem.updateBestSolutionInObjectiveWith(1, temp_1);
+*/
+    //Solution temp_2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    //problem.getSolutionWithLowerBoundInObj(2, temp_2);
+    //sharedParetoFront.push_back(temp_2);
 
-    Solution temp_2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    problem.getSolutionWithLowerBoundInObj(2, temp_2);
-    sharedParetoFront.push_back(temp_2);
+    //problem.updateBestBoundsWith(temp_1);
+    //problem.updateBestBoundsWith(temp);
+    //problem.updateBestBoundsWith(temp_2);
 
-    problem.updateBestBoundsWith(temp_1);
-    problem.updateBestBoundsWith(temp);
-    problem.updateBestBoundsWith(temp_2);
-
-    std::cout << temp_1 << temp << temp_2 << sharedParetoFront;
+    std::cout << temp_1 << sharedParetoFront;
+    std::cout << "PBB bounds: " << problem.getFmin(0) << ' ' << problem.getFmin(1) << std::endl;
 }
 /*
  This is for the FJSSP.

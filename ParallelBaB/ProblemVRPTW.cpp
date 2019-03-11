@@ -53,12 +53,12 @@ Problem(toCopy),
 number_of_customers(toCopy.getNumberOfCustomers()),
 max_vehicle_capacity(toCopy.getMaxVehicleCapacity()),
 max_number_of_vehicles(toCopy.getMaxNumberOfVehicles()),
-min_cost_found(toCopy.getLowerBoundInObj(0)),
-max_cost_found(toCopy.getUpperBoundInObj(0)),
-min_number_vehicles_found(toCopy.getLowerBoundInObj(1)),
-max_number_vehicles_found(toCopy.getUpperBoundInObj(1)),
-min_makespan_found(toCopy.getLowerBoundInObj(2)),
-max_makespan_found(toCopy.getUpperBoundInObj(2)) {
+min_number_vehicles_found(toCopy.getFmin(0)),
+max_number_vehicles_found(toCopy.getFmax(0)),
+min_critical_cost_found(toCopy.getFmin(1)),
+max_critical_cost_found(toCopy.getFmax(1)),
+min_cost_found(toCopy.getFmin(3)),
+max_cost_found(toCopy.getFmax(3)) {
 
     coordinates = new unsigned int*[getNumberOfNodes()];
     costs = new double * [getNumberOfNodes()];
@@ -143,6 +143,13 @@ ProblemVRPTW& ProblemVRPTW::operator=(const ProblemVRPTW &toCopy) {
     number_of_customers = toCopy.getNumberOfCustomers();
     max_vehicle_capacity = toCopy.getMaxVehicleCapacity();
     max_number_of_vehicles = toCopy.getMaxNumberOfVehicles();
+
+    min_number_vehicles_found = toCopy.getLowerBoundInObj(0);
+    max_number_vehicles_found = toCopy.getUpperBoundInObj(0);
+    min_critical_cost_found = toCopy.getLowerBoundInObj(1);
+    max_critical_cost_found = toCopy.getUpperBoundInObj(1);
+    min_cost_found = toCopy.getLowerBoundInObj(2);
+    max_cost_found = toCopy.getUpperBoundInObj(2);
 
     coordinates = new unsigned int*[getNumberOfNodes()];
     costs = new double * [getNumberOfNodes()];
@@ -371,9 +378,8 @@ void ProblemVRPTW::evaluateDynamic(Solution &solution, VRPTWdata &data, int leve
     else
         solution.setInfeasible();
 
-    solution.setObjective(0, data.getNumberOfVehiclesUsed());
-    solution.setObjective(1, data.getTotalCost());
-    solution.setObjective(2, data.getMaxCost());
+    for (unsigned int n_obj = 0; n_obj < getNumberOfObjectives(); ++n_obj)
+        solution.setObjective(n_obj, data.getObjective(n_obj));
 }
 
 /**
@@ -465,10 +471,8 @@ void ProblemVRPTW::evaluateRemoveDynamic(Solution & solution, VRPTWdata& data, i
     else
         solution.setInfeasible();
 
-    solution.setObjective(0, data.getNumberOfVehiclesUsed());
-    solution.setObjective(1, data.getTotalCost());
-    solution.setObjective(2, data.getMaxCost());
-
+    for (unsigned int n_obj = 0; n_obj < getNumberOfObjectives(); ++n_obj)
+        solution.setObjective(n_obj, data.getObjective(n_obj));
 }
 
 double ProblemVRPTW::getFmin(int n_objective) const {
@@ -486,11 +490,11 @@ double ProblemVRPTW::getBestObjectiveFoundIn(int n_objective) const {
             break;
 
         case 1:
-            return min_cost_found;
+            return min_critical_cost_found;
             break;
 
         case 2:
-            return min_critical_cost_found;
+            return min_cost_found;
             break;
 
         case 3:
@@ -503,19 +507,17 @@ double ProblemVRPTW::getBestObjectiveFoundIn(int n_objective) const {
 }
 
 void ProblemVRPTW::updateBestSolutionInObjectiveWith(unsigned int n_obj, const Solution& solution) {
-    if (solution.getObjective(0) < min_number_vehicles_found)
-        min_number_vehicles_found = solution.getObjective(0);
+    for (unsigned int i_obj = 0; i_obj < solution.getNumberOfObjectives(); ++i_obj) {
 
-    if (solution.getObjective(1) < min_cost_found)
-        min_cost_found = solution.getObjective(1);
+        if (i_obj == 0 && solution.getObjective(i_obj) < min_number_vehicles_found)
+            min_number_vehicles_found = solution.getObjective(i_obj);
 
-    if (solution.getObjective(2) < min_critical_cost_found)
-        min_critical_cost_found = solution.getObjective(2);
+        if (i_obj == 1 && solution.getObjective(i_obj) < min_critical_cost_found)
+            min_critical_cost_found = solution.getObjective(i_obj);
 
-    /* if (solution.getObjective(3) < min_makespan_found)
-        min_makespan_found = solution.getObjective(3);
-     */
-
+        if (i_obj == 2 && solution.getObjective(i_obj) < min_cost_found)
+            min_cost_found = solution.getObjective(i_obj);
+    }
 }
 
 void ProblemVRPTW::updateBestBoundsWith(const Solution& solution) {
@@ -557,11 +559,11 @@ double ProblemVRPTW::getLowerBoundInObj(int nObj) const {
             break;
 
         case 1:
-            return min_cost_found;
+            return min_critical_cost_found;
             break;
             
         case 2:
-            return min_critical_cost_found;
+            return min_cost_found;
             break;
 
         case 3:
@@ -578,10 +580,10 @@ double ProblemVRPTW::getUpperBoundInObj(int nObj) const {
             break;
 
         case 1:
-            return max_cost_found;
+            return max_critical_cost_found;
 
         case 2:
-            return max_critical_cost_found;
+            return max_cost_found;
             break;
 
         case 3:

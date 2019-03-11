@@ -416,11 +416,11 @@ double VRPTWdata::getObjective(int n_obj) const {
             break;
 
         case 1:
-            return getTotalCost();
+            return getMaxCost();
             break;
 
         case 2:
-            return getMaxCost();
+            return getTotalCost();
             break;
 
         case 3:
