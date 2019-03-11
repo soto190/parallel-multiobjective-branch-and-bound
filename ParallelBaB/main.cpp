@@ -332,7 +332,7 @@ void one_node(int argc, char* argv[]) {
         }
     }
 
-    ProblemVRPTW problem (3, 1);
+    ProblemVRPTW problem (2, 1);
 
     printf("Deep sharing: %0.2f\n", deep_limit_share);
     

@@ -113,8 +113,6 @@ tbb::task * ParallelBranchAndBound::execute() {
 }
 
 void ParallelBranchAndBound::initSharedParetoFront() {
-    std::cout << "PBB bounds: " << problem.getFmin(0) << ' ' << problem.getFmin(1) << std::endl;
-
     Solution temp_1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(temp_1);
     sharedParetoFront.push_back(temp_1);
@@ -134,7 +132,6 @@ void ParallelBranchAndBound::initSharedParetoFront() {
     //problem.updateBestBoundsWith(temp_2);
 
     std::cout << temp_1 << sharedParetoFront;
-    std::cout << "PBB bounds: " << problem.getFmin(0) << ' ' << problem.getFmin(1) << std::endl;
 }
 /*
  This is for the FJSSP.
