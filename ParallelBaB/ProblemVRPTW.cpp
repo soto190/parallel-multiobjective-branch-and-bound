@@ -794,14 +794,26 @@ void ProblemVRPTW::loadInstance(char filePath[2][255], char file_extension[4]) {
         n_variables = number_of_customers + max_number_of_vehicles; /** The permutaiton size is customers + max vehicles. **/
         infile.close();
 
-        min_number_vehicles_found = max_number_of_vehicles;// ceil(total_demand / (max_vehicle_capacity * 1.0));
+        min_number_vehicles_found = max_number_of_vehicles;
+        min_critical_cost_found = total_distance_in_order;
+        min_cost_found = total_distance_in_order;
+
         max_number_vehicles_found = max_number_of_vehicles;
-
-        max_cost_found = total_distance_in_order;
-        min_cost_found = total_distance_in_order / (min_number_vehicles_found + 1); /** TODO: edit this. **/
-
         max_critical_cost_found = total_distance_in_order;
-        min_critical_cost_found = total_distance_in_order / (min_number_vehicles_found + 1);
+        max_cost_found = total_distance_in_order;
+
+        Solution solution (n_objectives, n_variables);
+        heuristic(solution);
+
+        Solution solution_min_distance (n_objectives, n_variables);
+        heuristic_min_dist(solution_min_distance);
+
+        std::cout << solution;
+        std::cout << solution_min_distance;
+
+        updateBestSolutionInObjectiveWith(-1, solution);
+        updateBestSolutionInObjectiveWith(-1, solution_min_distance);
+
     } else {
         printf("File not found\n");
         exit(EXIT_FAILURE);
@@ -872,14 +884,22 @@ void ProblemVRPTW::loadInstancePayload(const Payload_problem_vrptw& payload) {
 
     n_variables = number_of_customers + max_number_of_vehicles; /** The permutaiton size is customers + max vehicles. **/
 
-    min_number_vehicles_found = ceil(total_demand / (max_vehicle_capacity * 1.0));
+    min_number_vehicles_found = max_number_of_vehicles;
+    min_critical_cost_found = total_distance_in_order;
+    min_cost_found = total_distance_in_order;
+
     max_number_vehicles_found = max_number_of_vehicles;
-
-    max_cost_found = total_distance_in_order;
-    min_cost_found =  total_distance_in_order / (min_number_vehicles_found + 1); /** TODO: edit this. **/
-
     max_critical_cost_found = total_distance_in_order;
-    min_critical_cost_found = total_distance_in_order / (min_number_vehicles_found + 1);
+    max_cost_found = total_distance_in_order;
+
+    Solution solution (n_objectives, n_variables);
+    heuristic(solution);
+
+    Solution solution_min_distance (n_objectives, n_variables);
+    heuristic_min_dist(solution_min_distance);
+
+    updateBestSolutionInObjectiveWith(-1, solution);
+    updateBestSolutionInObjectiveWith(-1, solution_min_distance);
 
 }
 
@@ -1070,5 +1090,85 @@ bool ProblemVRPTW::validateVariables(Solution &solution) {
     }
 
     return is_feasible;
+}
+
+void ProblemVRPTW::heuristic(Solution &solution) {
+    VRPTWdata data(number_of_customers, max_number_of_vehicles, max_vehicle_capacity);
+    int vars_fixed = 0;
+    int depot = number_of_customers + 1;
+
+    std::vector<int> customers;
+    customers.reserve(number_of_customers);
+    for (unsigned int cust = 1; cust <= number_of_customers; ++cust)
+        customers.push_back(cust);
+
+    while (!customers.empty()) {
+        long min_due_date = time_window[0][1];
+        int min_cust_due_date = 0;
+        int idx_vec = 0;
+        for (unsigned int idx_cust = 0; idx_cust < customers.size(); ++idx_cust) {
+            int cust = customers.at(idx_cust);
+            if (time_window[cust][1] < min_due_date) {
+                min_due_date = time_window[cust][1];
+                min_cust_due_date = cust;
+                idx_vec = idx_cust;
+            }
+        }
+        customers.erase(customers.begin() + idx_vec);
+
+        solution.push_back(min_cust_due_date);
+        evaluateDynamic(solution, data, vars_fixed);
+        if (!solution.isFeasible()) {
+            evaluateRemoveDynamic(solution, data, vars_fixed);
+
+            solution.push_back(depot);
+            evaluateDynamic(solution, data, vars_fixed);
+            vars_fixed++;
+
+            solution.push_back(min_cust_due_date);
+            evaluateDynamic(solution, data, vars_fixed);
+        }
+        vars_fixed++;
+    }
+}
+
+void ProblemVRPTW::heuristic_min_dist(Solution &solution) {
+    VRPTWdata data(number_of_customers, max_number_of_vehicles, max_vehicle_capacity);
+    int vars_fixed = 0;
+    int depot = number_of_customers + 1;
+
+    std::vector<int> customers;
+    customers.reserve(number_of_customers);
+    for (unsigned int cust = 1; cust <= number_of_customers; ++cust)
+        customers.push_back(cust);
+
+    int origin = 0;
+    while (!customers.empty()) {
+        double min_distance = getCustomerCostTo(origin, customers.at(0));
+        int min_cust = customers.at(0);
+        int idx_vec = 0;
+        for (unsigned int idx_cust = 0; idx_cust < customers.size(); ++idx_cust) {
+            int cust = customers.at(idx_cust);
+            if (getCustomerCostTo(origin, cust) < min_distance) {
+                min_distance = getCustomerCostTo(origin, cust);
+                min_cust = cust;
+                idx_vec = idx_cust;
+            }
+        }
+        origin = min_cust;
+
+        solution.push_back(min_cust);
+        evaluateDynamic(solution, data, vars_fixed);
+        if (!solution.isFeasible()) {
+            evaluateRemoveDynamic(solution, data, vars_fixed);
+
+            solution.push_back(depot);
+            evaluateDynamic(solution, data, vars_fixed);
+            origin = 0;
+        } else
+            customers.erase(customers.begin() + idx_vec);
+
+        vars_fixed++;
+    }
 }
 

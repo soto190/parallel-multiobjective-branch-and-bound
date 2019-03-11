@@ -129,6 +129,8 @@ public:
 
     //void loadInstancePayload(const Payload_problem_fjssp& payload);
     bool validateVariables(Solution& solution);
+    void heuristic(Solution& solution);
+    void heuristic_min_dist(Solution& solution);
 private:
     double euclideanDistance(unsigned int xcoord_1, unsigned int ycoord_1, unsigned int xcoord_2, unsigned int ycoord_2) const;
     bool isCustomer(unsigned int node) const;

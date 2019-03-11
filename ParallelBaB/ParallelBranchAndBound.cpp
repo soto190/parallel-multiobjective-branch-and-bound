@@ -118,14 +118,15 @@ void ParallelBranchAndBound::initSharedParetoFront() {
     sharedParetoFront.push_back(temp_1);
     problem.updateBestSolutionInObjectiveWith(0, temp_1);
 
-    /*Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    problem.getSolutionWithLowerBoundInObj(1, temp);
+    Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.heuristic(temp);
     sharedParetoFront.push_back(temp);
-    problem.updateBestSolutionInObjectiveWith(1, temp_1);
-*/
-    //Solution temp_2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    //problem.getSolutionWithLowerBoundInObj(2, temp_2);
-    //sharedParetoFront.push_back(temp_2);
+    problem.updateBestSolutionInObjectiveWith(0, temp_1);
+
+    Solution temp_2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.heuristic_min_dist(temp_2);
+    sharedParetoFront.push_back(temp_2);
+    problem.updateBestSolutionInObjectiveWith(0, temp_2);
 
     //problem.updateBestBoundsWith(temp_1);
     //problem.updateBestBoundsWith(temp);

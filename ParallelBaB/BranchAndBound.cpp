@@ -202,7 +202,7 @@ void BranchAndBound::initialize(int starts_tree) {
     number_of_shared_works = 0;
 
     Solution sample_solution(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    problem.createDefaultSolution(sample_solution);
+    problem.heuristic(sample_solution);
     problem.evaluate(sample_solution);
 
     for (unsigned int idx_obj = 0; idx_obj < problem.getNumberOfObjectives(); ++idx_obj) {
@@ -234,7 +234,7 @@ void BranchAndBound::initialize(int starts_tree) {
      for (size_t solution_pf = 0; solution_pf < algorithms_pf.size(); ++solution_pf)
      updateBoundsWithSolution(algorithms_pf.at(solution_pf));
      */
-    problem.createDefaultSolution(incumbent_s);
+    problem.heuristic(incumbent_s);
     updateParetoContainer(incumbent_s);
     updateBoundsWithSolution(incumbent_s);
 
