@@ -794,7 +794,7 @@ void ProblemVRPTW::loadInstance(char filePath[2][255], char file_extension[4]) {
         n_variables = number_of_customers + max_number_of_vehicles; /** The permutaiton size is customers + max vehicles. **/
         infile.close();
 
-        min_number_vehicles_found = ceil(total_demand / (max_vehicle_capacity * 1.0));
+        min_number_vehicles_found = max_number_of_vehicles;// ceil(total_demand / (max_vehicle_capacity * 1.0));
         max_number_vehicles_found = max_number_of_vehicles;
 
         max_cost_found = total_distance_in_order;

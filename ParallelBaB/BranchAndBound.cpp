@@ -929,6 +929,8 @@ float BranchAndBound::distanceToObjective(int value, int objective) {
 }
 
 double BranchAndBound::minMaxNormalization(int value, int min, int max) const{
+    if (min == max)
+        return 0;
     return ((value - min) * 1.0 )/ ((max - min) * 1.0);
 }
 
