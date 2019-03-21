@@ -134,9 +134,9 @@ void MasterWorkerPBB::runMasterProcess() {
     int number_of_workers_with_work;
     int number_of_works_received = 0;
 
-    vector<Interval> pending_work;
+    std::vector<Interval> pending_work;
     Interval work_to_send(problem.getTotalElements());
-    vector<Solution> received_solutions;
+    std::vector<Solution> received_solutions;
     Solution received_solution(problem.getNumberOfObjectives(), payload_interval.max_size);
 
 //    VRPTWdata data (problem.getNumberOfCustomers(), problem.getMaxNumberOfVehicles(), problem.getMaxVehicleCapacity());
@@ -440,7 +440,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                     break;
             }
         }
-        BB_container.saveEvery(300);
+        BB_container.saveEvery(30);
     }
 
     /** Recollects the data. **/
@@ -655,7 +655,7 @@ void MasterWorkerPBB::unpack_payload_fjssp_part2(Payload_problem_fjssp& payload_
 void MasterWorkerPBB::loadInstanceVRPTW(Payload_problem_vrptw& problem, const char *filePath) {
     char extension[4];
 
-    problem.n_objectives = 3;
+    problem.n_objectives = 2;
     problem.number_of_customers = 0;
     problem.max_number_of_vehicles = 0;
     problem.max_vehicle_capacity = 0;
@@ -1061,19 +1061,19 @@ void MasterWorkerPBB::initSharedParetoFront() {
     problem.updateBestSolutionInObjectiveWith(0, temp_1);
 
     Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    problem.getSolutionWithLowerBoundInObj(1, temp);
+    problem.heuristic(temp);
     sharedParetoFront.push_back(temp);
     problem.updateBestSolutionInObjectiveWith(1, temp_1);
 
     Solution temp_2(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    problem.getSolutionWithLowerBoundInObj(2, temp_2);
+    problem.heuristic_min_dist(temp_2);
     sharedParetoFront.push_back(temp_2);
 
     problem.updateBestBoundsWith(temp_1);
     problem.updateBestBoundsWith(temp);
     problem.updateBestBoundsWith(temp_2);
 
-    std::cout << "sol1:" <<  temp_1 <<"\nsol2: "<< temp << "\nsol2: "<<temp_2 << std::endl;
+    std::cout << "Solution 1:" <<  temp_1 <<"Solution 2: "<< temp << "Solution 3: "<<temp_2 << std::endl;
 }
 
 int MasterWorkerPBB::initSharedPool(const Interval & branch_init) {

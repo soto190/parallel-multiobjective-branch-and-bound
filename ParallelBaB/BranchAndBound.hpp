@@ -16,6 +16,7 @@
 #include <chrono>
 #include <ctime>
 #include <fstream>
+#include <sstream>
 #include <iomanip>
 #include "NSGA_II.hpp"
 #include "MOSA.hpp"

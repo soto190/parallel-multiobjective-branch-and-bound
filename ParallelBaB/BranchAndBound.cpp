@@ -1185,14 +1185,7 @@ void BranchAndBound::saveGlobalPool() const {
         for (size_t element = 0; element < sharedPool.unsafe_size(); ++element)
             if(sharedPool.try_pop(interval)) {
                 to_restore.push_back(interval);
-
-                myfile << interval.getBuildUpTo() << " ";
-                for (int index_var = 0; index_var <= interval.getBuildUpTo(); ++index_var)
-                    myfile << interval.getValueAt(index_var) << " ";
-                
-                for (int index_var = interval.getBuildUpTo() + 1; index_var < problem.getNumberOfVariables(); ++index_var)
-                    myfile << "- ";
-                myfile << endl;
+                myfile << interval;
             }
 
         /** This have to be used only when the progress is saved and then we have to recover the data to continue with the exploration. **/
@@ -1205,75 +1198,46 @@ void BranchAndBound::saveGlobalPool() const {
 }
 
 int BranchAndBound::saveSummarize() {
-    
-    printf("[Worker-%03d:B&B-%03d] ---Summarize---\n", getNodeRank(), getBBRank());
-    printf("Pareto front size:   %ld\n", pareto_front.size());
-    printf("Total time:          %f\n", getElapsedTime());
-    printf("Total nodes:         %ld\n", getNumberOfNodes());
-    printf("Eliminated nodes:    %ld\n", getNumberOfNodes() - getNumberOfNodesExplored());
-    printf("Explored nodes:      %ld\n", getNumberOfNodesExplored());
-    printf("Created nodes:       %ld\n", getNumberOfNodesCreated());
-    printf("Pruned nodes:        %ld\n", getNumberOfNodesPruned());
-    printf("Leaves reached:      %ld\n", getNumberOfReachedLeaves());
-    printf("Calls to branching:  %ld\n", getNumberOfCallsToBranch());
-    printf("Calls to prune:      %ld\n", getNumberOfCallsToPrune());
-    printf("Updates in PF:       %ld\n", getNumberOfUpdatesInLowerBound());
-    printf("Shared work: %ld\n", getSharedWork());
-    printf("Grid data:\n");
-    printf("\tGrid dimension:    %d x %d\n", paretoContainer.getCols(), paretoContainer.getRows());
-    printf("\tnon-dominated buckets:    %ld\n", paretoContainer.getNumberOfActiveBuckets());
-    printf("\tdominated buckets:  %ld\n", paretoContainer.getNumberOfDisabledBuckets());
-    printf("\tunexplored buckets:%ld\n", paretoContainer.getNumberOfUnexploredBuckets());
-    printf("\tNumber of elements in: %ld\n", paretoContainer.getSize());
-    
+
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+
+    std::ostringstream stream_console;
+
+    printf("[Worker-%03d:B&B-%03d] Saving summarize in file %s\n", node_rank, bb_rank, summarize_file);
+
+    stream_console << "---Summarize---";
+    stream_console << 1900 + ltm->tm_year << '-' << ltm->tm_mon << '-' << ltm->tm_mday << ' ' << std::endl;
+    stream_console << ltm->tm_hour << ':' << ltm->tm_min << ':' << ltm->tm_sec << std::endl;
+    stream_console << "Sharing size:        " << getSizeToShare() << endl;
+    stream_console << "Deep limit to share: " << getDeepLimitToShare() << endl;
+    stream_console << "Pareto front size:   " << pareto_front.size() << endl;
+    stream_console << "Total nodes:         " << number_of_nodes << endl;
+    stream_console << "Eliminated nodes:    " << number_of_nodes - number_of_nodes_explored << endl;
+    stream_console << "Explored nodes:      " << number_of_nodes_explored << endl;
+    stream_console << "Created nodes:       " << number_of_nodes_created << endl;
+    stream_console << "Pruned nodes:        " << number_of_nodes_pruned << endl;
+    stream_console << "Leaves reached:      " << number_of_reached_leaves << endl;
+    stream_console << "Calls to branching:  " << number_of_calls_to_branch << endl;
+    stream_console << "Calls to prune:      " << number_of_calls_to_prune << endl;
+    stream_console << "Updates in PF:       " << number_of_updates_in_lower_bound << endl;
+    stream_console << "Shared work:         " << number_of_shared_works << endl;
+    stream_console << "Total time:          " << elapsed_time << endl;
+    stream_console << "Grid data:\n";
+    stream_console << "\tdimension:         \t" << paretoContainer.getCols() << " x " << paretoContainer.getRows() << endl;
+    stream_console << "\tnon-dominated:     \t" << paretoContainer.getNumberOfActiveBuckets() << endl;
+    stream_console << "\tdominated:         \t" << paretoContainer.getNumberOfDisabledBuckets() << endl;
+    stream_console << "\tunexplored:        \t" << paretoContainer.getNumberOfUnexploredBuckets() << endl;
+    stream_console << "\tnumber of elements:\t" << paretoContainer.getSize() << endl;
+    stream_console << "The pareto front found is: \n";
+
+    stream_console << pareto_front;
+
+    std::cout << stream_console.str();
+
     std::ofstream myfile(summarize_file);
     if (myfile.is_open()) {
-        printf("[Worker-%03d:B&B-%03d] Saving summarize in file %s\n", node_rank, bb_rank, summarize_file);
-        
-        myfile << "---Summarize---\n";
-        //myfile << "Number of threads:   " << getNumberOfBB() << endl;
-        myfile << "Sharing size:        " << getSizeToShare() << endl;
-        myfile << "Deep limit to share: " << getDeepLimitToShare() << endl;
-        myfile << "Pareto front size:   " << pareto_front.size() << endl;
-        myfile << "Total nodes:         " << number_of_nodes << endl;
-        myfile << "Eliminated nodes:    " << number_of_nodes - number_of_nodes_explored << endl;
-        myfile << "Explored nodes:      " << number_of_nodes_explored << endl;
-        myfile << "Created nodes:       " << number_of_nodes_created << endl;
-        myfile << "Pruned nodes:        " << number_of_nodes_pruned << endl;
-        myfile << "Leaves reached:      " << number_of_reached_leaves << endl;
-        myfile << "Calls to branching:  " << number_of_calls_to_branch << endl;
-        myfile << "Calls to prune:      " << number_of_calls_to_prune << endl;
-        myfile << "Updates in PF:       " << number_of_updates_in_lower_bound << endl;
-        myfile << "Shared work:         " << number_of_shared_works << endl;
-        myfile << "Total time:          " << elapsed_time << endl;
-        
-        myfile << "Grid data:\n";
-        myfile << "\tdimension:         \t" << paretoContainer.getCols() << " x " << paretoContainer.getRows() << endl;
-        myfile << "\tnon-dominated:     \t" << paretoContainer.getNumberOfActiveBuckets() << endl;
-        myfile << "\tdominated:         \t" << paretoContainer.getNumberOfDisabledBuckets() << endl;
-        myfile << "\tunexplored:        \t" << paretoContainer.getNumberOfUnexploredBuckets() << endl;
-        myfile << "\tnumber of elements:\t" << paretoContainer.getSize() << endl;
-        myfile << "The pareto front found is: \n";
-        
-        int numberOfObjectives = problem.getNumberOfObjectives();
-        int numberOfVariables = problem.getNumberOfVariables();
-        
-        int nObj = 0;
-        int nVar = 0;
-        
-        int counterSolutions = 0;
-        for (const auto& it : pareto_front) {
-
-            myfile << std::fixed << std::setw(6) << std::setfill(' ') << ++counterSolutions << " ";
-            for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << it.getObjective(nObj) << " ";
-            myfile << " | ";
-            
-            for (nVar = 0; nVar < numberOfVariables; ++nVar)
-                myfile << std::fixed << std::setw(4) << std::setfill(' ') << it.getVariable(nVar) << " ";
-            myfile << " |\n";
-        }
-        
+        myfile << stream_console.str();
         myfile.close();
     } else
         printf("[Worker-%03d:B&B-%03d] Unable to write on summarize file: %s\n", node_rank, bb_rank, summarize_file);
@@ -1296,8 +1260,13 @@ int BranchAndBound::saveParetoFront() {
 }
 
 void BranchAndBound::saveEvery(double timeInSeconds) {
-    
+
     if (((std::clock() - time_start) / (double) CLOCKS_PER_SEC) > timeInSeconds) {
+        std::cout << pool_file << std::endl;
+        std::cout << pareto_file << std::endl;
+        std::cout << summarize_file << std::endl;
+
+        std::cout << "Saving progress at " << (std::clock() / (double) CLOCKS_PER_SEC) << " sec." << std::endl;
         time_start = std::clock();
 
         pareto_front.clear();
@@ -1312,10 +1281,10 @@ void BranchAndBound::saveEvery(double timeInSeconds) {
         elapsed_time = time_span.count();
         
         printf("The pareto front found is: \n");
-        printParetoFront(1);
+        std::cout << pareto_front;
+        saveGlobalPool();
         saveParetoFront();
         saveSummarize();
-        saveGlobalPool();
     }
 }
 

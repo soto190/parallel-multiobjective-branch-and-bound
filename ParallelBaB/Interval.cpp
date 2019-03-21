@@ -139,10 +139,14 @@ std::ostream &operator<<(std::ostream& stream, const Interval& interval) {
 
     for (int index_var = interval.getBuildUpTo() + 1; index_var < interval.getSize(); ++index_var)
         stream << std::fixed << std::setw(6) << std::setfill(' ') << '-';
+    stream << ']';
 
-    for (int index_dist = 0; index_dist < 3; ++index_dist)
-        stream << ']' << '[' << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << interval.getDistance(index_dist);
-    stream << ']' << ' ' <<'[' << interval.getDeep() << ' ' << interval.getPriority() << ']' << std::endl;
+    stream << ' ' << '[';
+    for (int index_dist = 0; index_dist < 2; ++index_dist)
+        stream << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << interval.getDistance(index_dist) << ' ';
+    stream << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << interval.getDistance(2) << ']';
+
+    stream << ' ' <<'[' << interval.getDeep() << ' ' << interval.getPriority() << ']' << std::endl;
     return stream;
 }
 
