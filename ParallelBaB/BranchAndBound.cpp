@@ -1175,23 +1175,10 @@ void BranchAndBound::saveIVM() const {
 
 void BranchAndBound::saveGlobalPool() const {
     /** TODO: globalPoolFile is saved by the container B&B (bb_rank = 0).**/
-    std::vector<Interval> to_restore;
     std::ofstream myfile(pool_file);
+
     if (myfile.is_open()) {
-        Interval interval(problem.getNumberOfVariables());
-        
-        /** TODO: this needs a mutex. **/
-        myfile << "pool_size: " << sharedPool.unsafe_size() << endl;
-        for (size_t element = 0; element < sharedPool.unsafe_size(); ++element)
-            if(sharedPool.try_pop(interval)) {
-                to_restore.push_back(interval);
-                myfile << interval;
-            }
-
-        /** This have to be used only when the progress is saved and then we have to recover the data to continue with the exploration. **/
-        for (const auto& sub_problem : to_restore)
-            sharedPool.push(sub_problem);
-
+        myfile << sharedPool;
         myfile.close();
     } else
         std::cout << "[Worker-"<< setw(3) << setfill('0') << node_rank << ":B&B-" << setw(3) << setfill('0')  << bb_rank << " Unable to write global pool: " << pool_file << std::endl;

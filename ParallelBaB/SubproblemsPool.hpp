@@ -10,8 +10,14 @@
 #define SubproblemsPool_hpp
 
 #include <stdio.h>
-#include "tbb/concurrent_queue.h"
+#include <vector>
+#include <iostream>
+#include <iomanip>
 #include "Interval.hpp"
+#include "tbb/concurrent_queue.h"
+#include "tbb/queuing_rw_mutex.h"
+
+typedef tbb::queuing_rw_mutex Lock;
 
 class SubproblemsPool {
 
@@ -23,6 +29,10 @@ private:
     
 public:
     SubproblemsPool();
+
+    Lock updating_lock;
+
+    friend std::ostream &operator<<(std::ostream& stream, SubproblemsPool& interval);
     void setSizeEmptying(unsigned long size);
     unsigned long getSizeEmptying() const;
     unsigned long unsafe_size() const;

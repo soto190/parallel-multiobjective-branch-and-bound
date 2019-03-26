@@ -15,6 +15,29 @@ size(0) {
 
 }
 
+std::ostream &operator<<(std::ostream& stream, SubproblemsPool& shared_pool) {
+
+    tbb::queuing_rw_mutex::scoped_lock m_lock(shared_pool.updating_lock, true);
+
+    std::vector<Interval> to_restore;
+    Interval interval;
+
+    stream << "pool_size: " << shared_pool.unsafe_size();
+    for (size_t element = 0; element < shared_pool.unsafe_size(); ++element)
+        if(shared_pool.try_pop(interval)) {
+            to_restore.push_back(interval);
+            stream << interval;
+        }
+
+    /** This have to be used only when the progress is saved and then we have to recover the data to continue with the exploration. **/
+    for (const auto& sub_problem : to_restore)
+        shared_pool.push(sub_problem);
+
+    stream << std::endl;
+
+    return stream;
+}
+
 /** If the global pool reach this size then the B&B tasks starts sending part of their work to the global pool. **/
 void SubproblemsPool::setSizeEmptying(unsigned long size) {
     size_emptying = size;

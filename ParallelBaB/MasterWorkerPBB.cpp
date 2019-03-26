@@ -87,7 +87,7 @@ tbb::task * MasterWorkerPBB::execute() {
         std::cout << "[Master] Barrier reached at time: " << time_span.count() << std::endl;
     else
         std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']'
-        << "Barrier reached at time:" << time_span.count();
+        << " Barrier reached at time:" << time_span.count();
     /** Wait for all the workers to save the Pareto front. **/
     MPI::COMM_WORLD.Barrier();
     if (isMaster()) {
@@ -312,7 +312,7 @@ void MasterWorkerPBB::runMasterProcess() {
  */
 void MasterWorkerPBB::runWorkerProcess() {
     std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']'
-    << ' ' <<"Worker ready!" << std::endl;
+    << " Worker ready!" << std::endl;
     int source = MASTER_RANK;
     sleeping_bb = 0;
     there_is_more_work = true;
@@ -320,7 +320,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     int worker_at_right = rank + 1; /** Worker at the right. **/
     if (worker_at_right > n_workers) /** Ring formation: The last worker has at its rigth the first worker. **/
         worker_at_right = 1;
-    std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']' << ' ' << "Waiting for interval." << std::endl;
+    std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']' << " Waiting for interval." << std::endl;
     MPI_Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
 
     printPayloadInterval();
@@ -435,14 +435,14 @@ void MasterWorkerPBB::runWorkerProcess() {
                     break;
 
                 case TAG_WORKER_READY:
-                    std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']' << "Worker ready!" << std::endl;
+                    std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']' << " Worker ready!" << std::endl;
                     break;
 
                 default:
                     break;
             }
         }
-        BB_container.saveEvery(3600);
+        BB_container.saveEvery(30);
     }
 
     /** Recollects the data. **/
