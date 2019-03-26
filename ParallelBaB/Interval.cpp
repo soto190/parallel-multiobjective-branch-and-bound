@@ -13,7 +13,7 @@ void payload_interval_print(const Payload_interval& payload) {
     for (int element = 0; element < payload.max_size; ++element)
         if (payload.interval[element] == -1 ||
             payload.interval[element] == 0)
-            std::cout << " - ";
+            std::cout << "- ";
         else
             std::cout << payload.interval[element] << ' ';
     std::cout << ']';

@@ -359,7 +359,7 @@ void MasterWorkerPBB::runWorkerProcess() {
         tl.push_back(*BaB_task);
     }
 
-    printf("[WorkerPBB-%03d] Spawning the swarm...\n", getRank());
+    std::cout << "[WorkerPBB-" << setw(3) << setfill('0') << getRank() << " Spawning the swarm ..." << std::endl;
     tbb::task::spawn(tl);
     /**TODO: Spawn the thread with the metaheuristic. **/
     ParetoFront paretoFront;
@@ -383,7 +383,7 @@ void MasterWorkerPBB::runWorkerProcess() {
 
                 case TAG_INTERVAL:
                     branch_init(payload_interval);
-                    cout << "Received: " << branch_init;
+                    std::cout << "Received: " << branch_init;
                     sharedPool.push(branch_init);
 
                     /** We store the new non-dominated solutions to send them later. Avoiding to send repeated solutions. **/
@@ -425,7 +425,8 @@ void MasterWorkerPBB::runWorkerProcess() {
 
                 case TAG_NOT_ENOUGH_WORK:  /** There is no more work.**/
                     there_is_more_work = false;
-                    printf("[WorkerPBB-%03d] Not engouh work received at %f.\n", getRank(), BB_container.getElapsedTime());
+                    std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']' << " Not engouh work received at " << BB_container.getElapsedTime() << '.' << std::endl;
+
                     while (sleeping_bb < branchsandbound_per_worker) { /** TODO: this can be moved outside this switch-case. **/
                     }
 
@@ -434,7 +435,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                     break;
 
                 case TAG_WORKER_READY:
-                    printf("[WorkerPBB-%03d] Worker Ready!.\n", getRank());
+                    std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']' << "Worker ready!" << std::endl;
                     break;
 
                 default:
@@ -465,13 +466,13 @@ void MasterWorkerPBB::runWorkerProcess() {
     BB_container.increaseNumberOfNodesCreated(branches_created);
     BB_container.increaseNumberOfNodesPruned(branches_pruned);
 
-    cout << "Shared Front: " << sharedParetoFront;
+    std::cout << "Shared Front: " << sharedParetoFront;
     paretoFront.clear();
     for (auto &sol : sharedParetoFront) {
         problem.evaluate(sol);
         paretoFront.push_back(sol);
     }
-    cout << "Pareto front:" << std::endl << paretoFront;
+    std::cout << "Pareto front:" << std::endl << paretoFront;
 
     /**
      * Send the data to Master.
@@ -482,9 +483,8 @@ void MasterWorkerPBB::runWorkerProcess() {
     BB_container.saveGlobalPool();
     bb_threads.clear();
 
-    printf("[WorkerPBB-%03d] Data swarm recollected and saved.\n", getRank());
-    printf("[WorkerPBB-%03d] Parallel Branch And Bound ended.\n", getRank());
-
+    std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']' << " Data swarm recollected and saved." << std::endl;
+    std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']' << " Parallel Branch And Bound ended." << std::endl;
 }
 
 bool MasterWorkerPBB::thereIsMoreWork() const {
@@ -508,7 +508,7 @@ void MasterWorkerPBB::loadInstanceFJSSP(Payload_problem_fjssp& problem, const ch
 
     unsigned long int sizeOfElems = elemens.size();
     name_file_ext = split(elemens[sizeOfElems - 1], '.');
-    printf("[Master] Name: %s extension: %s\n", name_file_ext[0].c_str(), name_file_ext[1].c_str());
+    std::cout << "[Master] Name: " << name_file_ext[0].c_str() << " extension: " << name_file_ext[1].c_str() << std::endl;
     std::strcpy(extension, name_file_ext[1].c_str());
 
     /** If the instance is Kacem then it has the release time in the first value of each job. TODO: Re-think if its a good idea to update all the instances to include release time at 0. **/
@@ -561,7 +561,7 @@ void MasterWorkerPBB::loadInstanceFJSSP(Payload_problem_fjssp& problem, const ch
         }
         infile.close();
     }else
-        printf("[Master] Unable to open instance file.\n");
+        std::cout << "[Master] Unable to open instance file." << std::endl;
 }
 
 void MasterWorkerPBB::preparePayloadFJSSPpart1(const Payload_problem_fjssp &problem, MPI_Datatype &datatype_problem) {
@@ -645,7 +645,7 @@ void MasterWorkerPBB::unpack_payload_fjssp_part1(Payload_problem_fjssp& problem,
 
 void MasterWorkerPBB::unpack_payload_fjssp_part2(Payload_problem_fjssp& payload_problem) {
     if(isMaster())
-        printf("[Master] Jobs: %d Operations: %d Machines: %d\n", payload_problem.n_jobs, payload_problem.n_operations, payload_problem.n_machines);
+        std::cout << "[Master] Jobs: " << payload_problem.n_jobs << " Operations:" <<  payload_problem.n_operations << " Machines: " << payload_problem.n_machines << std::endl;
 
     //problem.loadInstancePayload(payload_problem);
 
@@ -670,7 +670,7 @@ void MasterWorkerPBB::loadInstanceVRPTW(Payload_problem_vrptw& problem, const ch
 
     unsigned long int sizeOfElems = splitted_text.size();
     name_file_ext = split(splitted_text.at(sizeOfElems - 1), '.');
-    printf("[Master] Name: %s extension: %s\n", name_file_ext.at(0).c_str(), name_file_ext.at(1).c_str());
+    std::cout << "[Master] Name: " << name_file_ext[0].c_str() << " extension: " << name_file_ext[1].c_str() << std::endl;
     std::strcpy(extension, name_file_ext.at(1).c_str());
 
     std::ifstream infile(filePath);
@@ -740,9 +740,9 @@ void MasterWorkerPBB::loadInstanceVRPTW(Payload_problem_vrptw& problem, const ch
         customers_data.clear();
         splitted_text.clear();
         infile.close();
-        printf("[Master] File read.\n");
+        std::cout << "[Master] File read." << std::endl;
     } else
-        printf("[Master] Unable to open instance file.\n");
+        std::cout << "[Master] Unable to open instance file." << std::endl;
 }
 
 void MasterWorkerPBB::preparePayloadVRPTWpart1(const Payload_problem_vrptw &problem, MPI_Datatype &datatype_problem) {
@@ -836,7 +836,7 @@ void MasterWorkerPBB::unpack_payload_vrptw_part1(Payload_problem_vrptw& problem,
 
 void MasterWorkerPBB::unpack_payload_vrptw_part2(Payload_problem_vrptw& payload_problem) {
     if(isMaster())
-        printf("[Master] Max vehicles: %d Max capacity: %d N. customers: %d\n", payload_problem.max_number_of_vehicles, payload_problem.max_vehicle_capacity, payload_problem.number_of_customers);
+        std::cout << "[Master] Max vehicles: " << payload_problem.max_number_of_vehicles << " Max capacity: " << payload_problem.max_vehicle_capacity << "N. customers: " << payload_problem.number_of_customers <<  std::endl;
 
     problem.loadInstancePayload(payload_problem);
 
@@ -1037,11 +1037,11 @@ int MasterWorkerPBB::getNumberOfBranchsAndBound() const {
 
 void MasterWorkerPBB::printMessageStatus(int source, int tag) {
     if (rank == MASTER_RANK)
-        printf("[Master] Received message from WorkerPBB-%03d with %s.\n", source, getTagText(tag));
+        std::cout << "[Master] Received message from WorkerPBB-" << std::setw(3) << std::setfill('0') << source << " with "  << getTagText(tag) << '.' << std::endl;
     else if (source == MASTER_RANK)
-        printf("[WorkerPBB-%03d] Received message from Master with %s.\n", getRank(), getTagText(tag));
+        std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']' << " Received message from Master with " << getTagText(tag) << '.' << std::endl;
     else
-        printf("[WorkerPBB-%03d] Received message from WorkerPBB-%03d with %s.\n", getRank(), source, getTagText(tag));
+        std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']' << " Received message from WorkerPBB-" << std::setw(3) << std::setfill('0') << source <<" with " << getTagText(tag) << '.' << std::endl;
 }
 
 const char* MasterWorkerPBB::getTagText(int tag) const {
