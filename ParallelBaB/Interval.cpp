@@ -8,6 +8,18 @@
 
 #include "Interval.hpp"
 
+void payload_interval_print(const Payload_interval& payload) {
+    std::cout << "[ Size: " << payload.max_size << ", " ;
+    for (int element = 0; element < payload.max_size; ++element)
+        if (payload.interval[element] == -1 ||
+            payload.interval[element] == 0)
+            std::cout << " - ";
+        else
+            std::cout << payload.interval[element] << ' ';
+    std::cout << ']';
+}
+
+
 /**
  *
  * size is equals to the number of variables.

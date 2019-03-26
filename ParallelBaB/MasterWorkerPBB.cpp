@@ -61,13 +61,13 @@ tbb::task * MasterWorkerPBB::execute() {
     strcpy(TAGS[6], "TAG_REQUEST_MORE_WORK");
     strcpy(TAGS[7], "TAG_SHARE_WORK");
     
-    char processor_name[MPI_MAX_PROCESSOR_NAME];
+    char node_processor_name[MPI_MAX_PROCESSOR_NAME];
     int name_len;
-    MPI_Get_processor_name(processor_name, &name_len);
+    MPI_Get_processor_name(node_processor_name, &name_len);
     if(isMaster())
-        printf("[Master] Running on %s.\n", processor_name);
+        std::cout << "[Master] Running on " << node_processor_name << std::endl;
     else
-        printf("[WorkerPBB-%03d] Running on %s.\n", getRank(), processor_name);
+        std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << "] Running on " << node_processor_name << std::endl;
     
     buildOutputFiles();
 
@@ -84,9 +84,10 @@ tbb::task * MasterWorkerPBB::execute() {
     std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
 
     if (isMaster())
-        printf("[Master] Barrier reached at time: %6.6f\n", time_span.count());
+        std::cout << "[Master] Barrier reached at time: " << time_span.count() << std::endl;
     else
-        printf("[WorkerPBB-%03d] Barrier reached at time: %6.6f\n", getRank(), time_span.count());
+        std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']'
+        << "Barrier reached at time:" << time_span.count();
     /** Wait for all the workers to save the Pareto front. **/
     MPI::COMM_WORLD.Barrier();
     if (isMaster()) {
@@ -126,7 +127,7 @@ void MasterWorkerPBB::initializePayloads() {
  */
 void MasterWorkerPBB::runMasterProcess() {
     
-    printf("[Master] Launching Master...\n");
+    std::cout << "[Master] Launching Master ..." << std::endl;
     int number_of_initial_subproblems = problem.getTotalElements(); /** The subproblems which starts with the depot are infeasible.**/
     int counter_of_subproblems_at_first_level = 1; /** Starts at 1 (first customer) the last sub-problem is n_customers.**/
     int sleeping_workers = 0;
@@ -160,7 +161,7 @@ void MasterWorkerPBB::runMasterProcess() {
     for (int worker = 1; worker <= n_workers; worker++) {
 
         payload_interval.interval[0] = counter_of_subproblems_at_first_level; /** The first map/level of the interval/tree. **/
-        printf("[Master] Sending to Worker-%03d.\n", worker);
+        std::cout << "[Master] Sending to Worker-" << std::setw(3) << std::setfill('0') << worker << std::endl;
         printPayloadInterval();
         MPI::COMM_WORLD.Send(&payload_interval, 1, datatype_interval, worker, TAG_INTERVAL);
 
@@ -176,7 +177,7 @@ void MasterWorkerPBB::runMasterProcess() {
     worker_at_right[n_workers] = 1;
 
     while (sleeping_workers < n_workers) {
-        printf("[Master] Waiting for workers request.\n");
+        std::cout << "[Master] Waiting for workers request." << std::endl;
         MPI_Recv(&payload_interval, 1, datatype_interval, MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         printMessageStatus(status.MPI_SOURCE, status.MPI_TAG);
 
@@ -301,16 +302,17 @@ void MasterWorkerPBB::runMasterProcess() {
     /**
      * Receive data from workers.
      **/
-    printf("[Master] Received solutions: %lu\n", received_solutions.size());
-    printf("[Master] Number of works received: %03d\n", number_of_works_received);
-    printf("[Master] No more work.\n");
+    std::cout << "[Master] Received solutions: " << received_solutions.size() << std::endl;
+    std::cout << "[Master] Number of works received: " << number_of_works_received << std::endl;
+    std::cout << "[Master] No more work." << std::endl;
 }
 
 /**
  * The worker receives the seeding then initalize all the necessary structures and creates in each thread one B&B.
  */
 void MasterWorkerPBB::runWorkerProcess() {
-    printf("[WorkerPBB-%03d] Worker ready...\n", getRank());
+    std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']'
+    << ' ' <<"Worker ready!" << std::endl;
     int source = MASTER_RANK;
     sleeping_bb = 0;
     there_is_more_work = true;
@@ -318,11 +320,10 @@ void MasterWorkerPBB::runWorkerProcess() {
     int worker_at_right = rank + 1; /** Worker at the right. **/
     if (worker_at_right > n_workers) /** Ring formation: The last worker has at its rigth the first worker. **/
         worker_at_right = 1;
-
-    printf("[WorkerPBB-%03d] Waiting for interval.\n", rank);
+    std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']' << ' ' << "Waiting for interval." << std::endl;
     MPI_Recv(&payload_interval, 1, datatype_interval, source, TAG_INTERVAL, MPI_COMM_WORLD, &status);
 
-    //printPayloadInterval();
+    printPayloadInterval();
     branch_init(payload_interval);
     initSharedParetoFront();
     initSharedPool(branch_init);
@@ -987,18 +988,11 @@ void MasterWorkerPBB::buildOutputFiles() {
 
 void MasterWorkerPBB::printPayloadInterval() const {
     if (isMaster())
-        printf("[Master] [ ");
+        std::cout << "[Master] ";
     else
-        printf("[WorkerPBB-%03d] [ ", getRank());
-
-    printf("Size: %d, ", payload_interval.max_size);
-    for (int element = 0; element < payload_interval.max_size; ++element)
-        if (payload_interval.interval[element] == -1 ||
-            payload_interval.interval[element] == 0)
-            printf("- ");
-        else
-            printf("%d ", payload_interval.interval[element]);
-    printf("]\n");
+        std::cout << "[WorkerPBB-" << std::setw(3) << std::setfill('0') << getRank() << ']';
+    payload_interval_print(payload_interval);
+    std::cout << std::endl;
 }
 
 double MasterWorkerPBB::getTimeLimit() const {

@@ -35,6 +35,8 @@ typedef struct {
     int * interval;
 } Payload_interval;
 
+void payload_interval_print(const Payload_interval& payload);
+
 class Interval {
     
 private:

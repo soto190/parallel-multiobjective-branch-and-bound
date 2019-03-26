@@ -27,3 +27,6 @@ branchAndBound: $(obj)
 
 clean:
 	rm -f branchAndBound
+
+clear:
+    rm -f branchAndBound

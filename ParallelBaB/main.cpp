@@ -519,11 +519,11 @@ void mpi_launch_nodes(int argc, char* argv[]) {
 
     unsigned long int sizeOfElems = elemens.size();
     splited = split(elemens[sizeOfElems - 1], '.');
-    printf("Name: %s\n", splited[0].c_str());
-    printf("File extension: %s\n", splited[1].c_str());
+    std::cout << "Name: " << splited[0].c_str() << std::endl;
+    std::cout << "File extension: " << splited[1].c_str() << std::endl;
     std::strcpy(extension, splited[1].c_str());
 
-    printf("Files:\n\t%s\n", files[0]);
+    std::cout << "Files:" << std::endl << '\t' << files[0] << std::endl;
 
     /** End **/
 
