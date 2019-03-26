@@ -442,7 +442,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                     break;
             }
         }
-        BB_container.saveEvery(30);
+        BB_container.saveEvery(3600);
     }
 
     /** Recollects the data. **/
@@ -976,13 +976,13 @@ void MasterWorkerPBB::buildOutputFiles() {
     output_file_pareto = output_file_ivm;
     
     long long rank_long_long = static_cast<long long>(getRank());
-    output_file_ivm += "-node" + std::to_string(rank_long_long) + "-ivm" + std::to_string(static_cast<long long>(getNumberOfBranchsAndBound())) + ".txt";
+    output_file_ivm += "-worker" + std::to_string(rank_long_long) + "-ivm-" + std::to_string(static_cast<long long>(getNumberOfBranchsAndBound())) + ".txt";
     std::strcpy(ivm_file, output_file_ivm.c_str());
-    output_file_pool += "-node" + std::to_string(rank_long_long) + "-pool.txt";
+    output_file_pool += "-worker" + std::to_string(rank_long_long) + "-pool.txt";
     std::strcpy(pool_file, output_file_pool.c_str());
-    output_file_summarize += "-node" + std::to_string(rank_long_long) + "-summarize.txt";
+    output_file_summarize += "-worker" + std::to_string(rank_long_long) + "-summarize.txt";
     std::strcpy(summarize_file, output_file_summarize.c_str());
-    output_file_pareto += "-node" + std::to_string(rank_long_long) + "-pf.txt";
+    output_file_pareto += "-worker" + std::to_string(rank_long_long) + "-pf.txt";
     std::strcpy(pareto_front_file, output_file_pareto.c_str());
 }
 

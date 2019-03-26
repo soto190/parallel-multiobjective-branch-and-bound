@@ -1194,7 +1194,7 @@ void BranchAndBound::saveGlobalPool() const {
 
         myfile.close();
     } else
-        printf("[Worker-%03d:B&B-%03d] Unable to write global pool: %s\n", node_rank, bb_rank, pool_file);
+        std::cout << "[Worker-"<< setw(3) << setfill('0') << node_rank << ":B&B-" << setw(3) << setfill('0')  << bb_rank << " Unable to write global pool: " << pool_file << std::endl;
 }
 
 int BranchAndBound::saveSummarize() {
@@ -1204,7 +1204,7 @@ int BranchAndBound::saveSummarize() {
 
     std::ostringstream stream_console;
 
-    printf("[Worker-%03d:B&B-%03d] Saving summarize in file %s\n", node_rank, bb_rank, summarize_file);
+    std::cout << "[Worker-"<< setw(3) << setfill('0') << node_rank << ":B&B-" << setw(3) << setfill('0')  << bb_rank << "Saving summarize in file" << summarize_file << std::endl;
 
     stream_console << "---Summarize---";
     stream_console << 1900 + ltm->tm_year << '-' << ltm->tm_mon << '-' << ltm->tm_mday << ' ' << std::endl;
@@ -1280,7 +1280,7 @@ void BranchAndBound::saveEvery(double timeInSeconds) {
         std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
         elapsed_time = time_span.count();
         
-        printf("The pareto front found is: \n");
+        std::cout << "The pareto front found is:" << std::endl;
         std::cout << pareto_front;
         saveGlobalPool();
         saveParetoFront();
