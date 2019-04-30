@@ -232,7 +232,7 @@ void MasterWorkerPBB::runMasterProcess() {
                                 worker_has_work[worker] = false;
                         }
 
-                    number_of_workers_with_work = false; /** Verify if the workers have work.**/
+                    number_of_workers_with_work = 0; /** Verify if the workers have work.**/
                     for (int worker = 1; worker <= n_workers; ++worker)
                         if (worker_has_work[worker])
                             number_of_workers_with_work++;
