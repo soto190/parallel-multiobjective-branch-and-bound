@@ -97,14 +97,20 @@ void NSGA_II::replacement() {
     population = fastNonDominatedSort(population);
 }
 
+/**
+ * Single-point crossover, each offspring has the half of each parent; then fulfull the other half. If the new gene produce an infeasible solution; then it selects the next posible to job to be scheduled.
+ **/
 vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solution &parent2) {
     vector<Solution> offspring;
     offspring.reserve(2);
 
     Solution offspring1(parent1);
     Solution offspring2(parent2);
-    
-    int mid = parent1.getNumberOfVariables() / 2;
+
+    std::uniform_int_distribution<unsigned int> unif_int_mach_dis(0, static_cast<int>(parent1.getNumberOfVariables()) - 1);
+    int mid = unif_int_mach_dis(generator);
+
+    //int mid = parent1.getNumberOfVariables() / 2;
     int chromosome_size = parent1.getNumberOfVariables();
     int allel_p1;
     int allel_p2;
@@ -183,6 +189,7 @@ vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solut
 
 /**
  *  Each gene has a probability to be mutated. The probability is given by the mutation rate.
+ *  For the FJSSP, each jobs has a probability to be changed to a new position. Then each job has a probability to be changed to a new machine.
  **/
 void NSGA_II::mutationOperator(Solution &solution) {
 
@@ -198,6 +205,7 @@ void NSGA_II::mutationOperator(Solution &solution) {
 
     /**
      * The genes are shaked to move them to other position.
+     * Two randomly jobs are interchanged.
      **/
     for (int gene = 0; gene < chromosome_size; ++gene) {
         double r = unif_dis(generator);
@@ -212,6 +220,7 @@ void NSGA_II::mutationOperator(Solution &solution) {
     }
     /**
      * Then they are mutated to new values.
+     * The machine assigned to it is randomly changed.
      **/
     for (int gene = 0; gene < chromosome_size; ++gene) {
         int allel_value = solution.getVariable(gene);

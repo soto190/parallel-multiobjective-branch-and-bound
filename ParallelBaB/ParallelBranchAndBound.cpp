@@ -33,9 +33,8 @@ branch_init(problem.getNumberOfVariables()) {
     number_of_unexplored_buckets = 0;
     number_of_dominated_buckets = 0;
 
-    time_start = std::clock();
-    t1 = std::chrono::high_resolution_clock::now();
-    t2 = std::chrono::high_resolution_clock::now();
+    time_start = std::chrono::high_resolution_clock::now();
+    time_end = std::chrono::high_resolution_clock::now();
 }
 
 ParallelBranchAndBound::~ParallelBranchAndBound() {
@@ -52,6 +51,7 @@ tbb::task * ParallelBranchAndBound::execute() {
     tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
     vector<BranchAndBound *> bb_threads;
     int n_bb = 0;
+    time_start = std::chrono::high_resolution_clock::now();
     while (n_bb++ < number_of_bbs) {
         BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb,  problem, branch_init);
         if (isGridEnable())
@@ -130,7 +130,18 @@ void ParallelBranchAndBound::initSharedParetoFront() {
     problem.updateBestBoundsWith(temp);
     problem.updateBestBoundsWith(temp_2);
 
-    std::cout << temp_1 << temp << temp_2;
+    NSGA_II nsgaii_algorithm(problem);
+    nsgaii_algorithm.setSampleSolution(temp_1);
+    nsgaii_algorithm.setCrossoverRate(0.90);
+    nsgaii_algorithm.setMutationRate(0.10);
+    nsgaii_algorithm.setMaxPopulationSize(100);
+    nsgaii_algorithm.setMaxNumberOfGenerations(200);
+    ParetoFront algorithms_pf = nsgaii_algorithm.solve();
+    for (const auto& n_sol : algorithms_pf)
+        problem.updateBestBoundsWith(n_sol);
+
+    std::cout << temp_1 << temp << temp_2 << std::endl;
+    std::cout << "NSGA-II front: " << std::endl << algorithms_pf;
 }
 
 int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {
@@ -189,8 +200,8 @@ int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {
 }
 
 double ParallelBranchAndBound::getElapsedTime() {
-    t2 = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+    time_end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start);
     elapsed_time = time_span.count();
     return elapsed_time;
 }

@@ -21,9 +21,9 @@ m_vec(toCopy.getVectorToCopy()) {
 }
 
 ParetoFront::ParetoFront(const std::vector<Solution>& set_of_solutions):
-state(FrontState::Unexplored),
-m_vec(set_of_solutions){
-    
+state(FrontState::Unexplored) {
+    for (size_t index = 0; index < set_of_solutions.size(); ++index)
+        push_back(set_of_solutions.at(index));
 }
 
 ParetoFront::~ParetoFront() {

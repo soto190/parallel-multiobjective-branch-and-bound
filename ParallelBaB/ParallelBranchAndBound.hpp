@@ -50,9 +50,8 @@ public:
     ParetoFront pareto_front;
 
     double elapsed_time;
-    std::clock_t time_start;
-    std::chrono::high_resolution_clock::time_point t1;
-    std::chrono::high_resolution_clock::time_point t2;
+    std::chrono::high_resolution_clock::time_point time_start;
+    std::chrono::high_resolution_clock::time_point time_end;
 
     ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem);
     ~ParallelBranchAndBound();
