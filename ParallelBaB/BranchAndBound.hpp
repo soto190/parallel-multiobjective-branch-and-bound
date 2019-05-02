@@ -82,6 +82,9 @@ private:
     FJSSPdata fjssp_data;
     Solution incumbent_s;
     IVMTree ivm_tree;
+    //std::queue<int> stack_values;
+    //std::queue<int> stack_levels;
+
     Interval interval_to_solve;
     ParetoFront pareto_front; /** paretoFront. **/
     

@@ -495,8 +495,16 @@ double BranchAndBound::getElapsedTime() {
  * Modifies the solution.
  **/
 int BranchAndBound::explore(Solution& solution) {
+
     currentLevel = ivm_tree.getActiveRow();
     solution.setVariable(currentLevel, ivm_tree.getActiveNode());
+
+    /*currentLevel = stack_levels.back();
+    solution.setVariable(currentLevel, stack_values.back());
+
+    stack_values.pop();
+    stack_levels.pop();
+*/
     return 0;
 }
 
@@ -563,8 +571,13 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     increaseNumberOfNodesCreated(nodes_created);
     if (nodes_created > 0) {
         if (isSortingEnable())
-            for (const auto& it : sorted_elements)
+            for (const auto& it : sorted_elements) {
                 ivm_tree.addNodeToRow(currentLevel + 1, it.getValue());
+/*
+                stack_values.push(it.getValue());
+                stack_levels.push(currentLevel + 1);
+*/
+            }
 
         ivm_tree.moveToNextRow();
         ivm_tree.setActiveColAtRow(ivm_tree.getActiveRow(), 0);
@@ -663,6 +676,7 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
  */
 bool BranchAndBound::theTreeHasMoreNodes() const {
     return ivm_tree.thereAreMoreBranches();
+    //return stack_values.size() > 0;
 }
 
 bool BranchAndBound::updateParetoContainer(const Solution & solution) {
