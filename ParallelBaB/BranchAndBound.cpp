@@ -434,7 +434,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
             problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, l);
         
-        if(theTreeHasMoreNodes())
+        if(theTreeHasMoreNodes() && sleeping_bb > 0)
             shareWorkAndSendToGlobalPool(branch_to_solve);
     }
 }

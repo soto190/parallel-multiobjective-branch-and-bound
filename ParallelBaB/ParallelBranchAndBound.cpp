@@ -50,6 +50,7 @@ tbb::task * ParallelBranchAndBound::execute() {
     
     tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
     vector<BranchAndBound *> bb_threads;
+    sleeping_bb = 0;
     int n_bb = 0;
     time_start = std::chrono::high_resolution_clock::now();
     while (n_bb++ < number_of_bbs) {
