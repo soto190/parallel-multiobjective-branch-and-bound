@@ -86,7 +86,7 @@ tbb::task * ParallelBranchAndBound::execute() {
         number_of_nodes_pruned += bb_in->getNumberOfNodesPruned();
         number_of_nodes_explored += bb_in->getNumberOfNodesExplored();
         number_of_calls_to_branch += bb_in->getNumberOfCallsToBranch();
-        number_of_reached_leaves += bb_in->getNumberOfNodesExplored();
+        number_of_reached_leaves += bb_in->getNumberOfReachedLeaves();
         number_of_calls_to_prune += bb_in->getNumberOfCallsToPrune();
         number_of_updates_in_lower_bound += bb_in->getNumberOfUpdatesInLowerBound();
         number_of_shared_works += bb_in->getSharedWork();

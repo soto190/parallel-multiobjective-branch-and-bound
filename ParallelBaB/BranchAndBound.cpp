@@ -420,8 +420,8 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         } else {
             increaseReachedLeaves();
             if (updateParetoContainer(incumbent_s)) {
-                printf("[Worker-%03d:B&B-%03d] New solution found:\n", node_rank, bb_rank);
-                cout << incumbent_s;
+                //printf("[Worker-%03d:B&B-%03d] New solution found:\n", node_rank, bb_rank);
+                //cout << incumbent_s;
 
                 increaseUpdatesInLowerBound();
                 updateGlobalPF(incumbent_s);

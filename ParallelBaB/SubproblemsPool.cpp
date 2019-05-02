@@ -42,9 +42,6 @@ bool SubproblemsPool::isEmptying() const {
 
 void SubproblemsPool::push(const Interval & subproblem) {
     size.fetch_and_increment();
-    if (isMaxLimitReached())
-        std::cout << "SubProblemsPool: max_limit reached by " << size << std::endl;
-
     priority_queues[subproblem.getPriority()].push(subproblem);
 }
 
