@@ -138,8 +138,10 @@ void ParallelBranchAndBound::initSharedParetoFront() {
     nsgaii_algorithm.setMaxPopulationSize(100);
     nsgaii_algorithm.setMaxNumberOfGenerations(200);
     ParetoFront algorithms_pf = nsgaii_algorithm.solve();
-    for (const auto& n_sol : algorithms_pf)
+    for (const auto& n_sol : algorithms_pf) {
         problem.updateBestBoundsWith(n_sol);
+        sharedParetoFront.push_back(temp);
+    }
 
     std::cout << temp_1 << temp << temp_2 << std::endl;
     std::cout << "NSGA-II front: " << std::endl << algorithms_pf;
