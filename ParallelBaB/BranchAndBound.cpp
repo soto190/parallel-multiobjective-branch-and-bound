@@ -205,35 +205,11 @@ void BranchAndBound::initialize(int starts_tree) {
     problem.createDefaultSolution(sample_solution);
     problem.evaluate(sample_solution);
 
-    /*
-     NSGA_II nsgaii_algorithm(problem);
-     nsgaii_algorithm.setSampleSolution(sample_solution);
-     nsgaii_algorithm.setCrossoverRate(0.90);
-     nsgaii_algorithm.setMutationRate(0.90);
-     nsgaii_algorithm.setMaxPopulationSize(50);
-     nsgaii_algorithm.setMaxNumberOfGenerations(50);
-     ParetoFront algorithms_pf = nsgaii_algorithm.solve();
-
-     MOSA mosa_algorithm(problem);
-     mosa_algorithm.setSampleSolution(sample_solution);
-     mosa_algorithm.setCoolingRate(0.96);
-     mosa_algorithm.setMaxMetropolisIterations(16);
-     mosa_algorithm.setInitialTemperature(1000);
-     mosa_algorithm.setFinalTemperature(0.001);
-     mosa_algorithm.setPerturbationRate(0.950);
-     algorithms_pf += mosa_algorithm.solve();
-
-     printf("Bounds PF:\n");
-     algorithms_pf.print();
-
-     for (size_t solution_pf = 0; solution_pf < algorithms_pf.size(); ++solution_pf)
-     updateBoundsWithSolution(algorithms_pf.at(solution_pf));
-     */
     problem.createDefaultSolution(incumbent_s);
     updateParetoContainer(incumbent_s);
     updateBoundsWithSolution(incumbent_s);
 
-    Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    /*Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(1, temp);
     updateParetoContainer(temp);
     updateBoundsWithSolution(temp);
@@ -242,6 +218,8 @@ void BranchAndBound::initialize(int starts_tree) {
     problem.getSolutionWithLowerBoundInObj(2, temp_2);
     updateParetoContainer(temp_2);
     updateBoundsWithSolution(temp_2);
+*/
+    updateLocalPF();
 }
 
 /** Generates an interval for each possible value in the given level of the branch_to_split
@@ -456,8 +434,10 @@ void BranchAndBound::updateLocalPF() {
         unsigned long global_version = sharedParetoFront.getVersionUpdate();
 
         std::vector<Solution> global_pf = sharedParetoFront.getVector();
-        for (const auto& element : global_pf)
-            paretoContainer.add(element);
+        for (const auto& sol : global_pf) {
+            paretoContainer.add(sol);
+            updateBoundsWithSolution(sol);
+        }
 
         local_update_version = global_version;
     }
