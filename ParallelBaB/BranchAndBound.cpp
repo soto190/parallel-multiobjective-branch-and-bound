@@ -434,7 +434,7 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
         for (int l = currentLevel; l >= ivm_tree.getActiveRow(); --l)
             problem.evaluateRemoveDynamic(incumbent_s, fjssp_data, l);
         
-        if(theTreeHasMoreNodes() && sleeping_bb > 0)
+        if(theTreeHasMoreNodes())
             shareWorkAndSendToGlobalPool(branch_to_solve);
     }
 }
@@ -797,6 +797,52 @@ void BranchAndBound::setPriorityTo(Interval& interval) const {
                 interval.setLowPriority();
                 if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
                     interval.setHighPriority();
+                break;
+
+            default:
+                break;
+        }
+    } else
+        interval.setHighPriority();
+}
+
+/**
+ *
+ * The priority needs to consider the Deep of the branch and the distance to the lower bound.
+ * Gives priority to sub-problems at the bottom of the tree.
+ **/
+void BranchAndBound::setPriorityToBottom(Interval& interval) const {
+    /** TODO: This can be replaced by a Fuzzy Logic Controller. **/
+    if (isPriorityEnable()) {
+
+        const float close = 0.25f; /** If it is less than 0.333f then it is close. **/
+        const float half = 0.50f;  /** If it is more than 0.25f and less than 0.5f then it is at half distance. **/
+        const float far = 0.75f;   /** If it is bigger than 0.75f then it is far. **/
+
+        switch (interval.getDeep()) {
+            case Deep::TOP:
+                interval.setLowPriority();
+                if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
+                    interval.setHighPriority();
+                else if(interval.getDistance(0) <= half || interval.getDistance(1) <= half) /** Moderate distance. **/
+                    interval.setNormalPriority();
+                break;
+
+            case Deep::MID:
+                interval.setNormalPriority();
+
+                if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
+                    interval.setHighPriority();
+                else if(interval.getDistance(0) >= far || interval.getDistance(1) >= far) /** Bad distance. **/
+                    interval.setLowPriority();
+                break;
+
+            case Deep::BOTTOM:
+                interval.setHighPriority();
+                if (interval.getDistance(0) <= close || interval.getDistance(1) <= close) /** Good distance. **/
+                    interval.setHighPriority();
+                else if(interval.getDistance(0) >= far || interval.getDistance(1) >= far) /** Bad distance. **/
+                    interval.setNormalPriority();
                 break;
 
             default:

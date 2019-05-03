@@ -20,8 +20,8 @@
  * level indicates the level of the interval.
  *
  **/
-const float large_branch  = 0.666f;
-const float short_branch = 0.333f;
+const float large_branch  = 0.50f;
+const float short_branch = 0.25f;
 
 enum Priority {P_High = 0, P_Normal = 1, P_Low = 2};
 enum Deep{TOP = 0, MID = 1, BOTTOM = 2};

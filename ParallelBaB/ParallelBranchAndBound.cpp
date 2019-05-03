@@ -143,8 +143,6 @@ void ParallelBranchAndBound::initSharedParetoFront() {
         sharedParetoFront.push_back(n_sol);
     }
 
-    std::cout << temp_1 << temp << temp_2 << std::endl;
-    std::cout << "NSGA-II front: " << std::endl << algorithms_pf;
     sharedParetoFront.print();
 }
 
