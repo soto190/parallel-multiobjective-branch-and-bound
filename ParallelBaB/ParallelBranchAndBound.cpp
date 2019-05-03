@@ -140,11 +140,12 @@ void ParallelBranchAndBound::initSharedParetoFront() {
     ParetoFront algorithms_pf = nsgaii_algorithm.solve();
     for (const auto& n_sol : algorithms_pf) {
         problem.updateBestBoundsWith(n_sol);
-        sharedParetoFront.push_back(temp);
+        sharedParetoFront.push_back(n_sol);
     }
 
     std::cout << temp_1 << temp << temp_2 << std::endl;
     std::cout << "NSGA-II front: " << std::endl << algorithms_pf;
+    sharedParetoFront.print();
 }
 
 int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {
