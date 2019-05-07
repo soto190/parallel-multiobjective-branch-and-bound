@@ -201,14 +201,11 @@ void BranchAndBound::initialize(int starts_tree) {
     number_of_nodes = computeTotalNodes(number_of_tree_levels);
     number_of_shared_works = 0;
 
-    Solution sample_solution(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
-    problem.createDefaultSolution(sample_solution);
-    problem.evaluate(sample_solution);
-
     problem.createDefaultSolution(incumbent_s);
-    updateParetoContainer(incumbent_s);
+    problem.evaluate(incumbent_s);
+    /*updateParetoContainer(incumbent_s);
     updateBoundsWithSolution(incumbent_s);
-
+*/
     /*Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.getSolutionWithLowerBoundInObj(1, temp);
     updateParetoContainer(temp);
@@ -735,7 +732,7 @@ void BranchAndBound::updateBounds(const Solution& sol, FJSSPdata& data) {
 }
 
 void BranchAndBound::updateBoundsWithSolution(const Solution & solution) {
-    
+
     if (solution.getObjective(0) < problem.getBestMakespanFound())
         problem.updateBestMakespanSolutionWith(solution);
     
@@ -748,6 +745,11 @@ void BranchAndBound::updateBoundsWithSolution(const Solution & solution) {
  *
  **/
 void BranchAndBound::setPriorityTo(Interval& interval) const {
+    setPriorityToTop(interval);
+    //setPriorityToBottom(interval);
+}
+
+void BranchAndBound::setPriorityToTop(Interval& interval) const {
     /** TODO: This can be replaced by a Fuzzy Logic Controller. **/
     if (isPriorityEnable()) {
 

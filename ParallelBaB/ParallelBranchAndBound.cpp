@@ -113,7 +113,7 @@ tbb::task * ParallelBranchAndBound::execute() {
 }
 
 void ParallelBranchAndBound::initSharedParetoFront() {
-    Solution temp_1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    /*Solution temp_1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(temp_1);
     sharedParetoFront.push_back(temp_1);
     problem.updateBestMakespanSolutionWith(temp_1);
@@ -136,13 +136,15 @@ void ParallelBranchAndBound::initSharedParetoFront() {
     nsgaii_algorithm.setCrossoverRate(0.90);
     nsgaii_algorithm.setMutationRate(0.10);
     nsgaii_algorithm.setMaxPopulationSize(100);
-    nsgaii_algorithm.setMaxNumberOfGenerations(200);
+    nsgaii_algorithm.setMaxNumberOfGenerations(300);
     ParetoFront algorithms_pf = nsgaii_algorithm.solve();
     for (const auto& n_sol : algorithms_pf) {
         problem.updateBestBoundsWith(n_sol);
         sharedParetoFront.push_back(n_sol);
     }
-
+    //std::cout << temp_1 << temp << temp_2 << std::endl;
+    std::cout << "NSGA-II: " << std::endl << algorithms_pf << std::endl;
+*/
     sharedParetoFront.print();
 }
 

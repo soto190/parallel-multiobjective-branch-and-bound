@@ -204,6 +204,7 @@ private:
     void updateBounds(const Solution & solution, FJSSPdata& data);
     void updateBoundsWithSolution(const Solution & solution);
     void setPriorityTo(Interval & interval) const;
+    void setPriorityToTop(Interval & interval) const;
     void setPriorityToBottom(Interval & interval) const;
 
     int getLimitLevelToShare() const;
