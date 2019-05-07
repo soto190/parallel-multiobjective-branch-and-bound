@@ -137,7 +137,7 @@ HandlerContainer& HandlerContainer::operator()(unsigned int rows, unsigned int c
     d_y = (ub_y - lb_y)/ rows;
 
     /*193 143 307 297 11 15*/
-    cout << lb_x << ' ' << lb_y << ' ' << ub_x << ' ' << ub_y << ' '<< d_x << ' ' << d_y << ' ' << std::endl;
+    //std::cout << maxinx << ' ' << maxiny << ' ' << mininx << ' ' << mininy << ' ' << lb_x << ' ' << lb_y << ' ' << ub_x << ' ' << ub_y << ' '<< d_x << ' ' << d_y << ' ' << std::endl;
     rangeinx = new double[cols];
     rangeiny = new double[rows];
 

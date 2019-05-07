@@ -185,7 +185,7 @@ void BranchAndBound::initialize(int starts_tree) {
         paretoContainer(100, 100, problem.getFmax(0), problem.getFmax(1), problem.getFmin(0), problem.getFmin(1));
     else
         paretoContainer(1, 1, problem.getFmax(0), problem.getFmax(1), problem.getFmin(0), problem.getFmin(1));
-    
+
     if (starts_tree == -1)
         currentLevel = 0;
     else
@@ -430,10 +430,15 @@ void BranchAndBound::updateLocalPF() {
     if (isLocalPFversionOutdated()) {
         unsigned long global_version = sharedParetoFront.getVersionUpdate();
 
-        std::vector<Solution> global_pf = sharedParetoFront.getVector();
+        //std::vector<Solution> global_pf = sharedParetoFront.getVectorToCopy();
+        std::vector<Solution> global_pf;
+        sharedParetoFront.getCopyOfInnerVector(global_pf);
+
         for (const auto& sol : global_pf) {
+            //std::cout << "From shared PF: "<< sol;
             paretoContainer.add(sol);
             updateBoundsWithSolution(sol);
+
         }
 
         local_update_version = global_version;

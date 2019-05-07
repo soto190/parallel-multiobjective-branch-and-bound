@@ -94,6 +94,12 @@ std::vector<Solution>& ParetoBucket::getVector() {
     return m_vec;
 }
 
+void ParetoBucket::getCopyOfInnerVector(std::vector<Solution>& output_vec) {
+    tbb::queuing_rw_mutex::scoped_lock m_lock(updating_lock, false);
+    for (const auto& sol : m_vec)
+        output_vec.push_back(sol);
+}
+
 const std::vector<Solution>& ParetoBucket::getVectorToCopy() const {
     return m_vec;
 }

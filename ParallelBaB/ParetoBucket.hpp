@@ -51,6 +51,8 @@ public:
     tbb::atomic<FrontState> getStateAtomic() const;
     std::vector<Solution>& getVector();
     const std::vector<Solution>& getVectorToCopy() const ;
+    void getCopyOfInnerVector(std::vector<Solution>& output_vec);
+
     bool produceImprovement(const Solution& obj);
     bool push_back(const Solution& obj);
     unsigned long getVersionUpdate() const;
