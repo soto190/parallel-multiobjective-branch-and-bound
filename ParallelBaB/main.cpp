@@ -49,8 +49,9 @@ void one_node(int argc, char* argv[]) {
     string instance_path = "not especified";
     string output_path = "not especified";
     bool is_grid_enable = false;
-    bool is_priority_enable = false;
     bool is_sorting_enable = false;
+    unsigned int is_priority_enable = 0;
+
 
     const struct option longopts[] = {
         {"threads", required_argument,  0, 't'},
@@ -98,12 +99,10 @@ void one_node(int argc, char* argv[]) {
 
             case 'q':
                 std::cout << "Priority queue: ";
-                if (optarg) {
-                    string tmp = optarg;
-                    if (tmp == "enable")
-                        is_priority_enable = true;
-                }
-                std::cout << (is_priority_enable ? "enable" : "disable") << std::endl;
+                if (optarg)
+                    is_priority_enable = stoi(optarg);;
+
+                std::cout << is_priority_enable << std::endl;
                 break;
 
             case 's':
@@ -194,7 +193,7 @@ void one_node(int argc, char* argv[]) {
             pbb->enableSortingNodes();
         
         if (is_priority_enable)
-            pbb->enablePriorityQueue();
+            pbb->enablePriorityQueue(is_priority_enable);
 
         pbb->setParetoFrontFile(outputFile.c_str());
         pbb->setSummarizeFile(summarizeFile.c_str());

@@ -27,7 +27,7 @@ public:
     char summarize_file[255];
     bool is_grid_enable = false;
     bool is_sorting_enable = false;
-    bool is_priority_enable = false;
+    unsigned int is_priority_enable = 0;
     double time_limit;
 
     unsigned long number_of_nodes;
@@ -63,10 +63,10 @@ public:
     
     void enableGrid();
     void enableSortingNodes();
-    void enablePriorityQueue();
+    void enablePriorityQueue(unsigned int set_of_rules);
     bool isGridEnable() const;
     bool isSortingEnable() const;
-    bool isPriorityEnable() const;
+    unsigned int isPriorityEnable() const;
     
     void setNumberOfThreads(int number_of_threads);
     void setOutputPath(const std::string outputPath);

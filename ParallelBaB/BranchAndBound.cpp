@@ -21,7 +21,7 @@ tbb::atomic<int> there_is_more_work;
 BranchAndBound::BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problemToCopy, const Interval & branch):
 is_grid_enable(false),
 is_sorting_enable(false),
-is_priority_enable(false),
+is_priority_enable(0),
 node_rank(node_rank),
 bb_rank(rank),
 local_update_version(0),
@@ -750,8 +750,14 @@ void BranchAndBound::updateBoundsWithSolution(const Solution & solution) {
  *
  **/
 void BranchAndBound::setPriorityTo(Interval& interval) const {
-    setPriorityToTop(interval);
-    //setPriorityToBottom(interval);
+    if (is_priority_enable == 1)
+        setPriorityToTop(interval);
+
+    else if(is_priority_enable == 2)
+        setPriorityToTop(interval);
+
+    else
+        interval.setHighPriority();
 }
 
 void BranchAndBound::setPriorityToTop(Interval& interval) const {
@@ -858,8 +864,8 @@ void BranchAndBound::enableSortingNodes() {
     is_sorting_enable = true;
 }
 
-void BranchAndBound::enablePriorityQueue() {
-    is_priority_enable = true;
+void BranchAndBound::enablePriorityQueue(unsigned int set_of_rules) {
+    is_priority_enable = set_of_rules;
 }
 
 bool BranchAndBound::isGridEnable() const {
@@ -870,7 +876,7 @@ bool BranchAndBound::isSortingEnable() const {
     return is_sorting_enable;
 }
 
-bool BranchAndBound::isPriorityEnable() const {
+unsigned int BranchAndBound::isPriorityEnable() const {
     return is_priority_enable;
 }
 

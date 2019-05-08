@@ -56,7 +56,7 @@ class BranchAndBound: public tbb::task {
 private:
     bool is_grid_enable;
     bool is_sorting_enable;
-    bool is_priority_enable;
+    unsigned int is_priority_enable;
     double time_limit;
 
     int node_rank;
@@ -124,12 +124,12 @@ public:
 
     void enableGrid();
     void enableSortingNodes();
-    void enablePriorityQueue();
+    void enablePriorityQueue(unsigned int set_of_rules);
 
     bool isTimeLimitEnable() const;
     bool isGridEnable() const;
     bool isSortingEnable() const;
-    bool isPriorityEnable() const;
+    unsigned int isPriorityEnable() const;
     
     unsigned long getNumberOfNodes() const;
     unsigned long getNumberOfLevels() const;

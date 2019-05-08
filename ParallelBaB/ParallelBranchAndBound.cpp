@@ -12,7 +12,7 @@ ParallelBranchAndBound::ParallelBranchAndBound(int rank, int n_threads, const Pr
 time_limit(0),
 is_grid_enable(false),
 is_sorting_enable(false),
-is_priority_enable(false),
+is_priority_enable(0),
 rank(rank),
 number_of_bbs(n_threads),
 problem(problem),
@@ -62,7 +62,7 @@ tbb::task * ParallelBranchAndBound::execute() {
             BaB_task->enableSortingNodes();
 
         if (isPriorityEnable())
-            BaB_task->enablePriorityQueue();
+            BaB_task->enablePriorityQueue(is_priority_enable);
 
         BaB_task->setTimeLimit(getTimeLimit());
         BaB_task->setSummarizeFile(summarize_file);
@@ -226,8 +226,8 @@ void ParallelBranchAndBound::enableSortingNodes() {
     is_sorting_enable = true;
 }
 
-void ParallelBranchAndBound::enablePriorityQueue() {
-    is_priority_enable = true;
+void ParallelBranchAndBound::enablePriorityQueue(unsigned int priority_rules) {
+    is_priority_enable = priority_rules;
 }
 
 bool ParallelBranchAndBound::isGridEnable() const {
@@ -238,7 +238,7 @@ bool ParallelBranchAndBound::isSortingEnable() const {
     return is_sorting_enable;
 }
 
-bool ParallelBranchAndBound::isPriorityEnable() const {
+unsigned int ParallelBranchAndBound::isPriorityEnable() const {
     return is_priority_enable;
 }
 
