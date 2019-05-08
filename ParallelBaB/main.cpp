@@ -198,6 +198,7 @@ void one_node(int argc, char* argv[]) {
 
         pbb->setParetoFrontFile(outputFile.c_str());
         pbb->setSummarizeFile(summarizeFile.c_str());
+        pbb->setOutputPath(output_path.c_str());
         
         printf("Spawning root...\n");
         tbb::task::spawn_root_and_wait(*pbb);

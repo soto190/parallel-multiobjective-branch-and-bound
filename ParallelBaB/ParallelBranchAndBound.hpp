@@ -22,6 +22,7 @@ class ParallelBranchAndBound: public tbb::task {
 public:
     int rank;
     int number_of_bbs;
+    std::string output_path;
     char pareto_file[255];
     char summarize_file[255];
     bool is_grid_enable = false;
@@ -68,6 +69,7 @@ public:
     bool isPriorityEnable() const;
     
     void setNumberOfThreads(int number_of_threads);
+    void setOutputPath(const std::string outputPath);
     void setParetoFrontFile(const char outputFile[255]);
     void setSummarizeFile(const char outputFile[255]);
     void setBranchInit(const Interval& interval);

@@ -254,6 +254,10 @@ void ParallelBranchAndBound::setNumberOfThreads(int n_number_of_threads) {
     number_of_bbs = n_number_of_threads;
 }
 
+void ParallelBranchAndBound::setOutputPath(const std::string outputPath) {
+    output_path = outputPath;
+}
+
 void ParallelBranchAndBound::setParetoFrontFile(const char outputFile[255]) {
     std::strcpy(pareto_file, outputFile);
 }
@@ -268,78 +272,87 @@ int ParallelBranchAndBound::getRank() const {
 
 void ParallelBranchAndBound::saveSummarize() {
 
-    printf("[Worker-%03d:B&B-%03d] ---Summarize---\n", 0, 0);
-    printf("Pareto front size:   %ld\n", sharedParetoFront.getSize());
-    printf("Total time:          %f\n",  elapsed_time);
-    printf("Total nodes:         %ld\n", number_of_nodes);
-    printf("Eliminated nodes:    %ld\n", number_of_nodes - number_of_nodes_explored);
-    printf("Explored nodes:      %ld\n", number_of_nodes_explored);
-    printf("Created nodes:       %ld\n", number_of_nodes_created);
-    printf("Pruned nodes:        %ld\n", number_of_nodes_pruned);
-    printf("Leaves reached:      %ld\n", number_of_reached_leaves);
-    printf("Calls to branching:  %ld\n", number_of_calls_to_branch);
-    printf("Calls to prune:      %ld\n", number_of_calls_to_prune);
-    printf("Updates in PF:       %ld\n", number_of_updates_in_lower_bound);
-    printf("Shared work: %ld\n", number_of_shared_works);
-    printf("Grid data:\n");
-    //myfile << "\tdimension:         \t" << paretoContainer.getCols() << " x " << paretoContainer.getRows() << endl;
-    printf("\tnon-dominated:\t%ld\n", number_of_non_dominated_buckets);
-    printf("\tdominated:\t%ld\n", number_of_dominated_buckets);
-    printf("\tunexplored:\t%ld\n", number_of_unexplored_buckets);
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+
+    std::ostringstream stream_console;
+
+    printf("[Worker-%03d:B&B-%03d] Saving summarize in file %s\n", 0, 0, summarize_file);
+
+    stream_console << "---Summarize---";
+    stream_console << 1900 + ltm->tm_year << '-' << ltm->tm_mon << '-' << ltm->tm_mday << ' ' << std::endl;
+    stream_console << ltm->tm_hour << ':' << ltm->tm_min << ':' << ltm->tm_sec << std::endl;
+    stream_console << "Problem name:        " << problem.getName() << std::endl;
+    stream_console << "Number of threads:   " << number_of_bbs << std::endl;
+    stream_console << "Sub-problems to share:" << problem.getNumberOfVariables() * size_to_share << std::endl;
+    stream_console << "Deep limit to share: " << deep_limit_share << std::endl;
+    stream_console << "Pareto front size:   " << sharedParetoFront.getSize() << std::endl;
+    stream_console << "Total nodes:         " << number_of_nodes << std::endl;
+    stream_console << "Eliminated nodes:    " << number_of_nodes - number_of_nodes_explored << std::endl;
+    stream_console << "Evaluated nodes:     " << number_of_nodes_explored << std::endl;
+    stream_console << "Branched nodes:       " << number_of_nodes_created << std::endl;
+    stream_console << "Fathomed nodes:      " << number_of_nodes_pruned << std::endl;
+    stream_console << "Leaves reached:      " << number_of_reached_leaves << std::endl;
+    stream_console << "Calls to branching:  " << number_of_calls_to_branch << std::endl;
+    stream_console << "Calls to prune:      " << number_of_calls_to_prune << std::endl;
+    stream_console << "Updates in PF:       " << number_of_updates_in_lower_bound << std::endl;
+    stream_console << "Shared work:         " << number_of_shared_works << std::endl;
+    stream_console << "Total time:          " << elapsed_time << std::endl;
+    stream_console << "Grid data:\n";
+    stream_console << "\tnon-dominated:     \t" << number_of_non_dominated_buckets << std::endl;
+    stream_console << "\tdominated:         \t" << number_of_dominated_buckets << std::endl;
+    stream_console << "\tunexplored:        \t" << number_of_unexplored_buckets << std::endl;
+    stream_console << "The pareto front found is:" << std::endl;
+
+    stream_console << pareto_front;
+    std::cout << stream_console.str();
 
     std::ofstream myfile(summarize_file);
     if (myfile.is_open()) {
-        printf("[Worker-%03d:B&B-%03d] Saving summarize in file %s\n", 0, 0, summarize_file);
-
-        myfile << "---Summarize---\n";
-        myfile << "Number of threads:   " << number_of_bbs << endl;
-        myfile << "Sharing size:        " << problem.getNumberOfOperations() * size_to_share << endl;
-        myfile << "Deep limit to share: " << deep_limit_share << endl;
-        myfile << "Pareto front size:   " << sharedParetoFront.getSize() << endl;
-        myfile << "Total nodes:         " << number_of_nodes << endl;
-        myfile << "Eliminated nodes:    " << number_of_nodes - number_of_nodes_explored << endl;
-        myfile << "Explored nodes:      " << number_of_nodes_explored << endl;
-        myfile << "Created nodes:       " << number_of_nodes_created << endl;
-        myfile << "Pruned nodes:        " << number_of_nodes_pruned << endl;
-        myfile << "Leaves reached:      " << number_of_reached_leaves << endl;
-        myfile << "Calls to branching:  " << number_of_calls_to_branch << endl;
-        myfile << "Calls to prune:      " << number_of_calls_to_prune << endl;
-        myfile << "Updates in PF:       " << number_of_updates_in_lower_bound << endl;
-        myfile << "Shared work:         " << number_of_shared_works << endl;
-        myfile << "Total time:          " << elapsed_time << endl;
-
-        myfile << "Grid data:\n";
-        //myfile << "\tdimension:         \t" << paretoContainer.getCols() << " x " << paretoContainer.getRows() << endl;
-        myfile << "\tnon-dominated:     \t" << number_of_non_dominated_buckets << endl;
-        myfile << "\tdominated:         \t" << number_of_dominated_buckets << endl;
-        myfile << "\tunexplored:        \t" << number_of_unexplored_buckets << endl;
-        myfile << "The pareto front found is: \n";
-
-        int numberOfObjectives = problem.getNumberOfObjectives();
-        int numberOfVariables = problem.getNumberOfVariables();
-
-        int nObj = 0;
-        int nVar = 0;
-
-        int counterSolutions = 0;
-        for (auto it = pareto_front.begin(); it != pareto_front.end(); ++it) {
-
-            myfile << std::fixed << std::setw(6) << std::setfill(' ') << ++counterSolutions << " ";
-            for (nObj = 0; nObj < numberOfObjectives; ++nObj)
-                myfile << std::fixed << std::setw(6) << std::setprecision(0) << std::setfill(' ') << (*it).getObjective(nObj) << " ";
-            myfile << " | ";
-
-            for (nVar = 0; nVar < numberOfVariables; ++nVar)
-                myfile << std::fixed << std::setw(4) << std::setfill(' ') << (*it).getVariable(nVar) << " ";
-            myfile << " |\n";
-        }
-
+        myfile << stream_console.str();
         myfile.close();
     } else
         printf("[Worker-%03d:B&B-%03d] Unable to write on summarize file: %s\n", 0, 0, summarize_file);
 
-}
+    
+    std::string summarize_file = output_path +  "Summarize.csv";
+    std::cout << "Summarize file is: " << summarize_file << std::endl;
+    std::ofstream output_summarize(summarize_file, std::ios_base::app);
 
+    if (output_summarize.is_open()) {
+        /** Header of the output:
+         * Date and time, Instance, threads, grid, sorting, priority queue, time(sec), evaluated, branched, fathomed, leaves, updates, shared sub-problems, %branched, %fathomed
+         **/
+        std::ostringstream output_stream_row;
+        output_stream_row << 1900 + ltm->tm_year << '-';
+        output_stream_row << ltm->tm_mon << '-';
+        output_stream_row << ltm->tm_mday << ' ';
+        output_stream_row << ltm->tm_hour << ':';
+        output_stream_row << ltm->tm_min << ':';
+        output_stream_row << ltm->tm_sec << ',';
+
+        output_stream_row << problem.getName() << ',';
+        output_stream_row << number_of_bbs << ',';
+        output_stream_row << isGridEnable() << ',';
+        output_stream_row << isSortingEnable() << ',';
+        output_stream_row << isPriorityEnable() << ',';
+        output_stream_row << elapsed_time << ',';
+        output_stream_row << number_of_nodes_explored << ',';
+        output_stream_row << number_of_calls_to_branch << ',';
+        output_stream_row << number_of_nodes_pruned << ',';
+        output_stream_row << number_of_reached_leaves << ',';
+        output_stream_row << number_of_updates_in_lower_bound << ',';
+        output_stream_row << number_of_shared_works << ',';
+
+        output_stream_row << ((number_of_calls_to_branch * 1.0) / number_of_nodes_explored * 100.0) << ',';
+        output_stream_row << ((number_of_nodes_pruned * 1.0) / number_of_nodes_explored * 100.0) << std::endl;
+
+        output_summarize << output_stream_row.str(); /** For writing in one flush to the output file.**/
+        output_summarize.close();
+    } else
+        std::cout << "Unable to write data to file " << "Summarize.csv" << std::endl;
+
+}
 void ParallelBranchAndBound::saveParetoFront() {
 
     std::ofstream myfile(pareto_file);
