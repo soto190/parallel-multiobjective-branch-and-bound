@@ -430,13 +430,13 @@ void BranchAndBound::updateLocalPF() {
     if (isLocalPFversionOutdated()) {
         unsigned long global_version = sharedParetoFront.getVersionUpdate();
 
-        //std::vector<Solution> global_pf = sharedParetoFront.getVectorToCopy();
-        std::vector<Solution> global_pf;
-        sharedParetoFront.getCopyOfInnerVector(global_pf);
+        std::vector<Solution> global_pf = sharedParetoFront.getVectorByValue();
+        //std::vector<Solution> global_pf;
+        //sharedParetoFront.getCopyOfInnerVector(global_pf);
 
         for (const auto& sol : global_pf) {
-            //std::cout << "From shared PF: "<< sol;
             paretoContainer.add(sol);
+            //if(paretoContainer.add(sol))
             updateBoundsWithSolution(sol);
 
         }

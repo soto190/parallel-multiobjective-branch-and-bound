@@ -50,6 +50,7 @@ public:
     tbb::atomic<unsigned long> getSizeAtomic() const;
     tbb::atomic<FrontState> getStateAtomic() const;
     std::vector<Solution>& getVector();
+    std::vector<Solution> getVectorByValue();
     const std::vector<Solution>& getVectorToCopy() const ;
     void getCopyOfInnerVector(std::vector<Solution>& output_vec);
 
