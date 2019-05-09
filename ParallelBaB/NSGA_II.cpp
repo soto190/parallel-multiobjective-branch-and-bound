@@ -69,10 +69,15 @@ void NSGA_II::selection() {
 }
 
 void NSGA_II::crossover() {
-    vector<Solution> offsprings;
+    std::uniform_int_distribution<unsigned int> unif_int_pop_best(0, static_cast<int>(population.size() * 0.50));
+    //std::uniform_int_distribution<unsigned int> unif_int_pop_all(0, static_cast<int>(population.size() - 1));
+
+    std::vector<Solution> offsprings;
     offsprings.reserve(population.size());
     for (size_t pop = 0; pop < population.size() - 1; pop += 2) {
-        vector<Solution> offs = crossoverOperator(population.at(pop), population.at(pop + 1));
+        int parent1 = unif_int_pop_best(generator);
+        int parent2 = unif_int_pop_best(generator);
+        std::vector<Solution> offs = crossoverOperator(population.at(parent1), population.at(parent2));
         offsprings.insert(offsprings.end(), offs.begin(), offs.end());
     }
 
@@ -107,8 +112,8 @@ vector<Solution> NSGA_II::crossoverOperator(const Solution &parent1, const Solut
     Solution offspring1(parent1);
     Solution offspring2(parent2);
 
-    std::uniform_int_distribution<unsigned int> unif_int_mach_dis(0, static_cast<int>(parent1.getNumberOfVariables()) - 1);
-    int mid = unif_int_mach_dis(generator);
+    std::uniform_int_distribution<unsigned int> unif_int_SPX(0, static_cast<int>(parent1.getNumberOfVariables()) - 1);
+    int mid = unif_int_SPX(generator);
 
     //int mid = parent1.getNumberOfVariables() / 2;
     int chromosome_size = parent1.getNumberOfVariables();

@@ -113,9 +113,9 @@ tbb::task * ParallelBranchAndBound::execute() {
 }
 
 void ParallelBranchAndBound::initSharedParetoFront() {
-    /*Solution temp_1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    Solution temp_1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(temp_1);
-    sharedParetoFront.push_back(temp_1);
+    /*sharedParetoFront.push_back(temp_1);
     problem.updateBestMakespanSolutionWith(temp_1);
 
     Solution temp(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
@@ -130,13 +130,13 @@ void ParallelBranchAndBound::initSharedParetoFront() {
     problem.updateBestBoundsWith(temp_1);
     problem.updateBestBoundsWith(temp);
     problem.updateBestBoundsWith(temp_2);
-
+*/
     NSGA_II nsgaii_algorithm(problem);
     nsgaii_algorithm.setSampleSolution(temp_1);
-    nsgaii_algorithm.setCrossoverRate(0.90);
+    nsgaii_algorithm.setCrossoverRate(1.0);
     nsgaii_algorithm.setMutationRate(0.10);
     nsgaii_algorithm.setMaxPopulationSize(100);
-    nsgaii_algorithm.setMaxNumberOfGenerations(300);
+    nsgaii_algorithm.setMaxNumberOfGenerations(200);
     ParetoFront algorithms_pf = nsgaii_algorithm.solve();
     for (const auto& n_sol : algorithms_pf) {
         problem.updateBestBoundsWith(n_sol);
@@ -144,7 +144,6 @@ void ParallelBranchAndBound::initSharedParetoFront() {
     }
     //std::cout << temp_1 << temp << temp_2 << std::endl;
     std::cout << "NSGA-II: " << std::endl << algorithms_pf << std::endl;
-*/
     sharedParetoFront.print();
 }
 
