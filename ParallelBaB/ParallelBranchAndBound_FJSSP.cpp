@@ -154,6 +154,7 @@ int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {
     Interval branch_to_split(branch_init);
     Solution incumbent_s(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(incumbent_s);
+
     int split_level = branch_to_split.getBuildUpTo() + 1;
     int nodes_created = 0;
     int num_elements = problem.getTotalElements();
