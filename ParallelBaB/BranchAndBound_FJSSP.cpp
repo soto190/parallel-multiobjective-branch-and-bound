@@ -1,5 +1,5 @@
 //
-//  BranchAndBound.cpp
+//  BranchAndBound_FJSSP.cpp
 //  PhDProject
 //
 //  Created by Carlos Soto on 08/06/16.
@@ -10,15 +10,9 @@
  * TODO: Decide if the grid is shared or each B&B has their own grid.
  *
  **/
-#include "BranchAndBound.hpp"
+#include "BranchAndBound_FJSSP.hpp"
 
-SubproblemsPool sharedPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
-//ConcurrentHandlerContainer sharedParetoContainer;
-ParetoBucket sharedParetoFront;
-tbb::atomic<int> sleeping_bb;
-tbb::atomic<int> there_is_more_work;
-
-BranchAndBound::BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problemToCopy, const Interval & branch):
+BranchAndBound_FJSSP::BranchAndBound_FJSSP(int node_rank, int rank, const ProblemFJSSP& problemToCopy, const Interval & branch):
 is_grid_enable(false),
 is_sorting_enable(false),
 is_priority_enable(0),
@@ -58,7 +52,7 @@ elapsed_time(0) {
     ivm_tree.setOwnerId(rank);
 }
 
-BranchAndBound::BranchAndBound(const BranchAndBound& toCopy):
+BranchAndBound_FJSSP::BranchAndBound_FJSSP(const BranchAndBound_FJSSP& toCopy):
 local_update_version(0),
 is_grid_enable(toCopy.isGridEnable()),
 is_sorting_enable(toCopy.isSortingEnable()),
@@ -93,7 +87,7 @@ pareto_front(toCopy.getParetoFront()) {
     std::strcpy(summarize_file, toCopy.summarize_file);
 }
 
-BranchAndBound& BranchAndBound::operator=(const BranchAndBound &toCopy) {
+BranchAndBound_FJSSP& BranchAndBound_FJSSP::operator=(const BranchAndBound_FJSSP &toCopy) {
     local_update_version = toCopy.getPFVersion();
     is_grid_enable = toCopy.isGridEnable();
     is_sorting_enable = toCopy.isSortingEnable();
@@ -131,7 +125,7 @@ BranchAndBound& BranchAndBound::operator=(const BranchAndBound &toCopy) {
     return *this;
 }
 
-BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch) {
+BranchAndBound_FJSSP& BranchAndBound_FJSSP::operator()(int node_rank_new, int rank_new, const ProblemFJSSP &problem_to_copy, const Interval &branch) {
     local_update_version = 0;
     t1 = std::chrono::high_resolution_clock::now();
     t2 = std::chrono::high_resolution_clock::now();
@@ -173,12 +167,12 @@ BranchAndBound& BranchAndBound::operator()(int node_rank_new, int rank_new, cons
     return *this;
 }
 
-BranchAndBound::~BranchAndBound() {
+BranchAndBound_FJSSP::~BranchAndBound_FJSSP() {
     paretoContainer.clear();
     pareto_front.clear();
 }
 
-void BranchAndBound::initialize(int starts_tree) {
+void BranchAndBound_FJSSP::initialize(int starts_tree) {
     time_start = std::clock();
 
     if (isGridEnable())
@@ -232,7 +226,7 @@ void BranchAndBound::initialize(int starts_tree) {
  *
  *  NOTE: Remember to avoid to split the intervals in the last levels.
  **/
-int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
+int BranchAndBound_FJSSP::initGlobalPoolWithInterval(const Interval & branch_init) {
     
     Interval branch_to_split(branch_init);
     
@@ -293,7 +287,7 @@ int BranchAndBound::initGlobalPoolWithInterval(const Interval & branch_init) {
     return nodes_created;
 }
 
-int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
+int BranchAndBound_FJSSP::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
 
     int build_value = 0;
     int build_up_to = branch_init.getBuildUpTo();
@@ -360,7 +354,7 @@ int BranchAndBound::intializeIVM_data(Interval& branch_init, IVMTree& tree) {
     return 0;
 }
 
-tbb::task* BranchAndBound::execute() {
+tbb::task* BranchAndBound_FJSSP::execute() {
 
     t1 = std::chrono::high_resolution_clock::now();
     initialize(interval_to_solve.getBuildUpTo());
@@ -380,7 +374,7 @@ tbb::task* BranchAndBound::execute() {
     return NULL;
 }
 
-void BranchAndBound::solve(Interval& branch_to_solve) {
+void BranchAndBound_FJSSP::solve(Interval& branch_to_solve) {
     
     intializeIVM_data(branch_to_solve, ivm_tree);
     while (theTreeHasMoreNodes() && thereIsMoreTime()) {
@@ -414,19 +408,19 @@ void BranchAndBound::solve(Interval& branch_to_solve) {
     }
 }
 
-bool BranchAndBound::thereIsMoreWork() const {
+bool BranchAndBound_FJSSP::thereIsMoreWork() const {
     return there_is_more_work;
 }
 
-unsigned long BranchAndBound::getPFVersion() const {
+unsigned long BranchAndBound_FJSSP::getPFVersion() const {
     return local_update_version;
 }
 
-bool BranchAndBound::isLocalPFversionOutdated() const {
+bool BranchAndBound_FJSSP::isLocalPFversionOutdated() const {
     return local_update_version < sharedParetoFront.getVersionUpdate();
 }
 
-void BranchAndBound::updateLocalPF() {
+void BranchAndBound_FJSSP::updateLocalPF() {
     if (isLocalPFversionOutdated()) {
         unsigned long global_version = sharedParetoFront.getVersionUpdate();
 
@@ -445,27 +439,27 @@ void BranchAndBound::updateLocalPF() {
     }
 }
 
-void BranchAndBound::updateGlobalPF(const Solution& local_solution) {
+void BranchAndBound_FJSSP::updateGlobalPF(const Solution& local_solution) {
     sharedParetoFront.push_back(local_solution);
 }
 
-double BranchAndBound::getTimeLimit() const {
+double BranchAndBound_FJSSP::getTimeLimit() const {
     return time_limit;
 }
 
-void BranchAndBound::setTimeLimit(double limit_sec) {
+void BranchAndBound_FJSSP::setTimeLimit(double limit_sec) {
     time_limit = limit_sec;
 }
 
-bool BranchAndBound::isTimeLimitEnable() const {
+bool BranchAndBound_FJSSP::isTimeLimitEnable() const {
     return time_limit > 0;
 }
 
-bool BranchAndBound::thereIsMoreTime() {
+bool BranchAndBound_FJSSP::thereIsMoreTime() {
     return isTimeLimitEnable() ? getElapsedTime() <= time_limit : true;
 }
 
-double BranchAndBound::getElapsedTime() {
+double BranchAndBound_FJSSP::getElapsedTime() {
     t2 = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
     elapsed_time = time_span.count();
@@ -476,7 +470,7 @@ double BranchAndBound::getElapsedTime() {
  *  Gets the next node to explore.
  * Modifies the solution.
  **/
-int BranchAndBound::explore(Solution& solution) {
+int BranchAndBound_FJSSP::explore(Solution& solution) {
 
     currentLevel = ivm_tree.getActiveRow();
     solution.setVariable(currentLevel, ivm_tree.getActiveNode());
@@ -495,7 +489,7 @@ int BranchAndBound::explore(Solution& solution) {
  *
  * return the number of branches created.
  */
-int BranchAndBound::branch(Solution& solution, int currentLevel) {
+int BranchAndBound_FJSSP::branch(Solution& solution, int currentLevel) {
     number_of_calls_to_branch++;
 
     int toAdd = 0;
@@ -571,13 +565,13 @@ int BranchAndBound::branch(Solution& solution, int currentLevel) {
     return nodes_created;
 }
 
-void BranchAndBound::prune(Solution & solution, int currentLevel) {
+void BranchAndBound_FJSSP::prune(Solution & solution, int currentLevel) {
     number_of_calls_to_prune++;
     ivm_tree.pruneActiveNode();
     increasePrunedNodes();
 }
 
-bool BranchAndBound::aLeafHasBeenReached() const {
+bool BranchAndBound_FJSSP::aLeafHasBeenReached() const {
     return (currentLevel == number_of_tree_levels);
 }
 
@@ -590,7 +584,7 @@ bool BranchAndBound::aLeafHasBeenReached() const {
  * All the remanent of root_row + 1 is moved to the global pool.
  *
  ***/
-void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_solve) {
+void BranchAndBound_FJSSP::shareWorkAndSendToGlobalPool(const Interval & branch_to_solve) {
     
     int next_row = ivm_tree.getRootRow() + 1;
     unsigned long branches_to_move_to_global_pool = ivm_tree.getActiveRow() - ivm_tree.getNumberOfPendingNodes() - 1;
@@ -656,12 +650,12 @@ void BranchAndBound::shareWorkAndSendToGlobalPool(const Interval & branch_to_sol
 /**
  * Check if the ivm has pending branches to be explored.
  */
-bool BranchAndBound::theTreeHasMoreNodes() const {
+bool BranchAndBound_FJSSP::theTreeHasMoreNodes() const {
     return ivm_tree.thereAreMoreBranches();
     //return stack_values.size() > 0;
 }
 
-bool BranchAndBound::updateParetoContainer(const Solution & solution) {
+bool BranchAndBound_FJSSP::updateParetoContainer(const Solution & solution) {
     return paretoContainer.add(solution);
 }
 
@@ -675,11 +669,11 @@ bool BranchAndBound::updateParetoContainer(const Solution & solution) {
  *  6- It is non-dominated.
  *
  */
-bool BranchAndBound::improvesTheParetoContainer(const Solution & solution) {
+bool BranchAndBound_FJSSP::improvesTheParetoContainer(const Solution & solution) {
     return paretoContainer.improvesTheGrid(solution);
 }
 
-unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) const {
+unsigned long BranchAndBound_FJSSP::permut(unsigned long n, unsigned long i) const {
     unsigned long result = 1;
     for (long j = n; j > n - i; --j)
         result *= j;
@@ -689,7 +683,7 @@ unsigned long BranchAndBound::permut(unsigned long n, unsigned long i) const {
 /**
  * This functions compute the number of nodes.
  */
-unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) const {
+unsigned long BranchAndBound_FJSSP::computeTotalNodes(unsigned long totalVariables) const {
     long n_nodes = 0;
     long nodes_per_branch = 0;
     long deepest_level;
@@ -727,7 +721,7 @@ unsigned long BranchAndBound::computeTotalNodes(unsigned long totalVariables) co
     return n_nodes;
 }
 
-void BranchAndBound::updateBounds(const Solution& sol, FJSSPdata& data) {
+void BranchAndBound_FJSSP::updateBounds(const Solution& sol, FJSSPdata& data) {
     
     if (data.getMakespan() < problem.getBestMakespanFound())
         problem.updateBestMakespanSolution(data);
@@ -736,7 +730,7 @@ void BranchAndBound::updateBounds(const Solution& sol, FJSSPdata& data) {
         problem.updateBestMaxWorkloadSolution(data);
 }
 
-void BranchAndBound::updateBoundsWithSolution(const Solution & solution) {
+void BranchAndBound_FJSSP::updateBoundsWithSolution(const Solution & solution) {
 
     if (solution.getObjective(0) < problem.getBestMakespanFound())
         problem.updateBestMakespanSolutionWith(solution);
@@ -749,7 +743,7 @@ void BranchAndBound::updateBoundsWithSolution(const Solution & solution) {
  * The priority needs to consider the Deep of the branch and the distance to the lower bound.
  *
  **/
-void BranchAndBound::setPriorityTo(Interval& interval) const {
+void BranchAndBound_FJSSP::setPriorityTo(Interval& interval) const {
     if (is_priority_enable == 1)
         setPriorityToTop(interval);
 
@@ -760,7 +754,7 @@ void BranchAndBound::setPriorityTo(Interval& interval) const {
         interval.setHighPriority();
 }
 
-void BranchAndBound::setPriorityToTop(Interval& interval) const {
+void BranchAndBound_FJSSP::setPriorityToTop(Interval& interval) const {
     /** TODO: This can be replaced by a Fuzzy Logic Controller. **/
     if (isPriorityEnable()) {
 
@@ -804,7 +798,7 @@ void BranchAndBound::setPriorityToTop(Interval& interval) const {
  * The priority needs to consider the Deep of the branch and the distance to the lower bound.
  * Gives priority to sub-problems at the bottom of the tree.
  **/
-void BranchAndBound::setPriorityToBottom(Interval& interval) const {
+void BranchAndBound_FJSSP::setPriorityToBottom(Interval& interval) const {
     /** TODO: This can be replaced by a Fuzzy Logic Controller. **/
     if (isPriorityEnable()) {
 
@@ -848,219 +842,219 @@ void BranchAndBound::setPriorityToBottom(Interval& interval) const {
 /** Returns the proximity to the given objective. When minimizing objectives, if it is less than 0 then it produces an improvement.
  *  other distance: (objective - value) / objective;
  ***/
-float BranchAndBound::distanceToObjective(int value, int objective) {
+float BranchAndBound_FJSSP::distanceToObjective(int value, int objective) {
     return (value - objective) / value;
 }
 
-double BranchAndBound::minMaxNormalization(int value, int min, int max) const{
+double BranchAndBound_FJSSP::minMaxNormalization(int value, int min, int max) const{
     return ((value - min) * 1.0 )/ (max - min);
 }
 
-void BranchAndBound::enableGrid() {
+void BranchAndBound_FJSSP::enableGrid() {
     is_grid_enable = true;
 }
 
-void BranchAndBound::enableSortingNodes() {
+void BranchAndBound_FJSSP::enableSortingNodes() {
     is_sorting_enable = true;
 }
 
-void BranchAndBound::enablePriorityQueue(unsigned int set_of_rules) {
+void BranchAndBound_FJSSP::enablePriorityQueue(unsigned int set_of_rules) {
     is_priority_enable = set_of_rules;
 }
 
-bool BranchAndBound::isGridEnable() const {
+bool BranchAndBound_FJSSP::isGridEnable() const {
     return is_grid_enable;
 }
 
-bool BranchAndBound::isSortingEnable() const {
+bool BranchAndBound_FJSSP::isSortingEnable() const {
     return is_sorting_enable;
 }
 
-unsigned int BranchAndBound::isPriorityEnable() const {
+unsigned int BranchAndBound_FJSSP::isPriorityEnable() const {
     return is_priority_enable;
 }
 
-int BranchAndBound::getNodeRank() const {
+int BranchAndBound_FJSSP::getNodeRank() const {
     return bb_rank;
 }
 
-int BranchAndBound::getBBRank() const {
+int BranchAndBound_FJSSP::getBBRank() const {
     return bb_rank;
 }
 
-int BranchAndBound::getCurrentLevel() const {
+int BranchAndBound_FJSSP::getCurrentLevel() const {
     return currentLevel;
 }
 
-unsigned long BranchAndBound::getNumberOfLevels() const {
+unsigned long BranchAndBound_FJSSP::getNumberOfLevels() const {
     return number_of_tree_levels;
 }
 
-unsigned long BranchAndBound::getNumberOfNodes( ) const {
+unsigned long BranchAndBound_FJSSP::getNumberOfNodes( ) const {
     return number_of_nodes;
 }
 
-unsigned long BranchAndBound::getNumberOfNodesCreated( ) const {
+unsigned long BranchAndBound_FJSSP::getNumberOfNodesCreated( ) const {
     return number_of_nodes_created;
 }
 
-unsigned long BranchAndBound::getNumberOfNodesExplored( ) const {
+unsigned long BranchAndBound_FJSSP::getNumberOfNodesExplored( ) const {
     return number_of_nodes_explored;
 }
 
-unsigned long BranchAndBound::getNumberOfCallsToBranch( ) const {
+unsigned long BranchAndBound_FJSSP::getNumberOfCallsToBranch( ) const {
     return number_of_calls_to_branch;
 }
 
-unsigned long BranchAndBound::getNumberOfReachedLeaves( ) const {
+unsigned long BranchAndBound_FJSSP::getNumberOfReachedLeaves( ) const {
     return number_of_reached_leaves;
 }
 
-unsigned long BranchAndBound::getNumberOfNodesUnexplored( ) const {
+unsigned long BranchAndBound_FJSSP::getNumberOfNodesUnexplored( ) const {
     return number_of_nodes_unexplored;
 }
 
-unsigned long BranchAndBound::getNumberOfNodesPruned( ) const {
+unsigned long BranchAndBound_FJSSP::getNumberOfNodesPruned( ) const {
     return number_of_nodes_pruned;
 }
 
-unsigned long BranchAndBound::getNumberOfCallsToPrune( ) const {
+unsigned long BranchAndBound_FJSSP::getNumberOfCallsToPrune( ) const {
     return number_of_calls_to_prune;
 }
 
-unsigned long BranchAndBound::getNumberOfUpdatesInLowerBound( ) const {
+unsigned long BranchAndBound_FJSSP::getNumberOfUpdatesInLowerBound( ) const {
     return number_of_updates_in_lower_bound;
 }
 
-unsigned long BranchAndBound::getSharedWork() const {
+unsigned long BranchAndBound_FJSSP::getSharedWork() const {
     return number_of_shared_works;
 }
 
-unsigned long BranchAndBound::getNumberOfDominatedContainers() const {
+unsigned long BranchAndBound_FJSSP::getNumberOfDominatedContainers() const {
     return paretoContainer.getNumberOfDisabledBuckets();
 }
 
-unsigned long BranchAndBound::getNumberOfNonDominatedContainers() const {
+unsigned long BranchAndBound_FJSSP::getNumberOfNonDominatedContainers() const {
     return paretoContainer.getNumberOfActiveBuckets();
 }
 
-unsigned long BranchAndBound::getNumberOfUnexploredContainers() const {
+unsigned long BranchAndBound_FJSSP::getNumberOfUnexploredContainers() const {
     return paretoContainer.getNumberOfUnexploredBuckets();
 }
 
-void BranchAndBound::increaseNumberOfNodesExplored(unsigned long value) {
+void BranchAndBound_FJSSP::increaseNumberOfNodesExplored(unsigned long value) {
     number_of_nodes_explored += value;
 }
 
-void BranchAndBound::increaseNumberOfCallsToBranch(unsigned long value) {
+void BranchAndBound_FJSSP::increaseNumberOfCallsToBranch(unsigned long value) {
     number_of_calls_to_branch += value;
 }
 
-void BranchAndBound::increaseNumberOfNodesCreated(unsigned long value) {
+void BranchAndBound_FJSSP::increaseNumberOfNodesCreated(unsigned long value) {
     number_of_nodes_created += value;
 }
 
-void BranchAndBound::increaseNumberOfCallsToPrune(unsigned long value) {
+void BranchAndBound_FJSSP::increaseNumberOfCallsToPrune(unsigned long value) {
     number_of_calls_to_prune += value;
 }
 
-void BranchAndBound::increaseNumberOfNodesPruned(unsigned long value) {
+void BranchAndBound_FJSSP::increaseNumberOfNodesPruned(unsigned long value) {
     number_of_nodes_pruned += value;
 }
 
-void BranchAndBound::increaseNumberOfReachedLeaves(unsigned long value) {
+void BranchAndBound_FJSSP::increaseNumberOfReachedLeaves(unsigned long value) {
     number_of_reached_leaves += value;
 }
 
-void BranchAndBound::increaseNumberOfUpdatesInLowerBound(unsigned long value) {
+void BranchAndBound_FJSSP::increaseNumberOfUpdatesInLowerBound(unsigned long value) {
     number_of_updates_in_lower_bound += value;
 }
 
-void BranchAndBound::increaseSharedWork(unsigned long value) {
+void BranchAndBound_FJSSP::increaseSharedWork(unsigned long value) {
     number_of_shared_works += value;
 }
 
-void BranchAndBound::increaseExploredNodes() {
+void BranchAndBound_FJSSP::increaseExploredNodes() {
     number_of_nodes_explored++;
 }
 
-void BranchAndBound::increasePrunedNodes() {
+void BranchAndBound_FJSSP::increasePrunedNodes() {
     number_of_nodes_pruned++;
 }
 
-void BranchAndBound::increaseNodesCreated() {
+void BranchAndBound_FJSSP::increaseNodesCreated() {
     number_of_nodes_created++;
 }
 
-void BranchAndBound::increaseReachedLeaves() {
+void BranchAndBound_FJSSP::increaseReachedLeaves() {
     number_of_reached_leaves++;
 }
 
-void BranchAndBound::increaseUpdatesInLowerBound() {
+void BranchAndBound_FJSSP::increaseUpdatesInLowerBound() {
     number_of_updates_in_lower_bound++;
 }
 
-void BranchAndBound::increaseSharedWorks() {
+void BranchAndBound_FJSSP::increaseSharedWorks() {
     number_of_shared_works++;
 }
 
-const Solution& BranchAndBound::getIncumbentSolution() const {
+const Solution& BranchAndBound_FJSSP::getIncumbentSolution() const {
     return incumbent_s;
 }
 
-const IVMTree& BranchAndBound::getIVMTree() const {
+const IVMTree& BranchAndBound_FJSSP::getIVMTree() const {
     return ivm_tree;
 }
 
-const Interval& BranchAndBound::getStartingInterval() const {
+const Interval& BranchAndBound_FJSSP::getStartingInterval() const {
     return interval_to_solve;
 }
 
-const ProblemFJSSP& BranchAndBound::getProblem() const {
+const ProblemFJSSP& BranchAndBound_FJSSP::getProblem() const {
     return problem;
 }
 
-const FJSSPdata& BranchAndBound::getFJSSPdata() const {
+const FJSSPdata& BranchAndBound_FJSSP::getFJSSPdata() const {
     return fjssp_data;
 }
 
-const HandlerContainer& BranchAndBound::getParetoContainer() const {
+const HandlerContainer& BranchAndBound_FJSSP::getParetoContainer() const {
     return paretoContainer;
 }
 
-const ParetoFront& BranchAndBound::getParetoFront() const {
+const ParetoFront& BranchAndBound_FJSSP::getParetoFront() const {
     return pareto_front;
 }
 
-int BranchAndBound::getLimitLevelToShare() const {
+int BranchAndBound_FJSSP::getLimitLevelToShare() const {
     return limit_level_to_share;
 }
 
-float BranchAndBound::getDeepLimitToShare() const {
+float BranchAndBound_FJSSP::getDeepLimitToShare() const {
     return deep_limit_share;
 }
 
-float BranchAndBound::getSizeToShare() const {
+float BranchAndBound_FJSSP::getSizeToShare() const {
     return size_to_share;
 }
 
-void BranchAndBound::setParetoFrontFile(const char setOutputFile[255]) {
+void BranchAndBound_FJSSP::setParetoFrontFile(const char setOutputFile[255]) {
     std::strcpy(pareto_file, setOutputFile);
 }
 
-void BranchAndBound::setSummarizeFile(const char outputFile[255]) {
+void BranchAndBound_FJSSP::setSummarizeFile(const char outputFile[255]) {
     std::strcpy(summarize_file, outputFile);
 }
 
-void BranchAndBound::setPoolFile(const char *outputFile) {
+void BranchAndBound_FJSSP::setPoolFile(const char *outputFile) {
     std::strcpy(pool_file, outputFile);
 }
 
-void BranchAndBound::setParetoFront(const std::vector<Solution> &front) {
+void BranchAndBound_FJSSP::setParetoFront(const std::vector<Solution> &front) {
     pareto_front = front;
 }
 
-void BranchAndBound::buildOutputFiles() {
+void BranchAndBound_FJSSP::buildOutputFiles() {
     
     std::vector<std::string> paths;
     std::vector<std::string> name_file;
@@ -1083,7 +1077,7 @@ void BranchAndBound::buildOutputFiles() {
 }
 
 
-void BranchAndBound::saveCurrentState() const {
+void BranchAndBound_FJSSP::saveCurrentState() const {
     /*
      * saveGlobalPool();
      * saveIVM();
@@ -1091,11 +1085,11 @@ void BranchAndBound::saveCurrentState() const {
      */
 }
 
-void BranchAndBound::saveIVM() const {
+void BranchAndBound_FJSSP::saveIVM() const {
     ivm_tree.saveToFile(ivm_file);
 }
 
-void BranchAndBound::saveGlobalPool() const {
+void BranchAndBound_FJSSP::saveGlobalPool() const {
     /** TODO: globalPoolFile is saved by the container B&B (bb_rank = 0).**/
     std::vector<Interval> to_restore;
     std::ofstream myfile(pool_file);
@@ -1126,7 +1120,7 @@ void BranchAndBound::saveGlobalPool() const {
         printf("[Worker-%03d:B&B-%03d] Unable to write global pool: %s\n", node_rank, bb_rank, pool_file);
 }
 
-int BranchAndBound::saveSummarize() {
+int BranchAndBound_FJSSP::saveSummarize() {
     
     printf("[Worker-%03d:B&B-%03d] ---Summarize---\n", getNodeRank(), getBBRank());
     printf("Pareto front size:   %ld\n", pareto_front.size());
@@ -1203,7 +1197,7 @@ int BranchAndBound::saveSummarize() {
     return 0;
 }
 
-int BranchAndBound::saveParetoFront() {
+int BranchAndBound_FJSSP::saveParetoFront() {
 
     std::ofstream myfile(pareto_file);
     if (myfile.is_open()) {
@@ -1223,7 +1217,7 @@ int BranchAndBound::saveParetoFront() {
     return 0;
 }
 
-void BranchAndBound::saveEvery(double timeInSeconds) {
+void BranchAndBound_FJSSP::saveEvery(double timeInSeconds) {
     
     if (((std::clock() - time_start) / (double) CLOCKS_PER_SEC) > timeInSeconds) {
         time_start = std::clock();
@@ -1242,11 +1236,11 @@ void BranchAndBound::saveEvery(double timeInSeconds) {
     }
 }
 
-void BranchAndBound::printCurrentSolution(int withVariables) {
+void BranchAndBound_FJSSP::printCurrentSolution(int withVariables) {
     problem.printPartialSolution(incumbent_s, currentLevel);
 }
 
-void BranchAndBound::printParetoFront(int withExtraInfo) {
+void BranchAndBound_FJSSP::printParetoFront(int withExtraInfo) {
     
     int counterSolutions = 0;
 
@@ -1261,11 +1255,11 @@ void BranchAndBound::printParetoFront(int withExtraInfo) {
     }
 }
 
-void BranchAndBound::print() const {
+void BranchAndBound_FJSSP::print() const {
     printf("[B&B %d %d %lu %f]\n", getNodeRank(), getBBRank(), pareto_front.size(), elapsed_time);
 }
 
-void BranchAndBound::printDebug() {
+void BranchAndBound_FJSSP::printDebug() {
     printf("\nSTART-DEBUG-INFO\n");
     printf("GlobalPool:\n");
     sharedPool.print();

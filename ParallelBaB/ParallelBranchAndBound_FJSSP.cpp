@@ -1,14 +1,14 @@
 //
-//  ParallelBranchAndBound.cpp
+//  ParallelBranchAndBound_FJSSP.cpp
 //  ParallelBaB
 //
 //  Created by Carlos Soto on 06/02/17.
 //  Copyright © 2017 Carlos Soto. All rights reserved.
 //
 /** Dummy commit**/
-#include "ParallelBranchAndBound.hpp"
+#include "ParallelBranchAndBound_FJSSP.hpp"
 
-ParallelBranchAndBound::ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem):
+ParallelBranchAndBound_FJSSP::ParallelBranchAndBound_FJSSP(int rank, int n_threads, const ProblemFJSSP& problem):
 time_limit(0),
 is_grid_enable(false),
 is_sorting_enable(false),
@@ -37,11 +37,11 @@ branch_init(problem.getNumberOfVariables()) {
     time_end = std::chrono::high_resolution_clock::now();
 }
 
-ParallelBranchAndBound::~ParallelBranchAndBound() {
+ParallelBranchAndBound_FJSSP::~ParallelBranchAndBound_FJSSP() {
     
 }
 
-tbb::task * ParallelBranchAndBound::execute() {
+tbb::task * ParallelBranchAndBound_FJSSP::execute() {
 
     initSharedParetoFront();
     initSharedPool(branch_init);
@@ -49,12 +49,12 @@ tbb::task * ParallelBranchAndBound::execute() {
     set_ref_count(number_of_bbs + 1);
     
     tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
-    vector<BranchAndBound *> bb_threads;
+    vector<BranchAndBound_FJSSP *> bb_threads;
     sleeping_bb = 0;
     int n_bb = 0;
     time_start = std::chrono::high_resolution_clock::now();
     while (n_bb++ < number_of_bbs) {
-        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(rank, n_bb,  problem, branch_init);
+        BranchAndBound_FJSSP * BaB_task = new (tbb::task::allocate_child()) BranchAndBound_FJSSP(rank, n_bb,  problem, branch_init);
         if (isGridEnable())
             BaB_task->enableGrid();
 
@@ -77,7 +77,7 @@ tbb::task * ParallelBranchAndBound::execute() {
     
     /** Recollects the data. **/
     getElapsedTime();
-    BranchAndBound* bb_in;
+    BranchAndBound_FJSSP* bb_in;
     while (!bb_threads.empty()) {
         
         bb_in = bb_threads.back();
@@ -112,7 +112,7 @@ tbb::task * ParallelBranchAndBound::execute() {
     return NULL;
 }
 
-void ParallelBranchAndBound::initSharedParetoFront() {
+void ParallelBranchAndBound_FJSSP::initSharedParetoFront() {
     Solution temp_1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     problem.createDefaultSolution(temp_1);
     sharedParetoFront.push_back(temp_1);
@@ -147,7 +147,7 @@ void ParallelBranchAndBound::initSharedParetoFront() {
     sharedParetoFront.print();
 }
 
-int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {
+int ParallelBranchAndBound_FJSSP::initSharedPool(const Interval & branch_init) {
 
     sharedPool.setSizeEmptying((unsigned long) (number_of_bbs * 2)); /** If the global pool reach this size then the B&B starts sending part of their work to the global pool. **/
 
@@ -202,74 +202,74 @@ int ParallelBranchAndBound::initSharedPool(const Interval & branch_init) {
     return nodes_created;
 }
 
-double ParallelBranchAndBound::getElapsedTime() {
+double ParallelBranchAndBound_FJSSP::getElapsedTime() {
     time_end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> time_span = std::chrono::duration_cast<std::chrono::milliseconds>(time_end - time_start);
     elapsed_time = time_span.count();
     return elapsed_time;
 }
 
-double ParallelBranchAndBound::getTimeLimit() const {
+double ParallelBranchAndBound_FJSSP::getTimeLimit() const {
     return time_limit;
 }
 
-void ParallelBranchAndBound::setTimeLimit(double time_sec) {
+void ParallelBranchAndBound_FJSSP::setTimeLimit(double time_sec) {
     time_limit = time_sec;
 }
 
-void ParallelBranchAndBound::enableGrid() {
+void ParallelBranchAndBound_FJSSP::enableGrid() {
     is_grid_enable = true;
 }
 
-void ParallelBranchAndBound::enableSortingNodes() {
+void ParallelBranchAndBound_FJSSP::enableSortingNodes() {
     is_sorting_enable = true;
 }
 
-void ParallelBranchAndBound::enablePriorityQueue(unsigned int priority_rules) {
+void ParallelBranchAndBound_FJSSP::enablePriorityQueue(unsigned int priority_rules) {
     is_priority_enable = priority_rules;
 }
 
-bool ParallelBranchAndBound::isGridEnable() const {
+bool ParallelBranchAndBound_FJSSP::isGridEnable() const {
     return is_grid_enable;
 }
 
-bool ParallelBranchAndBound::isSortingEnable() const {
+bool ParallelBranchAndBound_FJSSP::isSortingEnable() const {
     return is_sorting_enable;
 }
 
-unsigned int ParallelBranchAndBound::isPriorityEnable() const {
+unsigned int ParallelBranchAndBound_FJSSP::isPriorityEnable() const {
     return is_priority_enable;
 }
 
-void ParallelBranchAndBound::setBranchInitPayload(const Payload_interval& payload) {
+void ParallelBranchAndBound_FJSSP::setBranchInitPayload(const Payload_interval& payload) {
     branch_init(payload);
 }
 
-void ParallelBranchAndBound::setBranchInit(const Interval &interval) {
+void ParallelBranchAndBound_FJSSP::setBranchInit(const Interval &interval) {
     branch_init = interval;
 }
 
-void ParallelBranchAndBound::setNumberOfThreads(int n_number_of_threads) {
+void ParallelBranchAndBound_FJSSP::setNumberOfThreads(int n_number_of_threads) {
     number_of_bbs = n_number_of_threads;
 }
 
-void ParallelBranchAndBound::setOutputPath(const std::string outputPath) {
+void ParallelBranchAndBound_FJSSP::setOutputPath(const std::string outputPath) {
     output_path = outputPath;
 }
 
-void ParallelBranchAndBound::setParetoFrontFile(const char outputFile[255]) {
+void ParallelBranchAndBound_FJSSP::setParetoFrontFile(const char outputFile[255]) {
     std::strcpy(pareto_file, outputFile);
 }
 
-void ParallelBranchAndBound::setSummarizeFile(const char outputFile[255]) {
+void ParallelBranchAndBound_FJSSP::setSummarizeFile(const char outputFile[255]) {
     std::strcpy(summarize_file, outputFile);
 }
 
-int ParallelBranchAndBound::getRank() const {
+int ParallelBranchAndBound_FJSSP::getRank() const {
     return rank;
 }
 
-void ParallelBranchAndBound::saveSummarize() {
+void ParallelBranchAndBound_FJSSP::saveSummarize() {
 
     time_t now = time(0);
     tm *ltm = localtime(&now);
@@ -352,7 +352,7 @@ void ParallelBranchAndBound::saveSummarize() {
         std::cout << "Unable to write data to file " << "Summarize.csv" << std::endl;
 
 }
-void ParallelBranchAndBound::saveParetoFront() {
+void ParallelBranchAndBound_FJSSP::saveParetoFront() {
 
     std::ofstream myfile(pareto_file);
     if (myfile.is_open()) {

@@ -16,8 +16,6 @@
 #include <exception>
 #include <getopt.h>
 #include <tbb/task_scheduler_init.h>
-#include <tbb/blocked_range.h>
-#include <tbb/parallel_for.h>
 #include <tbb/task_group.h>
 #include "Solution.hpp"
 #include "Problem.hpp"
@@ -26,12 +24,9 @@
 #include "ProblemVRP.hpp"
 #include "ProblemFJSSP.hpp"
 #include "BranchAndBound.hpp"
-#include "ParallelBranchAndBound.hpp"
+#include "ParallelBranchAndBound_FJSSP.hpp"
 #include "myutils.hpp"
-#include "ConcurrentGridContainer.hpp"
-#include "MasterWorkerPBB.hpp"
-#include "NSGA_II.hpp"
-#include "MOSA.hpp"
+#include "MasterWorkerPBB_FJSSP.hpp"
 
 using namespace std;
 
@@ -182,7 +177,7 @@ void one_node(int argc, char* argv[]) {
         
         tbb::task_scheduler_init init(number_of_threads);
 
-        ParallelBranchAndBound * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound(0, number_of_threads, problem);
+        ParallelBranchAndBound_FJSSP * pbb = new (tbb::task::allocate_root()) ParallelBranchAndBound_FJSSP(0, number_of_threads, problem);
 
         pbb->setTimeLimit(time_limit);
 
@@ -236,7 +231,7 @@ int main(int argc, char* argv[]) {
         
         try {
             tbb::task_scheduler_init init(stoi(argv[arg_num_threads]));
-            MasterWorkerPBB *  mw_pbb = new (tbb::task::allocate_root()) MasterWorkerPBB (size_world, stoi(argv[arg_num_threads]), argv[arg_input_file], argv[arg_ouput_path]);
+            MasterWorkerPBB_FJSSP *  mw_pbb = new (tbb::task::allocate_root()) MasterWorkerPBB_FJSSP (size_world, stoi(argv[arg_num_threads]), argv[arg_input_file], argv[arg_ouput_path]);
             tbb::task::spawn_root_and_wait(*mw_pbb);
         } catch (tbb::tbb_exception& e) {
             std::cerr << "Intercepted exception:\n" << e.name();

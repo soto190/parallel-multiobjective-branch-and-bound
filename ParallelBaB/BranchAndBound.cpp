@@ -12,12 +12,12 @@
  **/
 #include "BranchAndBound.hpp"
 
-SubproblemsPool sharedPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
+/*SubproblemsPool sharedPool;
 //ConcurrentHandlerContainer sharedParetoContainer;
 ParetoBucket sharedParetoFront;
 tbb::atomic<int> sleeping_bb;
 tbb::atomic<int> there_is_more_work;
-
+*/
 BranchAndBound::BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problemToCopy, const Interval & branch):
 is_grid_enable(false),
 is_sorting_enable(false),

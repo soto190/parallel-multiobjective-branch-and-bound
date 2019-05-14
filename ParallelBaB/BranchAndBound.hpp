@@ -17,18 +17,16 @@
 #include <ctime>
 #include <fstream>
 #include <iomanip>
+#include "GlobalParallelStructures.hpp"
 #include "NSGA_II.hpp"
 #include "MOSA.hpp"
 #include "Problem.hpp"
 #include "ProblemFJSSP.hpp"
 #include "Solution.hpp"
-#include "ConcurrentHandlerContainer.hpp"
 #include "HandlerContainer.hpp"
 #include "SortedVector.hpp"
 #include "IVMTree.hpp"
 #include "Interval.hpp"
-#include "SubproblemsPool.hpp"
-#include "tbb/atomic.h"
 #include "tbb/task.h"
 #include "tbb/cache_aligned_allocator.h"
 #include "tbb/concurrent_queue.h"
@@ -42,14 +40,14 @@
  *
  **/
 
-const float size_to_share = 0.2f; /** We share two percent of the row. **/
-const float deep_limit_share = 0.80f;
+//const float size_to_share = 0.2f; /** We share two percent of the row. **/
+//const float deep_limit_share = 0.80f;
 
-extern SubproblemsPool sharedPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
+//extern SubproblemsPool sharedPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
 //extern ConcurrentHandlerContainer sharedParetoContainer;
-extern ParetoBucket sharedParetoFront;
-extern tbb::atomic<int> sleeping_bb;
-extern tbb::atomic<int> there_is_more_work;
+//extern ParetoBucket sharedParetoFront;
+//extern tbb::atomic<int> sleeping_bb;
+//extern tbb::atomic<int> there_is_more_work;
 
 class BranchAndBound: public tbb::task {
     

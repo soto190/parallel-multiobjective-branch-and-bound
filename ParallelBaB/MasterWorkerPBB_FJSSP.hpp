@@ -12,18 +12,18 @@
 #include <stdio.h>
 #include <chrono>
 #include <tbb/task.h>
-#include "BranchAndBound.hpp"
+#include "BranchAndBound_FJSSP.hpp"
 #include "Interval.hpp"
 #include "ProblemFJSSP.hpp"
 #include "Solution.hpp"
 #include "myutils.hpp"
 
-class MasterWorkerPBB : public tbb::task {
+class MasterWorkerPBB_FJSSP : public tbb::task {
 
 public:
-    MasterWorkerPBB();
-    MasterWorkerPBB(int num_nodes, int num_bb, const char file[], const char output_path[]);
-    virtual ~MasterWorkerPBB();
+    MasterWorkerPBB_FJSSP();
+    MasterWorkerPBB_FJSSP(int num_nodes, int num_bb, const char file[], const char output_path[]);
+    virtual ~MasterWorkerPBB_FJSSP();
     
     void run();
     int getRank() const;

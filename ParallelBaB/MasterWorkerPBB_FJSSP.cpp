@@ -12,9 +12,9 @@
  *
  */
 
-#include "MasterWorkerPBB.hpp"
+#include "MasterWorkerPBB_FJSSP.hpp"
 
-MasterWorkerPBB::MasterWorkerPBB() {
+MasterWorkerPBB_FJSSP::MasterWorkerPBB_FJSSP() {
     rank = 0;
     n_workers = 0;
     branchsandbound_per_worker = 0;
@@ -27,7 +27,7 @@ MasterWorkerPBB::MasterWorkerPBB() {
     branches_pruned = 0;
 }
 
-MasterWorkerPBB::MasterWorkerPBB(int num_nodes, int num_threads, const char file_instance[], const char output_path_results[]) :
+MasterWorkerPBB_FJSSP::MasterWorkerPBB_FJSSP(int num_nodes, int num_threads, const char file_instance[], const char output_path_results[]) :
 n_workers(num_nodes - 1),
 branchsandbound_per_worker(num_threads) {
     rank = 0;
@@ -42,11 +42,11 @@ branchsandbound_per_worker(num_threads) {
     branches_pruned = 0;
 }
 
-MasterWorkerPBB::~MasterWorkerPBB() {
+MasterWorkerPBB_FJSSP::~MasterWorkerPBB_FJSSP() {
     
 }
 
-tbb::task * MasterWorkerPBB::execute() {
+tbb::task * MasterWorkerPBB_FJSSP::execute() {
     std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
     rank = MPI::COMM_WORLD.Get_rank();
     n_workers = MPI::COMM_WORLD.Get_size() - 1;
@@ -96,7 +96,7 @@ tbb::task * MasterWorkerPBB::execute() {
     return NULL;
 }
 
-void MasterWorkerPBB::run() {
+void MasterWorkerPBB_FJSSP::run() {
     if (isMaster())
         loadInstance(payload_problem, instance_file);
     
@@ -116,7 +116,7 @@ void MasterWorkerPBB::run() {
 /**
  * Seeds each worker with an Interval.
  */
-void MasterWorkerPBB::runMasterProcess() {
+void MasterWorkerPBB_FJSSP::runMasterProcess() {
     
     printf("[Master] Launching Master...\n");
     int max_number_of_mappings = payload_problem.n_jobs * payload_problem.n_machines;
@@ -295,7 +295,7 @@ void MasterWorkerPBB::runMasterProcess() {
 /**
  * The worker receives the seeding then initalize all the necessary structures and creates in each thread one B&B.
  */
-void MasterWorkerPBB::runWorkerProcess() {
+void MasterWorkerPBB_FJSSP::runWorkerProcess() {
     printf("[WorkerPBB-%03d] Worker ready...\n", getRank());
     int source = MASTER_RANK;
     sleeping_bb = 0;
@@ -316,7 +316,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     
     paretoContainer(25, 25, solution.getObjective(0), solution.getObjective(1), problem.getLowerBoundInObj(0), problem.getLowerBoundInObj(1));
     
-    BranchAndBound BB_container(rank, 0, problem, branch_init);
+    BranchAndBound_FJSSP BB_container(rank, 0, problem, branch_init);
     BB_container.enablePriorityQueue(1);
     BB_container.enableSortingNodes();
     branches_created += BB_container.initGlobalPoolWithInterval(branch_init);
@@ -330,10 +330,10 @@ void MasterWorkerPBB::runWorkerProcess() {
     set_ref_count(branchsandbound_per_worker + 1);
     
     tbb::task_list tl; /** When task_list is destroyed it doesn't calls the destructor. **/
-    vector<BranchAndBound *> bb_threads;
+    vector<BranchAndBound_FJSSP *> bb_threads;
     int n_bb = 0;
     while (n_bb++ < branchsandbound_per_worker) {
-        BranchAndBound * BaB_task = new (tbb::task::allocate_child()) BranchAndBound(getRank(), n_bb,  problem, branch_init);
+        BranchAndBound_FJSSP * BaB_task = new (tbb::task::allocate_child()) BranchAndBound_FJSSP(getRank(), n_bb,  problem, branch_init);
         BaB_task->enableSortingNodes();
         BaB_task->enablePriorityQueue(1);
         bb_threads.push_back(BaB_task);
@@ -448,7 +448,7 @@ void MasterWorkerPBB::runWorkerProcess() {
     
     /** Recollects the data. **/
     BB_container.getElapsedTime();
-    BranchAndBound* bb_in;
+    BranchAndBound_FJSSP* bb_in;
     while (!bb_threads.empty()) {
         
         bb_in = bb_threads.back();
@@ -483,11 +483,11 @@ void MasterWorkerPBB::runWorkerProcess() {
 
 }
 
-bool MasterWorkerPBB::thereIsMoreWork() const {
+bool MasterWorkerPBB_FJSSP::thereIsMoreWork() const {
     return there_is_more_work;
 }
 
-void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *filePath) {
+void MasterWorkerPBB_FJSSP::loadInstance(Payload_problem_fjssp& problem, const char *filePath) {
     char extension[4];
     int instance_with_release_time = 1; /** This is used because the Kacem's instances have release times and the other sets dont. **/
     
@@ -560,7 +560,7 @@ void MasterWorkerPBB::loadInstance(Payload_problem_fjssp& problem, const char *f
         printf("[Master] Unable to open instance file.\n");
 }
 
-void MasterWorkerPBB::preparePayloadProblemPart1(const Payload_problem_fjssp &problem, MPI_Datatype &datatype_problem) {
+void MasterWorkerPBB_FJSSP::preparePayloadProblemPart1(const Payload_problem_fjssp &problem, MPI_Datatype &datatype_problem) {
     const int n_blocks = 4;
     int blocks[n_blocks] = { 1, 1, 1, 1 };
     MPI_Aint displacements_interval[n_blocks];
@@ -582,7 +582,7 @@ void MasterWorkerPBB::preparePayloadProblemPart1(const Payload_problem_fjssp &pr
     MPI_Type_commit(&datatype_problem);
 }
 
-void MasterWorkerPBB::preparePayloadProblemPart2(const Payload_problem_fjssp &problem, MPI_Datatype &datatype_problem) {
+void MasterWorkerPBB_FJSSP::preparePayloadProblemPart2(const Payload_problem_fjssp &problem, MPI_Datatype &datatype_problem) {
     const int n_blocks = 7;
     int blocks[n_blocks] = { 1, 1, 1, 1, problem.n_jobs, problem.n_jobs, problem.n_operations
         * problem.n_machines };
@@ -613,7 +613,7 @@ void MasterWorkerPBB::preparePayloadProblemPart2(const Payload_problem_fjssp &pr
     MPI_Type_commit(&datatype_problem);
 }
 
-void MasterWorkerPBB::preparePayloadInterval(const Payload_interval &interval, MPI_Datatype &datatype_interval) {
+void MasterWorkerPBB_FJSSP::preparePayloadInterval(const Payload_interval &interval, MPI_Datatype &datatype_interval) {
     const int n_blocks = 6;
     int blocks[n_blocks] = { 1, 1, 1, 1, 2, interval.max_size };
     MPI_Aint displacements_interval[n_blocks];
@@ -639,7 +639,7 @@ void MasterWorkerPBB::preparePayloadInterval(const Payload_interval &interval, M
     MPI_Type_commit(&datatype_interval);
 }
 
-void MasterWorkerPBB::preparePayloadSolution(const Payload_solution &solution, MPI_Datatype &datatype_solution) {
+void MasterWorkerPBB_FJSSP::preparePayloadSolution(const Payload_solution &solution, MPI_Datatype &datatype_solution) {
     const int n_blocks = 5;
     int blocks[n_blocks] = { 1, 1, 1, solution.n_objectives, solution.n_variables };
     MPI_Aint displacements_interval[n_blocks];
@@ -663,7 +663,7 @@ void MasterWorkerPBB::preparePayloadSolution(const Payload_solution &solution, M
     MPI_Type_commit(&datatype_solution);
 }
 
-void MasterWorkerPBB::unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval, Payload_solution & solution) {
+void MasterWorkerPBB_FJSSP::unpack_payload_part1(Payload_problem_fjssp& problem, Payload_interval& interval, Payload_solution & solution) {
     if (isWorker()) { /** Only the workers do this because the Master node initialized them in the loadInstance function. **/
         problem.release_times = new int[problem.n_jobs];
         problem.n_operations_in_job = new int[problem.n_jobs];
@@ -689,7 +689,7 @@ void MasterWorkerPBB::unpack_payload_part1(Payload_problem_fjssp& problem, Paylo
      }*/
 }
 
-void MasterWorkerPBB::unpack_payload_part2(Payload_problem_fjssp& payload_problem) {
+void MasterWorkerPBB_FJSSP::unpack_payload_part2(Payload_problem_fjssp& payload_problem) {
     if(isMaster())
         printf("[Master] Jobs: %d Operations: %d Machines: %d\n", payload_problem.n_jobs, payload_problem.n_operations, payload_problem.n_machines);
     
@@ -699,19 +699,19 @@ void MasterWorkerPBB::unpack_payload_part2(Payload_problem_fjssp& payload_proble
         problem.printProblemInfo();
 }
 
-int MasterWorkerPBB::getRank() const {
+int MasterWorkerPBB_FJSSP::getRank() const {
     return rank;
 }
 
-bool MasterWorkerPBB::isMaster() const {
+bool MasterWorkerPBB_FJSSP::isMaster() const {
     return rank == MASTER_RANK;
 }
 
-bool MasterWorkerPBB::isWorker() const {
+bool MasterWorkerPBB_FJSSP::isWorker() const {
     return rank > MASTER_RANK;
 }
 
-int MasterWorkerPBB::splitInterval(Interval& branch_to_split) {
+int MasterWorkerPBB_FJSSP::splitInterval(Interval& branch_to_split) {
     Solution solution(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
     int split_level = branch_to_split.getBuildUpTo() + 1;
     int branches_created_in = 0;
@@ -747,8 +747,8 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split) {
 
                 if (paretoContainer.improvesTheGrid(solution)) {
                     branch_to_split.setValueAt(split_level, value_to_add);
-                    branch_to_split.setDistance(0, BranchAndBound::distanceToObjective(fjssp_data.getMakespan(), problem.getLowerBoundInObj(0)));
-                    branch_to_split.setDistance(1, BranchAndBound::distanceToObjective(fjssp_data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
+                    branch_to_split.setDistance(0, BranchAndBound_FJSSP::distanceToObjective(fjssp_data.getMakespan(), problem.getLowerBoundInObj(0)));
+                    branch_to_split.setDistance(1, BranchAndBound_FJSSP::distanceToObjective(fjssp_data.getMaxWorkload(), problem.getLowerBoundInObj(1)));
                     
                     branch_to_split.setHighPriority();
 
@@ -764,7 +764,7 @@ int MasterWorkerPBB::splitInterval(Interval& branch_to_split) {
     return branches_created_in;
 }
 
-void MasterWorkerPBB::storesPayloadInterval(Payload_interval& payload, const Interval& interval) {
+void MasterWorkerPBB_FJSSP::storesPayloadInterval(Payload_interval& payload, const Interval& interval) {
     payload.build_up_to = interval.getBuildUpTo();
     payload.priority = interval.getPriority();
     payload.deep = interval.getDeep();
@@ -776,7 +776,7 @@ void MasterWorkerPBB::storesPayloadInterval(Payload_interval& payload, const Int
         payload.interval[var] = interval.getValueAt(var);
 }
 
-void MasterWorkerPBB::recoverSolutionFromPayload(const Payload_interval &payload, Solution &solution) {
+void MasterWorkerPBB_FJSSP::recoverSolutionFromPayload(const Payload_interval &payload, Solution &solution) {
     solution.setObjective(0, payload.distance[0]);
     solution.setObjective(1, payload.distance[1]);
     
@@ -784,22 +784,22 @@ void MasterWorkerPBB::recoverSolutionFromPayload(const Payload_interval &payload
         solution.setVariable(n_var, payload.interval[n_var]);
 }
 
-void MasterWorkerPBB::storesSolutionInInterval(Payload_interval &payload, const Solution& solution) {
+void MasterWorkerPBB_FJSSP::storesSolutionInInterval(Payload_interval &payload, const Solution& solution) {
     payload.distance[0] = solution.getObjective(0); /** This stores the first objective. **/
     payload.distance[1] = solution.getObjective(1); /** This stores the second objective. **/
     for (int var = 0; var < solution.getNumberOfVariables(); ++var)
         payload.interval[var] = solution.getVariable(var);
 }
 
-void MasterWorkerPBB::setParetoFrontFile(const char outputFile[255]) {
+void MasterWorkerPBB_FJSSP::setParetoFrontFile(const char outputFile[255]) {
     std::strcpy(pareto_front_file, outputFile);
 }
 
-void MasterWorkerPBB::setSummarizeFile(const char outputFile[255]) {
+void MasterWorkerPBB_FJSSP::setSummarizeFile(const char outputFile[255]) {
     std::strcpy(summarize_file, outputFile);
 }
 
-void MasterWorkerPBB::buildOutputFiles() {
+void MasterWorkerPBB_FJSSP::buildOutputFiles() {
     
     std::vector<std::string> paths;
     std::vector<std::string> name_file;
@@ -828,7 +828,7 @@ void MasterWorkerPBB::buildOutputFiles() {
     std::strcpy(pareto_front_file, output_file_pareto.c_str());
 }
 
-void MasterWorkerPBB::printPayloadInterval() const {
+void MasterWorkerPBB_FJSSP::printPayloadInterval() const {
     if (isMaster())
         printf("[Master] [ ");
     else
@@ -842,15 +842,15 @@ void MasterWorkerPBB::printPayloadInterval() const {
     printf("]\n");
 }
 
-int MasterWorkerPBB::getNumberOfWorkers() const {
+int MasterWorkerPBB_FJSSP::getNumberOfWorkers() const {
     return n_workers;
 }
 
-int MasterWorkerPBB::getNumberOfBranchsAndBound() const {
+int MasterWorkerPBB_FJSSP::getNumberOfBranchsAndBound() const {
     return branchsandbound_per_worker;
 }
 
-void MasterWorkerPBB::printMessageStatus(int source, int tag) {
+void MasterWorkerPBB_FJSSP::printMessageStatus(int source, int tag) {
     if (rank == MASTER_RANK)
         printf("[Master] Received message from WorkerPBB-%03d with %s.\n", source, getTagText(tag));
     else if (source == MASTER_RANK)
@@ -859,6 +859,6 @@ void MasterWorkerPBB::printMessageStatus(int source, int tag) {
         printf("[WorkerPBB-%03d] Received message from WorkerPBB-%03d with %s.\n", getRank(), source, getTagText(tag));
 }
 
-const char* MasterWorkerPBB::getTagText(int tag) const {
+const char* MasterWorkerPBB_FJSSP::getTagText(int tag) const {
     return TAGS[tag - 190];
 }

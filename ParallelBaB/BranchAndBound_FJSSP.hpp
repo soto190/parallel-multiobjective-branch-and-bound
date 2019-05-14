@@ -1,5 +1,5 @@
 //
-//  BranchAndBound.hpp
+//  BranchAndBound_FJSSP.hpp
 //  PhDProject
 //
 //  Created by Carlos Soto on 08/06/16.
@@ -17,21 +17,18 @@
 #include <ctime>
 #include <fstream>
 #include <iomanip>
+#include "GlobalParallelStructures.hpp"
 #include "NSGA_II.hpp"
 #include "MOSA.hpp"
 #include "Problem.hpp"
 #include "ProblemFJSSP.hpp"
 #include "Solution.hpp"
-#include "ConcurrentHandlerContainer.hpp"
 #include "HandlerContainer.hpp"
 #include "SortedVector.hpp"
 #include "IVMTree.hpp"
 #include "Interval.hpp"
-#include "SubproblemsPool.hpp"
-#include "tbb/atomic.h"
 #include "tbb/task.h"
 #include "tbb/cache_aligned_allocator.h"
-#include "tbb/concurrent_queue.h"
 #include "assert.h"
 //#include <memory.h> /** For the Ehecatl wich uses GCC 4.4.7, this activates the shared_ptr. **/
 /**
@@ -42,16 +39,7 @@
  *
  **/
 
-const float size_to_share = 0.2f; /** We share two percent of the row. **/
-const float deep_limit_share = 0.80f;
-
-extern SubproblemsPool sharedPool;  /** intervals are the pending branches/subproblems/partialSolutions to be explored. **/
-//extern ConcurrentHandlerContainer sharedParetoContainer;
-extern ParetoBucket sharedParetoFront;
-extern tbb::atomic<int> sleeping_bb;
-extern tbb::atomic<int> there_is_more_work;
-
-class BranchAndBound: public tbb::task {
+class BranchAndBound_FJSSP: public tbb::task {
     
 private:
     bool is_grid_enable;
@@ -102,12 +90,12 @@ private:
     std::chrono::high_resolution_clock::time_point t2;
     
 public:
-    BranchAndBound(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
-    BranchAndBound(const BranchAndBound& branchAndBound);
-    ~BranchAndBound();
+    BranchAndBound_FJSSP(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
+    BranchAndBound_FJSSP(const BranchAndBound_FJSSP& branchAndBound);
+    ~BranchAndBound_FJSSP();
 
-    BranchAndBound& operator()(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
-    BranchAndBound& operator=(const BranchAndBound& toCopy);
+    BranchAndBound_FJSSP& operator()(int node_rank, int rank, const ProblemFJSSP& problem, const Interval & branch);
+    BranchAndBound_FJSSP& operator=(const BranchAndBound_FJSSP& toCopy);
 
     unsigned long getPFVersion() const;
     int getNodeRank() const;

@@ -1,5 +1,5 @@
 //
-//  ParallelBranchAndBound.hpp
+//  ParallelBranchAndBound_FJSSP.hpp
 //  ParallelBaB
 //
 //  Created by Carlos Soto on 06/02/17.
@@ -11,13 +11,13 @@
 
 #include <stdio.h>
 #include <exception>
-#include "BranchAndBound.hpp"
+#include "BranchAndBound_FJSSP.hpp"
 #include "Interval.hpp"
 #include "ProblemFJSSP.hpp"
 #include "tbb/task.h"
 //#include <memory.h> /** For the Ehecatl wich uses GCC 4.4.7, this activates the shared_ptr. **/
 
-class ParallelBranchAndBound: public tbb::task {
+class ParallelBranchAndBound_FJSSP: public tbb::task {
     
 public:
     int rank;
@@ -54,8 +54,8 @@ public:
     std::chrono::high_resolution_clock::time_point time_start;
     std::chrono::high_resolution_clock::time_point time_end;
 
-    ParallelBranchAndBound(int rank, int n_threads, const ProblemFJSSP& problem);
-    ~ParallelBranchAndBound();
+    ParallelBranchAndBound_FJSSP(int rank, int n_threads, const ProblemFJSSP& problem);
+    ~ParallelBranchAndBound_FJSSP();
     tbb::task* execute();
 
     double getTimeLimit() const;
