@@ -1,0 +1,10 @@
+/Default/
+ParallelBaB.xcodeproj
+ParallelBaB.xcodeproj/
+.cproject
+.project
+.settings/
+libmpi_cxx.40.dylib
+libmpi.40.dylib
+libtbb.dylib
+libtbbmalloc.dylib
