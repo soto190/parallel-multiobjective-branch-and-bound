@@ -163,16 +163,41 @@ void one_node(int argc, char* argv[]) {
     problem.setName(splited[0].c_str());
     problem.loadInstance(files, extension);
     problem.printProblemInfo();
-    
+    //std:exit(1);
+
     /** End **/
     
     /** Preparing output files:
      * - CSV: contains the Pareto front.
      * - TXT: contains a log file.
      **/
-    std::string outputFile = output_path + splited[0] + ".csv";
+    //std::string outputFile = output_path + splited[0] + ".csv";
     std::string summarizeFile = output_path + splited[0] + ".txt";
-    
+    std::string outputFile;
+    Solution temp_1(problem.getNumberOfObjectives(), problem.getNumberOfVariables());
+    problem.createDefaultSolution(temp_1);
+
+    for(unsigned int run = 1; run <= 30; ++run) {
+        outputFile = output_path + splited[0] + "-r" + std::to_string(run) + ".csv";
+
+        NSGA_II nsgaii_algorithm(problem);
+        nsgaii_algorithm.setSampleSolution(temp_1);
+        nsgaii_algorithm.setCrossoverRate(0.9);
+        nsgaii_algorithm.setMutationRate(0.10);
+        nsgaii_algorithm.setMaxPopulationSize(100);
+        nsgaii_algorithm.setMaxNumberOfGenerations(200);
+        ParetoFront algorithms_pf = nsgaii_algorithm.solve();
+
+        //std::cout << temp_1 << temp << temp_2 << std::endl;
+        std::cout << "NSGA-II : " << std::endl << algorithms_pf << std::endl;
+
+        std::ofstream myfile(outputFile.c_str());
+
+        if (myfile.is_open()) {
+            myfile << algorithms_pf << std::endl;
+            myfile.close();
+        }
+    }
     try {
         
         tbb::task_scheduler_init init(number_of_threads);
