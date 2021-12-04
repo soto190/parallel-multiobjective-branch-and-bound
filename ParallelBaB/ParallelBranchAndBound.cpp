@@ -65,7 +65,8 @@ tbb::task * ParallelBranchAndBound::execute() {
 
         BaB_task->setTimeLimit(getTimeLimit());
         BaB_task->setSummarizeFile(summarize_file);
-
+        BaB_task->setParetoFrontFile(pareto_file);
+        BaB_task->setPoolFile(pool_file);
         bb_threads.push_back(BaB_task);
         tl.push_back(*BaB_task);
     }
@@ -300,6 +301,11 @@ void ParallelBranchAndBound::setParetoFrontFile(const char outputFile[255]) {
 void ParallelBranchAndBound::setSummarizeFile(const char outputFile[255]) {
     std::strcpy(summarize_file, outputFile);
 }
+
+void ParallelBranchAndBound::setPoolFile(const char outputFile[255]) {
+    std::strcpy(pool_file, outputFile);
+}
+
 
 int ParallelBranchAndBound::getRank() const {
     return rank;

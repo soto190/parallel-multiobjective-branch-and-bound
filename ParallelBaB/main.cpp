@@ -332,7 +332,7 @@ void one_node(int argc, char* argv[]) {
         }
     }
 
-    ProblemVRPTW problem (2, 1);
+    ProblemVRPTW problem (3, 1);
 
     printf("Deep sharing: %0.2f\n", deep_limit_share);
     
@@ -364,6 +364,7 @@ void one_node(int argc, char* argv[]) {
      **/
     std::string outputFile = output_path + splited[0] + ".csv";
     std::string summarizeFile = output_path + splited[0] + ".txt";
+    std::string poolFile = output_path + splited[0] + ".pool";
 
     try {
 
@@ -384,7 +385,7 @@ void one_node(int argc, char* argv[]) {
 
         pbb->setParetoFrontFile(outputFile.c_str());
         pbb->setSummarizeFile(summarizeFile.c_str());
-        
+        pbb->setPoolFile(poolFile.c_str());
         printf("Spawning root...\n");
         tbb::task::spawn_root_and_wait(*pbb);
 
@@ -533,6 +534,7 @@ void mpi_launch_nodes(int argc, char* argv[]) {
      **/
     std::string outputFile = output_path + splited[0] + ".csv";
     std::string summarizeFile = output_path + splited[0] + ".txt";
+    std::string poolFile = output_path + splited[0] + ".pool";
 
     try {
         tbb::task_scheduler_init init(number_of_threads);

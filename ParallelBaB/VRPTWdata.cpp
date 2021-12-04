@@ -296,7 +296,7 @@ void VRPTWdata::setTotalCost(double new_total_cost) {
 
 /**
  * TODO: check these functions.
- **/
+ */
 void VRPTWdata::increaseTimesElementIsInUse(unsigned int element) {
     variable_times_used[element]++;
 }
@@ -416,15 +416,15 @@ double VRPTWdata::getObjective(int n_obj) const {
             break;
 
         case 1:
-            return getMaxCost();
+            return (int)(getMaxCost() + 0.5) * 1.0;
             break;
 
         case 2:
-            return getTotalCost();
+            return (int)(getTotalCost() + 0.5) * 1.0;
             break;
 
         case 3:
-            return getToltaTravelTime();
+            return (int)(getToltaTravelTime() + 0.5) * 1.0;
             break;
 
         default:

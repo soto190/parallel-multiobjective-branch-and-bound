@@ -3,8 +3,17 @@
 CXX = mpiicpc
 DEBUGGER = gdb-ia
 
-LIBS = /usr/local/lib64/libstdc++.a -tbb -ltbbmalloc -ltbbmalloc_proxy
-LIBS_DEBUG = /usr/local/lib64/libstdc++.a -tbb -ltbbmalloc_debug -ltbbmalloc_proxy_debug
+ifeq ($(HOSTNAME), ehecatl)
+
+    LIBS = /usr/local/lib64/libstdc++.a -tbb -ltbbmalloc -ltbbmalloc_proxy
+    LIBS_DEBUG = /usr/local/lib64/libstdc++.a -tbb -ltbbmalloc_debug -ltbbmalloc_proxy_debug
+
+else
+
+    LIBS = /apps/gcc-7/lib64/libstdc++.a -tbb #-ltbbmalloc -ltbbmalloc_proxy
+    LIBS_DEBUG = /apps/gcc-7/lib64/libstdc++.a -tbb -ltbbmalloc_debug -ltbbmalloc_proxy_debug
+
+endif
 
 #TODO: Some day investigate why the -debug parallel gets and segmentation fault when debugging.
 #TODO: Test the flag -fast to optimize for speed in intel compiler.
@@ -14,19 +23,19 @@ LDFLAGS_DEBUG = -O0 -shared-intel -g -traceback -debug all -std=c++11
 src = $(wildcard *.cpp)
 obj = $(src:.cpp = .o)
 
-all: branchAndBound
+all: pbbVRPTW
 
 debug: LIBS = $(LIBS_DEBUG)
 debug: LDFLAGS = $(LDFLAGS_DEBUG)
-debug: branchAndBound
+debug: pbbVRPTW
 
-branchAndBound: $(obj)
-	$(CXX) -o $@ $^ $(LIBS) $(LDFLAGS)
+pbbVRPTW: $(obj)
+    $(CXX) -o $@ $^ $(LIBS) $(LDFLAGS)
 
 .BOOM: clean
 
 clean:
-	rm -f branchAndBound
+    rm -f pbbVRPTW
 
 clear:
-    rm -f branchAndBound
+    rm -f pbbVRPTW

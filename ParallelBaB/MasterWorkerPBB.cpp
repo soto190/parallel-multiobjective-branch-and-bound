@@ -442,7 +442,7 @@ void MasterWorkerPBB::runWorkerProcess() {
                     break;
             }
         }
-        BB_container.saveEvery(30);
+        BB_container.saveEvery(86400);
     }
 
     /** Recollects the data. **/
@@ -656,7 +656,7 @@ void MasterWorkerPBB::unpack_payload_fjssp_part2(Payload_problem_fjssp& payload_
 void MasterWorkerPBB::loadInstanceVRPTW(Payload_problem_vrptw& problem, const char *filePath) {
     char extension[4];
 
-    problem.n_objectives = 2;
+    problem.n_objectives = 3;
     problem.number_of_customers = 0;
     problem.max_number_of_vehicles = 0;
     problem.max_vehicle_capacity = 0;

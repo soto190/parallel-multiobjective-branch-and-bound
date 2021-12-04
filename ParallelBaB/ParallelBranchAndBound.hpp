@@ -25,6 +25,8 @@ public:
     int number_of_bbs;
     char pareto_file[255];
     char summarize_file[255];
+    char pool_file[255];
+
     bool is_grid_enable = false;
     bool is_sorting_enable = false;
     bool is_priority_enable = false;
@@ -72,6 +74,8 @@ public:
     void setNumberOfThreads(int number_of_threads);
     void setParetoFrontFile(const char outputFile[255]);
     void setSummarizeFile(const char outputFile[255]);
+    void setPoolFile(const char outputFile[255]);
+
     void setBranchInit(const Interval& interval);
     void setBranchInitPayload(const Payload_interval& payload);
     

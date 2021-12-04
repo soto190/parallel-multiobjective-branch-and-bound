@@ -385,6 +385,7 @@ tbb::task* BranchAndBound::execute() {
             number_of_sub_problems_popped++;
             updateLocalPF();
             solve(interval_to_solve);
+            saveEvery(3600 * 24); // 3600 segundos son una hora y se guarda cada 24 horas.
         }
 
     sleeping_bb++;
